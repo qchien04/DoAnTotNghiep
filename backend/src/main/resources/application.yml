@@ -1,0 +1,49 @@
+﻿server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: graduation-project-core
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rental_room_management
+    driverClassName: org.postgresql.Driver
+    username: chien
+    password: 140704
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+# Cấu hình JWT (Access Token + Refresh Token)
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000
+  refresh-expiration: 604800000
+  header: Authorization
+  prefix: "Bearer "
+
+# Cấu hình Swagger / OpenAPI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+# Cấu hình thông tin Đồ Án Tốt Nghiệp
+app:
+  info:
+    title: "Hệ Thống Quản Lý Nhà Trọ - Đồ Án Tốt Nghiệp"
+    version: "1.0.0"
+    author: "Sinh Viên Thực Hiện"

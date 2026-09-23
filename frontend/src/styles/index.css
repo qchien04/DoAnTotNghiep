@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@theme {
+  /* StayConnect Dynamic Brand Color Tokens (Semantic) */
+  --color-stay-primary: var(--stay-primary, #2563EB);
+  --color-stay-primary-hover: var(--stay-primary-hover, #1D4ED8);
+  --color-stay-primary-subtle: var(--stay-primary-subtle, #EFF6FF);
+  
+  /* Verified Status & Secondary Green (Semantic) */
+  --color-stay-secondary: var(--stay-secondary, #16A34A);
+  --color-stay-secondary-hover: var(--stay-secondary-hover, #15803D);
+  --color-stay-secondary-subtle: var(--stay-secondary-subtle, #F0FDF4);
+
+  /* Lifestyle Match Green (Semantic) */
+  --color-stay-match: var(--stay-match, #10B981);
+  --color-stay-match-dark: var(--stay-match-dark, #059669);
+  --color-stay-match-subtle: var(--stay-match-subtle, #ECFDF5);
+
+  /* Landlord Promo Section Tint */
+  --color-stay-landlord-bg: var(--stay-landlord-bg, #E6F4EA);
+  --color-stay-landlord-card: var(--stay-landlord-card, #F0FDF4);
+
+  /* Typography & Neutral Colors (Semantic) */
+  --color-stay-text: var(--stay-text, #1E293B);
+  --color-stay-text-secondary: var(--stay-text-secondary, #64748B);
+  --color-stay-text-muted: var(--stay-text-muted, #94A3B8);
+
+  /* Borders & Surfaces (Semantic) */
+  --color-stay-border: var(--stay-border, #E2E8F0);
+  --color-stay-border-subtle: var(--stay-border-subtle, #F1F5F9);
+  --color-stay-bg-app: var(--stay-bg-app, #F8FAFC);
+  --color-stay-bg: var(--stay-bg-app, #F8FAFC);
+  --color-stay-card-bg: var(--stay-card-bg, #FFFFFF);
+}
+
+:root {
+  /* Brand Primary */
+  --stay-primary: #2563EB;
+  --stay-primary-hover: #1D4ED8;
+  --stay-primary-subtle: #EFF6FF;
+
+  /* Secondary & Verified */
+  --stay-secondary: #16A34A;
+  --stay-secondary-hover: #15803D;
+  --stay-secondary-subtle: #F0FDF4;
+
+  /* Lifestyle Match */
+  --stay-match: #10B981;
+  --stay-match-dark: #059669;
+  --stay-match-subtle: #ECFDF5;
+
+  /* Landlord Promo */
+  --stay-landlord-bg: #E6F4EA;
+  --stay-landlord-card: #F0FDF4;
+
+  /* Typography */
+  --stay-text: #1E293B;
+  --stay-text-secondary: #64748B;
+  --stay-text-muted: #94A3B8;
+
+  /* Borders */
+  --stay-border: #E2E8F0;
+  --stay-border-subtle: #F1F5F9;
+
+  /* Surfaces & Backgrounds */
+  --stay-bg-app: #F8FAFC;
+  --stay-bg: #F8FAFC;
+  --stay-card-bg: #FFFFFF;
+}
+
+html.dark,
+.dark {
+  color-scheme: dark;
+
+  /* Brand Primary */
+  --stay-primary: #3B82F6;
+  --stay-primary-hover: #60A5FA;
+  --stay-primary-subtle: #1E3A8A;
+
+  /* Secondary & Verified */
+  --stay-secondary: #10B981;
+  --stay-secondary-hover: #34D399;
+  --stay-secondary-subtle: #064E3B;
+
+  /* Lifestyle Match */
+  --stay-match: #34D399;
+  --stay-match-dark: #10B981;
+  --stay-match-subtle: #064E3B;
+
+  /* Landlord Promo */
+  --stay-landlord-bg: #1E293B;
+  --stay-landlord-card: #1E293B;
+
+  /* Typography */
+  --stay-text: #F8FAFC;
+  --stay-text-secondary: #94A3B8;
+  --stay-text-muted: #64748B;
+
+  /* Borders */
+  --stay-border: #334155;
+  --stay-border-subtle: #1E293B;
+
+  /* Surfaces & Backgrounds */
+  --stay-bg-app: #0F172A;
+  --stay-bg: #0F172A;
+  --stay-card-bg: #1E293B;
+}
+
+@layer base {
+  html {
+    background-color: var(--stay-bg);
+    color: var(--stay-text);
+  }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--stay-text);
+    background-color: var(--stay-bg);
+    min-height: 100vh;
+  }
+}
+
+/* Custom Utilities & Animations */
+.glass-panel {
+  background: var(--stay-card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--stay-border);
+}
+
+.shadow-card {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-search {
+  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+}
+
+/* Custom Smooth Modal & App Scrollbars */
+.custom-modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+.custom-modal-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-modal-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+.custom-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.7);
+}
