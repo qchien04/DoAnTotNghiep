@@ -33,8 +33,16 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     @Override
     @Transactional(readOnly = true)
     public List<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, String status) {
-        log.info("Lấy danh sách phòng cho chủ trọ id: {}, tòa: {}, tầng: {}, trạng thái: {}", landlordId, buildingId, floor, status);
-        List<Room> rooms = roomRepository.filterRooms(landlordId, buildingId, floor, status);
+        String normalizedStatus = status;
+        if ("RENTED".equalsIgnoreCase(status)) {
+            normalizedStatus = "OCCUPIED";
+        } else if ("MAINTENANCE".equalsIgnoreCase(status)) {
+            normalizedStatus = "UNDER_MAINTENANCE";
+        } else if ("DISABLED".equalsIgnoreCase(status)) {
+            normalizedStatus = "STOPPED";
+        }
+        log.info("Lấy danh sách phòng cho chủ trọ id: {}, tòa: {}, tầng: {}, trạng thái: {}", landlordId, buildingId, floor, normalizedStatus);
+        List<Room> rooms = roomRepository.filterRooms(landlordId, buildingId, floor, normalizedStatus);
 
         return rooms.stream()
                 .map(RoomResponse::fromEntity)
@@ -68,7 +76,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
 
         List<com.doan.core.business.entity.UtilityService> services = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
-            services = utilityServiceRepository.findAllById(request.getServiceIds());
+            services = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
         }
 
         Room room = Room.builder()
@@ -140,7 +148,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             room.setAmenities(String.join(", ", request.getAmenities()));
         }
         if (request.getServiceIds() != null) {
-            List<com.doan.core.business.entity.UtilityService> updatedServices = utilityServiceRepository.findAllById(request.getServiceIds());
+            List<com.doan.core.business.entity.UtilityService> updatedServices = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
             room.setServices(updatedServices);
         }
         room.setDescription(request.getDescription());

@@ -48,6 +48,7 @@ public class ContractResponse {
     private String pdfFileUrl;
     private String termsAndConditions;
     private List<ContractServiceResponse> services;
+    private List<com.doan.core.business.dto.landlord.tenant.TenantResponse> tenants;
     private LocalDateTime createdAt;
 
     @Data
@@ -77,6 +78,10 @@ public class ContractResponse {
                 .billingMethod(cs.getBillingMethod())
                 .lastIndex(cs.getLastIndex())
                 .build()).collect(Collectors.toList())
+                : List.of();
+
+        List<com.doan.core.business.dto.landlord.tenant.TenantResponse> tenantList = contract.getTenants() != null
+                ? contract.getTenants().stream().map(com.doan.core.business.dto.landlord.tenant.TenantResponse::fromEntity).collect(Collectors.toList())
                 : List.of();
 
         int months = 12;
@@ -119,6 +124,7 @@ public class ContractResponse {
                 .pdfFileUrl(contract.getPdfFileUrl())
                 .termsAndConditions(contract.getTermsAndConditions())
                 .services(sList)
+                .tenants(tenantList)
                 .createdAt(contract.getCreatedAt())
                 .build();
     }

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     date_of_birth DATE,
     gender VARCHAR(10),
     bio TEXT,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -48,9 +49,6 @@ CREATE TABLE IF NOT EXISTS buildings (
     address_detail VARCHAR(255) NOT NULL,
     num_floors INT NOT NULL DEFAULT 1,
     general_rules TEXT,
-    common_amenities TEXT,
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -309,3 +307,53 @@ CREATE TABLE IF NOT EXISTS notifications (
     deleted_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+
+-- =============================================================================
+-- RÀNG BUỘC KHÓA NGOẠI BỔ SUNG & HỆ THỐNG CHỈ MỤC TỐI ƯU HIỆU NĂNG (INDEXES)
+-- =============================================================================
+
+-- Khóa ngoại Hợp đồng cho Khách thuê
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'fk_tenants_contract'
+    ) THEN
+        ALTER TABLE tenants
+        ADD CONSTRAINT fk_tenants_contract FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+-- 18. Hệ thống chỉ mục (Performance Indexes cho khóa ngoại và lọc tìm kiếm)
+CREATE INDEX IF NOT EXISTS idx_buildings_landlord_id ON buildings (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_building_id ON rooms (building_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms (status);
+CREATE INDEX IF NOT EXISTS idx_rooms_bld_status ON rooms (building_id, status);
+CREATE INDEX IF NOT EXISTS idx_room_images_room_id ON room_images (room_id);
+CREATE INDEX IF NOT EXISTS idx_room_services_service_id ON room_services (service_id);
+
+CREATE INDEX IF NOT EXISTS idx_tenants_room_id ON tenants (room_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_contract_id ON tenants (contract_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_user_id ON tenants (user_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_status ON tenants (status);
+
+CREATE INDEX IF NOT EXISTS idx_contracts_room_id ON contracts (room_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_landlord_id ON contracts (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_rep_tenant ON contracts (representative_tenant_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts (status);
+CREATE INDEX IF NOT EXISTS idx_contract_services_contract_id ON contract_services (contract_id);
+
+CREATE INDEX IF NOT EXISTS idx_invoices_contract_id ON invoices (contract_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_period ON invoices (billing_period);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices (status);
+CREATE INDEX IF NOT EXISTS idx_invoices_contract_period ON invoices (contract_id, billing_period);
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items (invoice_id);
+
+CREATE INDEX IF NOT EXISTS idx_services_landlord_id ON services (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_room_id ON complaints (room_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_tenant_id ON complaints (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints (status);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_roommate_posts_status ON roommate_posts (status);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read);
+

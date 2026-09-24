@@ -27,6 +27,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final UtilityServiceRepository utilityServiceRepository;
+    private final InvoiceRepository invoiceRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -89,25 +90,16 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
 
 
-        // Kiểm tra xem dịch vụ có tính theo công tơ không
-        boolean hasMeterElectric = false;
-        boolean hasMeterWater = false;
+        // Kiểm tra danh sách dịch vụ áp dụng: ưu tiên request.getServiceIds(), nếu không có thì kế thừa từ room.getServices()
         List<UtilityService> usList = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
-            usList = utilityServiceRepository.findAllById(request.getServiceIds());
-            for (UtilityService us : usList) {
-                if ("METER_INDEX".equalsIgnoreCase(us.getBillingMethod())) {
-                    if ("ELECTRICITY".equalsIgnoreCase(us.getCategory()) || us.getName().toLowerCase().contains("điện")) {
-                        hasMeterElectric = true;
-                    } else if ("WATER".equalsIgnoreCase(us.getCategory()) || us.getName().toLowerCase().contains("nước")) {
-                        hasMeterWater = true;
-                    }
-                }
-            }
+            usList = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
+        } else if (room.getServices() != null && !room.getServices().isEmpty()) {
+            usList = new ArrayList<>(room.getServices());
         }
 
-        Integer initialElec = hasMeterElectric && request.getInitialElectricIndex() != null ? request.getInitialElectricIndex() : 0;
-        Integer initialWater = hasMeterWater && request.getInitialWaterIndex() != null ? request.getInitialWaterIndex() : 0;
+        Integer initialElec = request.getInitialElectricIndex() != null ? request.getInitialElectricIndex() : 0;
+        Integer initialWater = request.getInitialWaterIndex() != null ? request.getInitialWaterIndex() : 0;
 
         Contract contract = Contract.builder()
                 .contractCode(contractCode.trim())
@@ -242,13 +234,27 @@ public class LandlordContractServiceImpl implements LandlordContractService {
             throw new BaseException(ErrorCode.CONTRACT_ALREADY_TERMINATED);
         }
 
-        // Tính tiêu thụ điện và nước cuối cùng
+        // Tính tiêu thụ điện và nước từ chỉ số chốt gần nhất của kỳ hóa đơn trước
         int startElectric = contract.getInitialElectricIndex() != null ? contract.getInitialElectricIndex() : 0;
-        int endElectric = request.getFinalElectricIndex();
+        int startWater = contract.getInitialWaterIndex() != null ? contract.getInitialWaterIndex() : 0;
+
+        List<Invoice> latestInvoices = invoiceRepository.findLatestByContractId(contractId);
+        for (Invoice inv : latestInvoices) {
+            if (!"CANCELLED".equalsIgnoreCase(inv.getStatus())) {
+                if (inv.getCurrentElectricIndex() != null) {
+                    startElectric = inv.getCurrentElectricIndex();
+                }
+                if (inv.getCurrentWaterIndex() != null) {
+                    startWater = inv.getCurrentWaterIndex();
+                }
+                break;
+            }
+        }
+
+        int endElectric = request.getFinalElectricIndex() != null ? request.getFinalElectricIndex() : startElectric;
         int electricConsumed = Math.max(0, endElectric - startElectric);
 
-        int startWater = contract.getInitialWaterIndex() != null ? contract.getInitialWaterIndex() : 0;
-        int endWater = request.getFinalWaterIndex();
+        int endWater = request.getFinalWaterIndex() != null ? request.getFinalWaterIndex() : startWater;
         int waterConsumed = Math.max(0, endWater - startWater);
 
         long electricUnitPrice = 3800L;
@@ -280,12 +286,19 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         contract.setStatus("TERMINATED");
         contractRepository.save(contract);
 
-        // Chuyển phòng về trạng thái AVAILABLE và xóa số người ở
+        // Chuyển phòng về trạng thái AVAILABLE, xóa occupancy và cập nhật khách thuê thành LEFT
         Room room = contract.getRoom();
         if (room != null) {
             room.setStatus("AVAILABLE");
             room.setCurrentOccupancy(0);
             roomRepository.save(room);
+
+            List<Tenant> stayingTenants = tenantRepository.findByRoomId(room.getId());
+            for (Tenant t : stayingTenants) {
+                t.setStatus("LEFT");
+                t.setRoom(null);
+            }
+            tenantRepository.saveAll(stayingTenants);
         }
 
         return CheckoutCalculationResponse.builder()

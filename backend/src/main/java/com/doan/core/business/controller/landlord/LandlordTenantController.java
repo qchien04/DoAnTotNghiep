@@ -34,8 +34,10 @@ public class LandlordTenantController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long buildingId,
             @RequestParam(required = false) Long roomId,
-            @RequestParam(required = false) String keyword) {
-        List<TenantResponse> tenants = tenantService.searchTenants(principal.getId(), buildingId, roomId, keyword);
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String search) {
+        String query = (keyword != null && !keyword.isBlank()) ? keyword : search;
+        List<TenantResponse> tenants = tenantService.searchTenants(principal.getId(), buildingId, roomId, query);
         return ResponseEntity.ok(ResponseData.success(tenants));
     }
 

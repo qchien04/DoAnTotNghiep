@@ -32,8 +32,14 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
     @Override
     @Transactional(readOnly = true)
     public List<InvoiceResponse> getInvoices(Long landlordId, Long buildingId, String billingPeriod, String status) {
-        log.info("Lấy danh sách hóa đơn cho chủ trọ id: {}, tòa: {}, kỳ cước: {}, trạng thái: {}", landlordId, buildingId, billingPeriod, status);
-        List<Invoice> invoices = invoiceRepository.filterInvoices(landlordId, buildingId, billingPeriod, status);
+        String normalizedStatus = status;
+        if ("PENDING".equalsIgnoreCase(status)) {
+            normalizedStatus = "UNPAID";
+        } else if ("PARTIAL".equalsIgnoreCase(status)) {
+            normalizedStatus = "PARTIALLY_PAID";
+        }
+        log.info("Lấy danh sách hóa đơn cho chủ trọ id: {}, tòa: {}, kỳ cước: {}, trạng thái: {}", landlordId, buildingId, billingPeriod, normalizedStatus);
+        List<Invoice> invoices = invoiceRepository.filterInvoices(landlordId, buildingId, billingPeriod, normalizedStatus);
 
         return invoices.stream()
                 .map(InvoiceResponse::fromEntity)
@@ -301,12 +307,19 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
         int prevElectric = invoice.getPreviousElectricIndex() != null ? invoice.getPreviousElectricIndex() : 0;
         int prevWater = invoice.getPreviousWaterIndex() != null ? invoice.getPreviousWaterIndex() : 0;
 
-        if (request.getCurrentElectricIndex() < prevElectric || request.getCurrentWaterIndex() < prevWater) {
-            throw new BaseException(ErrorCode.INVALID_METER_READING);
+        if (request.getCurrentElectricIndex() != null) {
+            if (request.getCurrentElectricIndex() < prevElectric) {
+                throw new BaseException(ErrorCode.INVALID_METER_READING);
+            }
+            invoice.setCurrentElectricIndex(request.getCurrentElectricIndex());
         }
 
-        invoice.setCurrentElectricIndex(request.getCurrentElectricIndex());
-        invoice.setCurrentWaterIndex(request.getCurrentWaterIndex());
+        if (request.getCurrentWaterIndex() != null) {
+            if (request.getCurrentWaterIndex() < prevWater) {
+                throw new BaseException(ErrorCode.INVALID_METER_READING);
+            }
+            invoice.setCurrentWaterIndex(request.getCurrentWaterIndex());
+        }
 
         if (request.getDueDate() != null) {
             invoice.setDueDate(request.getDueDate());
@@ -316,73 +329,123 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
             invoice.setOtherAmount(request.getOtherAmount());
         }
 
-        // Xóa các dòng cước cũ và tính toán lại
-        invoiceItemRepository.deleteByInvoiceId(invoiceId);
-
-        int electricConsumed = request.getCurrentElectricIndex() - prevElectric;
-        int waterConsumed = request.getCurrentWaterIndex() - prevWater;
-
-        long electricUnitPrice = 3800L;
-        long waterUnitPrice = 30000L;
         long servicesAmount = 0L;
-
         List<InvoiceItem> items = new ArrayList<>();
 
-        // Tiền phòng
-        items.add(InvoiceItem.builder()
-                .invoice(invoice)
-                .itemName("Tiền thuê phòng " + invoice.getContract().getRoom().getRoomCode())
-                .quantity(BigDecimal.ONE)
-                .unitPrice(invoice.getRoomPrice())
-                .amount(invoice.getRoomPrice())
-                .note("1 tháng")
-                .build());
+        // Xóa các dòng cước cũ
+        invoiceItemRepository.deleteByInvoiceId(invoiceId);
 
-        // Dịch vụ cố định từ hợp đồng
-        if (invoice.getContract().getContractServices() != null) {
-            for (ContractService cs : invoice.getContract().getContractServices()) {
-                String sNameLower = cs.getServiceName().toLowerCase();
-                if (sNameLower.contains("điện")) {
-                    electricUnitPrice = cs.getAppliedUnitPrice();
-                } else if (sNameLower.contains("nước")) {
-                    waterUnitPrice = cs.getAppliedUnitPrice();
-                } else {
-                    long itemAmount = cs.getAppliedUnitPrice();
-                    servicesAmount += itemAmount;
-                    items.add(InvoiceItem.builder()
-                            .invoice(invoice)
-                            .contractService(cs)
-                            .itemName(cs.getServiceName())
-                            .quantity(BigDecimal.ONE)
-                            .unitPrice(cs.getAppliedUnitPrice())
-                            .amount(itemAmount)
-                            .note(cs.getUnit())
-                            .build());
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            // Client gửi danh sách khoản mục cập nhật (hỗ trợ phụ thu, giảm trừ...)
+            for (MeterReadingInvoiceRequest.InvoiceItemRequest itemReq : request.getItems()) {
+                if (itemReq.getItemName() != null && itemReq.getItemName().toLowerCase().contains("tiền thuê phòng")) {
+                    continue;
+                }
+
+                ContractService cs = null;
+                if (itemReq.getContractServiceId() != null) {
+                    cs = contractServiceRepository.findById(itemReq.getContractServiceId()).orElse(null);
+                }
+
+                BigDecimal qty = itemReq.getQuantity() != null ? itemReq.getQuantity() : BigDecimal.ONE;
+                long price = itemReq.getUnitPrice() != null ? itemReq.getUnitPrice() : (cs != null ? cs.getAppliedUnitPrice() : 0L);
+                long amount = itemReq.getAmount() != null ? itemReq.getAmount() : qty.multiply(BigDecimal.valueOf(price)).longValue();
+
+                servicesAmount += amount;
+
+                if (cs != null && "METER_INDEX".equalsIgnoreCase(cs.getBillingMethod()) && itemReq.getCurrentIndex() != null) {
+                    cs.setLastIndex(itemReq.getCurrentIndex());
+                    contractServiceRepository.save(cs);
+                }
+
+                items.add(InvoiceItem.builder()
+                        .invoice(invoice)
+                        .contractService(cs)
+                        .itemName(itemReq.getItemName() != null ? itemReq.getItemName() : (cs != null ? cs.getServiceName() : "Dịch vụ"))
+                        .quantity(qty)
+                        .unitPrice(price)
+                        .amount(amount)
+                        .note(itemReq.getNote())
+                        .build());
+            }
+
+            // Tiền thuê phòng
+            items.add(0, InvoiceItem.builder()
+                    .invoice(invoice)
+                    .itemName("Tiền thuê phòng " + invoice.getContract().getRoom().getRoomCode())
+                    .quantity(BigDecimal.ONE)
+                    .unitPrice(invoice.getRoomPrice())
+                    .amount(invoice.getRoomPrice())
+                    .note("1 tháng")
+                    .build());
+        } else {
+            // Tính toán lại theo chỉ số mới và dịch vụ hợp đồng
+            int currElectric = invoice.getCurrentElectricIndex() != null ? invoice.getCurrentElectricIndex() : prevElectric;
+            int currWater = invoice.getCurrentWaterIndex() != null ? invoice.getCurrentWaterIndex() : prevWater;
+            int electricConsumed = Math.max(0, currElectric - prevElectric);
+            int waterConsumed = Math.max(0, currWater - prevWater);
+
+            long electricUnitPrice = 3800L;
+            long waterUnitPrice = 30000L;
+
+            items.add(InvoiceItem.builder()
+                    .invoice(invoice)
+                    .itemName("Tiền thuê phòng " + invoice.getContract().getRoom().getRoomCode())
+                    .quantity(BigDecimal.ONE)
+                    .unitPrice(invoice.getRoomPrice())
+                    .amount(invoice.getRoomPrice())
+                    .note("1 tháng")
+                    .build());
+
+            if (invoice.getContract().getContractServices() != null) {
+                for (ContractService cs : invoice.getContract().getContractServices()) {
+                    String sNameLower = cs.getServiceName().toLowerCase();
+                    if (sNameLower.contains("điện")) {
+                        electricUnitPrice = cs.getAppliedUnitPrice();
+                    } else if (sNameLower.contains("nước")) {
+                        waterUnitPrice = cs.getAppliedUnitPrice();
+                    } else {
+                        long itemAmount = cs.getAppliedUnitPrice();
+                        servicesAmount += itemAmount;
+                        items.add(InvoiceItem.builder()
+                                .invoice(invoice)
+                                .contractService(cs)
+                                .itemName(cs.getServiceName())
+                                .quantity(BigDecimal.ONE)
+                                .unitPrice(cs.getAppliedUnitPrice())
+                                .amount(itemAmount)
+                                .note(cs.getUnit())
+                                .build());
+                    }
                 }
             }
+
+            if (electricConsumed > 0 || invoice.getCurrentElectricIndex() != null) {
+                long electricAmount = electricConsumed * electricUnitPrice;
+                servicesAmount += electricAmount;
+                items.add(InvoiceItem.builder()
+                        .invoice(invoice)
+                        .itemName("Tiền điện sinh hoạt")
+                        .quantity(BigDecimal.valueOf(electricConsumed))
+                        .unitPrice(electricUnitPrice)
+                        .amount(electricAmount)
+                        .note(electricConsumed + " kWh")
+                        .build());
+            }
+
+            if (waterConsumed > 0 || invoice.getCurrentWaterIndex() != null) {
+                long waterAmount = waterConsumed * waterUnitPrice;
+                servicesAmount += waterAmount;
+                items.add(InvoiceItem.builder()
+                        .invoice(invoice)
+                        .itemName("Tiền nước sinh hoạt")
+                        .quantity(BigDecimal.valueOf(waterConsumed))
+                        .unitPrice(waterUnitPrice)
+                        .amount(waterAmount)
+                        .note(waterConsumed + " m3")
+                        .build());
+            }
         }
-
-        long electricAmount = electricConsumed * electricUnitPrice;
-        servicesAmount += electricAmount;
-        items.add(InvoiceItem.builder()
-                .invoice(invoice)
-                .itemName("Tiền điện sinh hoạt")
-                .quantity(BigDecimal.valueOf(electricConsumed))
-                .unitPrice(electricUnitPrice)
-                .amount(electricAmount)
-                .note(electricConsumed + " kWh")
-                .build());
-
-        long waterAmount = waterConsumed * waterUnitPrice;
-        servicesAmount += waterAmount;
-        items.add(InvoiceItem.builder()
-                .invoice(invoice)
-                .itemName("Tiền nước sinh hoạt")
-                .quantity(BigDecimal.valueOf(waterConsumed))
-                .unitPrice(waterUnitPrice)
-                .amount(waterAmount)
-                .note(waterConsumed + " m3")
-                .build());
 
         long otherAmount = invoice.getOtherAmount() != null ? invoice.getOtherAmount() : 0L;
         if (otherAmount > 0) {
@@ -397,7 +460,8 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
         }
 
         invoice.setServicesAmount(servicesAmount);
-        invoice.setTotalAmount(invoice.getRoomPrice() + servicesAmount + otherAmount);
+        long grandTotal = Math.max(0L, invoice.getRoomPrice() + servicesAmount + otherAmount);
+        invoice.setTotalAmount(grandTotal);
 
         invoiceItemRepository.saveAll(items);
         invoice.setItems(items);

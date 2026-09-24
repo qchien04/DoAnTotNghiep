@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.landlord.building;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -7,8 +8,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Yêu cầu thêm mới / cập nhật tòa nhà")
 public class BuildingRequest {
 
@@ -40,16 +43,15 @@ public class BuildingRequest {
     @Schema(description = "Quy định chung của tòa nhà", example = "Không làm ồn sau 23h, để xe đúng vị trí")
     private String generalRules;
 
-    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.doan.core.common.util.StringListDeserializer.class)
-    @Schema(description = "Tiện ích chung tòa nhà", example = "[\"Thang máy\", \"Khóa vân tay\", \"Camera 24/7\"]")
-    private java.util.List<String> commonAmenities;
+    @Deprecated
+    private List<String> commonAmenities;
 
-    @Schema(description = "Danh sách ID các dịch vụ tiện ích của tòa nhà", example = "[1, 2, 3]")
-    private java.util.List<Long> serviceIds;
+    @Deprecated
+    private List<Long> serviceIds;
 
-    @Schema(description = "Vĩ độ (Latitude)", example = "21.033333")
+    @Deprecated
     private BigDecimal latitude;
 
-    @Schema(description = "Kinh độ (Longitude)", example = "105.800000")
+    @Deprecated
     private BigDecimal longitude;
 }

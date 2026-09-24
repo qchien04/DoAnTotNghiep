@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -26,10 +25,6 @@ public class BuildingResponse {
     private String addressDetail;
     private Integer numFloors;
     private String generalRules;
-    private String commonAmenities;
-    private java.util.List<String> amenities;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
     private Boolean isActive;
     private LocalDateTime createdAt;
 
@@ -45,13 +40,6 @@ public class BuildingResponse {
     public static BuildingResponse fromEntity(Building building, long totalRooms, long occupiedRooms, long availableRooms) {
         if (building == null) return null;
 
-        java.util.List<String> amenitiesList = (building.getCommonAmenities() != null && !building.getCommonAmenities().isBlank())
-                ? java.util.Arrays.stream(building.getCommonAmenities().split(","))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .collect(java.util.stream.Collectors.toList())
-                : java.util.List.of();
-
         return BuildingResponse.builder()
                 .id(building.getId())
                 .buildingCode(building.getBuildingCode())
@@ -62,10 +50,6 @@ public class BuildingResponse {
                 .addressDetail(building.getAddressDetail())
                 .numFloors(building.getNumFloors())
                 .generalRules(building.getGeneralRules())
-                .commonAmenities(building.getCommonAmenities())
-                .amenities(amenitiesList)
-                .latitude(building.getLatitude())
-                .longitude(building.getLongitude())
                 .isActive(building.getIsActive())
                 .createdAt(building.getCreatedAt())
                 .totalRooms(totalRooms)

@@ -29,8 +29,12 @@ public class LandlordComplaintServiceImpl implements LandlordComplaintService {
     @Override
     @Transactional(readOnly = true)
     public List<ComplaintResponse> getComplaints(Long landlordId, Long buildingId, String status) {
-        log.info("Lấy danh sách khiếu nại báo hỏng cho chủ trọ id: {}, tòa: {}, trạng thái: {}", landlordId, buildingId, status);
-        List<Complaint> complaints = complaintRepository.filterComplaints(landlordId, buildingId, status);
+        String normalizedStatus = status;
+        if ("NEW".equalsIgnoreCase(status)) {
+            normalizedStatus = "PENDING";
+        }
+        log.info("Lấy danh sách khiếu nại báo hỏng cho chủ trọ id: {}, tòa: {}, trạng thái: {}", landlordId, buildingId, normalizedStatus);
+        List<Complaint> complaints = complaintRepository.filterComplaints(landlordId, buildingId, normalizedStatus);
 
         return complaints.stream()
                 .map(ComplaintResponse::fromEntity)

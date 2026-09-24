@@ -16,6 +16,8 @@ public interface UtilityServiceRepository extends JpaRepository<UtilityService, 
 
     Optional<UtilityService> findByIdAndLandlordId(Long id, Long landlordId);
 
+    List<UtilityService> findAllByIdInAndLandlordId(List<Long> ids, Long landlordId);
+
     boolean existsByLandlordIdAndName(Long landlordId, String name);
 
     boolean existsByLandlordIdAndNameAndIdNot(Long landlordId, String name, Long id);

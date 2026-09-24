@@ -44,4 +44,7 @@ public class TenantRequest {
 
     @Schema(description = "Đánh dấu là đại diện hợp đồng thuê", example = "false")
     private Boolean isRepresentative;
+
+    @Schema(description = "Vai trò trong phòng (REPRESENTATIVE, MEMBER)", example = "MEMBER")
+    private String roleInRoom;
 }

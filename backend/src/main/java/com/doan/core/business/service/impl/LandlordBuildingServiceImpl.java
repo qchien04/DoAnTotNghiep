@@ -15,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,8 +41,22 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
             buildings = buildingRepository.findByLandlordId(landlordId);
         }
 
+        // Tối ưu N+1: Lấy số liệu phòng của tất cả tòa nhà trong 1 truy vấn duy nhất
+        List<Object[]> statsList = buildingRepository.getBuildingRoomStats(landlordId);
+        Map<Long, long[]> statsMap = new HashMap<>();
+        for (Object[] row : statsList) {
+            Long bId = (Long) row[0];
+            long total = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+            long occupied = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+            long available = row[3] != null ? ((Number) row[3]).longValue() : 0L;
+            statsMap.put(bId, new long[]{total, occupied, available});
+        }
+
         return buildings.stream()
-                .map(this::mapToResponse)
+                .map(b -> {
+                    long[] stats = statsMap.getOrDefault(b.getId(), new long[]{0L, 0L, 0L});
+                    return BuildingResponse.fromEntity(b, stats[0], stats[1], stats[2]);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -82,11 +98,6 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
                 .addressDetail(request.getAddressDetail().trim())
                 .numFloors(request.getNumFloors())
                 .generalRules(request.getGeneralRules())
-                .commonAmenities((request.getCommonAmenities() != null && !request.getCommonAmenities().isEmpty())
-                        ? String.join(", ", request.getCommonAmenities())
-                        : null)
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
                 .isActive(true)
                 .build();
 
@@ -114,11 +125,6 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
         building.setAddressDetail(request.getAddressDetail().trim());
         building.setNumFloors(request.getNumFloors());
         building.setGeneralRules(request.getGeneralRules());
-        if (request.getCommonAmenities() != null) {
-            building.setCommonAmenities(String.join(", ", request.getCommonAmenities()));
-        }
-        building.setLatitude(request.getLatitude());
-        building.setLongitude(request.getLongitude());
 
         Building updated = buildingRepository.save(building);
         return mapToResponse(updated);

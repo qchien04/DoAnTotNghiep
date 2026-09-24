@@ -78,6 +78,12 @@ public class Contract extends BaseEntity {
     private String termsAndConditions;
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default
     private List<ContractService> contractServices = new ArrayList<>();
+
+    @OneToMany(mappedBy = "contract")
+    @org.hibernate.annotations.BatchSize(size = 30)
+    @Builder.Default
+    private List<Tenant> tenants = new ArrayList<>();
 }

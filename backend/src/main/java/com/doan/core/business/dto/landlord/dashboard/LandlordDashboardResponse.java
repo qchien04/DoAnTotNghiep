@@ -42,4 +42,32 @@ public class LandlordDashboardResponse {
 
     @Schema(description = "Số khiếu nại báo hỏng đang chờ xử lý", example = "2")
     private Long pendingComplaintsCount;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RevenueTrendItem {
+        private String month;
+        private Long revenue;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OverdueDebtItem {
+        private String roomName;
+        private String buildingName;
+        private String tenantName;
+        private String phone;
+        private Long debtAmount;
+        private Long daysLate;
+    }
+
+    @Schema(description = "Xu hướng doanh thu các tháng gần nhất")
+    private java.util.List<RevenueTrendItem> revenueTrend;
+
+    @Schema(description = "Danh sách các khoản nợ quá hạn đôn đốc")
+    private java.util.List<OverdueDebtItem> overdueDebts;
 }

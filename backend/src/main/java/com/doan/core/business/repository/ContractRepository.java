@@ -3,6 +3,7 @@ package com.doan.core.business.repository;
 import com.doan.core.business.entity.Contract;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,12 +26,17 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     boolean existsByRepresentativeTenantIdAndStatus(Long representativeTenantId, String status);
 
-    @Query("SELECT c FROM Contract c WHERE c.landlord.id = :landlordId " +
-           "AND (:buildingId IS NULL OR c.room.building.id = :buildingId) " +
-           "AND (:status IS NULL OR c.status = :status)")
-    List<Contract> filterContracts(@org.springframework.data.repository.query.Param("landlordId") Long landlordId,
-                                   @org.springframework.data.repository.query.Param("buildingId") Long buildingId,
-                                   @org.springframework.data.repository.query.Param("status") String status);
+    @Query("SELECT DISTINCT c FROM Contract c " +
+           "JOIN FETCH c.room r " +
+           "JOIN FETCH r.building b " +
+           "LEFT JOIN FETCH c.representativeTenant t " +
+           "WHERE c.landlord.id = :landlordId " +
+           "AND (:buildingId IS NULL OR b.id = :buildingId) " +
+           "AND (:status IS NULL OR c.status = :status) " +
+           "ORDER BY c.id DESC")
+    List<Contract> filterContracts(@Param("landlordId") Long landlordId,
+                                   @Param("buildingId") Long buildingId,
+                                   @Param("status") String status);
 
     long countByLandlordIdAndStatus(Long landlordId, String status);
 }

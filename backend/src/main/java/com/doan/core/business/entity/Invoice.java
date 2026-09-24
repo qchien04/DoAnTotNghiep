@@ -77,6 +77,7 @@ public class Invoice extends BaseEntity {
     private String cancelReason;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default
     private List<InvoiceItem> items = new ArrayList<>();
 }

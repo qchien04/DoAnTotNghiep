@@ -17,9 +17,14 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
 
     Optional<Complaint> findByIdAndRoomBuildingLandlordId(Long id, Long landlordId);
 
-    @Query("SELECT c FROM Complaint c WHERE c.room.building.landlord.id = :landlordId " +
-           "AND (:buildingId IS NULL OR c.room.building.id = :buildingId) " +
-           "AND (:status IS NULL OR c.status = :status)")
+    @Query("SELECT DISTINCT c FROM Complaint c " +
+           "JOIN FETCH c.room r " +
+           "JOIN FETCH r.building b " +
+           "JOIN FETCH c.tenant t " +
+           "WHERE b.landlord.id = :landlordId " +
+           "AND (:buildingId IS NULL OR b.id = :buildingId) " +
+           "AND (:status IS NULL OR c.status = :status) " +
+           "ORDER BY c.id DESC")
     List<Complaint> filterComplaints(@org.springframework.data.repository.query.Param("landlordId") Long landlordId,
                                      @org.springframework.data.repository.query.Param("buildingId") Long buildingId,
                                      @org.springframework.data.repository.query.Param("status") String status);

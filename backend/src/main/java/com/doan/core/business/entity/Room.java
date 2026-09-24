@@ -73,14 +73,17 @@ public class Room extends BaseEntity {
     private BigDecimal longitude;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default
     private List<RoomImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "room")
+    @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default
     private List<Tenant> tenants = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JoinTable(
         name = "room_services",
         joinColumns = @JoinColumn(name = "room_id"),

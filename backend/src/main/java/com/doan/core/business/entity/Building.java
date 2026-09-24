@@ -48,15 +48,6 @@ public class Building extends BaseEntity {
     @Column(name = "general_rules", columnDefinition = "TEXT")
     private String generalRules;
 
-    @Column(name = "common_amenities", columnDefinition = "TEXT")
-    private String commonAmenities;
-
-    @Column(name = "latitude", precision = 10, scale = 8)
-    private BigDecimal latitude;
-
-    @Column(name = "longitude", precision = 11, scale = 8)
-    private BigDecimal longitude;
-
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;

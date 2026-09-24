@@ -21,8 +21,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     boolean existsByBuildingIdAndRoomCodeAndIdNot(Long buildingId, String roomCode, Long id);
 
-    @Query("SELECT r FROM Room r WHERE r.building.landlord.id = :landlordId " +
-           "AND (:buildingId IS NULL OR r.building.id = :buildingId) " +
+    @Query("SELECT r FROM Room r JOIN FETCH r.building b WHERE b.landlord.id = :landlordId " +
+           "AND (:buildingId IS NULL OR b.id = :buildingId) " +
            "AND (:floor IS NULL OR r.floor = :floor) " +
            "AND (:status IS NULL OR r.status = :status)")
     List<Room> filterRooms(@org.springframework.data.repository.query.Param("landlordId") Long landlordId,

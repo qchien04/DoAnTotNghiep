@@ -69,6 +69,9 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
 
         String tenantCode = "KT" + (System.currentTimeMillis() % 1000000);
 
+        boolean isRep = Boolean.TRUE.equals(request.getIsRepresentative())
+                || "REPRESENTATIVE".equalsIgnoreCase(request.getRoleInRoom());
+
         Tenant tenant = Tenant.builder()
                 .room(room)
                 .tenantCode(tenantCode)
@@ -80,7 +83,7 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
                 .hometown(request.getHometown())
                 .idCardPhotoFront(request.getIdCardPhotoFront())
                 .idCardPhotoBack(request.getIdCardPhotoBack())
-                .isRepresentative(Boolean.TRUE.equals(request.getIsRepresentative()))
+                .isRepresentative(isRep)
                 .linkStatus("NOT_LINKED")
                 .status("STAYING")
                 .build();
@@ -104,6 +107,12 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
 
         validateTenantBelongsToLandlord(tenant, landlordId);
 
+        if (request.getIdCardNumber() != null && !request.getIdCardNumber().trim().equalsIgnoreCase(tenant.getIdCardNumber())) {
+            if (tenantRepository.existsByIdCardNumberAndStatusAndIdNot(request.getIdCardNumber().trim(), "STAYING", tenantId)) {
+                throw new BaseException(ErrorCode.TENANT_ID_CARD_EXISTS);
+            }
+        }
+
         tenant.setFullName(request.getFullName().trim());
         tenant.setPhone(request.getPhone().trim());
         tenant.setIdCardNumber(request.getIdCardNumber().trim());
@@ -114,6 +123,8 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
         tenant.setIdCardPhotoBack(request.getIdCardPhotoBack());
         if (request.getIsRepresentative() != null) {
             tenant.setIsRepresentative(request.getIsRepresentative());
+        } else if (request.getRoleInRoom() != null) {
+            tenant.setIsRepresentative("REPRESENTATIVE".equalsIgnoreCase(request.getRoleInRoom()));
         }
 
         Tenant updated = tenantRepository.save(tenant);
@@ -197,8 +208,17 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
     }
 
     private void validateTenantBelongsToLandlord(Tenant tenant, Long landlordId) {
-        if (tenant.getRoom() == null || tenant.getRoom().getBuilding() == null ||
-                !tenant.getRoom().getBuilding().getLandlord().getId().equals(landlordId)) {
+        boolean belongs = false;
+        if (tenant.getRoom() != null && tenant.getRoom().getBuilding() != null &&
+                tenant.getRoom().getBuilding().getLandlord() != null &&
+                tenant.getRoom().getBuilding().getLandlord().getId().equals(landlordId)) {
+            belongs = true;
+        } else if (tenant.getContract() != null && tenant.getContract().getLandlord() != null &&
+                tenant.getContract().getLandlord().getId().equals(landlordId)) {
+            belongs = true;
+        }
+
+        if (!belongs) {
             throw new BaseException(ErrorCode.FORBIDDEN);
         }
     }
