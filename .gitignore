@@ -29,8 +29,15 @@ yarn-error.log*
 pnpm-debug.log*
 
 Doc/pre_build/
-Doc/__pycache__
-Doc/*.pyc
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
 # ==========================================
 # Backend (Java / Spring Boot / Maven)
 # ==========================================
