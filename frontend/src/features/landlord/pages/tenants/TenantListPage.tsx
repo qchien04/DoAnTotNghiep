@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTenants, useBuildings, useRooms } from '@/shared/hooks';
-import { Users, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button, message } from '@/shared/components';
 import { Tenant, CreateTenantDto } from '@/shared/types/landlord';
 import { TenantFilter } from './components/TenantFilter';
@@ -86,23 +86,17 @@ export const TenantListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stay-card-bg p-6 rounded-2xl border border-stay-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stay-text tracking-tight flex items-center gap-2">
-            <Users className="w-6 h-6 text-stay-primary" />
-            Hồ Sơ Khách Thuê Phòng
-          </h1>
-          <p className="text-sm text-stay-text-secondary">
-            Danh sách khách thuê đang cư trú, định danh CCCD, số điện thoại và trạng thái liên kết app
-          </p>
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Khách thuê</h1>
         </div>
         <Button
           type="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={handleOpenCreate}
-          className="bg-stay-primary hover:bg-stay-primary-hover font-semibold shadow-md"
+          className="bg-stay-primary hover:bg-stay-primary-hover"
         >
-          Thêm Khách Thuê Mới
+          Thêm khách thuê
         </Button>
       </div>
 

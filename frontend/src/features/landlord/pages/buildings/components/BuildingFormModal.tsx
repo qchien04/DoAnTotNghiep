@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Building2 } from 'lucide-react';
 import { Modal, Form, Input } from '@/shared/components';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 
@@ -50,14 +49,7 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2.5 text-stay-text font-bold text-lg pb-1">
-          <div className="p-2 rounded-xl bg-stay-primary-subtle text-stay-primary">
-            <Building2 className="w-5 h-5" />
-          </div>
-          <span>{editingBuilding ? 'Cập Nhật Thông Tin Tòa Nhà' : 'Thêm Mới Tòa Nhà / Khu Trọ'}</span>
-        </div>
-      }
+      title={editingBuilding ? `Cập nhật tòa nhà: ${editingBuilding.name}` : 'Thêm tòa nhà mới'}
       open={open}
       onOk={handleOk}
       onCancel={onCancel}

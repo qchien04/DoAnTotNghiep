@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { CreditCard } from 'lucide-react';
 import { Modal, Form, Input, Radio } from '@/shared/components';
 import { InputNumber, message } from 'antd';
 import { Bill, ConfirmPaymentDto } from '@/shared/types/landlord';
@@ -46,12 +45,7 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-lg pb-1">
-          <CreditCard className="w-5 h-5" />
-          <span>Xác Nhận Thu Tiền & Gạch Nợ Hóa Đơn</span>
-        </div>
-      }
+      title="Xác nhận thu tiền"
       open={open}
       onOk={handleFinish}
       onCancel={onCancel}
@@ -59,10 +53,9 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
       okText="Xác nhận đã nhận tiền"
       cancelText="Hủy"
       width={560}
-      className="stay-modal-wide"
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
-        <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border text-xs space-y-1.5 text-stay-text">
+        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-1.5 text-stay-text">
           <p className="text-stay-text-secondary">
             Hóa đơn: <strong className="text-stay-text">{bill?.invoiceCode || bill?.billNumber}</strong>
           </p>

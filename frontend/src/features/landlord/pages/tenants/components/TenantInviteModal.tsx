@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Link as LinkIcon } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Modal, Input } from '@/shared/components';
 import { Tenant } from '@/shared/types/landlord';
 
@@ -24,12 +24,7 @@ export const TenantInviteModal: React.FC<TenantInviteModalProps> = ({
 }) => {
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-stay-primary font-bold text-lg pb-1">
-          <LinkIcon className="w-5 h-5" />
-          <span>Mời Khách Thuê Liên Kết Tài Khoản Hệ Thống</span>
-        </div>
-      }
+      title="Mời liên kết tài khoản"
       open={open}
       onOk={onSubmit}
       onCancel={onCancel}
@@ -37,7 +32,6 @@ export const TenantInviteModal: React.FC<TenantInviteModalProps> = ({
       okText="Gửi lời mời liên kết"
       cancelText="Hủy"
       width={560}
-      className="stay-modal-wide"
     >
       <div className="py-2 space-y-4">
         <p className="text-xs text-stay-text-secondary leading-relaxed">
@@ -53,7 +47,7 @@ export const TenantInviteModal: React.FC<TenantInviteModalProps> = ({
           className="h-10"
         />
 
-        <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border text-xs text-stay-text-secondary leading-relaxed">
+        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs text-stay-text-secondary leading-relaxed">
           Hệ thống sẽ gửi thông báo liên kết tới ứng dụng của khách thuê. Sau khi khách xác nhận, tài khoản sẽ được kết nối chính thức để xem bảng kê hóa đơn và nhận mã VietQR thanh toán.
         </div>
       </div>

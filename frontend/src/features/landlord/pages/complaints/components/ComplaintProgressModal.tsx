@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
 import { Modal, Form, Radio, Input } from '@/shared/components';
 import { message } from 'antd';
 import { Complaint, UpdateComplaintProgressDto } from '@/shared/types/landlord';
@@ -45,23 +44,17 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-stay-primary font-bold text-lg pb-1">
-          <AlertTriangle className="w-5 h-5 text-amber-500" />
-          <span>Cập Nhật Tiến Độ & Phản Hồi Khiếu Nại</span>
-        </div>
-      }
+      title="Phản hồi khiếu nại"
       open={open}
       onOk={handleFinish}
       onCancel={onCancel}
       confirmLoading={confirmLoading}
-      okText="Lưu phản hồi & Báo khách"
+      okText="Lưu phản hồi & báo khách"
       cancelText="Hủy"
       width={640}
-      className="stay-modal-wide"
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
-        <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border text-xs space-y-2 text-stay-text">
+        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-2 text-stay-text">
           <p>
             Mã khiếu nại: <strong className="text-stay-primary">{complaint?.code}</strong> | Phòng:{' '}
             <strong className="text-stay-text">{complaint?.roomName}</strong> (

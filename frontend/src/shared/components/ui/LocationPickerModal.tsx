@@ -7,7 +7,6 @@ import {
   Navigation,
   Search,
   Check,
-  Compass,
   Copy,
 } from 'lucide-react';
 import { VIETNAM_BOUNDS } from './LeafletMap';
@@ -327,12 +326,7 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-stay-text font-bold text-base">
-          <Compass className="w-5 h-5 text-stay-primary" />
-          <span>{title}</span>
-        </div>
-      }
+      title={title}
       open={open}
       onCancel={onClose}
       width={780}

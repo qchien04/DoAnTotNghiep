@@ -11,7 +11,6 @@ import {
   AlertTriangle,
   Home,
   LogOut,
-  ShieldCheck,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
@@ -139,12 +138,9 @@ export const LandlordLayout: React.FC = () => {
         {/* Topbar */}
         <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold text-stay-text">
+            <h1 className="text-base font-semibold text-stay-text">
               Quản trị chủ trọ
             </h1>
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-stay-primary-subtle text-stay-primary font-medium">
-              <ShieldCheck className="w-3 h-3" /> Tài khoản đã xác thực
-            </span>
           </div>
 
           <div className="flex items-center gap-3">

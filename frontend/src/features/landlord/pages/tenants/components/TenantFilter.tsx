@@ -19,7 +19,7 @@ export const TenantFilter: React.FC<TenantFilterProps> = ({
   buildings,
 }) => {
   return (
-    <div className="p-4 rounded-2xl bg-stay-card-bg border border-stay-border flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Input
         placeholder="Tìm theo tên khách, SĐT, số CCCD hoặc số phòng..."
         prefix={<Search className="w-4 h-4 text-stay-text-muted" />}

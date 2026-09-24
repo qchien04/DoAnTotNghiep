@@ -1,6 +1,6 @@
 import React from 'react';
-import { Edit2, Trash2, MapPin } from 'lucide-react';
-import { Table, Button, Tag, Popconfirm } from '@/shared/components';
+import { Edit2, Trash2 } from 'lucide-react';
+import { Table, Button, Popconfirm } from '@/shared/components';
 import { Building } from '@/shared/types/landlord';
 
 interface BuildingTableProps {
@@ -20,22 +20,20 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
 }) => {
   const columns = [
     {
-      title: 'Mã tòa',
+      title: 'Mã',
       dataIndex: 'code',
       key: 'code',
-      width: 100,
-      render: (val: string) => <Tag color="blue" className="font-bold">{val}</Tag>,
+      width: 90,
+      render: (val: string) => <span className="font-mono text-xs text-stay-text-secondary">{val}</span>,
     },
     {
-      title: 'Tên tòa nhà & Địa chỉ',
+      title: 'Tên tòa nhà',
       dataIndex: 'name',
       key: 'name',
       render: (val: string, r: Building) => (
         <div>
-          <p className="font-bold text-stay-text text-sm">{val}</p>
-          <p className="text-xs text-stay-text-secondary flex items-center gap-1 mt-0.5">
-            <MapPin className="w-3.5 h-3.5 text-stay-text-muted shrink-0" /> {r.address}
-          </p>
+          <span className="font-medium text-stay-text text-sm block">{val}</span>
+          <span className="text-xs text-stay-text-muted">{r.address}</span>
         </div>
       ),
     },
@@ -43,32 +41,32 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
       title: 'Số tầng',
       dataIndex: 'totalFloors',
       key: 'totalFloors',
-      width: 100,
-      render: (val: number) => <span className="font-semibold text-stay-text">{val} tầng</span>,
+      width: 90,
+      render: (val: number) => <span className="text-sm text-stay-text">{val}</span>,
     },
     {
       title: 'Tổng phòng',
       dataIndex: 'totalRooms',
       key: 'totalRooms',
-      width: 110,
-      render: (val: number) => <span className="font-semibold text-stay-text">{val} phòng</span>,
+      width: 100,
+      render: (val: number) => <span className="text-sm text-stay-text">{val ?? 0}</span>,
     },
     {
       title: 'Đang ở',
       dataIndex: 'occupiedRooms',
       key: 'occupiedRooms',
-      width: 100,
-      render: (val: number) => <Tag color="green">{val} phòng</Tag>,
+      width: 90,
+      render: (val: number) => <span className="text-sm text-stay-text font-medium">{val ?? 0}</span>,
     },
     {
       title: 'Phòng trống',
       dataIndex: 'availableRooms',
       key: 'availableRooms',
-      width: 110,
+      width: 100,
       render: (val: number) => (
-        <Tag color={val > 0 ? 'orange' : 'default'} className="font-semibold">
-          {val} phòng
-        </Tag>
+        <span className={val > 0 ? "text-sm text-emerald-600 dark:text-emerald-400 font-medium" : "text-sm text-stay-text-muted"}>
+          {val ?? 0}
+        </span>
       ),
     },
     {

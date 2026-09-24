@@ -1,14 +1,6 @@
 import React from 'react';
-import {
-  Edit2,
-  Trash2,
-  Link as LinkIcon,
-  Phone,
-  CreditCard,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
-import { Table, Button, Tag, Popconfirm } from '@/shared/components';
+import { Edit2, Trash2 } from 'lucide-react';
+import { Table, Button, Popconfirm } from '@/shared/components';
 import { Tenant, TenantLinkStatus } from '@/shared/types/landlord';
 
 interface TenantTableProps {
@@ -32,18 +24,25 @@ export const TenantTable: React.FC<TenantTableProps> = ({
     switch (status) {
       case 'LINKED':
         return (
-          <Tag color="green" icon={<CheckCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {linkedUserName || 'Đã liên kết'}
-          </Tag>
+          </span>
         );
       case 'PENDING':
         return (
-          <Tag color="orange" icon={<Clock className="w-3 h-3 inline mr-1" />}>
-            {linkedUserName ? `${linkedUserName} (Chờ duyệt)` : 'Chờ xác nhận'}
-          </Tag>
+          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            {linkedUserName ? `${linkedUserName} (chờ duyệt)` : 'Chờ xác nhận'}
+          </span>
         );
       default:
-        return <Tag color="default">Chưa liên kết</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+            Chưa liên kết
+          </span>
+        );
     }
   };
 
@@ -53,21 +52,18 @@ export const TenantTable: React.FC<TenantTableProps> = ({
       key: 'name',
       render: (_: any, r: Tenant) => (
         <div>
-          <span className="font-semibold text-stay-text text-sm block">{r.fullName}</span>
-          <span className="text-xs text-stay-text-secondary flex items-center gap-1 mt-0.5">
-            <Phone className="w-3 h-3 text-stay-primary" /> {r.phone}
-          </span>
+          <span className="font-medium text-stay-text text-sm block">{r.fullName}</span>
+          <span className="text-xs text-stay-text-secondary mt-0.5">{r.phone}</span>
         </div>
       ),
     },
     {
-      title: 'Định danh CCCD',
+      title: 'CCCD',
       dataIndex: 'identityCard',
       key: 'identityCard',
       render: (val: string) => (
-        <span className="text-xs font-mono text-stay-text flex items-center gap-1">
-          <CreditCard className="w-3.5 h-3.5 text-stay-text-muted" />
-          {val || 'Chưa cập nhật'}
+        <span className="text-xs font-mono text-stay-text">
+          {val || '---'}
         </span>
       ),
     },
@@ -78,50 +74,50 @@ export const TenantTable: React.FC<TenantTableProps> = ({
       render: (val: string) => <span className="text-xs text-stay-text-secondary">{val || '---'}</span>,
     },
     {
-      title: 'Phòng đang ở',
+      title: 'Phòng',
       key: 'room',
       render: (_: any, r: Tenant) => (
         <div>
-          <span className="font-bold text-stay-primary text-xs block">
-            {r.roomCode ? `Phòng ${r.roomCode}` : 'Phòng 101'}
+          <span className="font-mono text-xs font-medium text-stay-text block">
+            {r.roomCode ? `P.${r.roomCode}` : '---'}
           </span>
-          <span className="text-[11px] text-stay-text-secondary">{r.buildingName || 'Tòa nhà'}</span>
+          {r.buildingName && <span className="text-[11px] text-stay-text-muted">{r.buildingName}</span>}
         </div>
       ),
     },
     {
       title: 'Vai trò',
-      dataIndex: 'roleInRoom',
-      key: 'roleInRoom',
-      render: (role: string) =>
-        role === 'REPRESENTATIVE' ? (
-          <Tag color="blue" className="font-medium text-[11px]">
-            Đại diện HĐ
-          </Tag>
+      dataIndex: 'isRepresentative',
+      key: 'isRepresentative',
+      render: (isRep: boolean) =>
+        isRep ? (
+          <span className="text-xs font-medium text-stay-primary">
+            Đại diện
+          </span>
         ) : (
-          <Tag color="default" className="text-[11px]">
+          <span className="text-xs text-stay-text-muted">
             Thành viên
-          </Tag>
+          </span>
         ),
     },
     {
-      title: 'Tài khoản hệ thống',
+      title: 'Tài khoản',
       key: 'linkStatus',
       render: (_: any, r: Tenant) => renderLinkStatus(r.linkStatus, r.linkedUserName),
     },
     {
       title: 'Thao tác',
       key: 'actions',
+      width: 140,
+      align: 'right' as const,
       render: (_: any, r: Tenant) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-end gap-1">
           {r.linkStatus !== 'LINKED' && (
             <Button
               size="small"
-              type="dashed"
-              icon={<LinkIcon className="w-3.5 h-3.5 text-stay-primary" />}
+              type="text"
               onClick={() => onInvite(r)}
-              title="Mời liên kết tài khoản"
-              className="text-xs rounded-lg"
+              className="text-xs text-stay-primary hover:text-stay-primary-hover px-2"
             >
               Liên kết
             </Button>
@@ -130,15 +126,14 @@ export const TenantTable: React.FC<TenantTableProps> = ({
           <Button
             size="small"
             type="text"
-            icon={<Edit2 className="w-3.5 h-3.5 text-stay-text" />}
+            icon={<Edit2 className="w-3.5 h-3.5 text-stay-text-secondary hover:text-stay-text" />}
             onClick={() => onEdit(r)}
             title="Sửa hồ sơ"
-            className="rounded-lg"
           />
 
           <Popconfirm
-            title="Xóa khách thuê khỏi phòng?"
-            description="Lưu ý: Chỉ xóa khách khi hợp đồng đã kết thúc hoặc chuyển phòng."
+            title="Xác nhận xóa khách thuê?"
+            description="Bạn có chắc muốn xóa khách này khỏi phòng?"
             onConfirm={() => onDelete(r.id)}
             okText="Xóa"
             cancelText="Hủy"
@@ -151,7 +146,6 @@ export const TenantTable: React.FC<TenantTableProps> = ({
               icon={<Trash2 className="w-3.5 h-3.5" />}
               loading={isDeleting}
               title="Xóa khách thuê"
-              className="rounded-lg"
             />
           </Popconfirm>
         </div>
@@ -160,7 +154,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs overflow-hidden">
+    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
       <Table
         dataSource={tenants}
         columns={columns}

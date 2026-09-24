@@ -11,3 +11,13 @@ export interface DynamicServiceItem {
   amount: number;
   note?: string;
 }
+
+export interface BillAdjustmentItem {
+  id: string;
+  type: 'SURCHARGE' | 'DISCOUNT'; // SURCHARGE = Phụ thu (+), DISCOUNT = Giảm trừ (-)
+  reason: string;
+  quantity: number;
+  unitCost: number;
+  unit: string;
+}
+

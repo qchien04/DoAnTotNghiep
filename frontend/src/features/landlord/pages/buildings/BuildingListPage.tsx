@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useBuildings } from '@/shared/hooks';
-import { Building2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button, message } from '@/shared/components';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { BuildingFilter } from './components/BuildingFilter';
@@ -64,26 +64,14 @@ export const BuildingListPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-stay-text tracking-tight flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-stay-primary-subtle text-stay-primary">
-              <Building2 className="w-6 h-6" />
-            </div>
-            Quản Lý Tòa Nhà & Khu Trọ
-          </h1>
-          <p className="text-sm text-stay-text-secondary mt-1">
-            Xem danh sách các tòa nhà thuộc quyền quản lý của bạn kèm số liệu phòng thực tế.
-          </p>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-stay-text tracking-tight">Tòa nhà</h1>
         <Button
           type="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={handleOpenCreate}
-          className="bg-stay-primary hover:bg-stay-primary-hover font-semibold h-10 px-4 rounded-xl shadow-xs"
         >
-          Thêm Mới Tòa Nhà
+          Thêm tòa nhà
         </Button>
       </div>
 

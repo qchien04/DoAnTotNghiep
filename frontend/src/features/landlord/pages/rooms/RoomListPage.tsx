@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRooms, useBuildings, useServices } from '@/shared/hooks';
-import { DoorOpen, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button, message } from '@/shared/components';
 import { Room, CreateRoomDto, RoomStatus } from '@/shared/types/landlord';
 import { RoomFilter } from './components/RoomFilter';
@@ -62,26 +62,14 @@ export const RoomListPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stay-card p-6 rounded-2xl border border-stay-border">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-stay-primary/10 text-stay-primary rounded-xl">
-            <DoorOpen className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-stay-text">Danh sách Phòng trọ</h1>
-            <p className="text-sm text-stay-text-secondary">
-              Quản lý chi tiết từng phòng trọ, diện tích, đơn giá và trạng thái thuê
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-stay-text tracking-tight">Phòng trọ</h1>
         <Button
           type="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={handleOpenCreate}
-          className="bg-stay-primary hover:bg-stay-primary-hover shadow-md font-medium"
         >
-          Thêm phòng mới
+          Thêm phòng
         </Button>
       </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useContracts, useRooms, useTenants, useServices } from '@/shared/hooks';
-import { FileSignature, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button, message } from '@/shared/components';
 import { RentalContract, CreateContractDto, TerminateContractDto, ContractStatus } from '@/shared/types/landlord';
 import { ContractFilter } from './components/ContractFilter';
@@ -50,23 +50,17 @@ export const ContractListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stay-card-bg p-6 rounded-2xl border border-stay-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stay-text tracking-tight flex items-center gap-2">
-            <FileSignature className="w-6 h-6 text-stay-primary" />
-            Quản Lý Hợp Đồng Thuê Phòng
-          </h1>
-          <p className="text-sm text-stay-text-secondary">
-            Lập hợp đồng thuê mới, quản lý dịch vụ áp dụng và nghiệm thu phòng thanh lý trả cọc
-          </p>
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Hợp đồng</h1>
         </div>
         <Button
           type="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={() => setCreateModalOpen(true)}
-          className="bg-stay-primary hover:bg-stay-primary-hover font-semibold shadow-md"
+          className="bg-stay-primary hover:bg-stay-primary-hover"
         >
-          Tạo Hợp Đồng Mới
+          Tạo hợp đồng
         </Button>
       </div>
 

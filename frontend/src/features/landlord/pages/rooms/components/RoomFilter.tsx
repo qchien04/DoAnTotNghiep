@@ -23,7 +23,7 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
   buildings,
 }) => {
   return (
-    <div className="p-4 rounded-2xl bg-stay-card-bg border border-stay-border flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Input
         placeholder="Tìm theo mã phòng hoặc tên phòng..."
         prefix={<Search className="w-4 h-4 text-stay-text-muted" />}
@@ -52,8 +52,9 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
         options={[
           { label: 'Tất cả trạng thái', value: 'ALL' },
           { label: 'Còn trống', value: 'AVAILABLE' },
-          { label: 'Đang thuê', value: 'RENTED' },
-          { label: 'Đang sửa chữa', value: 'MAINTENANCE' },
+          { label: 'Đang thuê', value: 'OCCUPIED' },
+          { label: 'Đang sửa chữa', value: 'UNDER_MAINTENANCE' },
+          { label: 'Ngừng sử dụng', value: 'STOPPED' },
         ]}
       />
     </div>

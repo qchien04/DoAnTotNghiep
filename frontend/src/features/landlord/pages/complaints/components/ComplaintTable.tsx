@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Tag } from '@/shared/components';
+import { Table, Button } from '@/shared/components';
 import { Complaint, ComplaintStatus } from '@/shared/types/landlord';
 
 interface ComplaintTableProps {
@@ -16,66 +16,94 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
   const renderStatus = (st: ComplaintStatus) => {
     switch (st) {
       case 'NEW':
-        return <Tag color="blue">Mới gửi</Tag>;
+      case 'PENDING':
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Chờ tiếp nhận
+          </span>
+        );
       case 'PROCESSING':
-        return <Tag color="orange">Đang xử lý</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            Đang xử lý
+          </span>
+        );
       case 'RESOLVED':
-        return <Tag color="green">Đã giải quyết</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Đã xử lý
+          </span>
+        );
       case 'REJECTED':
-        return <Tag color="default">Từ chối</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            Từ chối
+          </span>
+        );
       default:
-        return <Tag>{st}</Tag>;
+        return <span className="text-xs text-stay-text-muted">{st}</span>;
     }
   };
 
   const columns = [
     {
       title: 'Mã KN',
-      dataIndex: 'code',
       key: 'code',
       width: 90,
-      render: (val: string) => <Tag color="blue" className="font-bold">{val}</Tag>,
+      render: (_: any, r: Complaint) => (
+        <span className="font-mono text-xs font-semibold text-stay-text">
+          {r.code || r.complaintCode || `KN${r.id}`}
+        </span>
+      ),
     },
     {
       title: 'Phòng',
-      dataIndex: 'roomName',
       key: 'roomName',
-      render: (val: string, r: Complaint) => (
+      render: (_: any, r: Complaint) => (
         <div>
-          <span className="font-semibold text-stay-primary">{val}</span>
-          <span className="text-xs text-stay-text-secondary block">{r.buildingName}</span>
+          <span className="font-medium text-xs text-stay-text block">
+            {r.roomName || (r.roomCode ? `P.${r.roomCode}` : '---')}
+          </span>
+          {r.buildingName && (
+            <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
+          )}
         </div>
       ),
     },
     {
       title: 'Người gửi',
-      dataIndex: 'senderName',
       key: 'senderName',
-      render: (val: string) => <span className="font-medium text-stay-text">{val}</span>,
+      render: (_: any, r: Complaint) => (
+        <span className="font-medium text-sm text-stay-text">{r.senderName || r.tenantName || '---'}</span>
+      ),
     },
     {
       title: 'Loại sự cố',
-      dataIndex: 'type',
       key: 'type',
-      render: (val: string) => (
-        <Tag color="cyan" className="font-medium">
-          {val === 'EQUIPMENT'
+      render: (_: any, r: Complaint) => {
+        const val = r.type || r.incidentType || '';
+        const label =
+          val === 'EQUIPMENT'
             ? 'Thiết bị điện nước'
             : val === 'SECURITY'
             ? 'An ninh trật tự'
             : val === 'NOISE'
             ? 'Tiếng ồn'
-            : 'Khác'}
-        </Tag>
-      ),
+            : 'Khác';
+        return <span className="text-xs text-stay-text-secondary">{label}</span>;
+      },
     },
     {
-      title: 'Nội dung phản ánh',
+      title: 'Nội dung',
       dataIndex: 'title',
       key: 'title',
       render: (val: string, r: Complaint) => (
         <div>
-          <p className="font-semibold text-stay-text text-sm">{val}</p>
+          <p className="font-medium text-stay-text text-sm">{val}</p>
           <p className="text-xs text-stay-text-secondary line-clamp-1">{r.content || ''}</p>
         </div>
       ),
@@ -84,35 +112,38 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
       title: 'Thời gian',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 140,
-      render: (val: string) => <span className="text-xs text-stay-text-secondary">{val}</span>,
+      width: 130,
+      render: (val: string) => <span className="font-mono text-xs text-stay-text-secondary">{val}</span>,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 130,
       render: (val: ComplaintStatus) => renderStatus(val),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 120,
+      width: 80,
+      align: 'right' as const,
       render: (_: any, r: Complaint) => (
-        <Button
-          size="small"
-          type="primary"
-          onClick={() => onOpenDetail(r)}
-          className="bg-stay-primary hover:bg-stay-primary-hover text-xs font-semibold rounded-lg"
-        >
-          Xử lý
-        </Button>
+        <div className="flex items-center justify-end">
+          <Button
+            size="small"
+            type="text"
+            onClick={() => onOpenDetail(r)}
+            className="text-xs text-stay-primary hover:text-stay-primary-hover font-medium px-2"
+          >
+            Xử lý
+          </Button>
+        </div>
       ),
     },
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs overflow-hidden">
+    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
       <Table
         dataSource={complaints}
         columns={columns}

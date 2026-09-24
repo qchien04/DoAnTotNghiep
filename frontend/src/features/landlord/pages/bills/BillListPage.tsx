@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useBills, useRooms, useContracts } from '@/shared/hooks';
-import { DollarSign, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button, message } from '@/shared/components';
 import { Bill, CreateBillDto, BillStatus, ConfirmPaymentDto } from '@/shared/types/landlord';
 import { BillFilter } from './components/BillFilter';
@@ -88,23 +88,17 @@ export const BillListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stay-card-bg p-6 rounded-2xl border border-stay-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stay-text tracking-tight flex items-center gap-2">
-            <DollarSign className="w-6 h-6 text-stay-primary" />
-            Quản Lý Hóa Đơn & Thu Tiền Phòng
-          </h1>
-          <p className="text-sm text-stay-text-secondary">
-            Lập hóa đơn thông minh theo dịch vụ hợp đồng, tính tiền theo công tơ/đầu người và phát hành thông báo cước kèm VietQR
-          </p>
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Hóa đơn</h1>
         </div>
         <Button
           type="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={() => setCreateModalOpen(true)}
-          className="bg-stay-primary hover:bg-stay-primary-hover font-semibold shadow-md"
+          className="bg-stay-primary hover:bg-stay-primary-hover"
         >
-          Tính Tiền Phòng & Lập Hóa Đơn
+          Lập hóa đơn
         </Button>
       </div>
 

@@ -1,13 +1,6 @@
 import React from 'react';
-import {
-  Receipt,
-  Eye,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  XCircle,
-} from 'lucide-react';
-import { Table, Button, Tag } from '@/shared/components';
+import { Eye } from 'lucide-react';
+import { Table, Button } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { Bill, BillStatus } from '@/shared/types/landlord';
 
@@ -30,31 +23,43 @@ export const BillTable: React.FC<BillTableProps> = ({
     switch (st) {
       case 'PAID':
         return (
-          <Tag color="green" icon={<CheckCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Đã thanh toán
-          </Tag>
+          </span>
         );
       case 'PENDING':
       case 'UNPAID':
         return (
-          <Tag color="orange" icon={<Clock className="w-3 h-3 inline mr-1" />}>
+          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             Chờ thanh toán
-          </Tag>
+          </span>
+        );
+      case 'PARTIALLY_PAID':
+      case 'PARTIAL':
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Trả một phần
+          </span>
         );
       case 'OVERDUE':
         return (
-          <Tag color="error" icon={<AlertCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="inline-flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
             Quá hạn
-          </Tag>
+          </span>
         );
       case 'CANCELLED':
         return (
-          <Tag color="default" icon={<XCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
             Đã hủy
-          </Tag>
+          </span>
         );
       default:
-        return <Tag>{st}</Tag>;
+        return <span className="text-xs text-stay-text-muted">{st}</span>;
     }
   };
 
@@ -65,20 +70,23 @@ export const BillTable: React.FC<BillTableProps> = ({
       render: (_: any, r: Bill) => (
         <span
           onClick={() => onOpenDetail(r)}
-          className="font-bold text-stay-primary cursor-pointer hover:underline flex items-center gap-1.5"
+          className="font-mono text-xs font-semibold text-stay-text cursor-pointer hover:text-stay-primary hover:underline"
         >
-          <Receipt className="w-4 h-4 text-stay-primary" />
           {r.invoiceCode || r.billNumber || `HD-${r.id}`}
         </span>
       ),
     },
     {
-      title: 'Phòng / Tòa nhà',
+      title: 'Phòng',
       key: 'roomName',
       render: (_: any, r: Bill) => (
         <div>
-          <span className="font-semibold text-stay-text">{r.roomCode || r.roomName}</span>
-          <span className="text-xs text-stay-text-secondary block">{r.buildingName || 'Tòa nhà'}</span>
+          <span className="font-medium text-xs text-stay-text block">
+            {r.roomCode ? `P.${r.roomCode}` : r.roomName || '---'}
+          </span>
+          {r.buildingName && (
+            <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
+          )}
         </div>
       ),
     },
@@ -102,21 +110,21 @@ export const BillTable: React.FC<BillTableProps> = ({
       title: 'Kỳ cước',
       key: 'billingPeriod',
       render: (_: any, r: Bill) => (
-        <Tag color="blue" className="font-medium px-2 py-0.5 rounded-full">
+        <span className="font-mono text-xs text-stay-text-secondary">
           {r.billingPeriod || r.billingMonth}
-        </Tag>
+        </span>
       ),
     },
     {
-      title: 'Tổng tiền (VNĐ)',
+      title: 'Tổng tiền',
       key: 'totalAmount',
       render: (_: any, r: Bill) => (
         <div>
-          <span className="font-bold text-stay-text text-sm">
+          <span className="font-medium text-stay-text text-sm">
             {(r.totalAmount ?? 0).toLocaleString()} đ
           </span>
           {r.remainingAmount !== undefined && r.remainingAmount > 0 && r.status !== 'PAID' && (
-            <span className="text-[11px] text-amber-600 block">
+            <span className="text-[11px] text-amber-600 dark:text-amber-400 block">
               Còn nợ: {r.remainingAmount.toLocaleString()} đ
             </span>
           )}
@@ -127,7 +135,7 @@ export const BillTable: React.FC<BillTableProps> = ({
       title: 'Hạn nộp',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      render: (val: string) => <span className="text-xs text-stay-text-secondary">{val || '---'}</span>,
+      render: (val: string) => <span className="font-mono text-xs text-stay-text-secondary">{val || '---'}</span>,
     },
     {
       title: 'Trạng thái',
@@ -137,13 +145,15 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
+      width: 130,
+      align: 'right' as const,
       render: (_: any, r: Bill) => (
-        <div className="flex items-center gap-1.5">
-          <Tooltip title="Xem chi tiết bảng kê">
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip title="Xem chi tiết">
             <Button
               size="small"
               type="text"
-              icon={<Eye className="w-3.5 h-3.5 text-stay-text-secondary" />}
+              icon={<Eye className="w-3.5 h-3.5 text-stay-text-secondary hover:text-stay-text" />}
               onClick={() => onOpenDetail(r)}
             />
           </Tooltip>
@@ -152,17 +162,18 @@ export const BillTable: React.FC<BillTableProps> = ({
             <>
               <Button
                 size="small"
-                type="primary"
+                type="text"
                 onClick={() => onOpenPayment(r)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold px-2 rounded-lg"
+                className="text-xs text-emerald-600 hover:text-emerald-700 font-medium px-1.5"
               >
                 Thu tiền
               </Button>
               <Button
                 size="small"
+                type="text"
                 danger
                 onClick={() => onOpenCancel(r)}
-                className="text-xs px-2 rounded-lg"
+                className="text-xs px-1.5"
               >
                 Hủy
               </Button>
@@ -170,7 +181,7 @@ export const BillTable: React.FC<BillTableProps> = ({
           )}
 
           {r.status === 'PAID' && (
-            <Tag color="green" className="m-0 rounded-md">Đã thu đủ</Tag>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Đã thu đủ</span>
           )}
         </div>
       ),
@@ -178,7 +189,7 @@ export const BillTable: React.FC<BillTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs overflow-hidden">
+    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
       <Table
         dataSource={bills}
         columns={columns}

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { DoorOpen, Building2, MapPin, Compass, Navigation } from 'lucide-react';
 import {
   Modal,
   Form,
@@ -12,6 +11,10 @@ import {
   message,
 } from '@/shared/components';
 import { Building, CreateRoomDto, Room, UtilityService } from '@/shared/types/landlord';
+import {
+  formatServicePriceWithUnit,
+  getBillingMethodInfo,
+} from '@/shared/utils/serviceUtils';
 
 interface RoomFormModalProps {
   open: boolean;
@@ -53,8 +56,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         const parsedAmenities = Array.isArray(editingRoom.amenities)
           ? editingRoom.amenities
           : typeof editingRoom.amenities === 'string' && editingRoom.amenities.trim()
-          ? editingRoom.amenities.split(',').map((s) => s.trim())
-          : [];
+            ? editingRoom.amenities.split(',').map((s) => s.trim())
+            : [];
 
         const roomServiceIds =
           editingRoom.serviceIds ||
@@ -141,14 +144,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   return (
     <>
       <Modal
-        title={
-          <div className="flex items-center gap-2.5 text-stay-text font-bold text-lg pb-1">
-            <div className="p-2 rounded-xl bg-stay-primary-subtle text-stay-primary">
-              <DoorOpen className="w-5 h-5" />
-            </div>
-            <span>{editingRoom ? `Cập Nhật Phòng ${editingRoom.code || editingRoom.roomCode || ''}` : 'Thêm Phòng Trọ Mới'}</span>
-          </div>
-        }
+        title={editingRoom ? `Cập nhật phòng ${editingRoom.code || editingRoom.roomCode || ''}` : 'Thêm phòng trọ mới'}
         open={open}
         onOk={handleOk}
         onCancel={onCancel}
@@ -159,20 +155,21 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
       >
         <Form form={form} layout="vertical" className="mt-4 space-y-5">
           {/* SECTION 1: TÒA NHÀ & VỊ TRÍ PHÒNG TRỌ */}
-          <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border space-y-3">
-            <p className="text-xs font-bold text-stay-primary uppercase tracking-wider flex items-center gap-1.5">
-              <Building2 className="w-4 h-4" /> 1. Tòa nhà & Vị trí phòng trọ
-            </p>
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-stay-text">
+              1. Tòa nhà & vị trí phòng trọ
+            </h3>
+            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
 
             <Form.Item
-              label={<span className="font-semibold text-stay-text text-sm">Chọn tòa nhà chứa phòng</span>}
+              label={<span className="font-semibold text-stay-text text-sm">Chọn tòa nhà chứa phòng (*)</span>}
               name="buildingId"
               rules={[{ required: true, message: 'Vui lòng chọn tòa nhà (*)' }]}
               className="mb-2"
             >
               <Select
                 onChange={(val) => setSelectedBuildingId(val)}
-                className="h-10"
+                className="w-full h-11"
                 options={buildings.map((b: any) => ({
                   label: `${b.buildingCode || b.code || ''} - ${b.name}`,
                   value: b.id,
@@ -181,18 +178,12 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             </Form.Item>
 
             {curBld && (
-              <div className="p-3 rounded-xl bg-stay-card-bg border border-stay-border text-xs flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-stay-primary-subtle text-stay-primary">
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-stay-text text-xs">{curBld.name}</p>
-                    <p className="text-[11px] text-stay-text-secondary flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3.5 h-3.5 text-stay-text-muted shrink-0" />
-                      {curBld.address || curBld.addressDetail || 'Chưa có địa chỉ chi tiết'}
-                    </p>
-                  </div>
+              <div className="p-3 rounded-lg bg-stay-card-bg border border-stay-border text-xs flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-stay-text text-xs">{curBld.name}</p>
+                  <p className="text-[11px] text-stay-text-secondary mt-0.5">
+                    {curBld.address || curBld.addressDetail || 'Chưa có địa chỉ chi tiết'}
+                  </p>
                 </div>
                 <Tag className="m-0 bg-stay-bg-app text-stay-text border-stay-border font-medium text-xs px-2.5 py-0.5">
                   {curBld.totalFloors || curBld.numFloors || 1} tầng
@@ -201,29 +192,26 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             )}
 
             {/* GPS & Bản đồ */}
-            <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border space-y-2.5">
+            <div className="p-3.5 rounded-lg bg-stay-card-bg border border-stay-border space-y-2.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-stay-text">
-                  <Compass className="w-4 h-4 text-stay-primary" />
-                  <span>Vị trí địa lý trên bản đồ (GPS / Tọa độ phòng):</span>
-                </div>
+                <span className="text-xs font-semibold text-stay-text">
+                  Tọa độ GPS / Vị trí phòng:
+                </span>
                 <div className="flex items-center gap-2">
                   <Button
                     size="small"
                     type="default"
-                    icon={<Navigation className="w-3.5 h-3.5 text-stay-secondary" />}
                     onClick={handleGetQuickLocation}
                     loading={isGeolocating}
-                    className="text-xs font-semibold text-stay-secondary border-stay-secondary/40 hover:bg-stay-secondary-subtle"
+                    className="text-xs"
                   >
                     Vị trí hiện tại
                   </Button>
                   <Button
                     size="small"
                     type="primary"
-                    icon={<MapPin className="w-3.5 h-3.5" />}
                     onClick={() => setIsLocationModalOpen(true)}
-                    className="text-xs font-semibold bg-stay-primary hover:bg-stay-primary-hover"
+                    className="text-xs"
                   >
                     Chọn trên bản đồ
                   </Button>
@@ -232,17 +220,17 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
               {currentCoords ? (
                 <div className="flex items-center gap-2 pt-1 border-t border-stay-border text-xs">
-                  <Tag color="green" className="m-0 font-mono font-bold">
+                  <Tag color="green" className="m-0 font-mono font-medium">
                     LAT: {currentCoords.lat.toFixed(6)}
                   </Tag>
-                  <Tag color="cyan" className="m-0 font-mono font-bold">
+                  <Tag color="cyan" className="m-0 font-mono font-medium">
                     LNG: {currentCoords.lng.toFixed(6)}
                   </Tag>
-                  <span className="text-[11px] text-stay-secondary font-medium">Đã ghim vị trí chính xác cho phòng trọ</span>
+                  <span className="text-[11px] text-stay-secondary">Đã ghim vị trí chính xác</span>
                 </div>
               ) : (
                 <p className="text-[11px] text-stay-text-secondary italic">
-                  Chưa ghim vị trí. Bấm "Vị trí hiện tại" hoặc "Chọn trên bản đồ" để ghim tọa độ giúp khách thuê dễ dàng tìm phòng trên bản đồ.
+                  Chưa ghim vị trí. Bấm "Vị trí hiện tại" hoặc "Chọn trên bản đồ" để ghim tọa độ.
                 </p>
               )}
 
@@ -254,133 +242,206 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               </Form.Item>
             </div>
           </div>
+        </div>
 
           {/* SECTION 2: QUY MÔ & TÀI CHÍNH */}
-          <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border space-y-3">
-            <p className="text-xs font-bold text-stay-primary uppercase tracking-wider flex items-center gap-1.5">
-              <DoorOpen className="w-4 h-4" /> 2. Thông tin phòng & Giá cước niêm yết
-            </p>
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-stay-text">
+              2. Thông tin phòng & giá cước niêm yết
+            </h3>
+            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                <div className="sm:col-span-4">
+                  <Form.Item
+                    label={<span className="font-semibold text-stay-text text-sm">Mã phòng (*)</span>}
+                    name="code"
+                    rules={[{ required: true, message: 'Nhập mã phòng (*)' }]}
+                  >
+                    <Input placeholder="Ví dụ: P301..." className="w-full h-11" />
+                  </Form.Item>
+                </div>
+                <div className="sm:col-span-8">
+                  <Form.Item
+                    label={<span className="font-semibold text-stay-text text-sm">Tên phòng / Tiêu đề hiển thị</span>}
+                    name="name"
+                  >
+                    <Input placeholder="Ví dụ: Phòng 301 ban công thoáng mát..." className="w-full h-11" />
+                  </Form.Item>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Mã phòng</span>}
-                name="code"
-                rules={[{ required: true, message: 'Nhập mã phòng (*)' }]}
-              >
-                <Input placeholder="Ví dụ: P301, P202..." className="h-10 font-bold" />
-              </Form.Item>
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Tên phòng</span>}
-                name="name"
-              >
-                <Input placeholder="Ví dụ: Phòng 301 ban công thoáng..." className="h-10" />
-              </Form.Item>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-sm">Tầng bố trí (*)</span>}
+                  name="floor"
+                  rules={[{ required: true, message: 'Nhập tầng (*)' }]}
+                  initialValue={1}
+                >
+                  <Input
+                    type="number"
+                    min={1}
+                    suffix={<span className="text-xs text-stay-text-muted font-medium">Tầng</span>}
+                    className="w-full h-11"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-sm">Diện tích phòng (*)</span>}
+                  name="area"
+                  rules={[{ required: true, message: 'Nhập diện tích (*)' }]}
+                  initialValue={25}
+                >
+                  <Input
+                    type="number"
+                    min={5}
+                    suffix={<span className="text-xs text-stay-text-muted font-medium">m²</span>}
+                    className="w-full h-11"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-sm">Sức chứa tối đa (*)</span>}
+                  name="capacity"
+                  rules={[{ required: true, message: 'Nhập sức chứa (*)' }]}
+                  initialValue={2}
+                >
+                  <Input
+                    type="number"
+                    min={1}
+                    suffix={<span className="text-xs text-stay-text-muted font-medium">Người</span>}
+                    className="w-full h-11"
+                  />
+                </Form.Item>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-sm">Giá thuê phòng niêm yết (*)</span>}
+                  name="price"
+                  rules={[{ required: true, message: 'Nhập giá thuê (*)' }]}
+                  initialValue={3500000}
+                >
+                  <Input
+                    type="number"
+                    step={100000}
+                    suffix={<span className="text-xs font-semibold text-emerald-600">VNĐ/tháng</span>}
+                    className="w-full h-11 font-medium"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-sm">Tiền cọc tiêu chuẩn (*)</span>}
+                  name="deposit"
+                  rules={[{ required: true, message: 'Nhập tiền cọc (*)' }]}
+                  initialValue={3500000}
+                >
+                  <Input
+                    type="number"
+                    step={100000}
+                    suffix={<span className="text-xs font-semibold text-stay-text">VNĐ</span>}
+                    className="w-full h-11 font-medium"
+                  />
+                </Form.Item>
+              </div>
+
+              {editingRoom && (
+                <Form.Item label={<span className="font-semibold text-stay-text text-sm">Trạng thái phòng</span>} name="status">
+                  <Select
+                    className="w-full h-11"
+                    options={[
+                      { label: 'Còn trống (AVAILABLE)', value: 'AVAILABLE' },
+                      { label: 'Đang thuê (RENTED)', value: 'RENTED' },
+                      { label: 'Đang sửa chữa (MAINTENANCE)', value: 'MAINTENANCE' },
+                      { label: 'Ngừng sử dụng (DISABLED)', value: 'DISABLED' },
+                    ]}
+                  />
+                </Form.Item>
+              )}
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Tầng</span>}
-                name="floor"
-                rules={[{ required: true, message: 'Nhập tầng (*)' }]}
-                initialValue={1}
-              >
-                <Input type="number" min={1} className="h-10" />
-              </Form.Item>
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Diện tích (m²)</span>}
-                name="area"
-                rules={[{ required: true, message: 'Nhập diện tích (*)' }]}
-                initialValue={25}
-              >
-                <Input type="number" min={5} className="h-10" />
-              </Form.Item>
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Sức chứa (người)</span>}
-                name="capacity"
-                rules={[{ required: true, message: 'Nhập sức chứa (*)' }]}
-                initialValue={2}
-              >
-                <Input type="number" min={1} className="h-10" />
-              </Form.Item>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Giá thuê niêm yết (VNĐ/tháng)</span>}
-                name="price"
-                rules={[{ required: true, message: 'Nhập giá thuê (*)' }]}
-                initialValue={3500000}
-              >
-                <Input type="number" step={100000} className="h-10 font-bold text-emerald-600" />
-              </Form.Item>
-              <Form.Item
-                label={<span className="font-semibold text-stay-text text-sm">Tiền cọc tiêu chuẩn (VNĐ)</span>}
-                name="deposit"
-                rules={[{ required: true, message: 'Nhập tiền cọc (*)' }]}
-                initialValue={3500000}
-              >
-                <Input type="number" step={100000} className="h-10 font-bold" />
-              </Form.Item>
-            </div>
-
-            {editingRoom && (
-              <Form.Item label={<span className="font-semibold text-stay-text text-sm">Trạng thái phòng</span>} name="status">
-                <Select
-                  className="h-10"
-                  options={[
-                    { label: 'Còn trống (AVAILABLE)', value: 'AVAILABLE' },
-                    { label: 'Đang thuê (RENTED)', value: 'RENTED' },
-                    { label: 'Đang sửa chữa (MAINTENANCE)', value: 'MAINTENANCE' },
-                    { label: 'Ngừng sử dụng (DISABLED)', value: 'DISABLED' },
-                  ]}
-                />
-              </Form.Item>
-            )}
           </div>
 
           {/* SECTION 3: TIỆN NGHI & DỊCH VỤ */}
-          <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border space-y-4">
-            <p className="text-xs font-bold text-stay-primary uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin className="w-4 h-4" /> 3. Tiện nghi & Dịch vụ áp dụng
-            </p>
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-stay-text">
+              3. Tiện nghi & dịch vụ áp dụng
+            </h3>
+            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+              <Form.Item
+                label={<span className="font-semibold text-stay-text text-sm">Tiện nghi có sẵn trong phòng</span>}
+                name="amenities"
+              >
+                <Select
+                  mode="tags"
+                  className="w-full min-h-[42px]"
+                  placeholder="Chọn hoặc nhập tiện nghi (Điều hòa, Nóng lạnh, Giường, Tủ...)"
+                  options={[
+                    { value: 'Điều hòa', label: 'Điều hòa' },
+                    { value: 'Nóng lạnh', label: 'Nóng lạnh' },
+                    { value: 'Giường', label: 'Giường' },
+                    { value: 'Tủ quần áo', label: 'Tủ quần áo' },
+                    { value: 'Tủ lạnh', label: 'Tủ lạnh' },
+                    { value: 'Kệ bếp', label: 'Kệ bếp' },
+                    { value: 'Ban công', label: 'Ban công' },
+                  ]}
+                />
+              </Form.Item>
 
-            <Form.Item
-              label={<span className="font-semibold text-stay-text text-sm">Tiện nghi trong phòng</span>}
-              name="amenities"
-            >
-              <Select
-                mode="tags"
-                placeholder="Chọn hoặc nhập tiện nghi (Điều hòa, Nóng lạnh, Giường, Tủ...)"
-                options={[
-                  { value: 'Điều hòa', label: 'Điều hòa' },
-                  { value: 'Nóng lạnh', label: 'Nóng lạnh' },
-                  { value: 'Giường', label: 'Giường' },
-                  { value: 'Tủ quần áo', label: 'Tủ quần áo' },
-                  { value: 'Tủ lạnh', label: 'Tủ lạnh' },
-                  { value: 'Kệ bếp', label: 'Kệ bếp' },
-                  { value: 'Ban công', label: 'Ban công' },
-                ]}
-              />
-            </Form.Item>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="font-semibold text-stay-text text-sm">
+                    Dịch vụ tiện ích áp dụng cho phòng
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="small"
+                      type="link"
+                      className="p-0 text-xs text-stay-primary font-medium"
+                      onClick={() => form.setFieldsValue({ serviceIds: services.map((s) => s.id) })}
+                    >
+                      Chọn tất cả
+                    </Button>
+                    <span className="text-stay-border">|</span>
+                    <Button
+                      size="small"
+                      type="link"
+                      className="p-0 text-xs text-rose-500 font-medium"
+                      onClick={() => form.setFieldsValue({ serviceIds: [] })}
+                    >
+                      Bỏ chọn hết
+                    </Button>
+                  </div>
+                </div>
 
-            <Form.Item
-              label={<span className="font-semibold text-stay-text text-sm">Dịch vụ tiện ích áp dụng cho phòng (Điện, nước, internet...)</span>}
-              name="serviceIds"
-              extra="Khi lập hợp đồng mới cho phòng này, hệ thống sẽ tự động gán đúng các dịch vụ tiện ích này."
-            >
-              <Select
-                mode="multiple"
-                placeholder="Chọn các dịch vụ phòng hỗ trợ..."
-                options={services.map((s: any) => ({
-                  label: `${s.serviceName || s.name} (${(s.unitPrice || s.price || 0).toLocaleString()} đ/${s.unit})`,
-                  value: s.id,
-                }))}
-              />
-            </Form.Item>
+                <Form.Item
+                  name="serviceIds"
+                  className="mb-2"
+                  extra="Khi lập hợp đồng mới cho phòng này, hệ thống sẽ tự động gán đúng các dịch vụ tiện ích này."
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder="Chọn các dịch vụ phòng hỗ trợ..."
+                    className="w-full min-h-[44px]"
+                    options={services.map((s: any) => {
+                      const info = getBillingMethodInfo(s.billingMethod, s.chargingType, s.serviceName || s.name, s.category);
+                      const priceFormatted = formatServicePriceWithUnit(s);
+                      return {
+                        label: `${s.serviceName || s.name} - ${priceFormatted} [Cách tính: ${info.shortLabel}]`,
+                        value: s.id,
+                      };
+                    })}
+                  />
+                </Form.Item>
 
-            <Form.Item label={<span className="font-semibold text-stay-text text-sm">Mô tả đặc điểm phòng</span>} name="description">
-              <Input.TextArea rows={3} placeholder="Mô tả đặc điểm phòng, hướng cửa sổ, ánh sáng, không gian xung quanh..." className="p-3" />
-            </Form.Item>
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-sm">Mô tả đặc điểm phòng & ghi chú</span>}
+                  name="description"
+                  className="mb-0"
+                >
+                  <Input.TextArea
+                    rows={3}
+                    placeholder="Mô tả đặc điểm phòng, hướng cửa sổ, ánh sáng, ban công, không gian xung quanh..."
+                    className="w-full p-3 rounded-xl"
+                  />
+                </Form.Item>
+              </div>
+            </div>
           </div>
         </Form>
       </Modal>

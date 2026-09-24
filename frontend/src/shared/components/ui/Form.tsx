@@ -37,7 +37,7 @@ export interface FormActionsProps {
 // 1. Form Container
 export const Form = (<T,>({
   layout = 'vertical',
-  requiredMark = 'optional',
+  requiredMark = false,
   className = '',
   children,
   ...props
@@ -46,7 +46,7 @@ export const Form = (<T,>({
     <AntForm
       layout={layout}
       requiredMark={requiredMark}
-      className={`custom-stay-form [&_.ant-form-item-label_label]:!text-xs [&_.ant-form-item-label_label]:!font-semibold [&_.ant-form-item-label_label]:!text-stay-text [&_.ant-form-item-explain-error]:!text-xs [&_.ant-form-item-explain-error]:!font-medium ${className}`}
+      className={`custom-stay-form [&_.ant-form-item-label_label]:!text-xs [&_.ant-form-item-label_label]:!font-semibold [&_.ant-form-item-label_label]:!text-stay-text [&_.ant-form-item-optional]:!hidden [&_.ant-form-item-explain-error]:!text-xs [&_.ant-form-item-explain-error]:!font-medium ${className}`}
       {...props}
     >
       {children}

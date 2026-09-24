@@ -1,17 +1,7 @@
 import React from 'react';
-import {
-  Edit2,
-  Trash2,
-  Zap,
-  Droplets,
-  Wifi,
-  Trash,
-  Car,
-  HelpCircle,
-  ArrowUpDown,
-} from 'lucide-react';
-import { Table, Button, Tag, Popconfirm } from '@/shared/components';
-import { UtilityService, ServiceCategory } from '@/shared/types/landlord';
+import { Edit2, Trash2 } from 'lucide-react';
+import { Table, Button, Popconfirm } from '@/shared/components';
+import { UtilityService } from '@/shared/types/landlord';
 
 interface ServiceTableProps {
   services: UtilityService[];
@@ -28,24 +18,6 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const renderCategoryIcon = (cat: ServiceCategory | string) => {
-    switch (cat) {
-      case 'ELECTRICITY':
-        return <Zap className="w-4 h-4 text-amber-500" />;
-      case 'WATER':
-        return <Droplets className="w-4 h-4 text-blue-500" />;
-      case 'INTERNET':
-        return <Wifi className="w-4 h-4 text-purple-500" />;
-      case 'CLEANING':
-        return <Trash className="w-4 h-4 text-emerald-500" />;
-      case 'PARKING':
-        return <Car className="w-4 h-4 text-indigo-500" />;
-      case 'ELEVATOR':
-        return <ArrowUpDown className="w-4 h-4 text-cyan-500" />;
-      default:
-        return <HelpCircle className="w-4 h-4 text-stay-text-muted" />;
-    }
-  };
 
   const renderCategoryLabel = (cat: string) => {
     switch (cat) {
@@ -68,16 +40,12 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
 
   const columns = [
     {
-      title: 'Mã DV',
+      title: 'Mã',
       key: 'serviceCode',
-      width: 100,
+      width: 90,
       render: (_: any, r: UtilityService) => {
         const code = r.serviceCode || r.code || `DV${String(r.id || '').padStart(2, '0')}`;
-        return (
-          <Tag className="bg-stay-primary-subtle text-stay-primary border-stay-primary/30 font-mono font-bold">
-            {code}
-          </Tag>
-        );
+        return <span className="font-mono text-xs text-stay-text-secondary">{code}</span>;
       },
     },
     {
@@ -85,73 +53,51 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       dataIndex: 'name',
       key: 'name',
       render: (val: string, r: UtilityService) => (
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-stay-primary-subtle flex items-center justify-center shrink-0 border border-stay-border">
-            {renderCategoryIcon(r.category)}
-          </div>
-          <div>
-            <span className="font-semibold text-stay-text block">{val}</span>
-            <span className="text-[11px] text-stay-text-secondary font-medium">
-              {renderCategoryLabel(r.category as string)}
-            </span>
-          </div>
+        <div>
+          <span className="font-medium text-stay-text text-sm block">{val}</span>
+          <span className="text-xs text-stay-text-muted">
+            {renderCategoryLabel(r.category as string)}
+          </span>
         </div>
       ),
     },
     {
-      title: 'Đơn vị tính',
+      title: 'Đơn vị',
       dataIndex: 'unit',
       key: 'unit',
-      width: 130,
-      render: (val: string) => <span className="font-medium text-stay-text">{val || '---'}</span>,
+      width: 120,
+      render: (val: string) => <span className="text-sm text-stay-text">{val || '---'}</span>,
     },
     {
-      title: 'Đơn giá (VNĐ)',
+      title: 'Đơn giá',
       key: 'unitPrice',
-      width: 150,
+      width: 140,
       render: (_: any, r: UtilityService) => {
         const p = Number(
           r.unitPrice !== undefined ? r.unitPrice : r.price !== undefined ? r.price : 0
         );
-        return <span className="font-bold text-stay-secondary">{p.toLocaleString()} đ</span>;
+        return <span className="font-medium text-sm text-stay-text">{p.toLocaleString()} đ</span>;
       },
     },
     {
-      title: 'Hình thức thu',
+      title: 'Hình thức tính',
       key: 'billingMethod',
-      width: 160,
+      width: 150,
       render: (_: any, r: UtilityService) => {
         const method = r.billingMethod || r.chargingType;
-        switch (method) {
-          case 'METER_INDEX':
-            return (
-              <Tag color="cyan" className="font-medium">
-                Theo công tơ
-              </Tag>
-            );
-          case 'FIXED_PER_PERSON':
-            return (
-              <Tag color="purple" className="font-medium">
-                Theo số người
-              </Tag>
-            );
-          case 'FIXED_PER_ROOM':
-            return (
-              <Tag color="blue" className="font-medium">
-                Cố định phòng
-              </Tag>
-            );
-          default:
-            return <Tag color="default">{method || 'Cố định'}</Tag>;
-        }
+        let label = 'Cố định';
+        if (method === 'METER_INDEX') label = 'Theo công tơ';
+        else if (method === 'FIXED_PER_PERSON') label = 'Theo người';
+        else if (method === 'FIXED_PER_ROOM') label = 'Theo phòng';
+        return <span className="text-xs text-stay-text-secondary">{label}</span>;
       },
     },
     {
-      title: 'Áp dụng',
+      title: 'Phạm vi',
       key: 'scope',
       width: 110,
       render: (_: any, r: UtilityService) => (
-        <span className="text-xs text-stay-text-secondary">{r.scope || r.appliedScope || 'Tất cả'}</span>
+        <span className="text-xs text-stay-text-muted">{r.scope || r.appliedScope || 'Tất cả'}</span>
       ),
     },
     {
@@ -161,13 +107,15 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       render: (_: any, r: UtilityService) => {
         const active = r.isActive !== undefined ? r.isActive : r.status === 'ACTIVE';
         return active ? (
-          <Tag color="green" className="font-semibold">
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Đang áp dụng
-          </Tag>
+          </span>
         ) : (
-          <Tag color="default" className="font-semibold">
+          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
             Tạm ngừng
-          </Tag>
+          </span>
         );
       },
     },

@@ -316,6 +316,7 @@ export interface RentalContract {
   pdfFileUrl?: string;
   termsAndConditions?: string;
   services?: ContractServiceItem[];
+  tenants?: Tenant[];
   createdAt?: string;
 
   // Aliases

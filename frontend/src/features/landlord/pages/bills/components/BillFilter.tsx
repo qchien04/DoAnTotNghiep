@@ -16,7 +16,7 @@ export const BillFilter: React.FC<BillFilterProps> = ({
   onStatusFilterChange,
 }) => {
   return (
-    <div className="p-4 rounded-2xl bg-stay-card-bg border border-stay-border flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Select
         value={billingMonth}
         onChange={(val) => onBillingMonthChange(val)}
@@ -35,7 +35,8 @@ export const BillFilter: React.FC<BillFilterProps> = ({
         className="w-full sm:w-56 h-10"
         options={[
           { label: 'Tất cả trạng thái', value: 'ALL' },
-          { label: 'Chờ thanh toán', value: 'PENDING' },
+          { label: 'Chờ thanh toán', value: 'UNPAID' },
+          { label: 'Thanh toán một phần', value: 'PARTIALLY_PAID' },
           { label: 'Đã thanh toán', value: 'PAID' },
           { label: 'Quá hạn nộp', value: 'OVERDUE' },
           { label: 'Đã hủy', value: 'CANCELLED' },

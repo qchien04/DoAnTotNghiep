@@ -1,6 +1,6 @@
 import React from 'react';
-import { Edit2, Trash2, Users } from 'lucide-react';
-import { Table, Button, Tag, Popconfirm } from '@/shared/components';
+import { Edit2, Trash2 } from 'lucide-react';
+import { Table, Button, Popconfirm } from '@/shared/components';
 import { Room, RoomStatus } from '@/shared/types/landlord';
 
 interface RoomTableProps {
@@ -21,15 +21,38 @@ export const RoomTable: React.FC<RoomTableProps> = ({
   const renderStatusTag = (st: RoomStatus) => {
     switch (st) {
       case 'AVAILABLE':
-        return <Tag color="green" className="font-semibold">Còn trống</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Còn trống
+          </span>
+        );
+      case 'OCCUPIED':
       case 'RENTED':
-        return <Tag color="blue" className="font-semibold">Đang thuê</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Đang thuê
+          </span>
+        );
+      case 'UNDER_MAINTENANCE':
       case 'MAINTENANCE':
-        return <Tag color="orange" className="font-semibold">Đang sửa chữa</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            Đang sửa chữa
+          </span>
+        );
+      case 'STOPPED':
       case 'DISABLED':
-        return <Tag color="default" className="font-semibold">Ngừng sử dụng</Tag>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            Ngừng sử dụng
+          </span>
+        );
       default:
-        return <Tag>{st}</Tag>;
+        return <span className="text-xs text-stay-text-muted">{st}</span>;
     }
   };
 
@@ -41,7 +64,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         return (
-          <span className="font-bold text-stay-primary">{item.code || item.roomCode || '---'}</span>
+          <span className="font-mono text-xs font-semibold text-stay-text">{item.code || item.roomCode || '---'}</span>
         );
       },
     },
@@ -52,8 +75,8 @@ export const RoomTable: React.FC<RoomTableProps> = ({
         const item = r || (_ as Room) || {};
         return (
           <div>
-            <p className="font-semibold text-stay-text">{item.name || '---'}</p>
-            <p className="text-xs text-stay-text-secondary">{item.buildingName || 'Tòa Ánh Dương'}</p>
+            <p className="font-medium text-stay-text">{item.name || '---'}</p>
+            {item.buildingName && <p className="text-xs text-stay-text-muted">{item.buildingName}</p>}
           </div>
         );
       },
@@ -77,13 +100,13 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       },
     },
     {
-      title: 'Giá thuê (VNĐ)',
+      title: 'Giá thuê',
       key: 'price',
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         const p = Number(item.price ?? item.listedPrice ?? 0);
         return (
-          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="font-medium text-stay-text">
             {p.toLocaleString()} đ/tháng
           </span>
         );
@@ -97,8 +120,8 @@ export const RoomTable: React.FC<RoomTableProps> = ({
         const item = r || (_ as Room) || {};
         const cap = item.capacity ?? item.maxCapacity ?? 1;
         return (
-          <span className="text-xs flex items-center gap-1 text-stay-text-secondary">
-            <Users className="w-3.5 h-3.5 text-stay-text-muted" /> {cap} người
+          <span className="text-xs text-stay-text-secondary">
+            {cap} người
           </span>
         );
       },
@@ -111,17 +134,18 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       render: (val: RoomStatus) => renderStatusTag(val),
     },
     {
-      title: 'Tùy chọn',
+      title: 'Thao tác',
       key: 'action',
-      width: 120,
+      width: 90,
+      align: 'right' as const,
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         return (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1">
             <Button
               size="small"
               type="text"
-              icon={<Edit2 className="w-3.5 h-3.5 text-stay-primary" />}
+              icon={<Edit2 className="w-3.5 h-3.5 text-stay-text-secondary hover:text-stay-text" />}
               onClick={() => onEdit(item)}
               title="Sửa phòng"
             />
@@ -149,7 +173,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs overflow-hidden">
+    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
       <Table
         dataSource={rooms}
         columns={columns}

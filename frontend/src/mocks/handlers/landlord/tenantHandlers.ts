@@ -73,7 +73,8 @@ export const tenantHandlers: Record<string, MockRouteHandler> = {
       buildingName: building?.name || 'Tòa nhà',
       roomId: room?.id || dto.roomId,
       roomName: room?.code || 'Phòng',
-      roleInRoom: dto.roleInRoom || 'MEMBER',
+      isRepresentative: Boolean(dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE')),
+      roleInRoom: (dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE')) ? 'REPRESENTATIVE' : 'MEMBER',
       linkStatus: 'UNLINKED',
       status: 'RENTING',
       createdAt: new Date().toISOString(),
@@ -113,7 +114,7 @@ export const tenantHandlers: Record<string, MockRouteHandler> = {
       return errorResponse('Không tìm thấy khách thuê', '404');
     }
 
-    if (tenant.roleInRoom === 'REPRESENTATIVE') {
+    if (tenant.isRepresentative || tenant.roleInRoom === 'REPRESENTATIVE') {
       return errorResponse(
         'Khách thuê là người đại diện hợp đồng, không thể xóa trực tiếp! Vui lòng chỉ định người đại diện mới hoặc thực hiện thanh lý hợp đồng.',
         '400'

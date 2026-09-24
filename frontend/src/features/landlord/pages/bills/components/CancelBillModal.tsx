@@ -1,5 +1,4 @@
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
 import { Modal, Input } from '@/shared/components';
 import { Bill } from '@/shared/types/landlord';
 
@@ -22,12 +21,7 @@ export const CancelBillModal: React.FC<CancelBillModalProps> = ({
 }) => {
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-lg pb-1">
-          <AlertCircle className="w-5 h-5" />
-          <span>Hủy Hóa Đơn Lập Sai</span>
-        </div>
-      }
+      title="Hủy hóa đơn"
       open={open}
       onOk={onSubmit}
       onCancel={onCancel}
@@ -35,7 +29,6 @@ export const CancelBillModal: React.FC<CancelBillModalProps> = ({
       okButtonProps={{ danger: true }}
       cancelText="Bỏ qua"
       width={520}
-      className="stay-modal-wide"
     >
       <div className="py-2 space-y-4">
         <p className="text-xs text-stay-text-secondary leading-relaxed">

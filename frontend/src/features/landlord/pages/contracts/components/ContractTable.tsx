@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Tag } from '@/shared/components';
+import { Table, Button } from '@/shared/components';
 import { RentalContract, ContractStatus } from '@/shared/types/landlord';
 
 interface ContractTableProps {
@@ -17,24 +17,27 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     switch (st) {
       case 'ACTIVE':
         return (
-          <Tag className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-semibold px-2.5 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Đang hiệu lực
-          </Tag>
+          </span>
         );
       case 'EXPIRING_SOON':
         return (
-          <Tag className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-semibold px-2.5 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             Sắp hết hạn
-          </Tag>
+          </span>
         );
       case 'TERMINATED':
         return (
-          <Tag className="bg-slate-500/10 text-stay-text-muted border-stay-border font-semibold px-2.5 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
             Đã thanh lý
-          </Tag>
+          </span>
         );
       default:
-        return <Tag className="border-stay-border text-stay-text px-2.5 py-0.5 rounded-full">{st}</Tag>;
+        return <span className="text-xs text-stay-text-muted">{st}</span>;
     }
   };
 
@@ -43,7 +46,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
       title: 'Mã hợp đồng',
       key: 'contractNumber',
       render: (_: any, r: RentalContract) => (
-        <span className="font-bold text-stay-primary">
+        <span className="font-mono text-xs font-semibold text-stay-text">
           {r.contractCode || r.contractNumber || `HD #${r.id}`}
         </span>
       ),
@@ -53,11 +56,11 @@ export const ContractTable: React.FC<ContractTableProps> = ({
       key: 'roomName',
       render: (_: any, r: RentalContract) => (
         <div>
-          <span className="font-semibold text-stay-text block">
-            {r.roomCode || r.roomName || '---'}
+          <span className="font-medium text-xs text-stay-text block">
+            {r.roomCode ? `P.${r.roomCode}` : r.roomName || '---'}
           </span>
           {r.buildingName && (
-            <span className="text-xs text-stay-text-secondary block">{r.buildingName}</span>
+            <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
           )}
         </div>
       ),
@@ -67,7 +70,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
       key: 'tenantName',
       render: (_: any, r: RentalContract) => (
         <div>
-          <p className="font-semibold text-stay-text">
+          <p className="font-medium text-sm text-stay-text">
             {r.representativeTenantName || r.tenantName || '---'}
           </p>
           {(r.representativeTenantPhone || r.tenantPhone) && (
@@ -81,38 +84,30 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     {
       title: 'Thời hạn thuê',
       key: 'period',
-      render: (_: any, r: RentalContract) => {
-        let months = r.durationMonths;
-        if (!months && r.startDate && r.endDate) {
-          const start = new Date(r.startDate);
-          const end = new Date(r.endDate);
-          months = Math.max(1, Math.round(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30)));
-        }
-        return (
-          <span className="text-xs font-mono text-stay-text">
-            {r.startDate} - {r.endDate} ({months || 12} tháng)
-          </span>
-        );
-      },
+      render: (_: any, r: RentalContract) => (
+        <div className="font-mono text-xs text-stay-text">
+          {r.startDate} → {r.endDate}
+        </div>
+      ),
     },
     {
-      title: 'Tiền thuê (VNĐ)',
+      title: 'Tiền thuê',
       key: 'monthlyRent',
       render: (_: any, r: RentalContract) => {
         const val = r.rentPrice ?? r.monthlyRent ?? 0;
         return (
-          <span className="font-bold text-stay-secondary">
-            {Number(val).toLocaleString()} đ
+          <span className="font-medium text-stay-text">
+            {Number(val).toLocaleString()} đ/tháng
           </span>
         );
       },
     },
     {
-      title: 'Tiền cọc (VNĐ)',
+      title: 'Tiền cọc',
       dataIndex: 'depositAmount',
       key: 'depositAmount',
       render: (val: number) => (
-        <span className="font-medium text-stay-text">{(val ?? 0).toLocaleString()} đ</span>
+        <span className="text-xs text-stay-text">{(val ?? 0).toLocaleString()} đ</span>
       ),
     },
     {
@@ -124,20 +119,23 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
+      width: 100,
+      align: 'right' as const,
       render: (_: any, r: RentalContract) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-end gap-1">
           {r.status === 'ACTIVE' && (
             <Button
               size="small"
+              type="text"
               danger
               onClick={() => onOpenTerminate(r)}
-              className="font-medium text-xs rounded-lg"
+              className="text-xs"
             >
               Thanh lý
             </Button>
           )}
           {r.status === 'TERMINATED' && (
-            <Tag color="default" className="rounded-md">Đã tất toán</Tag>
+            <span className="text-xs text-stay-text-muted">Đã tất toán</span>
           )}
         </div>
       ),
@@ -145,7 +143,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs overflow-hidden">
+    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
       <Table
         dataSource={contracts}
         columns={columns}

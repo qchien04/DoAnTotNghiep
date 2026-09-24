@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLandlordDashboard } from '@/shared/hooks';
-import { FileSpreadsheet } from 'lucide-react';
+
 import { Button, Skeleton } from '@/shared/components';
 import { message } from 'antd';
 import { DashboardStatsCards } from './components/DashboardStatsCards';
@@ -35,22 +35,19 @@ export const LandlordDashboardPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stay-card-bg p-6 rounded-2xl border border-stay-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stay-text tracking-tight">Dashboard Tổng Quan</h1>
-          <p className="text-sm text-stay-text-secondary">
-            Theo dõi tình hình kinh doanh, tỷ lệ lấp đầy phòng và công nợ thời gian thực
-          </p>
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Tổng quan</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => refetch()} className="rounded-xl">Làm mới</Button>
+          <Button onClick={() => refetch()} size="small">Làm mới</Button>
           <Button
             type="primary"
-            icon={<FileSpreadsheet className="w-4 h-4" />}
+            size="small"
             onClick={handleExportExcel}
-            className="bg-emerald-600 hover:bg-emerald-700 font-semibold shadow-md rounded-xl"
+            className="bg-stay-primary hover:bg-stay-primary-hover"
           >
-            Xuất Báo Cáo Excel
+            Xuất Excel
           </Button>
         </div>
       </div>

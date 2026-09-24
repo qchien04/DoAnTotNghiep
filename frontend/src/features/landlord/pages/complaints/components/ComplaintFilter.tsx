@@ -12,7 +12,7 @@ export const ComplaintFilter: React.FC<ComplaintFilterProps> = ({
   onStatusFilterChange,
 }) => {
   return (
-    <div className="p-4 rounded-2xl bg-stay-card-bg border border-stay-border flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Select
         value={statusFilter}
         onChange={(val) => onStatusFilterChange(val as ComplaintStatus | 'ALL')}

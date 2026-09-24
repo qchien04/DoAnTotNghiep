@@ -1,19 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  Receipt,
-  FileText,
-  Layers,
   Plus,
-  Zap,
-  Droplets,
-  Sparkles,
+  Minus,
   Trash2,
-  Calendar,
 } from 'lucide-react';
 import { Modal, Form, Input, Select, Button, Tag } from '@/shared/components';
 import { InputNumber, Alert, message } from 'antd';
 import { CreateBillDto, Room, RentalContract, ContractServiceItem } from '@/shared/types/landlord';
-import { DynamicServiceItem } from '../types';
+import { DynamicServiceItem, BillAdjustmentItem } from '../types';
 
 interface CreateBillModalProps {
   open: boolean;
@@ -37,7 +31,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
   const [activeContract, setActiveContract] = useState<RentalContract | null>(null);
   const [dynamicServices, setDynamicServices] = useState<DynamicServiceItem[]>([]);
   const [roomRentPrice, setRoomRentPrice] = useState<number>(3800000);
-  const [otherFee, setOtherFee] = useState<number>(0);
+  const [adjustments, setAdjustments] = useState<BillAdjustmentItem[]>([]);
 
   // Lọc danh sách phòng: Ưu tiên các phòng đang có hợp đồng hoặc trạng thái RENTED
   const availableRoomsForBill = useMemo(() => {
@@ -195,14 +189,12 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
       const initialRoomId = rentedRoom?.id || null;
 
       setSelectedRoomId(initialRoomId);
-      setOtherFee(0);
+      setAdjustments([]);
 
       form.setFieldsValue({
         roomId: initialRoomId,
         billingPeriod: defaultPeriod,
         dueDate: defaultDueDate,
-        otherAmount: 0,
-        otherNote: '',
       });
 
       if (initialRoomId) {
@@ -244,31 +236,56 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
     );
   };
 
-  const handleAddCustomService = () => {
-    const newService: DynamicServiceItem = {
-      key: `custom-${Date.now()}`,
-      serviceName: 'Phí dịch vụ phát sinh',
-      billingMethod: 'FIXED_PER_ROOM',
-      unit: 'lần',
-      unitPrice: 50000,
-      quantity: 1,
-      amount: 50000,
-      note: 'Phát sinh trong kỳ',
-    };
-    setDynamicServices((prev) => [...prev, newService]);
-  };
-
   const handleRemoveService = (key: string) => {
     setDynamicServices((prev) => prev.filter((s) => s.key !== key));
+  };
+
+  // Quản lý danh sách các khoản Phụ thu & Giảm trừ linh hoạt
+  const handleAddAdjustment = (type: 'SURCHARGE' | 'DISCOUNT') => {
+    const newItem: BillAdjustmentItem = {
+      id: `adj-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      type,
+      reason: '',
+      quantity: 1,
+      unitCost: 0,
+      unit: 'lần',
+    };
+    setAdjustments((prev) => [...prev, newItem]);
+  };
+
+  const handleRemoveAdjustment = (id: string) => {
+    setAdjustments((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleAdjustmentChange = (
+    id: string,
+    field: keyof BillAdjustmentItem,
+    value: any
+  ) => {
+    setAdjustments((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+    );
   };
 
   const servicesTotal = useMemo(() => {
     return dynamicServices.reduce((acc, cur) => acc + (cur.amount || 0), 0);
   }, [dynamicServices]);
 
+  const totalSurcharge = useMemo(() => {
+    return adjustments
+      .filter((a) => a.type === 'SURCHARGE')
+      .reduce((acc, cur) => acc + Number(cur.quantity || 0) * Number(cur.unitCost || 0), 0);
+  }, [adjustments]);
+
+  const totalDiscount = useMemo(() => {
+    return adjustments
+      .filter((a) => a.type === 'DISCOUNT')
+      .reduce((acc, cur) => acc + Number(cur.quantity || 0) * Number(cur.unitCost || 0), 0);
+  }, [adjustments]);
+
   const grandTotal = useMemo(() => {
-    return roomRentPrice + servicesTotal + otherFee;
-  }, [roomRentPrice, servicesTotal, otherFee]);
+    return Math.max(0, roomRentPrice + servicesTotal + totalSurcharge - totalDiscount);
+  }, [roomRentPrice, servicesTotal, totalSurcharge, totalDiscount]);
 
   const handleFinish = async () => {
     try {
@@ -276,6 +293,21 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
       if (!selectedRoomId) {
         message.warning('Vui lòng chọn phòng trọ để lập hóa đơn!');
         return;
+      }
+
+      // Kiểm tra tính hợp lệ của các khoản phụ thu / giảm trừ
+      for (let i = 0; i < adjustments.length; i++) {
+        const adj = adjustments[i];
+        const isSurch = adj.type === 'SURCHARGE';
+        const label = isSurch ? 'phụ thu' : 'giảm tiền';
+        if (!adj.reason || !adj.reason.trim()) {
+          message.warning(`Vui lòng nhập nguyên nhân cho khoản ${label} thứ ${i + 1}!`);
+          return;
+        }
+        if (!adj.unitCost || adj.unitCost <= 0) {
+          message.warning(`Vui lòng nhập đơn giá lớn hơn 0 cho khoản ${label}: "${adj.reason}"!`);
+          return;
+        }
       }
 
       const targetContract =
@@ -292,6 +324,37 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         (s) => s.serviceName.toLowerCase().includes('nước') && s.billingMethod === 'METER_INDEX'
       );
 
+      // Đóng gói các dòng phụ thu / giảm trừ thành các invoice item minh bạch
+      const adjustmentInvoiceItems = adjustments.map((adj) => {
+        const isSurcharge = adj.type === 'SURCHARGE';
+        const prefix = isSurcharge ? '[Phụ thu]' : '[Giảm trừ]';
+        const reason = adj.reason.trim() || (isSurcharge ? 'Phụ thu phát sinh' : 'Giảm trừ chi phí');
+        const qty = Number(adj.quantity || 1);
+        const cost = Number(adj.unitCost || 0);
+        const amount = isSurcharge ? qty * cost : -(qty * cost);
+        const unitPrice = isSurcharge ? cost : -cost;
+        const unit = adj.unit?.trim() || 'lần';
+
+        return {
+          contractServiceId: undefined,
+          itemName: `${prefix} ${reason}`,
+          billingMethod: 'FIXED_PER_UNIT',
+          quantity: qty,
+          unitPrice: unitPrice,
+          amount: amount,
+          note: `${qty} ${unit} x ${cost.toLocaleString()} đ${adj.reason ? ` - ${adj.reason}` : ''}`,
+        };
+      });
+
+      const adjustmentSummaryNote = adjustments
+        .map(
+          (a) =>
+            `${a.type === 'SURCHARGE' ? '+' : '-'}${a.reason.trim() || 'Khoản phát sinh'}: ${(
+              Number(a.quantity || 1) * Number(a.unitCost || 0)
+            ).toLocaleString()} đ`
+        )
+        .join('; ');
+
       const payload: CreateBillDto = {
         contractId: targetContract ? targetContract.id : undefined,
         roomId: selectedRoomId,
@@ -299,22 +362,25 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         dueDate: values.dueDate,
         currentElectricIndex: electricItem?.currentIndex,
         currentWaterIndex: waterItem?.currentIndex,
-        otherAmount: Number(values.otherAmount || 0),
-        otherNote: values.otherNote || '',
-        items: dynamicServices.map((item) => ({
-          contractServiceId: item.contractServiceId,
-          itemName: item.serviceName,
-          billingMethod: item.billingMethod,
-          previousIndex: item.previousIndex,
-          currentIndex: item.currentIndex,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          amount: item.amount,
-          note:
-            item.billingMethod === 'METER_INDEX'
-              ? `${item.quantity} ${item.unit} (Từ số ${item.previousIndex} đến ${item.currentIndex})`
-              : `${item.quantity} ${item.unit}`,
-        })),
+        otherAmount: 0,
+        otherNote: adjustmentSummaryNote || undefined,
+        items: [
+          ...dynamicServices.map((item) => ({
+            contractServiceId: item.contractServiceId,
+            itemName: item.serviceName,
+            billingMethod: item.billingMethod,
+            previousIndex: item.previousIndex,
+            currentIndex: item.currentIndex,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            amount: item.amount,
+            note:
+              item.billingMethod === 'METER_INDEX'
+                ? `${item.quantity} ${item.unit} (Từ số ${item.previousIndex} đến ${item.currentIndex})`
+                : `${item.quantity} ${item.unit}`,
+          })),
+          ...adjustmentInvoiceItems,
+        ],
       };
 
       await onSubmit(payload);
@@ -327,312 +393,403 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-stay-primary font-bold text-lg pb-1">
-          <Receipt className="w-5 h-5" />
-          <span>Tính Tiền Phòng & Phát Hành Hóa Đơn Cước Tháng</span>
-        </div>
-      }
+      title="Lập hóa đơn thu tiền"
       open={open}
       onOk={handleFinish}
       onCancel={onCancel}
       confirmLoading={confirmLoading}
       okText="Phát hành hóa đơn"
       cancelText="Đóng"
-      width={880}
-      className="stay-modal-wide"
+      width={920}
     >
       <Form
         form={form}
         layout="vertical"
-        className="mt-4 space-y-5"
+        className="mt-4 space-y-4"
         onValuesChange={(changed) => {
           if (changed.roomId) {
             handleRoomSelectChange(changed.roomId);
           }
-          if (changed.otherAmount !== undefined) {
-            setOtherFee(Number(changed.otherAmount || 0));
-          }
         }}
       >
         {/* SECTION 1: PHÒNG & THỜI HẠN */}
-        <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border space-y-4">
-          <div className="flex items-center gap-2 font-bold text-stay-text text-sm">
-            <Calendar className="w-4 h-4 text-stay-primary" />
-            <span>1. Thông tin Phòng & Chu kỳ thu cước</span>
-          </div>
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-stay-text">
+            1. Thông tin phòng & chu kỳ thu cước
+          </h3>
+          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Form.Item
+                label={<span className="text-stay-text font-medium text-xs">Chọn phòng trọ (*)</span>}
+                name="roomId"
+                rules={[{ required: true, message: 'Vui lòng chọn phòng (*)' }]}
+                className="mb-0"
+              >
+                <Select
+                  showSearch
+                  className="w-full h-9"
+                  filterOption={(input, option) =>
+                    String(option?.label || '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  options={availableRoomsForBill.map((r: any) => ({
+                    label: `${r.roomCode || r.code || r.name} - ${r.tenantName} (${(r.listedPrice || r.price || 0).toLocaleString()} đ)`,
+                    value: r.id,
+                  }))}
+                />
+              </Form.Item>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Form.Item
-              label={<span className="text-stay-text font-medium text-xs">Chọn phòng trọ (*)</span>}
-              name="roomId"
-              rules={[{ required: true, message: 'Vui lòng chọn phòng (*)' }]}
-              className="mb-0"
-            >
-              <Select
-                showSearch
-                className="w-full h-10"
-                filterOption={(input, option) =>
-                  String(option?.label || '').toLowerCase().includes(input.toLowerCase())
-                }
-                options={availableRoomsForBill.map((r: any) => ({
-                  label: `${r.roomCode || r.code || r.name} - ${r.tenantName} (${(r.listedPrice || r.price || 0).toLocaleString()} đ)`,
-                  value: r.id,
-                }))}
-              />
-            </Form.Item>
+              <Form.Item
+                label={<span className="text-stay-text font-medium text-xs">Kỳ cước hóa đơn (*)</span>}
+                name="billingPeriod"
+                rules={[{ required: true, message: 'Nhập kỳ cước (MM/YYYY) (*)' }]}
+                className="mb-0"
+              >
+                <Input placeholder="10/2026..." className="h-9 text-xs" />
+              </Form.Item>
 
-            <Form.Item
-              label={<span className="text-stay-text font-medium text-xs">Kỳ cước hóa đơn (*)</span>}
-              name="billingPeriod"
-              rules={[{ required: true, message: 'Nhập kỳ cước (MM/YYYY) (*)' }]}
-              className="mb-0"
-            >
-              <Input placeholder="10/2026..." className="h-10" />
-            </Form.Item>
-
-            <Form.Item
-              label={<span className="text-stay-text font-medium text-xs">Hạn nộp tiền (*)</span>}
-              name="dueDate"
-              rules={[{ required: true, message: 'Chọn hạn nộp (*)' }]}
-              className="mb-0"
-            >
-              <Input type="date" className="h-10" />
-            </Form.Item>
+              <Form.Item
+                label={<span className="text-stay-text font-medium text-xs">Hạn nộp tiền (*)</span>}
+                name="dueDate"
+                rules={[{ required: true, message: 'Chọn hạn nộp (*)' }]}
+                className="mb-0"
+              >
+                <Input type="date" className="h-9 text-xs" />
+              </Form.Item>
+            </div>
           </div>
         </div>
 
-        {/* SECTION 2: HỢP ĐỒNG & TIỀN PHÒNG */}
-        <div className="p-4 rounded-2xl bg-stay-primary/5 border border-stay-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-stay-primary/10 text-stay-primary">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-stay-text-secondary font-medium">Hợp đồng thuê hiệu lực:</p>
-              <p className="text-sm font-bold text-stay-text">
-                {activeContract
-                  ? activeContract.contractCode || activeContract.contractNumber || `HĐ #${activeContract.id}`
-                  : 'Chưa gắn hợp đồng - Dùng giá phòng mặc định'}
-                {activeContract?.representativeTenantName && ` (Khách: ${activeContract.representativeTenantName})`}
-              </p>
-            </div>
+        {/* THÔNG TIN HỢP ĐỒNG & GIÁ THUÊ PHÒNG */}
+        <div className="p-3 rounded-lg bg-stay-card-bg border border-stay-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div>
+            <p className="text-stay-text-secondary text-[11px]">Hợp đồng thuê phòng:</p>
+            <p className="font-semibold text-stay-text text-xs">
+              {activeContract
+                ? activeContract.contractCode || activeContract.contractNumber || `HĐ #${activeContract.id}`
+                : 'Chưa gắn hợp đồng - Dùng giá phòng mặc định'}
+              {activeContract?.representativeTenantName && ` (Khách: ${activeContract.representativeTenantName})`}
+            </p>
           </div>
           <div className="sm:text-right">
-            <span className="text-xs text-stay-text-secondary block">Tiền phòng cố định:</span>
-            <span className="text-lg font-black text-stay-primary">
-              {roomRentPrice.toLocaleString()} đ
+            <span className="text-stay-text-secondary text-[11px] block">Tiền thuê phòng:</span>
+            <span className="text-sm font-semibold text-stay-text">
+              {roomRentPrice.toLocaleString()} đ/tháng
             </span>
           </div>
         </div>
 
-        {/* SECTION 3: DANH SÁCH DỊCH VỤ ĐỘNG */}
-        <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-bold text-stay-text text-sm">
-              <Layers className="w-4 h-4 text-stay-primary" />
-              <span>2. Các khoản mục dịch vụ theo hợp đồng ({dynamicServices.length} mục)</span>
-            </div>
-            <Button
-              size="small"
-              type="dashed"
-              icon={<Plus className="w-3.5 h-3.5" />}
-              onClick={handleAddCustomService}
-              className="text-xs text-stay-primary border-stay-primary/50 rounded-lg"
-            >
-              Thêm khoản mục khác
-            </Button>
-          </div>
+        {/* SECTION 2: BẢNG DỊCH VỤ THEO HỢP ĐỒNG */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-stay-text">
+            2. Các khoản mục dịch vụ theo hợp đồng ({dynamicServices.length})
+          </h3>
 
           {dynamicServices.length === 0 ? (
             <Alert
-              message="Phòng này chưa cấu hình dịch vụ trong hợp đồng. Bạn có thể bấm 'Thêm khoản mục khác' để nhập chi phí."
+              message="Phòng này chưa cấu hình dịch vụ trong hợp đồng. Nếu có chi phí phát sinh, bạn có thể thêm ở mục Phụ thu bên dưới."
               type="info"
               showIcon
-              className="rounded-xl"
+              className="rounded-xl text-xs"
             />
           ) : (
-            <div className="space-y-2.5 pt-1">
-              {dynamicServices.map((svc) => (
-                <div
-                  key={svc.key}
-                  className="p-3.5 rounded-xl border border-stay-border bg-stay-card-bg hover:border-stay-primary/40 transition-colors"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    {/* Tên dịch vụ & Badge hình thức */}
-                    <div className="flex items-center gap-2.5 min-w-[210px]">
-                      {svc.serviceName.toLowerCase().includes('điện') ? (
-                        <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
-                          <Zap className="w-4 h-4" />
-                        </div>
-                      ) : svc.serviceName.toLowerCase().includes('nước') ? (
-                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-                          <Droplets className="w-4 h-4" />
-                        </div>
-                      ) : (
-                        <div className="p-2 rounded-lg bg-stay-primary/10 text-stay-primary">
-                          <Sparkles className="w-4 h-4" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-bold text-xs text-stay-text leading-tight">{svc.serviceName}</p>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <Tag className="text-[10px] leading-tight px-1.5 py-0 m-0 bg-stay-primary-subtle text-stay-primary border-stay-primary/30 font-medium rounded">
-                            {svc.billingMethod === 'METER_INDEX'
-                              ? 'Công tơ'
-                              : svc.billingMethod === 'FIXED_PER_PERSON'
-                              ? 'Theo người'
-                              : 'Cố định'}
-                          </Tag>
-                          <span className="text-[11px] text-stay-text-secondary font-medium">
-                            {svc.unitPrice.toLocaleString()} đ/{svc.unit}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+            <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[11px] font-semibold uppercase tracking-wider">
+                  <tr>
+                    <th className="p-2.5 pl-3">Dịch vụ</th>
+                    <th className="p-2.5 text-right w-28">Đơn giá</th>
+                    <th className="p-2.5 text-center w-24">Chỉ số cũ</th>
+                    <th className="p-2.5 text-center w-36">Chỉ số mới / SL</th>
+                    <th className="p-2.5 text-center w-24">Sử dụng</th>
+                    <th className="p-2.5 text-right w-32">Thành tiền</th>
+                    <th className="p-2.5 text-center w-10 pr-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stay-border text-stay-text">
+                  {dynamicServices.map((svc) => (
+                    <tr key={svc.key} className="hover:bg-stay-bg-app/40 transition-colors">
+                      {/* Tên dịch vụ & Cách tính */}
+                      <td className="p-2.5 pl-3">
+                        <p className="font-semibold text-stay-text">{svc.serviceName}</p>
+                        <p className="text-[11px] text-stay-text-secondary">
+                          {svc.billingMethod === 'METER_INDEX'
+                            ? 'Theo công tơ'
+                            : svc.billingMethod === 'FIXED_PER_PERSON'
+                            ? 'Theo người'
+                            : 'Cố định'}
+                        </p>
+                      </td>
 
-                    {/* Vùng nhập liệu động */}
-                    <div className="flex items-center gap-4 flex-wrap">
-                      {svc.billingMethod === 'METER_INDEX' ? (
-                        <div className="flex items-center gap-2 text-xs">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-stay-text-secondary text-xs">Số cũ:</span>
-                            <span className="font-bold bg-stay-bg-app text-stay-text px-2.5 py-1 rounded-lg border border-stay-border">
-                              {svc.previousIndex ?? 0}
-                            </span>
-                          </div>
-                          <span className="text-stay-text-secondary">&rarr;</span>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-stay-text-secondary text-xs">Số mới (*):</span>
-                            <InputNumber
-                              min={svc.previousIndex ?? 0}
-                              value={svc.currentIndex}
-                              onChange={(val) => handleServiceChange(svc.key, 'currentIndex', val)}
-                              className="w-28 h-9 pt-0.5 font-bold"
-                            />
-                          </div>
-                          <span className="text-stay-primary font-semibold text-xs pl-1">
-                            (= {svc.quantity} {svc.unit})
+                      {/* Đơn giá */}
+                      <td className="p-2.5 text-right whitespace-nowrap text-stay-text-secondary">
+                        {svc.unitPrice.toLocaleString()} đ/{svc.unit}
+                      </td>
+
+                      {/* Chỉ số cũ */}
+                      <td className="p-2.5 text-center whitespace-nowrap">
+                        {svc.billingMethod === 'METER_INDEX' ? (
+                          <span className="px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border font-semibold text-stay-text text-xs">
+                            {svc.previousIndex ?? 0}
                           </span>
-                        </div>
-                      ) : svc.billingMethod === 'FIXED_PER_PERSON' ? (
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="text-stay-text-secondary text-xs">Số người:</span>
+                        ) : (
+                          <span className="text-stay-text-muted">-</span>
+                        )}
+                      </td>
+
+                      {/* Chỉ số mới hoặc số lượng nhập */}
+                      <td className="p-2.5 text-center">
+                        {svc.billingMethod === 'METER_INDEX' ? (
+                          <InputNumber
+                            min={svc.previousIndex ?? 0}
+                            value={svc.currentIndex}
+                            onChange={(val) => handleServiceChange(svc.key, 'currentIndex', val)}
+                            className="w-full h-8 text-xs font-bold text-center"
+                            placeholder="Số mới"
+                          />
+                        ) : svc.billingMethod === 'FIXED_PER_PERSON' ? (
                           <InputNumber
                             min={1}
                             value={svc.quantity}
                             onChange={(val) => handleServiceChange(svc.key, 'quantity', val)}
-                            className="w-24 h-9 pt-0.5 font-bold"
+                            className="w-full h-8 text-xs font-bold text-center"
+                            addonAfter="người"
                           />
-                          <span className="text-stay-text-secondary text-xs">người</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="text-stay-text-secondary text-xs">Số lượng:</span>
+                        ) : (
                           <InputNumber
                             min={1}
                             value={svc.quantity}
                             onChange={(val) => handleServiceChange(svc.key, 'quantity', val)}
-                            className="w-24 h-9 pt-0.5 font-bold"
+                            className="w-full h-8 text-xs font-bold text-center"
+                            addonAfter={svc.unit}
                           />
-                          <span className="text-stay-text-secondary text-xs">{svc.unit}</span>
-                        </div>
-                      )}
+                        )}
+                      </td>
 
-                      {/* Thành tiền dịch vụ & Nút xóa */}
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-sm text-stay-text min-w-[95px] text-right">
-                          {svc.amount.toLocaleString()} đ
-                        </span>
+                      {/* Sản lượng sử dụng */}
+                      <td className="p-2.5 text-center whitespace-nowrap font-medium text-stay-text">
+                        {svc.quantity} {svc.unit}
+                      </td>
+
+                      {/* Thành tiền */}
+                      <td className="p-2.5 text-right whitespace-nowrap font-bold text-stay-text">
+                        {svc.amount.toLocaleString()} đ
+                      </td>
+
+                      {/* Xóa dòng nếu cần */}
+                      <td className="p-2.5 text-center pr-3">
                         <Button
                           size="small"
                           type="text"
                           danger
-                          icon={<Trash2 className="w-4 h-4" />}
+                          icon={<Trash2 className="w-3.5 h-3.5" />}
                           onClick={() => handleRemoveService(svc.key)}
-                          title="Xóa mục này"
-                          className="rounded-lg"
+                          title="Bỏ dịch vụ này khỏi hóa đơn"
+                          className="rounded-lg hover:bg-rose-500/10"
                         />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        {/* SECTION 4: PHỤ THU PHÁT SINH */}
-        <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border space-y-4">
-          <div className="flex items-center gap-2 font-bold text-stay-text text-sm">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>3. Chi phí phụ thu phát sinh trong kỳ (nếu có)</span>
+        {/* SECTION 3: BẢNG PHỤ THU & GIẢM TRỪ */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-stay-text">
+              3. Phụ thu phát sinh & giảm trừ cước phí ({adjustments.length})
+            </h3>
+
+            {/* 2 nút thao tác chuẩn, trung tính */}
+            <div className="flex items-center gap-2">
+              <Button
+                size="small"
+                icon={<Plus className="w-3.5 h-3.5" />}
+                onClick={() => handleAddAdjustment('SURCHARGE')}
+                className="text-xs font-medium rounded-lg"
+              >
+                Thêm phụ thu (+)
+              </Button>
+              <Button
+                size="small"
+                icon={<Minus className="w-3.5 h-3.5" />}
+                onClick={() => handleAddAdjustment('DISCOUNT')}
+                className="text-xs font-medium rounded-lg"
+              >
+                Thêm giảm tiền (-)
+              </Button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Form.Item
-              label={<span className="text-stay-text font-medium text-xs">Số tiền phụ thu (VNĐ)</span>}
-              name="otherAmount"
-              className="mb-0"
-            >
-              <InputNumber
-                min={0}
-                step={10000}
-                formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
-                className="w-full h-10 pt-1"
-                placeholder="0 đ..."
-              />
-            </Form.Item>
+          {adjustments.length === 0 ? (
+            <div className="p-4 rounded-xl border border-dashed border-stay-border bg-stay-card-bg text-center text-xs text-stay-text-secondary">
+              Chưa có phụ thu hoặc giảm trừ nào trong kỳ cước này. Bấm <strong>Thêm phụ thu (+)</strong> nếu có chi phí phát sinh hoặc <strong>Thêm giảm tiền (-)</strong> nếu có khuyến mãi/bù trừ.
+            </div>
+          ) : (
+            <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[11px] font-semibold uppercase tracking-wider">
+                  <tr>
+                    <th className="p-2.5 pl-3 w-28 text-center">Loại</th>
+                    <th className="p-2.5">Nguyên nhân / Nội dung</th>
+                    <th className="p-2.5 text-center w-20">SL</th>
+                    <th className="p-2.5 text-center w-24">Đơn vị</th>
+                    <th className="p-2.5 text-right w-36">Đơn giá (VNĐ)</th>
+                    <th className="p-2.5 text-right w-32">Thành tiền</th>
+                    <th className="p-2.5 text-center w-10 pr-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stay-border text-stay-text">
+                  {adjustments.map((adj) => {
+                    const isSurcharge = adj.type === 'SURCHARGE';
+                    const rowTotal = Number(adj.quantity || 1) * Number(adj.unitCost || 0);
 
-            <Form.Item
-              label={<span className="text-stay-text font-medium text-xs">Lý do phụ thu phát sinh</span>}
-              name="otherNote"
-              className="mb-0"
-            >
-              <Input placeholder="Ví dụ: Vệ sinh điều hòa, phí làm thẻ xe bổ sung..." className="h-10" />
-            </Form.Item>
-          </div>
+                    return (
+                      <tr key={adj.id} className="hover:bg-stay-bg-app/40 transition-colors">
+                        {/* Loại: Phụ thu hay Giảm trừ */}
+                        <td className="p-2.5 pl-3 text-center">
+                          <Tag className="m-0 font-medium text-xs border-stay-border bg-stay-bg-app text-stay-text">
+                            {isSurcharge ? '+ Phụ thu' : '- Giảm tiền'}
+                          </Tag>
+                        </td>
+
+                        {/* Nguyên nhân */}
+                        <td className="p-2.5">
+                          <Input
+                            placeholder={
+                              isSurcharge
+                                ? 'Nguyên nhân phụ thu (vd: Thẻ xe, sửa khóa...)'
+                                : 'Lý do giảm tiền (vd: Giảm giá lễ, bù tiền điện...)'
+                            }
+                            value={adj.reason}
+                            onChange={(e) => handleAdjustmentChange(adj.id, 'reason', e.target.value)}
+                            className="w-full h-8 text-xs"
+                          />
+                        </td>
+
+                        {/* Số lượng */}
+                        <td className="p-2.5 text-center">
+                          <InputNumber
+                            min={1}
+                            value={adj.quantity}
+                            onChange={(val) => handleAdjustmentChange(adj.id, 'quantity', val || 1)}
+                            className="w-full h-8 text-xs font-bold text-center"
+                          />
+                        </td>
+
+                        {/* Đơn vị */}
+                        <td className="p-2.5 text-center">
+                          <Input
+                            placeholder="lần"
+                            value={adj.unit}
+                            onChange={(e) => handleAdjustmentChange(adj.id, 'unit', e.target.value)}
+                            className="w-full h-8 text-xs text-center"
+                          />
+                        </td>
+
+                        {/* Đơn giá */}
+                        <td className="p-2.5 text-right">
+                          <InputNumber
+                            min={0}
+                            step={10000}
+                            value={adj.unitCost}
+                            onChange={(val) => handleAdjustmentChange(adj.id, 'unitCost', val || 0)}
+                            formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
+                            placeholder="0"
+                            className="w-full h-8 text-xs font-bold text-right"
+                          />
+                        </td>
+
+                        {/* Thành tiền */}
+                        <td className="p-2.5 text-right whitespace-nowrap font-bold text-stay-text">
+                          {isSurcharge ? '+' : '-'} {rowTotal.toLocaleString()} đ
+                        </td>
+
+                        {/* Xóa */}
+                        <td className="p-2.5 text-center pr-3">
+                          <Button
+                            size="small"
+                            type="text"
+                            danger
+                            icon={<Trash2 className="w-3.5 h-3.5" />}
+                            onClick={() => handleRemoveAdjustment(adj.id)}
+                            title="Xóa dòng này"
+                            className="rounded-lg hover:bg-rose-500/10"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* SECTION 5: BẢNG CHIẾT TÍNH CHI PHÍ MINH BẠCH */}
-        <div className="p-5 rounded-2xl bg-stay-card-bg border border-stay-primary/30 space-y-3">
-          <p className="font-bold text-stay-text text-sm flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-stay-primary" />
-            <span>Bảng chiết tính chi phí minh bạch kỳ này:</span>
-          </p>
+        {/* SECTION 4: BẢNG CHIẾT TÍNH CHI PHÍ */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-stay-text">
+            4. Bảng chiết tính chi phí kỳ này
+          </h3>
+          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-2.5 text-xs">
+            <div className="space-y-1 text-stay-text divide-y divide-stay-border/60">
+              <div className="flex justify-between py-1">
+                <span className="text-stay-text-secondary">1. Tiền thuê phòng:</span>
+                <span className="font-semibold text-stay-text">{roomRentPrice.toLocaleString()} đ</span>
+              </div>
 
-          <div className="space-y-1.5 text-xs text-stay-text">
-            <div className="flex justify-between py-1 border-b border-stay-border/50">
-              <span className="text-stay-text-secondary">1. Tiền thuê phòng cố định:</span>
-              <span className="font-bold text-stay-text">{roomRentPrice.toLocaleString()} đ</span>
+              {dynamicServices.map((svc) => (
+                <div key={svc.key} className="flex justify-between py-1 pt-1.5">
+                  <span className="text-stay-text-secondary">
+                    • {svc.serviceName} ({svc.quantity} {svc.unit} x {svc.unitPrice.toLocaleString()} đ):
+                  </span>
+                  <span className="font-semibold text-stay-text">{svc.amount.toLocaleString()} đ</span>
+                </div>
+              ))}
+
+              {/* Các khoản phụ thu */}
+              {adjustments
+                .filter((a) => a.type === 'SURCHARGE')
+                .map((adj) => (
+                  <div key={adj.id} className="flex justify-between py-1 pt-1.5 font-medium">
+                    <span className="text-stay-text-secondary">
+                      + [Phụ thu] {adj.reason || 'Khoản phát sinh'} ({adj.quantity} {adj.unit || 'lần'} x {Number(adj.unitCost || 0).toLocaleString()} đ):
+                    </span>
+                    <span className="font-bold text-stay-text">
+                      + {(Number(adj.quantity || 1) * Number(adj.unitCost || 0)).toLocaleString()} đ
+                    </span>
+                  </div>
+                ))}
+
+              {/* Các khoản giảm trừ */}
+              {adjustments
+                .filter((a) => a.type === 'DISCOUNT')
+                .map((adj) => (
+                  <div key={adj.id} className="flex justify-between py-1 pt-1.5 font-medium">
+                    <span className="text-stay-text-secondary">
+                      - [Giảm trừ] {adj.reason || 'Khoản giảm chi phí'} ({adj.quantity} {adj.unit || 'lần'} x {Number(adj.unitCost || 0).toLocaleString()} đ):
+                    </span>
+                    <span className="font-bold text-stay-text">
+                      - {(Number(adj.quantity || 1) * Number(adj.unitCost || 0)).toLocaleString()} đ
+                    </span>
+                  </div>
+                ))}
             </div>
 
-            {dynamicServices.map((svc) => (
-              <div key={svc.key} className="flex justify-between py-1 border-b border-stay-border/50">
-                <span className="text-stay-text-secondary">
-                  • {svc.serviceName} ({svc.quantity} {svc.unit} x {svc.unitPrice.toLocaleString()}đ):
-                </span>
-                <span className="font-semibold text-stay-text">{svc.amount.toLocaleString()} đ</span>
-              </div>
-            ))}
-
-            {otherFee > 0 && (
-              <div className="flex justify-between py-1 border-b border-stay-border/50 text-amber-500 font-semibold">
-                <span>+ Phụ thu phát sinh:</span>
-                <span>{otherFee.toLocaleString()} đ</span>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-3 border-t border-stay-border flex justify-between items-center">
-            <span className="font-bold text-stay-text text-sm">TỔNG CỘNG HÓA ĐƠN THU TIỀN:</span>
-            <span className="text-2xl font-black text-stay-primary">
-              {grandTotal.toLocaleString()} VNĐ
-            </span>
+            <div className="pt-2.5 border-t border-stay-border flex justify-between items-center">
+              <span className="font-bold text-stay-text text-sm">TỔNG TIỀN HÓA ĐƠN:</span>
+              <span className="text-xl font-bold text-stay-primary">
+                {grandTotal.toLocaleString()} VNĐ
+              </span>
+            </div>
           </div>
         </div>
       </Form>
     </Modal>
   );
 };
+
+

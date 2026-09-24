@@ -1,5 +1,6 @@
 import apiClient from './api';
 import { ResponseData } from '@/shared/types/api';
+import { resolveServiceUnit } from '@/shared/utils/serviceUtils';
 import {
   Building,
   CreateBuildingDto,
@@ -118,7 +119,11 @@ const normalizeService = (s: any): UtilityService => {
     code: sCode,
     name: s.name || s.serviceName || '',
     category: s.category || 'OTHER',
-    unit: s.unit || 'Tháng',
+    unit: resolveServiceUnit({
+      ...s,
+      billingMethod: bMethod,
+      chargingType: bMethod,
+    }),
     unitPrice: uPrice,
     price: uPrice,
     billingMethod: bMethod,
@@ -127,6 +132,112 @@ const normalizeService = (s: any): UtilityService => {
     appliedScope: scp === 'ALL' ? 'Tất cả' : scp,
     isActive: isAct,
     status: isAct ? 'ACTIVE' : 'SUSPENDED',
+  };
+};
+
+const normalizeTenant = (t: any): Tenant => {
+  if (!t) return t;
+  const isRep =
+    t.isRepresentative !== undefined && t.isRepresentative !== null
+      ? Boolean(t.isRepresentative)
+      : t.roleInRoom === 'REPRESENTATIVE' || t.is_representative === true;
+  const idCard = t.idCardNumber || t.identityCard || '';
+  const rName = t.roomCode || t.roomName || (t.roomId ? `Phòng #${t.roomId}` : 'Phòng trọ');
+  const bDate = t.dateOfBirth || t.birthDate;
+
+  return {
+    ...t,
+    id: t.id,
+    fullName: t.fullName || '',
+    phone: t.phone || '',
+    isRepresentative: isRep,
+    roleInRoom: isRep ? 'REPRESENTATIVE' : 'MEMBER',
+    idCardNumber: idCard,
+    identityCard: idCard,
+    roomId: t.roomId,
+    roomName: rName,
+    roomCode: t.roomCode || rName,
+    buildingName: t.buildingName || '',
+    hometown: t.hometown || '',
+    gender: t.gender || '',
+    dateOfBirth: bDate,
+    birthDate: bDate,
+    linkStatus: t.linkStatus || 'NOT_LINKED',
+    status: t.status || 'STAYING',
+  };
+};
+
+const normalizeBill = (b: any): Bill => {
+  if (!b) return b;
+  const invCode = b.invoiceCode || b.billNumber || (b.id ? `HD-${b.id}` : 'HD-01');
+  const rName = b.roomCode ? `Phòng ${b.roomCode}` : (b.roomName || '---');
+  const tName = b.representativeTenantName || b.tenantName || '---';
+  const tPhone = b.representativeTenantPhone || b.tenantPhone || '';
+  const period = b.billingPeriod || b.billingMonth || '';
+  const tot = Number(b.totalAmount || 0);
+  const paid = Number(b.paidAmount || 0);
+  const rem = b.remainingAmount !== undefined ? Number(b.remainingAmount) : Math.max(0, tot - paid);
+
+  let eConsumed = b.electricConsumed;
+  if (eConsumed === undefined && b.currentElectricIndex != null && b.previousElectricIndex != null) {
+    eConsumed = Math.max(0, Number(b.currentElectricIndex) - Number(b.previousElectricIndex));
+  }
+
+  let wConsumed = b.waterConsumed;
+  if (wConsumed === undefined && b.currentWaterIndex != null && b.previousWaterIndex != null) {
+    wConsumed = Math.max(0, Number(b.currentWaterIndex) - Number(b.previousWaterIndex));
+  }
+
+  return {
+    ...b,
+    id: b.id,
+    invoiceCode: invCode,
+    billNumber: invCode,
+    roomName: rName,
+    roomCode: b.roomCode || rName,
+    tenantName: tName,
+    representativeTenantName: tName,
+    tenantPhone: tPhone,
+    representativeTenantPhone: tPhone,
+    billingPeriod: period,
+    billingMonth: period,
+    totalAmount: tot,
+    paidAmount: paid,
+    remainingAmount: rem,
+    electricConsumed: eConsumed || 0,
+    waterConsumed: wConsumed || 0,
+    status: b.status,
+  };
+};
+
+const normalizeComplaint = (c: any): Complaint => {
+  if (!c) return c;
+  const cCode = c.complaintCode || c.code || (c.id ? `KN${String(c.id).padStart(2, '0')}` : 'KN01');
+  const rName = c.roomCode ? `Phòng ${c.roomCode}` : (c.roomName || '---');
+  const tName = c.tenantName || c.senderName || '---';
+  const tPhone = c.tenantPhone || c.senderPhone || '';
+  const iType = c.incidentType || c.type || 'Sự cố khác';
+  const uLevel = c.severity || c.urgency || 'MEDIUM';
+  const rNote = c.resolutionNote || c.responseNote || '';
+
+  return {
+    ...c,
+    id: c.id,
+    complaintCode: cCode,
+    code: cCode,
+    roomName: rName,
+    roomCode: c.roomCode || rName,
+    tenantName: tName,
+    senderName: tName,
+    tenantPhone: tPhone,
+    senderPhone: tPhone,
+    incidentType: iType,
+    type: iType,
+    severity: uLevel,
+    urgency: uLevel as any,
+    resolutionNote: rNote,
+    responseNote: rNote,
+    status: c.status,
   };
 };
 
@@ -213,10 +324,15 @@ export const landlordService = {
 
   // 2. Phòng trọ (UC 05 - 08)
   getRooms: async (params?: RoomFilterParams): Promise<ResponseData<Room[]>> => {
+    let st = params?.status === 'ALL' ? undefined : params?.status;
+    if (st === 'RENTED') st = 'OCCUPIED';
+    if (st === 'MAINTENANCE') st = 'UNDER_MAINTENANCE';
+    if (st === 'DISABLED') st = 'STOPPED';
+
     const res = await apiClient.get<ResponseData<Room[]>>('/api/v1/landlord/rooms', {
       params: {
         buildingId: params?.buildingId,
-        status: params?.status === 'ALL' ? undefined : params?.status,
+        status: st,
         floor: params?.floor,
         search: params?.keyword,
       },
@@ -365,15 +481,21 @@ export const landlordService = {
   getTenants: async (params?: TenantFilterParams): Promise<ResponseData<Tenant[]>> => {
     const res = await apiClient.get<ResponseData<Tenant[]>>('/api/v1/landlord/tenants', {
       params: {
+        buildingId: params?.buildingId,
         roomId: params?.roomId,
+        keyword: params?.keyword,
         search: params?.keyword,
         linkStatus: params?.linkStatus === 'ALL' ? undefined : params?.linkStatus,
       },
     });
+    if (res.data?.data && Array.isArray(res.data.data)) {
+      res.data.data = res.data.data.map(normalizeTenant);
+    }
     return res.data;
   },
 
   createTenant: async (dto: CreateTenantDto): Promise<ResponseData<Tenant>> => {
+    const isRep = dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE');
     const payload = {
       roomId: Number(dto.roomId),
       fullName: dto.fullName,
@@ -384,13 +506,18 @@ export const landlordService = {
       hometown: dto.hometown,
       idCardPhotoFront: dto.idCardPhotoFront || dto.idCardFrontImage,
       idCardPhotoBack: dto.idCardPhotoBack || dto.idCardBackImage,
-      isRepresentative: dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE'),
+      isRepresentative: isRep,
+      roleInRoom: isRep ? 'REPRESENTATIVE' : 'MEMBER',
     };
     const res = await apiClient.post<ResponseData<Tenant>>('/api/v1/landlord/tenants', payload);
+    if (res.data?.data) {
+      res.data.data = normalizeTenant(res.data.data);
+    }
     return res.data;
   },
 
   updateTenant: async (id: string | number, dto: UpdateTenantDto): Promise<ResponseData<Tenant>> => {
+    const isRep = dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE');
     const payload = {
       roomId: dto.roomId ? Number(dto.roomId) : undefined,
       fullName: dto.fullName,
@@ -401,9 +528,13 @@ export const landlordService = {
       hometown: dto.hometown,
       idCardPhotoFront: dto.idCardPhotoFront || dto.idCardFrontImage,
       idCardPhotoBack: dto.idCardPhotoBack || dto.idCardBackImage,
-      isRepresentative: dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE'),
+      isRepresentative: isRep,
+      roleInRoom: isRep ? 'REPRESENTATIVE' : 'MEMBER',
     };
     const res = await apiClient.put<ResponseData<Tenant>>(`/api/v1/landlord/tenants/${id}`, payload);
+    if (res.data?.data) {
+      res.data.data = normalizeTenant(res.data.data);
+    }
     return res.data;
   },
 
@@ -502,12 +633,20 @@ export const landlordService = {
 
   // 6. Hóa đơn & Thu tiền (UC 22 - 26) -> Invoices
   getBills: async (params?: BillFilterParams): Promise<ResponseData<Bill[]>> => {
+    let st = params?.status === 'ALL' ? undefined : params?.status;
+    if (st === 'PENDING') st = 'UNPAID';
+    if (st === 'PARTIAL') st = 'PARTIALLY_PAID';
+
     const res = await apiClient.get<ResponseData<Bill[]>>('/api/v1/landlord/invoices', {
       params: {
+        buildingId: params?.buildingId,
         billingPeriod: params?.billingPeriod || params?.billingMonth,
-        status: params?.status === 'ALL' ? undefined : params?.status,
+        status: st,
       },
     });
+    if (res.data?.data && Array.isArray(res.data.data)) {
+      res.data.data = res.data.data.map(normalizeBill);
+    }
     return res.data;
   },
 
@@ -582,16 +721,26 @@ export const landlordService = {
 
   // 7. Khiếu nại (UC 27 - 28)
   getComplaints: async (params?: ComplaintFilterParams): Promise<ResponseData<Complaint[]>> => {
+    let st = params?.status === 'ALL' ? undefined : params?.status;
+    if (st === 'NEW') st = 'PENDING';
+
     const res = await apiClient.get<ResponseData<Complaint[]>>('/api/v1/landlord/complaints', {
       params: {
-        status: params?.status === 'ALL' ? undefined : params?.status,
+        buildingId: params?.buildingId,
+        status: st,
       },
     });
+    if (res.data?.data && Array.isArray(res.data.data)) {
+      res.data.data = res.data.data.map(normalizeComplaint);
+    }
     return res.data;
   },
 
   getComplaintById: async (id: string | number): Promise<ResponseData<Complaint>> => {
     const res = await apiClient.get<ResponseData<Complaint>>(`/api/v1/landlord/complaints/${id}`);
+    if (res.data?.data) {
+      res.data.data = normalizeComplaint(res.data.data);
+    }
     return res.data;
   },
 
