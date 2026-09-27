@@ -23,11 +23,9 @@ import java.util.stream.Collectors;
 public class InvoiceResponse {
 
     private Long id;
-    private String invoiceCode;
     private Long contractId;
-    private String contractCode;
     private Long roomId;
-    private String roomCode;
+    private String roomName;
     private String buildingName;
     private String representativeTenantName;
     private String representativeTenantPhone;
@@ -39,12 +37,6 @@ public class InvoiceResponse {
     private Long totalAmount;
     private Long paidAmount;
     private Long remainingAmount;
-    private Integer previousElectricIndex;
-    private Integer currentElectricIndex;
-    private Integer electricConsumed;
-    private Integer previousWaterIndex;
-    private Integer currentWaterIndex;
-    private Integer waterConsumed;
     private String status;
     private String paymentMethod;
     private Instant paidAt;
@@ -58,7 +50,11 @@ public class InvoiceResponse {
     @AllArgsConstructor
     public static class InvoiceItemResponse {
         private Long id;
+        private Long contractServiceId;
+        private String itemType;
         private String itemName;
+        private Integer previousIndex;
+        private Integer currentIndex;
         private BigDecimal quantity;
         private Long unitPrice;
         private Long amount;
@@ -71,7 +67,11 @@ public class InvoiceResponse {
         List<InvoiceItemResponse> itemList = invoice.getItems() != null
                 ? invoice.getItems().stream().map(item -> InvoiceItemResponse.builder()
                 .id(item.getId())
+                .contractServiceId(item.getContractService() != null ? item.getContractService().getId() : null)
+                .itemType(item.getItemType())
                 .itemName(item.getItemName())
+                .previousIndex(item.getPreviousIndex())
+                .currentIndex(item.getCurrentIndex())
                 .quantity(item.getQuantity())
                 .unitPrice(item.getUnitPrice())
                 .amount(item.getAmount())
@@ -79,11 +79,10 @@ public class InvoiceResponse {
                 .build()).collect(Collectors.toList())
                 : List.of();
 
-        String cCode = invoice.getContract() != null ? invoice.getContract().getContractCode() : null;
         Long rId = (invoice.getContract() != null && invoice.getContract().getRoom() != null)
                 ? invoice.getContract().getRoom().getId() : null;
-        String rCode = (invoice.getContract() != null && invoice.getContract().getRoom() != null)
-                ? invoice.getContract().getRoom().getRoomCode() : null;
+        String rName = (invoice.getContract() != null && invoice.getContract().getRoom() != null)
+                ? invoice.getContract().getRoom().getName() : null;
         String bName = (invoice.getContract() != null && invoice.getContract().getRoom() != null && invoice.getContract().getRoom().getBuilding() != null)
                 ? invoice.getContract().getRoom().getBuilding().getName() : null;
 
@@ -92,25 +91,13 @@ public class InvoiceResponse {
         String repPhone = (invoice.getContract() != null && invoice.getContract().getRepresentativeTenant() != null)
                 ? invoice.getContract().getRepresentativeTenant().getPhone() : null;
 
-        int eConsumed = 0;
-        if (invoice.getCurrentElectricIndex() != null && invoice.getPreviousElectricIndex() != null) {
-            eConsumed = Math.max(0, invoice.getCurrentElectricIndex() - invoice.getPreviousElectricIndex());
-        }
-
-        int wConsumed = 0;
-        if (invoice.getCurrentWaterIndex() != null && invoice.getPreviousWaterIndex() != null) {
-            wConsumed = Math.max(0, invoice.getCurrentWaterIndex() - invoice.getPreviousWaterIndex());
-        }
-
         long remaining = Math.max(0, invoice.getTotalAmount() - (invoice.getPaidAmount() != null ? invoice.getPaidAmount() : 0L));
 
         return InvoiceResponse.builder()
                 .id(invoice.getId())
-                .invoiceCode(invoice.getInvoiceCode())
                 .contractId(invoice.getContract() != null ? invoice.getContract().getId() : null)
-                .contractCode(cCode)
                 .roomId(rId)
-                .roomCode(rCode)
+                .roomName(rName)
                 .buildingName(bName)
                 .representativeTenantName(repName)
                 .representativeTenantPhone(repPhone)
@@ -122,12 +109,6 @@ public class InvoiceResponse {
                 .totalAmount(invoice.getTotalAmount())
                 .paidAmount(invoice.getPaidAmount())
                 .remainingAmount(remaining)
-                .previousElectricIndex(invoice.getPreviousElectricIndex())
-                .currentElectricIndex(invoice.getCurrentElectricIndex())
-                .electricConsumed(eConsumed)
-                .previousWaterIndex(invoice.getPreviousWaterIndex())
-                .currentWaterIndex(invoice.getCurrentWaterIndex())
-                .waterConsumed(wConsumed)
                 .status(invoice.getStatus())
                 .paymentMethod(invoice.getPaymentMethod())
                 .paidAt(invoice.getPaidAt())

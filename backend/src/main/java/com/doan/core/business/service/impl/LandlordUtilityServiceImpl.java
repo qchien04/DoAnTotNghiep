@@ -59,7 +59,6 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
 
         UtilityService service = UtilityService.builder()
                 .landlord(landlord)
-                .serviceCode(request.getServiceCode())
                 .name(request.getName().trim())
                 .category(request.getCategory().trim())
                 .unit(request.getUnit().trim())
@@ -85,7 +84,6 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
             throw new BaseException(ErrorCode.SERVICE_ALREADY_EXISTS);
         }
 
-        service.setServiceCode(request.getServiceCode());
         service.setName(request.getName().trim());
         service.setCategory(request.getCategory().trim());
         service.setUnit(request.getUnit().trim());

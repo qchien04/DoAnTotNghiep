@@ -17,8 +17,6 @@ import java.time.Instant;
 @Table(name = "complaints")
 public class Complaint extends BaseEntity {
 
-    @Column(name = "complaint_code", length = 30, unique = true)
-    private String complaintCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
@@ -53,4 +51,10 @@ public class Complaint extends BaseEntity {
 
     @Column(name = "resolved_at")
     private Instant resolvedAt;
+
+    @Column(name = "rating")
+    private Integer rating;
+
+    @Column(name = "feedback", columnDefinition = "TEXT")
+    private String feedback;
 }

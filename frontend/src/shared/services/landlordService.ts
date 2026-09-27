@@ -35,27 +35,51 @@ import {
 } from '@/shared/types/landlord';
 
 const normalizeBuilding = (b: any): Building => ({
-  ...b,
-  code: b.buildingCode || b.code,
-  address: b.addressDetail || b.address,
-  totalFloors: b.numFloors !== undefined ? b.numFloors : b.totalFloors,
-  amenities: Array.isArray(b.amenities)
-    ? b.amenities
-    : (typeof b.commonAmenities === 'string' && b.commonAmenities.trim()
-        ? b.commonAmenities.split(',').map((s: string) => s.trim())
-        : (b.commonAmenities || [])),
-  rules: b.generalRules || b.rules,
+  id: b.id,
+  name: b.name,
+  province: b.province,
+  ward: b.ward,
+  addressDetail: b.addressDetail,
+  numFloors: b.numFloors !== undefined ? b.numFloors : 1,
+  generalRules: b.generalRules,
+  latitude: b.latitude !== undefined && b.latitude !== null ? Number(b.latitude) : undefined,
+  longitude: b.longitude !== undefined && b.longitude !== null ? Number(b.longitude) : undefined,
+  isActive: b.isActive !== undefined ? Boolean(b.isActive) : true,
+  totalRooms: b.totalRooms ?? 0,
+  occupiedRooms: b.occupiedRooms ?? 0,
+  availableRooms: b.availableRooms ?? 0,
+  createdAt: b.createdAt,
 });
 
 const normalizeRoom = (r: any): Room => ({
-  ...r,
-  code: r.roomCode || r.code,
-  price: r.listedPrice !== undefined ? r.listedPrice : r.price,
-  deposit: r.standardDeposit !== undefined ? r.standardDeposit : r.deposit,
-  capacity: r.maxCapacity !== undefined ? r.maxCapacity : r.capacity,
-  currentTenantsCount: r.currentOccupancy !== undefined ? r.currentOccupancy : r.currentTenantsCount,
+  id: r.id,
+  buildingId: r.buildingId ?? null,
+  buildingName: r.buildingName,
+  name: r.name,
+  floor: r.floor ?? 1,
+  area: Number(r.area ?? 0),
+  listedPrice: Number(r.listedPrice ?? 0),
+  standardDeposit: Number(r.standardDeposit ?? 0),
+  maxCapacity: Number(r.maxCapacity ?? 1),
+  currentOccupancy: Number(r.currentOccupancy ?? 0),
+  furnishingLevel: r.furnishingLevel || 'BASIC',
+  amenities: Array.isArray(r.amenities)
+    ? r.amenities
+    : typeof r.amenities === 'string' && r.amenities.trim()
+    ? r.amenities.split(',').map((s: string) => s.trim())
+    : [],
+  serviceIds: Array.isArray(r.serviceIds) ? r.serviceIds.map(Number) : [],
+  services: r.services || [],
+  description: r.description || '',
+  status: r.status || 'AVAILABLE',
+  province: r.province,
+  ward: r.ward,
+  addressDetail: r.addressDetail,
+  imageUrls: Array.isArray(r.imageUrls) ? r.imageUrls : [],
   latitude: r.latitude !== undefined && r.latitude !== null ? Number(r.latitude) : undefined,
   longitude: r.longitude !== undefined && r.longitude !== null ? Number(r.longitude) : undefined,
+  isPublic: r.isPublic !== undefined ? Boolean(r.isPublic) : true,
+  createdAt: r.createdAt,
 });
 
 const calculateMonthsBetween = (startDate?: string, endDate?: string): number => {
@@ -70,54 +94,42 @@ const calculateMonthsBetween = (startDate?: string, endDate?: string): number =>
 
 const normalizeContract = (c: any): RentalContract => {
   if (!c) return c;
-  const code = c.contractCode || c.contractNumber || (c.id ? `HD${String(c.id).padStart(2, '0')}` : 'HD01');
-  const rName = c.roomCode || c.roomName || (c.roomId ? `Phòng #${c.roomId}` : 'Phòng trọ');
-  const tName = c.representativeTenantName || c.tenantName || '---';
-  const tPhone = c.representativeTenantPhone || c.tenantPhone || '';
-  const price = Number(c.rentPrice !== undefined ? c.rentPrice : (c.monthlyRent !== undefined ? c.monthlyRent : 0));
   const months = c.durationMonths || calculateMonthsBetween(c.startDate, c.endDate);
 
   return {
-    ...c,
-    contractCode: code,
-    contractNumber: code,
-    roomName: rName,
-    roomCode: c.roomCode || rName,
-    tenantName: tName,
-    representativeTenantName: tName,
-    tenantPhone: tPhone,
-    representativeTenantPhone: tPhone,
-    rentPrice: price,
-    monthlyRent: price,
+    id: c.id,
+    roomId: c.roomId,
+    roomName: c.roomName || (c.roomId ? `Phòng #${c.roomId}` : 'Phòng trọ'),
+    buildingName: c.buildingName || '',
+    representativeTenantId: c.representativeTenantId,
+    representativeTenantName: c.representativeTenantName || '---',
+    representativeTenantPhone: c.representativeTenantPhone || '',
+    startDate: c.startDate,
     durationMonths: months,
-    depositAmount: Number(c.depositAmount || 0),
-    initialElectricIndex: c.initialElectricIndex ?? c.initialElectricityReading ?? 0,
-    initialWaterIndex: c.initialWaterIndex ?? c.initialWaterReading ?? 0,
-    initialElectricityReading: c.initialElectricIndex ?? c.initialElectricityReading ?? 0,
-    initialWaterReading: c.initialWaterIndex ?? c.initialWaterReading ?? 0,
+    endDate: c.endDate,
+    rentPrice: Number(c.rentPrice ?? 0),
+    depositAmount: Number(c.depositAmount ?? 0),
+    paymentCycleDay: c.paymentCycleDay ?? 5,
+    depositRefundAmount: c.depositRefundAmount,
+    status: c.status || 'ACTIVE',
+    pdfFileUrl: c.pdfFileUrl,
+    termsAndConditions: c.termsAndConditions || '',
+    services: c.services || [],
+    serviceIds: c.serviceIds ? c.serviceIds.map(Number) : [],
+    tenants: c.tenants || [],
+    createdAt: c.createdAt,
   };
 };
 
 const normalizeService = (s: any): UtilityService => {
   if (!s) return s;
-  const isAct = s.isActive !== undefined ? Boolean(s.isActive) : (s.status ? s.status === 'ACTIVE' : true);
-  const uPrice = Number(s.unitPrice !== undefined ? s.unitPrice : (s.price !== undefined ? s.price : 0));
-  const sCode = s.serviceCode || s.code || (s.id ? `DV${String(s.id).padStart(2, '0')}` : 'DV01');
-  const bMethod = s.billingMethod || (
-    s.chargingType === 'METER' || s.chargingType === 'METER_INDEX'
-      ? 'METER_INDEX'
-      : (s.chargingType === 'PER_PERSON' || s.chargingType === 'FIXED_PER_PERSON'
-          ? 'FIXED_PER_PERSON'
-          : (s.chargingType === 'FIXED_PER_UNIT' ? 'FIXED_PER_UNIT' : 'FIXED_PER_ROOM'))
-  );
-  const scp = s.scope || s.appliedScope || 'ALL';
+  const isAct = s.isActive !== undefined ? Boolean(s.isActive) : true;
+  const uPrice = Number(s.unitPrice ?? 0);
+  const bMethod = s.billingMethod || 'FIXED_PER_ROOM';
 
   return {
-    ...s,
     id: s.id,
-    serviceCode: sCode,
-    code: sCode,
-    name: s.name || s.serviceName || '',
+    name: s.name || '',
     category: s.category || 'OTHER',
     unit: resolveServiceUnit({
       ...s,
@@ -125,119 +137,103 @@ const normalizeService = (s: any): UtilityService => {
       chargingType: bMethod,
     }),
     unitPrice: uPrice,
-    price: uPrice,
     billingMethod: bMethod,
-    chargingType: bMethod as any,
-    scope: scp,
-    appliedScope: scp === 'ALL' ? 'Tất cả' : scp,
+    scope: s.scope || 'ALL',
     isActive: isAct,
-    status: isAct ? 'ACTIVE' : 'SUSPENDED',
+    createdAt: s.createdAt,
   };
 };
 
 const normalizeTenant = (t: any): Tenant => {
   if (!t) return t;
-  const isRep =
-    t.isRepresentative !== undefined && t.isRepresentative !== null
-      ? Boolean(t.isRepresentative)
-      : t.roleInRoom === 'REPRESENTATIVE' || t.is_representative === true;
-  const idCard = t.idCardNumber || t.identityCard || '';
-  const rName = t.roomCode || t.roomName || (t.roomId ? `Phòng #${t.roomId}` : 'Phòng trọ');
-  const bDate = t.dateOfBirth || t.birthDate;
 
   return {
-    ...t,
     id: t.id,
+    roomId: t.roomId,
+    roomName: t.roomName || (t.roomId ? `Phòng #${t.roomId}` : 'Phòng trọ'),
+    buildingName: t.buildingName || '',
+    contractId: t.contractId,
+    userId: t.userId,
+    userEmail: t.userEmail,
     fullName: t.fullName || '',
     phone: t.phone || '',
-    isRepresentative: isRep,
-    roleInRoom: isRep ? 'REPRESENTATIVE' : 'MEMBER',
-    idCardNumber: idCard,
-    identityCard: idCard,
-    roomId: t.roomId,
-    roomName: rName,
-    roomCode: t.roomCode || rName,
-    buildingName: t.buildingName || '',
-    hometown: t.hometown || '',
+    idCardNumber: t.idCardNumber || '',
     gender: t.gender || '',
-    dateOfBirth: bDate,
-    birthDate: bDate,
+    dateOfBirth: t.dateOfBirth,
+    hometown: t.hometown || '',
+    idCardPhotoFront: t.idCardPhotoFront,
+    idCardPhotoBack: t.idCardPhotoBack,
+    isRepresentative: Boolean(t.isRepresentative),
     linkStatus: t.linkStatus || 'NOT_LINKED',
     status: t.status || 'STAYING',
+    createdAt: t.createdAt,
   };
 };
 
 const normalizeBill = (b: any): Bill => {
   if (!b) return b;
-  const invCode = b.invoiceCode || b.billNumber || (b.id ? `HD-${b.id}` : 'HD-01');
-  const rName = b.roomCode ? `Phòng ${b.roomCode}` : (b.roomName || '---');
-  const tName = b.representativeTenantName || b.tenantName || '---';
-  const tPhone = b.representativeTenantPhone || b.tenantPhone || '';
-  const period = b.billingPeriod || b.billingMonth || '';
   const tot = Number(b.totalAmount || 0);
   const paid = Number(b.paidAmount || 0);
   const rem = b.remainingAmount !== undefined ? Number(b.remainingAmount) : Math.max(0, tot - paid);
 
-  let eConsumed = b.electricConsumed;
-  if (eConsumed === undefined && b.currentElectricIndex != null && b.previousElectricIndex != null) {
-    eConsumed = Math.max(0, Number(b.currentElectricIndex) - Number(b.previousElectricIndex));
-  }
-
-  let wConsumed = b.waterConsumed;
-  if (wConsumed === undefined && b.currentWaterIndex != null && b.previousWaterIndex != null) {
-    wConsumed = Math.max(0, Number(b.currentWaterIndex) - Number(b.previousWaterIndex));
-  }
-
   return {
-    ...b,
     id: b.id,
-    invoiceCode: invCode,
-    billNumber: invCode,
-    roomName: rName,
-    roomCode: b.roomCode || rName,
-    tenantName: tName,
-    representativeTenantName: tName,
-    tenantPhone: tPhone,
-    representativeTenantPhone: tPhone,
-    billingPeriod: period,
-    billingMonth: period,
+    contractId: b.contractId,
+    roomId: b.roomId,
+    roomName: b.roomName || '---',
+    buildingName: b.buildingName,
+    representativeTenantName: b.representativeTenantName || '---',
+    representativeTenantPhone: b.representativeTenantPhone || '',
+    billingPeriod: b.billingPeriod || '',
+    dueDate: b.dueDate,
+    roomPrice: b.roomPrice,
+    servicesAmount: b.servicesAmount,
+    otherAmount: b.otherAmount,
     totalAmount: tot,
     paidAmount: paid,
     remainingAmount: rem,
-    electricConsumed: eConsumed || 0,
-    waterConsumed: wConsumed || 0,
     status: b.status,
+    paymentMethod: b.paymentMethod,
+    paidAt: b.paidAt,
+    cancelReason: b.cancelReason,
+    paymentNote: b.paymentNote,
+    items: (b.items || []).map((it: any) => ({
+      id: it.id,
+      contractServiceId: it.contractServiceId,
+      itemName: it.itemName,
+      previousIndex: it.previousIndex,
+      currentIndex: it.currentIndex,
+      quantity: Number(it.quantity ?? 1),
+      unitPrice: Number(it.unitPrice ?? 0),
+      amount: Number(it.amount ?? 0),
+      note: it.note,
+    })),
+    createdAt: b.createdAt,
   };
 };
 
 const normalizeComplaint = (c: any): Complaint => {
   if (!c) return c;
-  const cCode = c.complaintCode || c.code || (c.id ? `KN${String(c.id).padStart(2, '0')}` : 'KN01');
-  const rName = c.roomCode ? `Phòng ${c.roomCode}` : (c.roomName || '---');
-  const tName = c.tenantName || c.senderName || '---';
-  const tPhone = c.tenantPhone || c.senderPhone || '';
-  const iType = c.incidentType || c.type || 'Sự cố khác';
-  const uLevel = c.severity || c.urgency || 'MEDIUM';
-  const rNote = c.resolutionNote || c.responseNote || '';
 
   return {
-    ...c,
     id: c.id,
-    complaintCode: cCode,
-    code: cCode,
-    roomName: rName,
-    roomCode: c.roomCode || rName,
-    tenantName: tName,
-    senderName: tName,
-    tenantPhone: tPhone,
-    senderPhone: tPhone,
-    incidentType: iType,
-    type: iType,
-    severity: uLevel,
-    urgency: uLevel as any,
-    resolutionNote: rNote,
-    responseNote: rNote,
-    status: c.status,
+    roomId: c.roomId,
+    roomName: c.roomName || '---',
+    buildingName: c.buildingName,
+    tenantId: c.tenantId,
+    tenantName: c.tenantName || '---',
+    tenantPhone: c.tenantPhone || '',
+    title: c.title || '',
+    content: c.content || '',
+    incidentType: c.incidentType || 'OTHER',
+    severity: c.severity || 'MEDIUM',
+    images: c.images,
+    status: c.status || 'PENDING',
+    resolutionNote: c.resolutionNote,
+    resolvedAt: c.resolvedAt,
+    rating: c.rating,
+    feedback: c.feedback,
+    createdAt: c.createdAt,
   };
 };
 
@@ -247,7 +243,6 @@ export const landlordService = {
     const res = await apiClient.get<ResponseData<Building[]>>('/api/v1/landlord/buildings', {
       params: {
         keyword: params?.keyword,
-        search: params?.keyword,
         floors: params?.floors,
       },
     });
@@ -267,20 +262,12 @@ export const landlordService = {
 
   createBuilding: async (dto: CreateBuildingDto): Promise<ResponseData<Building>> => {
     const payload = {
-      buildingCode: dto.buildingCode || dto.code || `TN${Date.now().toString().slice(-4)}`,
       name: dto.name,
       province: dto.province,
-      district: dto.district,
       ward: dto.ward,
-      addressDetail: dto.addressDetail || dto.address || '',
-      numFloors: Number(dto.numFloors || dto.totalFloors || 1),
-      generalRules: dto.generalRules || (typeof dto.rules === 'string' ? dto.rules : undefined),
-      commonAmenities: Array.isArray(dto.amenities)
-        ? dto.amenities
-        : (Array.isArray(dto.commonAmenities)
-            ? dto.commonAmenities
-            : (dto.commonAmenities ? [dto.commonAmenities] : (dto.amenities ? [dto.amenities] : []))),
-      serviceIds: dto.serviceIds ? dto.serviceIds.map(Number) : undefined,
+      addressDetail: dto.addressDetail || '',
+      numFloors: Number(dto.numFloors || 1),
+      generalRules: dto.generalRules,
       latitude: dto.latitude,
       longitude: dto.longitude,
     };
@@ -293,20 +280,12 @@ export const landlordService = {
 
   updateBuilding: async (id: string | number, dto: UpdateBuildingDto): Promise<ResponseData<Building>> => {
     const payload = {
-      buildingCode: dto.buildingCode || dto.code,
       name: dto.name,
       province: dto.province,
-      district: dto.district,
       ward: dto.ward,
-      addressDetail: dto.addressDetail || dto.address,
-      numFloors: dto.numFloors || dto.totalFloors ? Number(dto.numFloors || dto.totalFloors) : undefined,
-      generalRules: dto.generalRules || (typeof dto.rules === 'string' ? dto.rules : undefined),
-      commonAmenities: Array.isArray(dto.amenities)
-        ? dto.amenities
-        : (Array.isArray(dto.commonAmenities)
-            ? dto.commonAmenities
-            : (dto.commonAmenities ? [dto.commonAmenities] : (dto.amenities ? [dto.amenities] : undefined))),
-      serviceIds: dto.serviceIds ? dto.serviceIds.map(Number) : undefined,
+      addressDetail: dto.addressDetail,
+      numFloors: dto.numFloors ? Number(dto.numFloors) : undefined,
+      generalRules: dto.generalRules,
       latitude: dto.latitude,
       longitude: dto.longitude,
     };
@@ -352,16 +331,14 @@ export const landlordService = {
   },
 
   createRoom: async (dto: CreateRoomDto): Promise<ResponseData<Room>> => {
-    const code = dto.roomCode || dto.code || `P${Date.now().toString().slice(-3)}`;
     const payload = {
-      buildingId: Number(dto.buildingId),
-      roomCode: code,
-      name: dto.name || `Phòng ${code}`,
+      buildingId: dto.buildingId !== undefined && dto.buildingId !== null ? Number(dto.buildingId) : null,
+      name: dto.name,
       floor: Number(dto.floor || 1),
       area: Number(dto.area || 20),
-      listedPrice: Number(dto.listedPrice ?? dto.price ?? 0),
-      standardDeposit: Number(dto.standardDeposit ?? dto.deposit ?? 0),
-      maxCapacity: Number(dto.maxCapacity ?? dto.capacity ?? 2),
+      listedPrice: Number(dto.listedPrice ?? 0),
+      standardDeposit: Number(dto.standardDeposit ?? 0),
+      maxCapacity: Number(dto.maxCapacity ?? 2),
       furnishingLevel: dto.furnishingLevel || 'BASIC',
       amenities: Array.isArray(dto.amenities)
         ? dto.amenities
@@ -369,6 +346,10 @@ export const landlordService = {
       serviceIds: dto.serviceIds ? dto.serviceIds.map(Number) : [],
       description: dto.description || '',
       status: dto.status || 'AVAILABLE',
+      isPublic: dto.isPublic !== undefined ? dto.isPublic : true,
+      province: dto.province,
+      ward: dto.ward,
+      addressDetail: dto.addressDetail,
       imageUrls: dto.imageUrls || [],
       latitude: dto.latitude !== undefined && dto.latitude !== null ? Number(dto.latitude) : undefined,
       longitude: dto.longitude !== undefined && dto.longitude !== null ? Number(dto.longitude) : undefined,
@@ -382,14 +363,13 @@ export const landlordService = {
 
   updateRoom: async (id: string | number, dto: UpdateRoomDto): Promise<ResponseData<Room>> => {
     const payload = {
-      buildingId: dto.buildingId ? Number(dto.buildingId) : undefined,
-      roomCode: dto.roomCode || dto.code,
+      buildingId: dto.buildingId !== undefined ? (dto.buildingId !== null ? Number(dto.buildingId) : null) : undefined,
       name: dto.name,
       floor: dto.floor ? Number(dto.floor) : undefined,
       area: dto.area ? Number(dto.area) : undefined,
-      listedPrice: dto.listedPrice !== undefined || dto.price !== undefined ? Number(dto.listedPrice ?? dto.price) : undefined,
-      standardDeposit: dto.standardDeposit !== undefined || dto.deposit !== undefined ? Number(dto.standardDeposit ?? dto.deposit) : undefined,
-      maxCapacity: dto.maxCapacity !== undefined || dto.capacity !== undefined ? Number(dto.maxCapacity ?? dto.capacity) : undefined,
+      listedPrice: dto.listedPrice !== undefined ? Number(dto.listedPrice) : undefined,
+      standardDeposit: dto.standardDeposit !== undefined ? Number(dto.standardDeposit) : undefined,
+      maxCapacity: dto.maxCapacity !== undefined ? Number(dto.maxCapacity) : undefined,
       furnishingLevel: dto.furnishingLevel,
       amenities: Array.isArray(dto.amenities)
         ? dto.amenities
@@ -397,6 +377,10 @@ export const landlordService = {
       serviceIds: dto.serviceIds ? dto.serviceIds.map(Number) : undefined,
       description: dto.description,
       status: dto.status,
+      isPublic: dto.isPublic,
+      province: dto.province,
+      ward: dto.ward,
+      addressDetail: dto.addressDetail,
       imageUrls: dto.imageUrls,
       latitude: dto.latitude !== undefined && dto.latitude !== null ? Number(dto.latitude) : undefined,
       longitude: dto.longitude !== undefined && dto.longitude !== null ? Number(dto.longitude) : undefined,
@@ -423,22 +407,14 @@ export const landlordService = {
   },
 
   createService: async (dto: CreateServiceDto): Promise<ResponseData<UtilityService>> => {
-    const method = dto.billingMethod || (
-      dto.chargingType === 'METER' || dto.chargingType === 'METER_INDEX'
-        ? 'METER_INDEX'
-        : (dto.chargingType === 'PER_PERSON' || dto.chargingType === 'FIXED_PER_PERSON'
-            ? 'FIXED_PER_PERSON'
-            : (dto.chargingType === 'FIXED_PER_UNIT' ? 'FIXED_PER_UNIT' : 'FIXED_PER_ROOM'))
-    );
     const payload = {
-      serviceCode: dto.serviceCode || dto.code || `DV${Date.now().toString().slice(-3)}`,
       name: dto.name,
       category: dto.category || 'OTHER',
       unit: dto.unit || 'Tháng',
-      unitPrice: Number(dto.unitPrice !== undefined ? dto.unitPrice : (dto.price !== undefined ? dto.price : 0)),
-      billingMethod: method,
-      scope: dto.scope || dto.appliedScope || 'ALL',
-      isActive: dto.isActive !== undefined ? dto.isActive : (dto.status ? dto.status === 'ACTIVE' : true),
+      unitPrice: Number(dto.unitPrice ?? 0),
+      billingMethod: dto.billingMethod || 'FIXED_PER_ROOM',
+      scope: dto.scope || 'ALL',
+      isActive: dto.isActive !== undefined ? dto.isActive : true,
     };
     const res = await apiClient.post<ResponseData<UtilityService>>('/api/v1/landlord/services', payload);
     if (res.data?.data) {
@@ -448,22 +424,14 @@ export const landlordService = {
   },
 
   updateService: async (id: string | number, dto: UpdateServiceDto): Promise<ResponseData<UtilityService>> => {
-    const method = dto.billingMethod || (
-      dto.chargingType === 'METER' || dto.chargingType === 'METER_INDEX'
-        ? 'METER_INDEX'
-        : (dto.chargingType === 'PER_PERSON' || dto.chargingType === 'FIXED_PER_PERSON'
-            ? 'FIXED_PER_PERSON'
-            : (dto.chargingType === 'FIXED_PER_UNIT' ? 'FIXED_PER_UNIT' : (dto.chargingType ? 'FIXED_PER_ROOM' : undefined)))
-    );
     const payload = {
-      serviceCode: dto.serviceCode || dto.code,
       name: dto.name,
       category: dto.category,
       unit: dto.unit,
-      unitPrice: dto.unitPrice !== undefined || dto.price !== undefined ? Number(dto.unitPrice ?? dto.price) : undefined,
-      billingMethod: method,
-      scope: dto.scope || dto.appliedScope,
-      isActive: dto.isActive !== undefined ? dto.isActive : (dto.status ? dto.status === 'ACTIVE' : undefined),
+      unitPrice: dto.unitPrice !== undefined ? Number(dto.unitPrice) : undefined,
+      billingMethod: dto.billingMethod,
+      scope: dto.scope,
+      isActive: dto.isActive,
     };
     const res = await apiClient.put<ResponseData<UtilityService>>(`/api/v1/landlord/services/${id}`, payload);
     if (res.data?.data) {
@@ -484,7 +452,6 @@ export const landlordService = {
         buildingId: params?.buildingId,
         roomId: params?.roomId,
         keyword: params?.keyword,
-        search: params?.keyword,
         linkStatus: params?.linkStatus === 'ALL' ? undefined : params?.linkStatus,
       },
     });
@@ -495,19 +462,17 @@ export const landlordService = {
   },
 
   createTenant: async (dto: CreateTenantDto): Promise<ResponseData<Tenant>> => {
-    const isRep = dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE');
     const payload = {
       roomId: Number(dto.roomId),
       fullName: dto.fullName,
       phone: dto.phone,
-      idCardNumber: dto.idCardNumber || dto.identityCard || '',
+      idCardNumber: dto.idCardNumber || '',
       gender: dto.gender || 'Khác',
-      dateOfBirth: dto.dateOfBirth || dto.birthDate,
+      dateOfBirth: dto.dateOfBirth,
       hometown: dto.hometown,
-      idCardPhotoFront: dto.idCardPhotoFront || dto.idCardFrontImage,
-      idCardPhotoBack: dto.idCardPhotoBack || dto.idCardBackImage,
-      isRepresentative: isRep,
-      roleInRoom: isRep ? 'REPRESENTATIVE' : 'MEMBER',
+      idCardPhotoFront: dto.idCardPhotoFront,
+      idCardPhotoBack: dto.idCardPhotoBack,
+      isRepresentative: Boolean(dto.isRepresentative),
     };
     const res = await apiClient.post<ResponseData<Tenant>>('/api/v1/landlord/tenants', payload);
     if (res.data?.data) {
@@ -517,19 +482,17 @@ export const landlordService = {
   },
 
   updateTenant: async (id: string | number, dto: UpdateTenantDto): Promise<ResponseData<Tenant>> => {
-    const isRep = dto.isRepresentative ?? (dto.roleInRoom === 'REPRESENTATIVE');
     const payload = {
       roomId: dto.roomId ? Number(dto.roomId) : undefined,
       fullName: dto.fullName,
       phone: dto.phone,
-      idCardNumber: dto.idCardNumber || dto.identityCard,
+      idCardNumber: dto.idCardNumber,
       gender: dto.gender,
-      dateOfBirth: dto.dateOfBirth || dto.birthDate,
+      dateOfBirth: dto.dateOfBirth,
       hometown: dto.hometown,
-      idCardPhotoFront: dto.idCardPhotoFront || dto.idCardFrontImage,
-      idCardPhotoBack: dto.idCardPhotoBack || dto.idCardBackImage,
-      isRepresentative: isRep,
-      roleInRoom: isRep ? 'REPRESENTATIVE' : 'MEMBER',
+      idCardPhotoFront: dto.idCardPhotoFront,
+      idCardPhotoBack: dto.idCardPhotoBack,
+      isRepresentative: dto.isRepresentative !== undefined ? Boolean(dto.isRepresentative) : undefined,
     };
     const res = await apiClient.put<ResponseData<Tenant>>(`/api/v1/landlord/tenants/${id}`, payload);
     if (res.data?.data) {
@@ -545,9 +508,15 @@ export const landlordService = {
 
   inviteTenantLink: async (tenantId: string | number, searchKeyword: string): Promise<ResponseData<Tenant>> => {
     const res = await apiClient.post<ResponseData<Tenant>>(
-      `/api/v1/landlord/tenants/${tenantId}/link`,
-      null,
-      { params: { searchKeyword } }
+      `/api/v1/landlord/tenants/${tenantId}/invite-link`,
+      { searchKeyword }
+    );
+    return res.data;
+  },
+
+  cancelTenantInvitation: async (tenantId: string | number): Promise<ResponseData<void>> => {
+    const res = await apiClient.delete<ResponseData<void>>(
+      `/api/v1/landlord/tenants/${tenantId}/cancel-invitation`
     );
     return res.data;
   },
@@ -579,19 +548,23 @@ export const landlordService = {
 
     const payload = {
       roomId: Number(dto.roomId),
-      representativeTenantId: Number(dto.representativeTenantId || dto.tenantId),
-      contractCode: dto.contractCode || dto.contractNumber,
+      representativeTenantId: Number(dto.representativeTenantId),
       startDate: dto.startDate,
       durationMonths: Number(dto.durationMonths || 12),
       endDate: endDate,
-      rentPrice: Number(dto.rentPrice ?? dto.monthlyRent ?? 0),
+      rentPrice: Number(dto.rentPrice ?? 0),
       depositAmount: Number(dto.depositAmount ?? 0),
       paymentCycleDay: Number(dto.paymentCycleDay ?? 5),
-      initialElectricIndex: Number(dto.initialElectricIndex ?? dto.initialElectricityReading ?? 0),
-      initialWaterIndex: Number(dto.initialWaterIndex ?? dto.initialWaterReading ?? 0),
-      termsAndConditions: dto.termsAndConditions || dto.termsNote,
+      termsAndConditions: dto.termsAndConditions,
       serviceIds: dto.serviceIds ? dto.serviceIds.map(Number) : undefined,
-      services: dto.services,
+      services: dto.services?.map((s) => ({
+        serviceId: s.serviceId ? Number(s.serviceId) : undefined,
+        serviceName: s.serviceName,
+        unit: s.unit,
+        appliedUnitPrice: Number(s.appliedUnitPrice || 0),
+        billingMethod: s.billingMethod,
+        initialIndex: Number(s.initialIndex || 0),
+      })),
     };
     const res = await apiClient.post<ResponseData<RentalContract>>('/api/v1/landlord/contracts', payload);
     if (res.data?.data) {
@@ -603,9 +576,9 @@ export const landlordService = {
   updateContract: async (id: string | number, dto: UpdateContractDto): Promise<ResponseData<RentalContract>> => {
     const payload = {
       endDate: dto.endDate,
-      rentPrice: dto.rentPrice !== undefined || dto.monthlyRent !== undefined ? Number(dto.rentPrice ?? dto.monthlyRent) : undefined,
+      rentPrice: dto.rentPrice !== undefined ? Number(dto.rentPrice) : undefined,
       paymentCycleDay: dto.paymentCycleDay ? Number(dto.paymentCycleDay) : undefined,
-      termsAndConditions: dto.termsAndConditions || dto.termsNote,
+      termsAndConditions: dto.termsAndConditions,
     };
     const res = await apiClient.put<ResponseData<RentalContract>>(`/api/v1/landlord/contracts/${id}`, payload);
     if (res.data?.data) {
@@ -619,10 +592,10 @@ export const landlordService = {
     dto: TerminateContractDto
   ): Promise<ResponseData<TerminateContractResult>> => {
     const payload = {
-      finalElectricIndex: Number(dto.finalElectricIndex ?? dto.finalElectricityReading ?? 0),
-      finalWaterIndex: Number(dto.finalWaterIndex ?? dto.finalWaterReading ?? 0),
-      damageCost: Number(dto.damageCost || (dto.damageDeductions?.reduce((acc, cur) => acc + cur.amount, 0)) || 0),
-      damageNote: dto.damageNote || dto.note,
+      finalElectricIndex: Number(dto.finalElectricIndex ?? 0),
+      finalWaterIndex: Number(dto.finalWaterIndex ?? 0),
+      damageCost: Number(dto.damageCost ?? 0),
+      damageNote: dto.damageNote,
     };
     const res = await apiClient.post<ResponseData<TerminateContractResult>>(
       `/api/v1/landlord/contracts/${id}/terminate`,
@@ -640,7 +613,7 @@ export const landlordService = {
     const res = await apiClient.get<ResponseData<Bill[]>>('/api/v1/landlord/invoices', {
       params: {
         buildingId: params?.buildingId,
-        billingPeriod: params?.billingPeriod || params?.billingMonth,
+        billingPeriod: params?.billingPeriod,
         status: st,
       },
     });
@@ -660,15 +633,22 @@ export const landlordService = {
     const payload = {
       contractId: dto.contractId ? Number(dto.contractId) : undefined,
       roomId: dto.roomId ? Number(dto.roomId) : undefined,
-      billingPeriod: dto.billingPeriod || dto.billingMonth || `${new Date().getMonth() + 1}/${new Date().getFullYear()}`,
+      billingPeriod: dto.billingPeriod,
       dueDate: dueDate,
-      currentElectricIndex: dto.currentElectricIndex !== undefined || dto.newElectricity !== undefined
-        ? Number(dto.currentElectricIndex ?? dto.newElectricity) : undefined,
-      currentWaterIndex: dto.currentWaterIndex !== undefined || dto.newWater !== undefined
-        ? Number(dto.currentWaterIndex ?? dto.newWater) : undefined,
       otherAmount: Number(dto.otherAmount ?? 0),
       otherNote: dto.otherNote || '',
-      items: dto.items,
+      isDraft: Boolean(dto.isDraft),
+      items: dto.items?.map((it) => ({
+        contractServiceId: it.contractServiceId ? Number(it.contractServiceId) : undefined,
+        itemName: it.itemName,
+        billingMethod: it.billingMethod,
+        previousIndex: it.previousIndex !== undefined ? Number(it.previousIndex) : undefined,
+        currentIndex: it.currentIndex !== undefined ? Number(it.currentIndex) : undefined,
+        quantity: it.quantity !== undefined ? Number(it.quantity) : 1,
+        unitPrice: Number(it.unitPrice ?? 0),
+        amount: Number(it.amount ?? 0),
+        note: it.note,
+      })),
     };
     try {
       const res = await apiClient.post<ResponseData<Bill>>('/api/v1/landlord/invoices', payload);
@@ -682,15 +662,17 @@ export const landlordService = {
     }
   },
 
+  publishBill: async (id: string | number): Promise<ResponseData<Bill>> => {
+    const res = await apiClient.put<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}/publish`);
+    return res.data;
+  },
+
   updateBill: async (id: string | number, dto: UpdateBillDto): Promise<ResponseData<Bill>> => {
     const payload = {
       dueDate: dto.dueDate,
-      currentElectricIndex: dto.currentElectricIndex !== undefined || dto.newElectricity !== undefined
-        ? Number(dto.currentElectricIndex ?? dto.newElectricity) : undefined,
-      currentWaterIndex: dto.currentWaterIndex !== undefined || dto.newWater !== undefined
-        ? Number(dto.currentWaterIndex ?? dto.newWater) : undefined,
       otherAmount: dto.otherAmount !== undefined ? Number(dto.otherAmount) : undefined,
       otherNote: dto.otherNote,
+      items: dto.items,
     };
     const res = await apiClient.put<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}`, payload);
     return res.data;
@@ -703,9 +685,9 @@ export const landlordService = {
 
   confirmPayment: async (id: string | number, dto: ConfirmPaymentDto): Promise<ResponseData<Bill>> => {
     const payload = {
-      paymentAmount: Number(dto.paymentAmount ?? dto.amount ?? 0),
+      paymentAmount: Number(dto.paymentAmount ?? 0),
       paymentMethod: dto.paymentMethod || 'CASH',
-      paymentNote: dto.paymentNote || dto.note,
+      paymentNote: dto.paymentNote,
     };
     try {
       const res = await apiClient.post<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}/payment`, payload);
@@ -750,7 +732,7 @@ export const landlordService = {
   ): Promise<ResponseData<Complaint>> => {
     const payload = {
       status: dto.status,
-      resolutionNote: dto.resolutionNote || dto.responseNote || '',
+      resolutionNote: dto.resolutionNote || '',
     };
     const res = await apiClient.put<ResponseData<Complaint>>(
       `/api/v1/landlord/complaints/${id}/handle`,

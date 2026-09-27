@@ -87,4 +87,13 @@ public class LandlordTenantController {
         tenantService.inviteUserLink(principal.getId(), id, request);
         return ResponseEntity.ok(ResponseData.success("Đã gửi lời mời liên kết tài khoản thành công!", null));
     }
+
+    @DeleteMapping("/{id}/cancel-invitation")
+    @Operation(summary = "UC 17: Hủy lời mời liên kết tài khoản", description = "Hủy lời mời liên kết đang chờ xử lý của khách thuê")
+    public ResponseEntity<ResponseData<Void>> cancelInvitation(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id) {
+        tenantService.cancelInvitation(principal.getId(), id);
+        return ResponseEntity.ok(ResponseData.success("Đã hủy lời mời liên kết tài khoản!", null));
+    }
 }

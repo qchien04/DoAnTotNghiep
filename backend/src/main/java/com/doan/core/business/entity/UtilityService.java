@@ -19,8 +19,6 @@ public class UtilityService extends BaseEntity {
     @JoinColumn(name = "landlord_id", nullable = false)
     private User landlord;
 
-    @Column(name = "service_code", length = 20)
-    private String serviceCode;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;

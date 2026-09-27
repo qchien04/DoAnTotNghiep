@@ -18,6 +18,10 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
 
     Optional<Tenant> findByUserId(Long userId);
 
+    List<Tenant> findAllByUserId(Long userId);
+
+    List<Tenant> findAllByUserIdAndLinkStatus(Long userId, String linkStatus);
+
     Optional<Tenant> findByIdCardNumber(String idCardNumber);
 
     boolean existsByIdCardNumberAndStatus(String idCardNumber, String status);
@@ -28,8 +32,8 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
            "LEFT JOIN FETCH t.room r " +
            "LEFT JOIN FETCH r.building b " +
            "LEFT JOIN FETCH t.contract c " +
-           "WHERE (r.building.landlord.id = :landlordId OR c.landlord.id = :landlordId) " +
-           "AND (:buildingId IS NULL OR b.id = :buildingId) " +
+           "WHERE ((b IS NOT NULL AND b.landlord.id = :landlordId) OR (r.landlord IS NOT NULL AND r.landlord.id = :landlordId) OR (c IS NOT NULL AND c.landlord.id = :landlordId)) " +
+           "AND (:buildingId IS NULL OR (b IS NOT NULL AND b.id = :buildingId)) " +
            "AND (:roomId IS NULL OR r.id = :roomId) " +
            "ORDER BY t.id DESC")
     List<Tenant> filterTenants(@Param("landlordId") Long landlordId,
@@ -40,8 +44,8 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
            "LEFT JOIN FETCH t.room r " +
            "LEFT JOIN FETCH r.building b " +
            "LEFT JOIN FETCH t.contract c " +
-           "WHERE (r.building.landlord.id = :landlordId OR c.landlord.id = :landlordId) " +
-           "AND (:buildingId IS NULL OR b.id = :buildingId) " +
+           "WHERE ((b IS NOT NULL AND b.landlord.id = :landlordId) OR (r.landlord IS NOT NULL AND r.landlord.id = :landlordId) OR (c IS NOT NULL AND c.landlord.id = :landlordId)) " +
+           "AND (:buildingId IS NULL OR (b IS NOT NULL AND b.id = :buildingId)) " +
            "AND (:roomId IS NULL OR r.id = :roomId) " +
            "AND (LOWER(t.fullName) LIKE :pattern " +
            "OR LOWER(t.phone) LIKE :pattern " +
@@ -52,5 +56,8 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
                                          @Param("roomId") Long roomId,
                                          @Param("pattern") String pattern);
 
-    long countByRoomBuildingLandlordIdAndStatus(Long landlordId, String status);
+    @Query("SELECT COUNT(t) FROM Tenant t LEFT JOIN t.room r LEFT JOIN r.building b LEFT JOIN t.contract c " +
+           "WHERE ((b IS NOT NULL AND b.landlord.id = :landlordId) OR (r.landlord IS NOT NULL AND r.landlord.id = :landlordId) OR (c IS NOT NULL AND c.landlord.id = :landlordId)) " +
+           "AND t.status = :status")
+    long countByRoomBuildingLandlordIdAndStatus(@Param("landlordId") Long landlordId, @Param("status") String status);
 }

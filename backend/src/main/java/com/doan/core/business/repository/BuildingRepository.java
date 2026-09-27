@@ -20,14 +20,9 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
 
     Optional<Building> findByIdAndLandlordId(Long id, Long landlordId);
 
-    boolean existsByBuildingCode(String buildingCode);
-
-    boolean existsByBuildingCodeAndIdNot(String buildingCode, Long id);
-
     @Query("SELECT b FROM Building b WHERE b.landlord.id = :landlordId AND (" +
            "LOWER(b.name) LIKE :pattern OR " +
-           "LOWER(b.addressDetail) LIKE :pattern OR " +
-           "LOWER(b.buildingCode) LIKE :pattern)")
+           "LOWER(b.addressDetail) LIKE :pattern)")
     List<Building> searchBuildings(@Param("landlordId") Long landlordId, 
                                    @Param("pattern") String pattern);
 

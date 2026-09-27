@@ -14,16 +14,20 @@ import java.util.List;
 @Schema(description = "Yêu cầu tạo mới hoặc cập nhật phòng trọ")
 public class RoomRequest {
 
-    @NotNull(message = "Tòa nhà không được để trống")
-    @Schema(description = "ID tòa nhà chứa phòng", example = "1")
+    @Schema(description = "ID tòa nhà chứa phòng (nếu có, để trống nếu là nhà/phòng trọ độc lập)", example = "1")
     private Long buildingId;
 
-    @NotBlank(message = "Mã phòng không được để trống")
-    @Schema(description = "Mã phòng (ví dụ P101, P202)", example = "P301")
-    private String roomCode;
+    @Schema(description = "Tỉnh / Thành phố", example = "Thành phố Hà Nội")
+    private String province;
+
+    @Schema(description = "Phường / Xã", example = "Phường Bách Khoa")
+    private String ward;
+
+    @Schema(description = "Địa chỉ chi tiết (số nhà, ngõ/đường)", example = "Số 15 ngõ 20 Đại Cồ Việt")
+    private String addressDetail;
 
     @NotBlank(message = "Tên phòng không được để trống")
-    @Schema(description = "Tên phòng", example = "Phòng 301")
+    @Schema(description = "Tên phòng (ví dụ Phòng 101, Phòng 302...)", example = "Phòng 301")
     private String name;
 
     @NotNull(message = "Tầng không được để trống")
@@ -75,4 +79,7 @@ public class RoomRequest {
 
     @Schema(description = "Kinh độ vị trí địa lý (Longitude)", example = "105.800000")
     private BigDecimal longitude;
+
+    @Schema(description = "Trạng thái công khai phòng lên trang chủ tìm kiếm", example = "true")
+    private Boolean isPublic;
 }

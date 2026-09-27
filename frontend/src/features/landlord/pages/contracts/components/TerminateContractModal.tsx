@@ -27,11 +27,15 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
     finalWater: number,
     damages: number
   ) => {
-    const initElec = ctr.initialElectricIndex ?? ctr.initialElectricityReading ?? 0;
-    const initWater = ctr.initialWaterIndex ?? ctr.initialWaterReading ?? 0;
+    const elecService = ctr.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'));
+    const waterService = ctr.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'));
+    const initElec = elecService?.lastIndex ?? 0;
+    const initWater = waterService?.lastIndex ?? 0;
+    const elecPrice = Number(elecService?.appliedUnitPrice || 3800);
+    const waterPrice = Number(waterService?.appliedUnitPrice || 30000);
     const elecDiff = Math.max(0, finalElec - initElec);
     const waterDiff = Math.max(0, finalWater - initWater);
-    const utilityCost = elecDiff * 3800 + waterDiff * 30000;
+    const utilityCost = elecDiff * elecPrice + waterDiff * waterPrice;
     const refund = ctr.depositAmount - utilityCost - damages;
     setCalculatedRefund(refund);
   };
@@ -39,27 +43,26 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
   useEffect(() => {
     if (open && contract) {
       form.resetFields();
-      const initElec = contract.initialElectricIndex ?? contract.initialElectricityReading ?? 0;
-      const initWater = contract.initialWaterIndex ?? contract.initialWaterReading ?? 0;
-      const defaultFinalElec = initElec + 25;
-      const defaultFinalWater = initWater + 2;
-      const defaultDamage = 300000;
+      const elecService = contract.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'));
+      const waterService = contract.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'));
+      const initElec = elecService?.lastIndex ?? 0;
+      const initWater = waterService?.lastIndex ?? 0;
 
       form.setFieldsValue({
-        finalElectricityReading: defaultFinalElec,
-        finalWaterReading: defaultFinalWater,
-        repairDoorFee: 200000,
-        cardFee: 100000,
+        finalElectricIndex: initElec,
+        finalWaterIndex: initWater,
+        repairDoorFee: 0,
+        cardFee: 0,
       });
 
-      calculateRefund(contract, defaultFinalElec, defaultFinalWater, defaultDamage);
+      calculateRefund(contract, initElec, initWater, 0);
     }
   }, [open, contract]);
 
   const handleValuesChange = (_: any, allValues: any) => {
     if (!contract) return;
-    const elec = Number(allValues.finalElectricityReading || 0);
-    const water = Number(allValues.finalWaterReading || 0);
+    const elec = Number(allValues.finalElectricIndex || 0);
+    const water = Number(allValues.finalWaterIndex || 0);
     const damage =
       Number(allValues.repairDoorFee || 0) + Number(allValues.cardFee || 0);
     calculateRefund(contract, elec, water, damage);
@@ -69,13 +72,12 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
     if (!contract) return;
     try {
       const values = await form.validateFields();
+      const damageTotal = (values.repairDoorFee || 0) + (values.cardFee || 0);
       await onSubmit(contract.id, {
-        finalElectricityReading: values.finalElectricityReading,
-        finalWaterReading: values.finalWaterReading,
-        damageDeductions: [
-          { description: 'Sửa chữa hỏng hóc', amount: values.repairDoorFee || 0 },
-          { description: 'Mất thẻ từ/chìa khóa', amount: values.cardFee || 0 },
-        ],
+        finalElectricIndex: values.finalElectricIndex,
+        finalWaterIndex: values.finalWaterIndex,
+        damageCost: damageTotal,
+        damageNote: 'Sửa chữa hỏng hóc & Mất thẻ từ/chìa khóa',
       });
     } catch (err: any) {
       if (err?.message) {
@@ -104,12 +106,12 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         {/* Banner tóm tắt hợp đồng */}
         <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex items-center justify-between">
           <div>
-            <span className="text-xs text-stay-text-secondary uppercase font-semibold">Mã hợp đồng:</span>
+            <span className="text-xs text-stay-text-secondary uppercase font-semibold">Hợp đồng:</span>
             <p className="font-bold text-stay-text text-base">
-              {contract?.contractCode || contract?.contractNumber || `HD #${contract?.id}`}
+              {`HĐ #${contract?.id}`}
             </p>
             <span className="text-xs text-stay-text-secondary">
-              Phòng: <strong className="text-stay-text">{contract?.roomCode || contract?.roomName}</strong> | Khách: <strong className="text-stay-text">{contract?.representativeTenantName || contract?.tenantName}</strong>
+              Phòng: <strong className="text-stay-text">{contract?.roomName}</strong> | Khách: <strong className="text-stay-text">{contract?.representativeTenantName}</strong>
             </span>
           </div>
           <div className="text-right">
@@ -130,10 +132,11 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
               <Form.Item
                 label={
                   <span className="text-stay-text font-medium text-xs">
-                    Chỉ số điện chốt cuối (kWh) (Đầu kỳ: {contract?.initialElectricIndex ?? contract?.initialElectricityReading ?? 0})
+                    Chỉ số điện chốt cuối (kWh) (Đầu kỳ:{' '}
+                    {contract?.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'))?.lastIndex ?? 0})
                   </span>
                 }
-                name="finalElectricityReading"
+                name="finalElectricIndex"
                 className="mb-0"
                 rules={[{ required: true, message: 'Nhập chỉ số điện chốt cuối' }]}
               >
@@ -143,10 +146,11 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
               <Form.Item
                 label={
                   <span className="text-stay-text font-medium text-xs">
-                    Chỉ số nước chốt cuối (m³) (Đầu kỳ: {contract?.initialWaterIndex ?? contract?.initialWaterReading ?? 0})
+                    Chỉ số nước chốt cuối (m³) (Đầu kỳ:{' '}
+                    {contract?.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'))?.lastIndex ?? 0})
                   </span>
                 }
-                name="finalWaterReading"
+                name="finalWaterIndex"
                 className="mb-0"
                 rules={[{ required: true, message: 'Nhập chỉ số nước chốt cuối' }]}
               >

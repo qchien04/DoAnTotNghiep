@@ -79,17 +79,6 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         User landlord = userRepository.findById(landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        String contractCode = request.getContractCode();
-        if (contractCode == null || contractCode.isBlank()) {
-            contractCode = "HD-" + request.getStartDate().getYear() + "-" + room.getRoomCode();
-        }
-
-        if (contractRepository.existsByContractCode(contractCode.trim())) {
-            contractCode = contractCode + "-" + (System.currentTimeMillis() % 1000);
-        }
-
-
-
         // Kiểm tra danh sách dịch vụ áp dụng: ưu tiên request.getServiceIds(), nếu không có thì kế thừa từ room.getServices()
         List<UtilityService> usList = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
@@ -98,11 +87,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
             usList = new ArrayList<>(room.getServices());
         }
 
-        Integer initialElec = request.getInitialElectricIndex() != null ? request.getInitialElectricIndex() : 0;
-        Integer initialWater = request.getInitialWaterIndex() != null ? request.getInitialWaterIndex() : 0;
-
         Contract contract = Contract.builder()
-                .contractCode(contractCode.trim())
                 .room(room)
                 .representativeTenant(tenant)
                 .landlord(landlord)
@@ -111,8 +96,6 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                 .rentPrice(request.getRentPrice())
                 .depositAmount(request.getDepositAmount())
                 .paymentCycleDay(request.getPaymentCycleDay() != null ? request.getPaymentCycleDay() : 5)
-                .initialElectricIndex(initialElec)
-                .initialWaterIndex(initialWater)
                 .termsAndConditions(request.getTermsAndConditions())
                 .status("ACTIVE")
                 .build();
@@ -121,42 +104,14 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
         // Lưu danh sách dịch vụ áp dụng trong hợp đồng (từ serviceIds hoặc services)
         List<ContractService> csList = new ArrayList<>();
-        if (!usList.isEmpty()) {
-            for (UtilityService us : usList) {
-                int initIndex = 0;
-                if ("METER_INDEX".equalsIgnoreCase(us.getBillingMethod())) {
-                    if ("ELECTRICITY".equalsIgnoreCase(us.getCategory()) || us.getName().toLowerCase().contains("điện")) {
-                        initIndex = initialElec;
-                    } else if ("WATER".equalsIgnoreCase(us.getCategory()) || us.getName().toLowerCase().contains("nước")) {
-                        initIndex = initialWater;
-                    }
-                }
-                csList.add(ContractService.builder()
-                        .contract(savedContract)
-                        .service(us)
-                        .serviceName(us.getName())
-                        .unit(us.getUnit())
-                        .appliedUnitPrice(us.getUnitPrice())
-                        .billingMethod(us.getBillingMethod())
-                        .lastIndex(initIndex)
-                        .build());
-            }
-        } else if (request.getServices() != null && !request.getServices().isEmpty()) {
+        if (request.getServices() != null && !request.getServices().isEmpty()) {
             for (ContractCreateRequest.ContractServiceItemRequest item : request.getServices()) {
                 UtilityService us = item.getServiceId() != null
                         ? utilityServiceRepository.findById(item.getServiceId()).orElse(null)
                         : null;
 
-                int initIndex = 0;
+                int initIndex = item.getInitialIndex() != null ? item.getInitialIndex() : 0;
                 String method = item.getBillingMethod() != null ? item.getBillingMethod() : (us != null ? us.getBillingMethod() : "FIXED_PER_ROOM");
-                if ("METER_INDEX".equalsIgnoreCase(method)) {
-                    String name = item.getServiceName() != null ? item.getServiceName() : (us != null ? us.getName() : "");
-                    if (name.toLowerCase().contains("điện")) {
-                        initIndex = initialElec;
-                    } else if (name.toLowerCase().contains("nước")) {
-                        initIndex = initialWater;
-                    }
-                }
 
                 ContractService cs = ContractService.builder()
                         .contract(savedContract)
@@ -168,6 +123,18 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                         .lastIndex(initIndex)
                         .build();
                 csList.add(cs);
+            }
+        } else if (!usList.isEmpty()) {
+            for (UtilityService us : usList) {
+                csList.add(ContractService.builder()
+                        .contract(savedContract)
+                        .service(us)
+                        .serviceName(us.getName())
+                        .unit(us.getUnit())
+                        .appliedUnitPrice(us.getUnitPrice())
+                        .billingMethod(us.getBillingMethod())
+                        .lastIndex(0)
+                        .build());
             }
         }
         if (!csList.isEmpty()) {
@@ -234,20 +201,22 @@ public class LandlordContractServiceImpl implements LandlordContractService {
             throw new BaseException(ErrorCode.CONTRACT_ALREADY_TERMINATED);
         }
 
-        // Tính tiêu thụ điện và nước từ chỉ số chốt gần nhất của kỳ hóa đơn trước
-        int startElectric = contract.getInitialElectricIndex() != null ? contract.getInitialElectricIndex() : 0;
-        int startWater = contract.getInitialWaterIndex() != null ? contract.getInitialWaterIndex() : 0;
+        // Tính tiêu thụ điện và nước từ chỉ số chốt gần nhất của contract_services hoặc kỳ hóa đơn trước
+        int startElectric = 0;
+        int startWater = 0;
+        long electricUnitPrice = 3800L;
+        long waterUnitPrice = 30000L;
 
-        List<Invoice> latestInvoices = invoiceRepository.findLatestByContractId(contractId);
-        for (Invoice inv : latestInvoices) {
-            if (!"CANCELLED".equalsIgnoreCase(inv.getStatus())) {
-                if (inv.getCurrentElectricIndex() != null) {
-                    startElectric = inv.getCurrentElectricIndex();
+        if (contract.getContractServices() != null) {
+            for (ContractService cs : contract.getContractServices()) {
+                String nameLower = cs.getServiceName().toLowerCase();
+                if ("ELECTRICITY".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("điện")) {
+                    startElectric = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
+                    electricUnitPrice = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 3800L;
+                } else if ("WATER".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("nước")) {
+                    startWater = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
+                    waterUnitPrice = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 30000L;
                 }
-                if (inv.getCurrentWaterIndex() != null) {
-                    startWater = inv.getCurrentWaterIndex();
-                }
-                break;
             }
         }
 
@@ -256,19 +225,6 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
         int endWater = request.getFinalWaterIndex() != null ? request.getFinalWaterIndex() : startWater;
         int waterConsumed = Math.max(0, endWater - startWater);
-
-        long electricUnitPrice = 3800L;
-        long waterUnitPrice = 30000L;
-
-        if (contract.getContractServices() != null) {
-            for (ContractService cs : contract.getContractServices()) {
-                if ("ELECTRICITY".equalsIgnoreCase(cs.getServiceName()) || cs.getServiceName().toLowerCase().contains("điện")) {
-                    electricUnitPrice = cs.getAppliedUnitPrice();
-                } else if ("WATER".equalsIgnoreCase(cs.getServiceName()) || cs.getServiceName().toLowerCase().contains("nước")) {
-                    waterUnitPrice = cs.getAppliedUnitPrice();
-                }
-            }
-        }
 
         long electricAmount = electricConsumed * electricUnitPrice;
         long waterAmount = waterConsumed * waterUnitPrice;
@@ -279,9 +235,19 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
         long netRefund = initialDeposit - totalUtilityCost - damageCost;
 
-        // Cập nhật hợp đồng
-        contract.setFinalElectricIndex(endElectric);
-        contract.setFinalWaterIndex(endWater);
+        // Cập nhật hợp đồng và chỉ số cuối của contract services
+        if (contract.getContractServices() != null) {
+            for (ContractService cs : contract.getContractServices()) {
+                String nameLower = cs.getServiceName().toLowerCase();
+                if ("ELECTRICITY".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("điện")) {
+                    cs.setLastIndex(endElectric);
+                } else if ("WATER".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("nước")) {
+                    cs.setLastIndex(endWater);
+                }
+            }
+            contractServiceRepository.saveAll(contract.getContractServices());
+        }
+
         contract.setDepositRefundAmount(netRefund);
         contract.setStatus("TERMINATED");
         contractRepository.save(contract);

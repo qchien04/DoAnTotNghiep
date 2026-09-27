@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { LandlordDashboardData } from '@/shared/types/landlord';
+import { LandlordDashboardData, RevenueTrendItem } from '@/shared/types/landlord';
 
 interface DashboardRevenueChartProps {
   revenueTrend: LandlordDashboardData['revenueTrend'];
@@ -17,7 +17,7 @@ export const DashboardRevenueChart: React.FC<DashboardRevenueChartProps> = ({ re
       </div>
 
       <div className="h-56 flex items-end justify-between gap-6 pt-6 px-4">
-        {(revenueTrend || []).map((item) => {
+        {(revenueTrend || []).map((item: RevenueTrendItem) => {
           const maxVal = 90000000;
           const heightPercent = Math.min(100, Math.round((item.revenue / maxVal) * 100));
           const millions = (item.revenue / 1000000).toFixed(1);

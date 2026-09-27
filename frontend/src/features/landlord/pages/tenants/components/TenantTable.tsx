@@ -10,6 +10,7 @@ interface TenantTableProps {
   onEdit: (tenant: Tenant) => void;
   onDelete: (id: string | number) => void;
   onInvite: (tenant: Tenant) => void;
+  onCancelInvite: (tenant: Tenant) => void;
 }
 
 export const TenantTable: React.FC<TenantTableProps> = ({
@@ -19,6 +20,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
   onEdit,
   onDelete,
   onInvite,
+  onCancelInvite,
 }) => {
   const renderLinkStatus = (status: TenantLinkStatus, linkedUserName?: string) => {
     switch (status) {
@@ -59,8 +61,8 @@ export const TenantTable: React.FC<TenantTableProps> = ({
     },
     {
       title: 'CCCD',
-      dataIndex: 'identityCard',
-      key: 'identityCard',
+      dataIndex: 'idCardNumber',
+      key: 'idCardNumber',
       render: (val: string) => (
         <span className="text-xs font-mono text-stay-text">
           {val || '---'}
@@ -79,7 +81,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
       render: (_: any, r: Tenant) => (
         <div>
           <span className="font-mono text-xs font-medium text-stay-text block">
-            {r.roomCode ? `P.${r.roomCode}` : '---'}
+            {r.roomName || '---'}
           </span>
           {r.buildingName && <span className="text-[11px] text-stay-text-muted">{r.buildingName}</span>}
         </div>
@@ -103,7 +105,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
     {
       title: 'Tài khoản',
       key: 'linkStatus',
-      render: (_: any, r: Tenant) => renderLinkStatus(r.linkStatus, r.linkedUserName),
+      render: (_: any, r: Tenant) => renderLinkStatus(r.linkStatus, r.userEmail),
     },
     {
       title: 'Thao tác',
@@ -112,7 +114,17 @@ export const TenantTable: React.FC<TenantTableProps> = ({
       align: 'right' as const,
       render: (_: any, r: Tenant) => (
         <div className="flex items-center justify-end gap-1">
-          {r.linkStatus !== 'LINKED' && (
+          {r.linkStatus === 'PENDING' && (
+            <Button
+              size="small"
+              type="text"
+              onClick={() => onCancelInvite(r)}
+              className="text-xs text-amber-600 hover:text-amber-700 px-2"
+            >
+              Hủy lời mời
+            </Button>
+          )}
+          {(r.linkStatus === 'NOT_LINKED' || r.linkStatus === 'UNLINKED') && (
             <Button
               size="small"
               type="text"

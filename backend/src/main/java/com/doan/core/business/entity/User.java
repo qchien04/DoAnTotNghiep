@@ -18,8 +18,6 @@ import java.time.Instant;
 @Table(name = "users")
 public class User extends BaseEntity {
 
-    @Column(name = "user_code", length = 20, unique = true)
-    private String userCode;
 
     @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;

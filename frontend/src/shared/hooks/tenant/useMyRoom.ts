@@ -11,10 +11,26 @@ export const useMyRoom = () => {
     select: (res) => res.data,
   });
 
+  const contractsQuery = useQuery({
+    queryKey: tenantKeys.myContracts(),
+    queryFn: () => tenantService.getMyContracts(),
+    select: (res) => res.data || [],
+  });
+
   const acceptLinkMutation = useMutation({
-    mutationFn: (tenantId: string) => tenantService.acceptRoomLink(tenantId),
+    mutationFn: (invitationId: string | number) => tenantService.acceptRoomLink(invitationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.myRoom() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myContracts() });
+    },
+  });
+
+  const rejectLinkMutation = useMutation({
+    mutationFn: ({ invitationId, reason }: { invitationId: string | number; reason?: string }) =>
+      tenantService.rejectRoomLink(invitationId, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myRoom() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myContracts() });
     },
   });
 
@@ -24,7 +40,28 @@ export const useMyRoom = () => {
     isError: roomDetailsQuery.isError,
     error: roomDetailsQuery.error,
     refetch: roomDetailsQuery.refetch,
+    contracts: contractsQuery.data || [],
+    isContractsLoading: contractsQuery.isLoading,
+    refetchContracts: contractsQuery.refetch,
     acceptRoomLink: acceptLinkMutation.mutateAsync,
     isAcceptingLink: acceptLinkMutation.isPending,
+    rejectRoomLink: rejectLinkMutation.mutateAsync,
+    isRejectingLink: rejectLinkMutation.isPending,
+  };
+};
+
+export const useMyContracts = () => {
+  const query = useQuery({
+    queryKey: tenantKeys.myContracts(),
+    queryFn: () => tenantService.getMyContracts(),
+    select: (res) => res.data || [],
+  });
+
+  return {
+    contracts: query.data || [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
   };
 };

@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '@/shared/services/authService';
 import {
   StayConnectHero,
   SearchFilters,
@@ -306,8 +307,63 @@ export const HomePage: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<(typeof ALL_ROOMS)[0] | null>(null);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [publicRooms, setPublicRooms] = useState<(typeof ALL_ROOMS)[0][]>([]);
 
-  const filteredRooms = ALL_ROOMS.filter((room) => {
+  useEffect(() => {
+    authService.getPublicRooms()
+      .then((res) => {
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data.map((r: any) => {
+            const priceNum = Number(r.listedPrice || r.price || 3500000);
+            const priceTxt = `${(priceNum / 1000000).toFixed(1)} tr/tháng`;
+            const loc = r.fullAddress || r.addressDetail || (r.ward ? `${r.ward}, ${r.province || 'Hà Nội'}` : 'Hà Nội');
+            let dist = 'Cầu Giấy';
+            const locLower = loc.toLowerCase();
+            if (locLower.includes('đống đa')) dist = 'Đống Đa';
+            else if (locLower.includes('hai bà trưng')) dist = 'Hai Bà Trưng';
+            else if (locLower.includes('ba đình')) dist = 'Ba Đình';
+            else if (locLower.includes('thanh xuân')) dist = 'Thanh Xuân';
+
+            const defaultImg = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80';
+            const img = (r.imageUrls && r.imageUrls.length > 0) ? r.imageUrls[0] : defaultImg;
+
+            return {
+              id: r.id,
+              title: r.name ? `${r.name} - ${r.buildingName || 'Phòng trọ tiện nghi'}` : `Phòng #${r.id}`,
+              price: priceTxt,
+              priceNumber: priceNum,
+              location: loc,
+              district: dist,
+              area: `${r.area || 25}m²`,
+              verified: true,
+              imageUrl: img,
+              gallery: (r.imageUrls && r.imageUrls.length > 0) ? r.imageUrls : [img],
+              amenities: Array.isArray(r.amenities) && r.amenities.length > 0
+                ? r.amenities.map((a: string, idx: number) => ({ key: `am-${idx}`, label: a }))
+                : [{ key: 'ac', label: 'Điều hòa' }, { key: 'wifi', label: 'Wifi' }, { key: '24/7', label: 'Giờ tự do' }],
+              fullDescription: r.description || `Phòng trọ diện tích ${r.area || 25}m², an ninh tốt, giờ giấc tự do.`,
+              deposit: `${(r.standardDeposit || r.deposit || priceNum).toLocaleString()} đ`,
+              electricity: '3.800 đ / kWh',
+              water: '30.000 đ / m³',
+              internet: '100.000 đ / phòng / tháng',
+              landlordName: 'Chủ nhà StayConnect',
+              landlordPhone: '0988.123.456',
+            };
+          });
+          setPublicRooms(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error('Không thể lấy danh sách phòng công khai:', err);
+      });
+  }, []);
+
+  const allAvailableRooms = useMemo(() => {
+    if (publicRooms.length === 0) return ALL_ROOMS;
+    return [...publicRooms, ...ALL_ROOMS];
+  }, [publicRooms]);
+
+  const filteredRooms = allAvailableRooms.filter((room) => {
     if (selectedFilter === 'CAU_GIAY') return room.district === 'Cầu Giấy';
     if (selectedFilter === 'HAI_BA_TRUNG') return room.district === 'Hai Bà Trưng';
     if (selectedFilter === 'DONG_DA') return room.district === 'Đống Đa';

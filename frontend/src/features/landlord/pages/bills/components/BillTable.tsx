@@ -10,6 +10,7 @@ interface BillTableProps {
   onOpenDetail: (bill: Bill) => void;
   onOpenPayment: (bill: Bill) => void;
   onOpenCancel: (bill: Bill) => void;
+  onPublish?: (bill: Bill) => void;
 }
 
 export const BillTable: React.FC<BillTableProps> = ({
@@ -18,9 +19,17 @@ export const BillTable: React.FC<BillTableProps> = ({
   onOpenDetail,
   onOpenPayment,
   onOpenCancel,
+  onPublish,
 }) => {
   const renderStatus = (st: BillStatus) => {
     switch (st) {
+      case 'DRAFT':
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Bản nháp
+          </span>
+        );
       case 'PAID':
         return (
           <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
@@ -65,14 +74,15 @@ export const BillTable: React.FC<BillTableProps> = ({
 
   const columns = [
     {
-      title: 'Mã hóa đơn',
-      key: 'billNumber',
+      title: 'ID',
+      key: 'id',
+      width: 70,
       render: (_: any, r: Bill) => (
         <span
           onClick={() => onOpenDetail(r)}
           className="font-mono text-xs font-semibold text-stay-text cursor-pointer hover:text-stay-primary hover:underline"
         >
-          {r.invoiceCode || r.billNumber || `HD-${r.id}`}
+          #{r.id}
         </span>
       ),
     },
@@ -82,7 +92,7 @@ export const BillTable: React.FC<BillTableProps> = ({
       render: (_: any, r: Bill) => (
         <div>
           <span className="font-medium text-xs text-stay-text block">
-            {r.roomCode ? `P.${r.roomCode}` : r.roomName || '---'}
+            {r.roomName || '---'}
           </span>
           {r.buildingName && (
             <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
@@ -92,11 +102,11 @@ export const BillTable: React.FC<BillTableProps> = ({
     },
     {
       title: 'Khách đại diện',
-      key: 'tenantName',
+      key: 'representativeTenantName',
       render: (_: any, r: Bill) => (
         <div>
           <span className="text-sm font-medium text-stay-text">
-            {r.representativeTenantName || r.tenantName || '---'}
+            {r.representativeTenantName || '---'}
           </span>
           {r.representativeTenantPhone && (
             <span className="text-xs text-stay-text-secondary block">
@@ -111,7 +121,7 @@ export const BillTable: React.FC<BillTableProps> = ({
       key: 'billingPeriod',
       render: (_: any, r: Bill) => (
         <span className="font-mono text-xs text-stay-text-secondary">
-          {r.billingPeriod || r.billingMonth}
+          {r.billingPeriod}
         </span>
       ),
     },
@@ -145,7 +155,7 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      width: 130,
+      width: 170,
       align: 'right' as const,
       render: (_: any, r: Bill) => (
         <div className="flex items-center justify-end gap-1">
@@ -157,6 +167,28 @@ export const BillTable: React.FC<BillTableProps> = ({
               onClick={() => onOpenDetail(r)}
             />
           </Tooltip>
+
+          {r.status === 'DRAFT' && (
+            <>
+              <Button
+                size="small"
+                type="primary"
+                onClick={() => onPublish && onPublish(r)}
+                className="text-xs bg-amber-600 hover:bg-amber-700 px-2 h-7 font-medium"
+              >
+                Ban hành
+              </Button>
+              <Button
+                size="small"
+                type="text"
+                danger
+                onClick={() => onOpenCancel(r)}
+                className="text-xs px-1.5"
+              >
+                Hủy
+              </Button>
+            </>
+          )}
 
           {(r.status === 'PENDING' || r.status === 'UNPAID' || r.status === 'OVERDUE') && (
             <>

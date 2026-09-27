@@ -25,7 +25,7 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Input
-        placeholder="Tìm theo mã phòng hoặc tên phòng..."
+        placeholder="Tìm theo tên phòng..."
         prefix={<Search className="w-4 h-4 text-stay-text-muted" />}
         value={keyword}
         onChange={(e) => onKeywordChange(e.target.value)}
@@ -40,7 +40,7 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
         allowClear
         className="w-full sm:w-52"
         options={buildings.map((b: any) => ({
-          label: `${b.buildingCode || b.code || ''} - ${b.name}`,
+          label: b.name,
           value: b.id,
         }))}
       />

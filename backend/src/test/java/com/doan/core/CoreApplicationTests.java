@@ -98,13 +98,11 @@ public class CoreApplicationTests {
 
         // 1. UC 02: Thêm mới tòa nhà
         BuildingRequest bRequest = new BuildingRequest();
-        bRequest.setBuildingCode("TN_TEST");
         bRequest.setName("Tòa nhà Ánh Dương Test");
         bRequest.setProvince("Hà Nội");
-        bRequest.setDistrict("Cầu Giấy");
+        bRequest.setWard("Dịch Vọng Hậu");
         bRequest.setAddressDetail("Số 12 Ngõ 80 Cầu Giấy");
         bRequest.setNumFloors(5);
-        bRequest.setCommonAmenities(List.of("Thang máy", "Wifi"));
 
         BuildingResponse bResponse = buildingService.createBuilding(landlordId, bRequest);
         Assertions.assertNotNull(bResponse.getId());
@@ -112,7 +110,6 @@ public class CoreApplicationTests {
         // 2. UC 06: Thêm mới phòng trọ (trạng thái AVAILABLE)
         RoomRequest rRequest = new RoomRequest();
         rRequest.setBuildingId(bResponse.getId());
-        rRequest.setRoomCode("P101");
         rRequest.setName("Phòng 101");
         rRequest.setFloor(1);
         rRequest.setArea(BigDecimal.valueOf(25.0));
@@ -142,13 +139,26 @@ public class CoreApplicationTests {
         ContractCreateRequest cRequest = new ContractCreateRequest();
         cRequest.setRoomId(rResponse.getId());
         cRequest.setRepresentativeTenantId(tResponse.getId());
-        cRequest.setContractCode("HD-TEST-101");
         cRequest.setStartDate(LocalDate.of(2026, 1, 1));
         cRequest.setEndDate(LocalDate.of(2026, 12, 31));
         cRequest.setRentPrice(3500000L);
         cRequest.setDepositAmount(3500000L);
-        cRequest.setInitialElectricIndex(100);
-        cRequest.setInitialWaterIndex(20);
+
+        ContractCreateRequest.ContractServiceItemRequest elecItem = new ContractCreateRequest.ContractServiceItemRequest();
+        elecItem.setServiceName("Tiền điện");
+        elecItem.setUnit("kWh");
+        elecItem.setAppliedUnitPrice(3800L);
+        elecItem.setBillingMethod("METER_INDEX");
+        elecItem.setInitialIndex(100);
+
+        ContractCreateRequest.ContractServiceItemRequest waterItem = new ContractCreateRequest.ContractServiceItemRequest();
+        waterItem.setServiceName("Tiền nước");
+        waterItem.setUnit("m3");
+        waterItem.setAppliedUnitPrice(30000L);
+        waterItem.setBillingMethod("METER_INDEX");
+        waterItem.setInitialIndex(20);
+
+        cRequest.setServices(java.util.List.of(elecItem, waterItem));
 
         ContractResponse cResponse = contractService.createContract(landlordId, cRequest);
         Assertions.assertEquals("ACTIVE", cResponse.getStatus());
@@ -161,8 +171,28 @@ public class CoreApplicationTests {
         invRequest.setContractId(cResponse.getId());
         invRequest.setBillingPeriod("01/2026");
         invRequest.setDueDate(LocalDate.of(2026, 2, 5));
-        invRequest.setCurrentElectricIndex(150); // tiêu thụ 50 số
-        invRequest.setCurrentWaterIndex(25);     // tiêu thụ 5 khối
+
+        MeterReadingInvoiceRequest.InvoiceItemRequest elecInvItem = MeterReadingInvoiceRequest.InvoiceItemRequest.builder()
+                .itemName("Tiền điện sinh hoạt")
+                .previousIndex(100)
+                .currentIndex(150)
+                .quantity(BigDecimal.valueOf(50))
+                .unitPrice(3800L)
+                .amount(190000L)
+                .note("50 kWh (Từ số 100 đến 150)")
+                .build();
+
+        MeterReadingInvoiceRequest.InvoiceItemRequest waterInvItem = MeterReadingInvoiceRequest.InvoiceItemRequest.builder()
+                .itemName("Tiền nước sinh hoạt")
+                .previousIndex(20)
+                .currentIndex(25)
+                .quantity(BigDecimal.valueOf(5))
+                .unitPrice(30000L)
+                .amount(150000L)
+                .note("5 m3 (Từ số 20 đến 25)")
+                .build();
+
+        invRequest.setItems(java.util.List.of(elecInvItem, waterInvItem));
 
         InvoiceResponse invResponse = invoiceService.createInvoice(landlordId, invRequest);
         Assertions.assertEquals("UNPAID", invResponse.getStatus());

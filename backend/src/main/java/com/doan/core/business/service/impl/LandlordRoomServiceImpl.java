@@ -29,6 +29,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     private final BuildingRepository buildingRepository;
     private final ContractRepository contractRepository;
     private final com.doan.core.business.repository.UtilityServiceRepository utilityServiceRepository;
+    private final com.doan.core.business.repository.UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -61,14 +62,40 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     @Override
     @Transactional
     public RoomResponse createRoom(Long landlordId, RoomRequest request) {
-        log.info("Tạo mới phòng trọ: {} tại tòa: {} cho chủ trọ: {}", request.getRoomCode(), request.getBuildingId(), landlordId);
+        log.info("Tạo mới phòng trọ: {} tại tòa: {} cho chủ trọ: {}", request.getName(), request.getBuildingId(), landlordId);
 
-        Building building = buildingRepository.findByIdAndLandlordId(request.getBuildingId(), landlordId)
-                .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
+        Building building = null;
+        String province = request.getProvince();
+        String ward = request.getWard();
+        String addressDetail = request.getAddressDetail();
 
-        if (roomRepository.existsByBuildingIdAndRoomCode(request.getBuildingId(), request.getRoomCode().trim())) {
-            throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
+        if (request.getBuildingId() != null) {
+            building = buildingRepository.findByIdAndLandlordId(request.getBuildingId(), landlordId)
+                    .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
+
+            if (roomRepository.existsByBuildingIdAndName(request.getBuildingId(), request.getName().trim())) {
+                throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
+            }
+
+            // Tự động fill địa chỉ từ tòa nhà nếu phòng chưa có địa chỉ riêng
+            if (province == null || province.isBlank()) {
+                province = building.getProvince();
+            }
+            if (ward == null || ward.isBlank()) {
+                ward = building.getWard();
+            }
+            if (addressDetail == null || addressDetail.isBlank()) {
+                addressDetail = building.getAddressDetail();
+            }
+        } else {
+            // Phòng trọ độc lập
+            if (roomRepository.existsByBuildingIsNullAndLandlordIdAndName(landlordId, request.getName().trim())) {
+                throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
+            }
         }
+
+        com.doan.core.business.entity.User landlord = userRepository.findById(landlordId)
+                .orElse(building != null ? building.getLandlord() : null);
 
         String amenitiesStr = (request.getAmenities() != null && !request.getAmenities().isEmpty())
                 ? String.join(", ", request.getAmenities())
@@ -79,11 +106,25 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             services = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
         }
 
+        java.math.BigDecimal lat = request.getLatitude();
+        java.math.BigDecimal lng = request.getLongitude();
+        if (building != null) {
+            if (lat == null) {
+                lat = building.getLatitude();
+            }
+            if (lng == null) {
+                lng = building.getLongitude();
+            }
+        }
+
         Room room = Room.builder()
                 .building(building)
-                .roomCode(request.getRoomCode().trim())
+                .landlord(landlord)
+                .province(province)
+                .ward(ward)
+                .addressDetail(addressDetail)
                 .name(request.getName().trim())
-                .floor(request.getFloor())
+                .floor(request.getFloor() != null ? request.getFloor() : 1)
                 .area(request.getArea())
                 .listedPrice(request.getListedPrice())
                 .standardDeposit(request.getStandardDeposit())
@@ -94,8 +135,9 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .services(services)
                 .description(request.getDescription())
                 .status("AVAILABLE")
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
+                .latitude(lat)
+                .longitude(lng)
+                .isPublic(request.getIsPublic() == null || Boolean.TRUE.equals(request.getIsPublic()))
                 .build();
 
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
@@ -122,8 +164,18 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         Room room = roomRepository.findByIdAndBuildingLandlordId(roomId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
 
-        if (roomRepository.existsByBuildingIdAndRoomCodeAndIdNot(room.getBuilding().getId(), request.getRoomCode().trim(), roomId)) {
-            throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
+        Building building = null;
+        if (request.getBuildingId() != null) {
+            building = buildingRepository.findByIdAndLandlordId(request.getBuildingId(), landlordId)
+                    .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
+
+            if (roomRepository.existsByBuildingIdAndNameAndIdNot(request.getBuildingId(), request.getName().trim(), roomId)) {
+                throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
+            }
+        } else {
+            if (roomRepository.existsByBuildingIsNullAndLandlordIdAndNameAndIdNot(landlordId, request.getName().trim(), roomId)) {
+                throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
+            }
         }
 
         // Ngoại lệ: Phòng đang có hợp đồng hiệu lực thì không được chuyển sang trạng thái "AVAILABLE"
@@ -134,9 +186,27 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
-        room.setRoomCode(request.getRoomCode().trim());
+        room.setBuilding(building);
+        if (request.getProvince() != null && !request.getProvince().isBlank()) {
+            room.setProvince(request.getProvince());
+        } else if (building != null) {
+            room.setProvince(building.getProvince());
+        }
+
+        if (request.getWard() != null && !request.getWard().isBlank()) {
+            room.setWard(request.getWard());
+        } else if (building != null) {
+            room.setWard(building.getWard());
+        }
+
+        if (request.getAddressDetail() != null && !request.getAddressDetail().isBlank()) {
+            room.setAddressDetail(request.getAddressDetail());
+        } else if (building != null) {
+            room.setAddressDetail(building.getAddressDetail());
+        }
+
         room.setName(request.getName().trim());
-        room.setFloor(request.getFloor());
+        room.setFloor(request.getFloor() != null ? request.getFloor() : 1);
         room.setArea(request.getArea());
         room.setListedPrice(request.getListedPrice());
         room.setStandardDeposit(request.getStandardDeposit());
@@ -155,8 +225,21 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         if (request.getStatus() != null) {
             room.setStatus(request.getStatus());
         }
-        room.setLatitude(request.getLatitude());
-        room.setLongitude(request.getLongitude());
+        if (request.getLatitude() != null) {
+            room.setLatitude(request.getLatitude());
+        } else if (building != null && room.getLatitude() == null) {
+            room.setLatitude(building.getLatitude());
+        }
+
+        if (request.getLongitude() != null) {
+            room.setLongitude(request.getLongitude());
+        } else if (building != null && room.getLongitude() == null) {
+            room.setLongitude(building.getLongitude());
+        }
+
+        if (request.getIsPublic() != null) {
+            room.setIsPublic(request.getIsPublic());
+        }
 
         if (request.getImageUrls() != null) {
             room.getImages().clear();

@@ -72,32 +72,21 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
     @Override
     @Transactional
     public BuildingResponse createBuilding(Long landlordId, BuildingRequest request) {
-        String code = request.getBuildingCode();
-        if (code == null || code.isBlank()) {
-            code = "TN" + (System.currentTimeMillis() % 10000);
-        } else {
-            code = code.trim();
-        }
-
-        if (buildingRepository.existsByBuildingCode(code)) {
-            code = code + "-" + (System.currentTimeMillis() % 1000);
-        }
-
-        log.info("Tạo mới tòa nhà mã: {} cho chủ trọ id: {}", code, landlordId);
+        log.info("Tạo mới tòa nhà tên: {} cho chủ trọ id: {}", request.getName(), landlordId);
 
         User landlord = userRepository.findById(landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         Building building = Building.builder()
-                .buildingCode(code)
                 .landlord(landlord)
                 .name(request.getName().trim())
                 .province(request.getProvince())
-                .district(request.getDistrict())
                 .ward(request.getWard())
                 .addressDetail(request.getAddressDetail().trim())
                 .numFloors(request.getNumFloors())
                 .generalRules(request.getGeneralRules())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
                 .isActive(true)
                 .build();
 
@@ -113,18 +102,18 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
         Building building = buildingRepository.findByIdAndLandlordId(buildingId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
 
-        if (buildingRepository.existsByBuildingCodeAndIdNot(request.getBuildingCode().trim(), buildingId)) {
-            throw new BaseException(ErrorCode.BUILDING_CODE_EXISTS);
-        }
-
-        building.setBuildingCode(request.getBuildingCode().trim());
         building.setName(request.getName().trim());
         building.setProvince(request.getProvince());
-        building.setDistrict(request.getDistrict());
         building.setWard(request.getWard());
         building.setAddressDetail(request.getAddressDetail().trim());
         building.setNumFloors(request.getNumFloors());
         building.setGeneralRules(request.getGeneralRules());
+        if (request.getLatitude() != null) {
+            building.setLatitude(request.getLatitude());
+        }
+        if (request.getLongitude() != null) {
+            building.setLongitude(request.getLongitude());
+        }
 
         Building updated = buildingRepository.save(building);
         return mapToResponse(updated);

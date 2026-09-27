@@ -15,12 +15,6 @@ public class InvoiceUpdateRequest {
     @Schema(description = "Hạn nộp tiền", example = "2026-11-05")
     private LocalDate dueDate;
 
-    @Schema(description = "Chỉ số điện điều chỉnh", example = "1535")
-    private Integer currentElectricIndex;
-
-    @Schema(description = "Chỉ số nước điều chỉnh", example = "92")
-    private Integer currentWaterIndex;
-
     @Schema(description = "Chi phí phát sinh khác", example = "0")
     private Long otherAmount;
 

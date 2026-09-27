@@ -1,9 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { MainLayout } from '@/shared/layouts/MainLayout';
-import { AuthLayout } from '@/shared/layouts/AuthLayout';
-import { LandlordLayout } from '@/shared/layouts/LandlordLayout';
-import { AdminLayout } from '@/shared/layouts/AdminLayout';
+import { MainLayout, AuthLayout, LandlordLayout, AdminLayout, TenantLayout } from '@/shared/layouts';
 import { ProtectedRoute } from './ProtectedRoute';
 
 // Home & Showcase & Auth
@@ -30,6 +27,7 @@ import { MyRoommatePostsPage } from '@/features/tenant/pages/MyRoommatePostsPage
 import { RoommatePostDetailPage } from '@/features/tenant/pages/RoommatePostDetailPage';
 import { MyRoomPage } from '@/features/tenant/pages/MyRoomPage';
 import { MyComplaintsPage } from '@/features/tenant/pages/MyComplaintsPage';
+import { TenantBillsPage } from '@/features/tenant/pages/TenantBillsPage';
 
 // Admin Pages (UC 47 - 57)
 import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage';
@@ -40,25 +38,34 @@ import { AdminReportsPage } from '@/features/admin/pages/AdminReportsPage';
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* 1. Public / Main Tenant Layout */}
+      {/* 1. Public / Main Website Layout */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/components" element={<ComponentShowcase />} />
 
-        {/* Roommate Search & Grouping (UC 30 - 40) */}
+        {/* Roommate Search & Discovery (Public) */}
         <Route path="/roommates" element={<RoommateSearchPage />} />
-        <Route path="/roommates/create" element={<CreateRoommatePostPage />} />
-        <Route path="/roommates/my-posts" element={<MyRoommatePostsPage />} />
         <Route path="/roommates/:id" element={<RoommatePostDetailPage />} />
 
-        {/* Tenant My Room & Complaints (UC 41 - 46) */}
-        <Route path="/tenant/my-room" element={<MyRoomPage />} />
-        <Route path="/tenant/complaints" element={<MyComplaintsPage />} />
+        {/* Redirects to Tenant Sidebar Portal */}
+        <Route path="/roommates/create" element={<Navigate to="/tenant/create-post" replace />} />
+        <Route path="/roommates/my-posts" element={<Navigate to="/tenant/posts" replace />} />
 
         {/* Protected Feature Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/users" element={<UserListPage />} />
         </Route>
+      </Route>
+
+      {/* 2. Tenant Management Layout (Sidebar UI) */}
+      <Route path="/tenant" element={<TenantLayout />}>
+        <Route index element={<Navigate to="/tenant/my-room" replace />} />
+        <Route path="my-room" element={<MyRoomPage />} />
+        <Route path="bills" element={<TenantBillsPage />} />
+        <Route path="my-bills" element={<Navigate to="/tenant/bills" replace />} />
+        <Route path="complaints" element={<MyComplaintsPage />} />
+        <Route path="posts" element={<MyRoommatePostsPage />} />
+        <Route path="create-post" element={<CreateRoommatePostPage />} />
       </Route>
 
       {/* 2. Landlord Management Layout (UC 01 - 29) */}

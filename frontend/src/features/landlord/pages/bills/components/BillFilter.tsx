@@ -35,6 +35,7 @@ export const BillFilter: React.FC<BillFilterProps> = ({
         className="w-full sm:w-56 h-10"
         options={[
           { label: 'Tất cả trạng thái', value: 'ALL' },
+          { label: '📝 Bản nháp (DRAFT)', value: 'DRAFT' },
           { label: 'Chờ thanh toán', value: 'UNPAID' },
           { label: 'Thanh toán một phần', value: 'PARTIALLY_PAID' },
           { label: 'Đã thanh toán', value: 'PAID' },

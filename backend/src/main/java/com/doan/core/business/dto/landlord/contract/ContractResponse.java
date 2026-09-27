@@ -21,9 +21,8 @@ import java.util.stream.Collectors;
 public class ContractResponse {
 
     private Long id;
-    private String contractCode;
     private Long roomId;
-    private String roomCode;
+    private String roomName;
     private String buildingName;
     private Long representativeTenantId;
     private String representativeTenantName;
@@ -35,14 +34,8 @@ public class ContractResponse {
     private Long depositAmount;
     private Integer paymentCycleDay;
     private Integer durationMonths;
-    private String contractNumber;
-    private String roomName;
     private String tenantName;
     private String tenantPhone;
-    private Integer initialElectricIndex;
-    private Integer initialWaterIndex;
-    private Integer finalElectricIndex;
-    private Integer finalWaterIndex;
     private Long depositRefundAmount;
     private String status;
     private String pdfFileUrl;
@@ -91,17 +84,14 @@ public class ContractResponse {
             if (months <= 0) months = 1;
         }
 
-        String rCode = contract.getRoom() != null ? contract.getRoom().getRoomCode() : null;
+        String rName = contract.getRoom() != null ? contract.getRoom().getName() : null;
         String tName = contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getFullName() : null;
         String tPhone = contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getPhone() : null;
 
         return ContractResponse.builder()
                 .id(contract.getId())
-                .contractCode(contract.getContractCode())
-                .contractNumber(contract.getContractCode())
                 .roomId(contract.getRoom() != null ? contract.getRoom().getId() : null)
-                .roomCode(rCode)
-                .roomName(rCode)
+                .roomName(rName)
                 .buildingName(contract.getRoom() != null && contract.getRoom().getBuilding() != null ? contract.getRoom().getBuilding().getName() : null)
                 .representativeTenantId(contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getId() : null)
                 .representativeTenantName(tName)
@@ -115,10 +105,6 @@ public class ContractResponse {
                 .monthlyRent(contract.getRentPrice())
                 .depositAmount(contract.getDepositAmount())
                 .paymentCycleDay(contract.getPaymentCycleDay())
-                .initialElectricIndex(contract.getInitialElectricIndex())
-                .initialWaterIndex(contract.getInitialWaterIndex())
-                .finalElectricIndex(contract.getFinalElectricIndex())
-                .finalWaterIndex(contract.getFinalWaterIndex())
                 .depositRefundAmount(contract.getDepositRefundAmount())
                 .status(contract.getStatus())
                 .pdfFileUrl(contract.getPdfFileUrl())

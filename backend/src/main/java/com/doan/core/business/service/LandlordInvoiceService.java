@@ -17,4 +17,6 @@ public interface LandlordInvoiceService {
     InvoiceResponse cancelInvoice(Long landlordId, Long invoiceId, InvoiceCancelRequest request);
 
     InvoiceResponse confirmPayment(Long landlordId, Long invoiceId, InvoicePaymentRequest request);
+
+    InvoiceResponse publishInvoice(Long landlordId, Long invoiceId);
 }

@@ -1,3 +1,22 @@
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS roommate_applications CASCADE;
+DROP TABLE IF EXISTS roommate_posts CASCADE;
+DROP TABLE IF EXISTS complaints CASCADE;
+DROP TABLE IF EXISTS invoice_items CASCADE;
+DROP TABLE IF EXISTS invoices CASCADE;
+DROP TABLE IF EXISTS tenant_link_invitations CASCADE;
+DROP TABLE IF EXISTS contract_services CASCADE;
+DROP TABLE IF EXISTS contracts CASCADE;
+DROP TABLE IF EXISTS tenants CASCADE;
+DROP TABLE IF EXISTS room_services CASCADE;
+DROP TABLE IF EXISTS services CASCADE;
+DROP TABLE IF EXISTS room_images CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS buildings CASCADE;
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+
 -- =============================================================================
 -- HỆ THỐNG QUẢN LÝ NHÀ TRỌ HỖ TRỢ GHÉP NGƯỜI Ở CHUNG
 -- DATABASE DDL (CHUẨN HÓA KIỂU DỮ LIỆU & QUAN HỆ KHÓA NGOẠI)
@@ -7,7 +26,6 @@
 -- 1. Bảng người dùng hệ thống (Admin, Landlord, Tenant)
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    user_code VARCHAR(20) UNIQUE,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
@@ -40,27 +58,34 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 -- 3. Bảng Tòa nhà / Khu trọ
 CREATE TABLE IF NOT EXISTS buildings (
     id BIGSERIAL PRIMARY KEY,
-    building_code VARCHAR(20) NOT NULL UNIQUE,
     landlord_id BIGINT NOT NULL,
     name VARCHAR(150) NOT NULL,
     province VARCHAR(100),
-    district VARCHAR(100),
     ward VARCHAR(100),
     address_detail VARCHAR(255) NOT NULL,
     num_floors INT NOT NULL DEFAULT 1,
     general_rules TEXT,
+    latitude NUMERIC(10, 8),
+    longitude NUMERIC(11, 8),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_buildings_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT
 );
 
+ALTER TABLE buildings DROP COLUMN IF EXISTS district;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS latitude NUMERIC(10, 8);
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS longitude NUMERIC(11, 8);
+
 -- 4. Bảng Phòng trọ
 CREATE TABLE IF NOT EXISTS rooms (
     id BIGSERIAL PRIMARY KEY,
-    building_id BIGINT NOT NULL,
-    room_code VARCHAR(20) NOT NULL,
+    building_id BIGINT,
+    landlord_id BIGINT,
     name VARCHAR(100) NOT NULL,
+    province VARCHAR(100),
+    ward VARCHAR(100),
+    address_detail TEXT,
     floor INT NOT NULL DEFAULT 1,
     area DECIMAL(6, 2) NOT NULL,
     listed_price BIGINT NOT NULL,
@@ -73,11 +98,27 @@ CREATE TABLE IF NOT EXISTS rooms (
     status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
+    is_public BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_rooms_building FOREIGN KEY (building_id) REFERENCES buildings (id) ON DELETE CASCADE,
-    CONSTRAINT uk_rooms_building_code UNIQUE (building_id, room_code)
+    CONSTRAINT fk_rooms_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT
 );
+
+ALTER TABLE rooms ALTER COLUMN building_id DROP NOT NULL;
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS landlord_id BIGINT;
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS province VARCHAR(100);
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS ward VARCHAR(100);
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS address_detail TEXT;
+ALTER TABLE rooms ALTER COLUMN address_detail TYPE TEXT;
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE rooms DROP CONSTRAINT IF EXISTS uk_rooms_building_code;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_rooms_landlord') THEN
+        ALTER TABLE rooms ADD CONSTRAINT fk_rooms_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT;
+    END IF;
+END $$;
 
 -- 5. Bảng Ảnh phòng trọ
 CREATE TABLE IF NOT EXISTS room_images (
@@ -94,7 +135,6 @@ CREATE TABLE IF NOT EXISTS room_images (
 CREATE TABLE IF NOT EXISTS services (
     id BIGSERIAL PRIMARY KEY,
     landlord_id BIGINT NOT NULL,
-    service_code VARCHAR(20),
     name VARCHAR(100) NOT NULL,
     category VARCHAR(50) NOT NULL,
     unit VARCHAR(30) NOT NULL,
@@ -111,7 +151,6 @@ CREATE TABLE IF NOT EXISTS services (
 CREATE TABLE IF NOT EXISTS room_services (
     room_id BIGINT NOT NULL,
     service_id BIGINT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (room_id, service_id),
     CONSTRAINT fk_room_services_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
     CONSTRAINT fk_room_services_service FOREIGN KEY (service_id) REFERENCES services (id) ON DELETE CASCADE
@@ -123,7 +162,6 @@ CREATE TABLE IF NOT EXISTS tenants (
     room_id BIGINT,
     contract_id BIGINT,
     user_id BIGINT,
-    tenant_code VARCHAR(20) UNIQUE,
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     id_card_number VARCHAR(20) NOT NULL,
@@ -144,7 +182,6 @@ CREATE TABLE IF NOT EXISTS tenants (
 -- 9. Bảng Hợp đồng thuê phòng
 CREATE TABLE IF NOT EXISTS contracts (
     id BIGSERIAL PRIMARY KEY,
-    contract_code VARCHAR(50) NOT NULL UNIQUE,
     room_id BIGINT NOT NULL,
     representative_tenant_id BIGINT,
     landlord_id BIGINT NOT NULL,
@@ -153,10 +190,6 @@ CREATE TABLE IF NOT EXISTS contracts (
     rent_price BIGINT NOT NULL,
     deposit_amount BIGINT NOT NULL,
     payment_cycle_day INT NOT NULL DEFAULT 5,
-    initial_electric_index INT NOT NULL DEFAULT 0,
-    initial_water_index INT NOT NULL DEFAULT 0,
-    final_electric_index INT,
-    final_water_index INT,
     deposit_refund_amount BIGINT,
     status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
     pdf_file_url VARCHAR(500),
@@ -203,7 +236,6 @@ CREATE TABLE IF NOT EXISTS tenant_link_invitations (
 -- 12. Bảng Hóa đơn tiền phòng hàng tháng
 CREATE TABLE IF NOT EXISTS invoices (
     id BIGSERIAL PRIMARY KEY,
-    invoice_code VARCHAR(50) NOT NULL UNIQUE,
     contract_id BIGINT NOT NULL,
     billing_period VARCHAR(20) NOT NULL,
     due_date DATE NOT NULL,
@@ -212,14 +244,11 @@ CREATE TABLE IF NOT EXISTS invoices (
     other_amount BIGINT NOT NULL DEFAULT 0,
     total_amount BIGINT NOT NULL,
     paid_amount BIGINT NOT NULL DEFAULT 0,
-    previous_electric_index INT,
-    current_electric_index INT,
-    previous_water_index INT,
-    current_water_index INT,
     status VARCHAR(30) NOT NULL DEFAULT 'UNPAID',
     payment_method VARCHAR(30),
     paid_at TIMESTAMP WITH TIME ZONE,
     cancel_reason VARCHAR(255),
+    payment_note TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_invoices_contract FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE RESTRICT
@@ -230,7 +259,10 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     id BIGSERIAL PRIMARY KEY,
     invoice_id BIGINT NOT NULL,
     contract_service_id BIGINT,
+    item_type VARCHAR(20) NOT NULL DEFAULT 'SERVICE',
     item_name VARCHAR(100) NOT NULL,
+    previous_index INT,
+    current_index INT,
     quantity DECIMAL(10, 2) NOT NULL DEFAULT 1,
     unit_price BIGINT NOT NULL,
     amount BIGINT NOT NULL,
@@ -242,7 +274,6 @@ CREATE TABLE IF NOT EXISTS invoice_items (
 -- 14. Bảng Khiếu nại / Báo hỏng thiết bị phòng trọ
 CREATE TABLE IF NOT EXISTS complaints (
     id BIGSERIAL PRIMARY KEY,
-    complaint_code VARCHAR(30) UNIQUE,
     room_id BIGINT NOT NULL,
     tenant_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
@@ -253,44 +284,68 @@ CREATE TABLE IF NOT EXISTS complaints (
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
     resolution_note TEXT,
     resolved_at TIMESTAMP WITH TIME ZONE,
+    rating INT,
+    feedback TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_complaints_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
     CONSTRAINT fk_complaints_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE CASCADE
 );
 
--- 15. Bảng Tin đăng tìm người ở ghép
+ALTER TABLE complaints ADD COLUMN IF NOT EXISTS rating INT;
+ALTER TABLE complaints ADD COLUMN IF NOT EXISTS feedback TEXT;
+
+-- 15. Bảng Tin đăng tìm người ở ghép (UC 11 - UC 13)
 CREATE TABLE IF NOT EXISTS roommate_posts (
     id BIGSERIAL PRIMARY KEY,
     author_id BIGINT NOT NULL,
     room_id BIGINT,
-    title VARCHAR(255) NOT NULL,
-    post_type VARCHAR(30) NOT NULL,
-    target_gender VARCHAR(20) DEFAULT 'ALL',
-    budget_min BIGINT,
-    budget_max BIGINT,
-    location_district VARCHAR(100),
-    location_address VARCHAR(255),
-    lifestyle_habits TEXT,
+    title VARCHAR(250) NOT NULL,
     description TEXT,
-    status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+    post_type VARCHAR(30) NOT NULL,
+    area_name VARCHAR(250),
+    district VARCHAR(100),
+    city VARCHAR(100) DEFAULT 'Hà Nội',
+    share_price DECIMAL(12, 2) NOT NULL,
+    total_room_price DECIMAL(12, 2),
+    needed_roommates INT NOT NULL DEFAULT 1,
+    current_roommates INT NOT NULL DEFAULT 1,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    radius_km DOUBLE PRECISION,
+    gender_preference VARCHAR(20) DEFAULT 'ANY',
+    sleep_time VARCHAR(50) DEFAULT 'BEFORE_24H',
+    is_no_smoking BOOLEAN DEFAULT TRUE,
+    is_pet_friendly BOOLEAN DEFAULT FALSE,
+    cooking_frequency VARCHAR(50) DEFAULT 'DAILY',
+    cleanliness_level VARCHAR(50) DEFAULT 'VERY_CLEAN',
+    guest_allowed VARCHAR(50) DEFAULT 'WEEKENDS_ONLY',
+    status VARCHAR(30) NOT NULL DEFAULT 'OPEN',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_roommate_posts_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_roommate_posts_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE SET NULL
 );
 
--- 16. Bảng Đơn ứng tuyển xin gia nhập nhóm ở ghép
-CREATE TABLE IF NOT EXISTS post_applications (
+-- 16. Bảng Đơn ứng tuyển xin gia nhập nhóm ở ghép (UC 14, UC 15)
+CREATE TABLE IF NOT EXISTS roommate_applications (
     id BIGSERIAL PRIMARY KEY,
     post_id BIGINT NOT NULL,
     applicant_id BIGINT NOT NULL,
-    message TEXT,
+    intro_message TEXT,
+    gender VARCHAR(20),
+    sleep_time VARCHAR(50),
+    is_smoking BOOLEAN DEFAULT FALSE,
+    is_pet BOOLEAN DEFAULT FALSE,
+    cooking_habit VARCHAR(50),
+    guest_habit VARCHAR(50),
+    compatibility_score INT DEFAULT 85,
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    reject_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_post_applications_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
-    CONSTRAINT fk_post_applications_applicant FOREIGN KEY (applicant_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_roommate_app_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
+    CONSTRAINT fk_roommate_app_applicant FOREIGN KEY (applicant_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- 17. Bảng Thông báo hệ thống
@@ -327,7 +382,9 @@ END $$;
 -- 18. Hệ thống chỉ mục (Performance Indexes cho khóa ngoại và lọc tìm kiếm)
 CREATE INDEX IF NOT EXISTS idx_buildings_landlord_id ON buildings (landlord_id);
 CREATE INDEX IF NOT EXISTS idx_rooms_building_id ON rooms (building_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_landlord_id ON rooms (landlord_id);
 CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms (status);
+CREATE INDEX IF NOT EXISTS idx_rooms_public_status ON rooms (is_public, status);
 CREATE INDEX IF NOT EXISTS idx_rooms_bld_status ON rooms (building_id, status);
 CREATE INDEX IF NOT EXISTS idx_room_images_room_id ON room_images (room_id);
 CREATE INDEX IF NOT EXISTS idx_room_services_service_id ON room_services (service_id);
@@ -356,4 +413,31 @@ CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints (status);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens (user_id);
 CREATE INDEX IF NOT EXISTS idx_roommate_posts_status ON roommate_posts (status);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read);
+
+-- =============================================================================
+-- 19. MIGRATION: LOẠI BỎ TOÀN BỘ CỘT MÃ (CODE)
+-- =============================================================================
+ALTER TABLE users DROP COLUMN IF EXISTS user_code;
+ALTER TABLE buildings DROP COLUMN IF EXISTS building_code;
+ALTER TABLE rooms DROP COLUMN IF EXISTS room_code;
+ALTER TABLE services DROP COLUMN IF EXISTS service_code;
+ALTER TABLE tenants DROP COLUMN IF EXISTS tenant_code;
+ALTER TABLE contracts DROP COLUMN IF EXISTS contract_code;
+ALTER TABLE contracts DROP COLUMN IF EXISTS initial_electric_index;
+ALTER TABLE contracts DROP COLUMN IF EXISTS initial_water_index;
+ALTER TABLE contracts DROP COLUMN IF EXISTS final_electric_index;
+ALTER TABLE contracts DROP COLUMN IF EXISTS final_water_index;
+ALTER TABLE invoices DROP COLUMN IF EXISTS invoice_code;
+ALTER TABLE invoices DROP COLUMN IF EXISTS previous_electric_index;
+ALTER TABLE invoices DROP COLUMN IF EXISTS current_electric_index;
+ALTER TABLE invoices DROP COLUMN IF EXISTS previous_water_index;
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE;
+UPDATE rooms SET is_public = TRUE WHERE is_public IS NULL;
+ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS previous_index INT;
+ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS current_index INT;
+ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS item_type VARCHAR(20) DEFAULT 'SERVICE';
+UPDATE invoice_items SET item_type = 'SERVICE' WHERE item_type IS NULL;
+ALTER TABLE complaints DROP COLUMN IF EXISTS complaint_code;
+ALTER TABLE roommate_posts DROP COLUMN IF EXISTS code;
+ALTER TABLE roommate_applications DROP COLUMN IF EXISTS code;
 

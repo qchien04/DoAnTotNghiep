@@ -28,17 +28,14 @@ public class MeterReadingInvoiceRequest {
     @Schema(description = "Hạn nộp tiền phòng (nếu để trống mặc định sau 10 ngày)", example = "2026-11-05")
     private LocalDate dueDate;
 
-    @Schema(description = "Chỉ số điện chốt kỳ này (tùy chọn nếu không dùng công tơ điện)", example = "1535")
-    private Integer currentElectricIndex;
-
-    @Schema(description = "Chỉ số nước chốt kỳ này (tùy chọn nếu không dùng công tơ nước)", example = "94")
-    private Integer currentWaterIndex;
-
     @Schema(description = "Chi phí phát sinh khác (nếu có)", example = "0")
     private Long otherAmount = 0L;
 
     @Schema(description = "Ghi chú chi phí phát sinh", example = "Phụ thu vệ sinh hành lang đột xuất")
     private String otherNote;
+
+    @Schema(description = "Lưu dưới dạng bản nháp (DRAFT) chưa gửi cho người thuê", example = "false")
+    private Boolean isDraft;
 
     @Schema(description = "Danh sách chi tiết các khoản mục dịch vụ trong hóa đơn (Invoice Items)")
     private List<InvoiceItemRequest> items;
@@ -49,6 +46,7 @@ public class MeterReadingInvoiceRequest {
     @AllArgsConstructor
     public static class InvoiceItemRequest {
         private Long contractServiceId;
+        private String itemType; // ROOM_RENT, SERVICE, SURCHARGE, DISCOUNT
         private String itemName;
         private String billingMethod;
         private Integer previousIndex;

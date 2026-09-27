@@ -33,6 +33,11 @@ export const authService = {
     return res.data;
   },
 
+  getPublicRooms: async (): Promise<ResponseData<any[]>> => {
+    const res = await apiClient.get<ResponseData<any[]>>('/api/v1/home/rooms');
+    return res.data;
+  },
+
   getUsers: async (params?: PagingParams): Promise<ResponseData<PageResponse<User>>> => {
     const res = await apiClient.get<ResponseData<PageResponse<User>>>('/api/v1/users', { params });
     return res.data;

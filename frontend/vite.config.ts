@@ -54,6 +54,7 @@ function tileServerPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
+  root: path.resolve(__dirname),
   plugins: [react(), tailwindcss(), tileServerPlugin()],
   resolve: {
     alias: {

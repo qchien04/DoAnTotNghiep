@@ -21,8 +21,6 @@ public class UserDto {
     @Schema(description = "ID người dùng", example = "1")
     private Long id;
 
-    @Schema(description = "Mã người dùng", example = "USR001")
-    private String userCode;
 
     @Schema(description = "Tên đăng nhập", example = "landlord")
     private String username;
@@ -64,7 +62,6 @@ public class UserDto {
         if (user == null) return null;
         return UserDto.builder()
                 .id(user.getId())
-                .userCode(user.getUserCode())
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .email(user.getEmail())

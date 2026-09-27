@@ -20,8 +20,6 @@ import java.util.List;
 @Table(name = "invoices")
 public class Invoice extends BaseEntity {
 
-    @Column(name = "invoice_code", nullable = false, unique = true, length = 50)
-    private String invoiceCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", nullable = false)
@@ -51,18 +49,6 @@ public class Invoice extends BaseEntity {
     @Builder.Default
     private Long paidAmount = 0L;
 
-    @Column(name = "previous_electric_index")
-    private Integer previousElectricIndex;
-
-    @Column(name = "current_electric_index")
-    private Integer currentElectricIndex;
-
-    @Column(name = "previous_water_index")
-    private Integer previousWaterIndex;
-
-    @Column(name = "current_water_index")
-    private Integer currentWaterIndex;
-
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
     private String status = "UNPAID"; // UNPAID, PARTIALLY_PAID, PAID, OVERDUE, CANCELLED
@@ -75,6 +61,9 @@ public class Invoice extends BaseEntity {
 
     @Column(name = "cancel_reason")
     private String cancelReason;
+
+    @Column(name = "payment_note", columnDefinition = "TEXT")
+    private String paymentNote;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @org.hibernate.annotations.BatchSize(size = 30)

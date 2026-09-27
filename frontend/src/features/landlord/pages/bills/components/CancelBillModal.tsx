@@ -33,7 +33,7 @@ export const CancelBillModal: React.FC<CancelBillModalProps> = ({
       <div className="py-2 space-y-4">
         <p className="text-xs text-stay-text-secondary leading-relaxed">
           Nhập lý do hủy hóa đơn{' '}
-          <strong className="text-stay-text">{bill?.invoiceCode || bill?.billNumber}</strong>:
+          <strong className="text-stay-text">Kỳ {bill?.billingPeriod} (#{bill?.id})</strong>:
         </p>
         <Input.TextArea
           rows={3}

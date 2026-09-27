@@ -26,6 +26,7 @@ export interface RoommatePost {
   authorAvatar?: string;
   postType: RoommatePostType;
   areaName: string; // Ngõ 80 Cầu Giấy, HN...
+  ward?: string;
   district: string;
   city: string;
   sharePrice: number; // VNĐ
@@ -60,6 +61,7 @@ export interface CreatePostWithRoomDto {
   isExistingLinkedRoom: boolean;
   roomId?: string;
   roomAddress: string;
+  ward?: string;
   district: string;
   city: string;
   totalRoomPrice: number;
@@ -157,6 +159,8 @@ export interface RoomLinkInvitation {
 
 export interface MyRoomDetails {
   hasLinkedRoom: boolean;
+  hasPendingInvitation?: boolean;
+  invitation?: RoomLinkInvitation;
   room?: {
     id: string;
     name: string;
@@ -192,6 +196,35 @@ export interface MyRoomDetails {
     initialWater: number;
     services: { name: string; price: number; unit: string }[];
   };
+}
+
+export interface TenantContractHistory {
+  id: number;
+  contractCode: string;
+  status: string; // ACTIVE, EXPIRING_SOON, TERMINATED, EXPIRED, CANCELLED
+  isCurrent: boolean;
+  isRepresentative: boolean;
+  startDate: string;
+  endDate: string;
+  monthlyRent: number;
+  depositAmount: number;
+  depositRefundAmount?: number | null;
+  termsAndConditions?: string;
+  pdfFileUrl?: string;
+  roomId?: number;
+  roomName?: string;
+  roomCode?: string;
+  buildingName?: string;
+  buildingAddress?: string;
+  roomArea?: number;
+  landlordName?: string;
+  landlordPhone?: string;
+  services?: Array<{
+    name: string;
+    price: number;
+    unit: string;
+    lastIndex?: number;
+  }>;
 }
 
 // 4. Lịch sử hóa đơn & Thanh toán VietQR (UC 43 - 44)

@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 public class UtilityServiceResponse {
 
     private Long id;
-    private String serviceCode;
     private String name;
     private String category;
     private String unit;
@@ -31,7 +30,6 @@ public class UtilityServiceResponse {
         if (service == null) return null;
         return UtilityServiceResponse.builder()
                 .id(service.getId())
-                .serviceCode(service.getServiceCode())
                 .name(service.getName())
                 .category(service.getCategory())
                 .unit(service.getUnit())

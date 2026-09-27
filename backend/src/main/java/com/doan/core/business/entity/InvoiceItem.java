@@ -29,8 +29,18 @@ public class InvoiceItem {
     @JoinColumn(name = "contract_service_id")
     private ContractService contractService;
 
+    @Column(name = "item_type", nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'SERVICE'")
+    @Builder.Default
+    private String itemType = "SERVICE";
+
     @Column(name = "item_name", nullable = false, length = 100)
     private String itemName;
+
+    @Column(name = "previous_index")
+    private Integer previousIndex;
+
+    @Column(name = "current_index")
+    private Integer currentIndex;
 
     @Column(name = "quantity", precision = 10, scale = 2, nullable = false)
     @Builder.Default

@@ -27,32 +27,17 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
       form.resetFields();
       if (editingService) {
         form.setFieldsValue({
-          serviceCode:
-            editingService.serviceCode ||
-            editingService.code ||
-            `DV${String(editingService.id || '').padStart(2, '0')}`,
           name: editingService.name,
           category: editingService.category || 'OTHER',
           unit: editingService.unit || 'Tháng',
-          unitPrice: Number(
-            editingService.unitPrice !== undefined
-              ? editingService.unitPrice
-              : editingService.price !== undefined
-              ? editingService.price
-              : 0
-          ),
-          billingMethod:
-            editingService.billingMethod || editingService.chargingType || 'FIXED_PER_ROOM',
-          scope: editingService.scope || editingService.appliedScope || 'ALL',
-          isActive:
-            editingService.isActive !== undefined
-              ? Boolean(editingService.isActive)
-              : editingService.status === 'ACTIVE',
+          unitPrice: Number(editingService.unitPrice ?? 0),
+          billingMethod: editingService.billingMethod || 'FIXED_PER_ROOM',
+          scope: editingService.scope || 'ALL',
+          isActive: editingService.isActive !== undefined ? Boolean(editingService.isActive) : true,
         });
       } else {
-        const nextCode = `DV${String(servicesCount + 1).padStart(2, '0')}`;
         form.setFieldsValue({
-          serviceCode: nextCode,
+          name: '',
           category: 'OTHER',
           unit: 'Tháng',
           billingMethod: 'FIXED_PER_ROOM',
@@ -122,9 +107,6 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     try {
       const values = await form.validateFields();
       const payload = {
-        serviceCode:
-          values.serviceCode ||
-          (editingService ? editingService.serviceCode : `DV${Date.now().toString().slice(-4)}`),
         name: values.name.trim(),
         category: values.category,
         unit: values.unit.trim(),
@@ -160,14 +142,14 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
             1. Định danh & phân loại dịch vụ
           </h3>
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Mã dịch vụ (*)</span>}
-                name="serviceCode"
-                rules={[{ required: true, message: 'Vui lòng nhập mã dịch vụ (*)' }]}
+                label={<span className="text-stay-text font-medium text-xs">Tên dịch vụ (*)</span>}
+                name="name"
+                rules={[{ required: true, message: 'Vui lòng nhập tên dịch vụ (*)' }]}
                 className="mb-0"
               >
-                <Input placeholder="Ví dụ: DV01, DV_ELEC..." className="h-10" />
+                <Input placeholder="Ví dụ: Điện sinh hoạt, Nước sạch, Wifi..." className="h-10" />
               </Form.Item>
 
               <Form.Item
@@ -189,15 +171,6 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
                     { label: 'Khác (OTHER)', value: 'OTHER' },
                   ]}
                 />
-              </Form.Item>
-
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Tên dịch vụ (*)</span>}
-                name="name"
-                rules={[{ required: true, message: 'Vui lòng nhập tên dịch vụ (*)' }]}
-                className="mb-0"
-              >
-                <Input placeholder="Ví dụ: Điện sinh hoạt..." className="h-10" />
               </Form.Item>
             </div>
           </div>

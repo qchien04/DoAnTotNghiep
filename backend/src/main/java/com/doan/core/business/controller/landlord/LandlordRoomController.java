@@ -53,7 +53,7 @@ public class LandlordRoomController {
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody RoomRequest request) {
         RoomResponse created = roomService.createRoom(principal.getId(), request);
-        return ResponseEntity.ok(ResponseData.success("Tạo phòng " + created.getRoomCode() + " thành công!", created));
+        return ResponseEntity.ok(ResponseData.success("Tạo phòng " + created.getName() + " thành công!", created));
     }
 
     @PutMapping("/{id}")
@@ -63,7 +63,7 @@ public class LandlordRoomController {
             @PathVariable Long id,
             @Valid @RequestBody RoomRequest request) {
         RoomResponse updated = roomService.updateRoom(principal.getId(), id, request);
-        return ResponseEntity.ok(ResponseData.success("Cập nhật phòng " + updated.getRoomCode() + " thành công!", updated));
+        return ResponseEntity.ok(ResponseData.success("Cập nhật phòng " + updated.getName() + " thành công!", updated));
     }
 
     @DeleteMapping("/{id}")

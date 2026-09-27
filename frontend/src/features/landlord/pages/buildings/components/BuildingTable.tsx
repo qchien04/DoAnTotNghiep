@@ -20,11 +20,11 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
 }) => {
   const columns = [
     {
-      title: 'Mã',
-      dataIndex: 'code',
-      key: 'code',
-      width: 90,
-      render: (val: string) => <span className="font-mono text-xs text-stay-text-secondary">{val}</span>,
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 70,
+      render: (_: any, r: Building) => <span className="font-mono text-xs text-stay-text-secondary">#{r.id}</span>,
     },
     {
       title: 'Tên tòa nhà',
@@ -33,16 +33,23 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
       render: (val: string, r: Building) => (
         <div>
           <span className="font-medium text-stay-text text-sm block">{val}</span>
-          <span className="text-xs text-stay-text-muted">{r.address}</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs text-stay-text-muted">{r.addressDetail || '---'}</span>
+            {r.latitude && r.longitude && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-1 rounded">
+                📍 {Number(r.latitude).toFixed(4)}, {Number(r.longitude).toFixed(4)}
+              </span>
+            )}
+          </div>
         </div>
       ),
     },
     {
       title: 'Số tầng',
-      dataIndex: 'totalFloors',
-      key: 'totalFloors',
+      dataIndex: 'numFloors',
+      key: 'numFloors',
       width: 90,
-      render: (val: number) => <span className="text-sm text-stay-text">{val}</span>,
+      render: (val: number) => <span className="text-sm text-stay-text">{val ?? 1}</span>,
     },
     {
       title: 'Tổng phòng',
@@ -84,7 +91,7 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
           />
           <Popconfirm
             title="Xác nhận xóa tòa nhà?"
-            description={`Bạn có chắc muốn xóa tòa nhà ${r.code} - ${r.name}?`}
+            description={`Bạn có chắc muốn xóa tòa nhà "${r.name}"?`}
             onConfirm={() => onDelete(r.id)}
             okText="Xóa"
             cancelText="Hủy"

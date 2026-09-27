@@ -52,6 +52,14 @@ export const useBills = (params?: BillFilterParams) => {
     },
   });
 
+  const publishMutation = useMutation({
+    mutationFn: (id: string | number) => landlordService.publishBill(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: landlordKeys.bills() });
+      queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+    },
+  });
+
   return {
     bills: Array.isArray(listQuery.data) ? listQuery.data : (listQuery.data as any)?.items ?? [],
     pageInfo: listQuery.data,
@@ -62,6 +70,8 @@ export const useBills = (params?: BillFilterParams) => {
     // Mutations
     createBill: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    publishBill: publishMutation.mutateAsync,
+    isPublishing: publishMutation.isPending,
     updateBill: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
     cancelBill: cancelMutation.mutateAsync,

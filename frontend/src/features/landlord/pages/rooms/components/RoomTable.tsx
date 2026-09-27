@@ -1,6 +1,6 @@
 import React from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
-import { Table, Button, Popconfirm } from '@/shared/components';
+import { Edit2, Trash2, Globe, EyeOff } from 'lucide-react';
+import { Table, Button, Popconfirm, Tag } from '@/shared/components';
 import { Room, RoomStatus } from '@/shared/types/landlord';
 
 interface RoomTableProps {
@@ -58,13 +58,13 @@ export const RoomTable: React.FC<RoomTableProps> = ({
 
   const columns = [
     {
-      title: 'Mã phòng',
-      key: 'code',
-      width: 100,
+      title: 'ID',
+      key: 'id',
+      width: 70,
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         return (
-          <span className="font-mono text-xs font-semibold text-stay-text">{item.code || item.roomCode || '---'}</span>
+          <span className="font-mono text-xs font-semibold text-stay-text">#{item.id}</span>
         );
       },
     },
@@ -76,7 +76,13 @@ export const RoomTable: React.FC<RoomTableProps> = ({
         return (
           <div>
             <p className="font-medium text-stay-text">{item.name || '---'}</p>
-            {item.buildingName && <p className="text-xs text-stay-text-muted">{item.buildingName}</p>}
+            {item.buildingName ? (
+              <p className="text-xs text-stay-text-muted">{item.buildingName}</p>
+            ) : (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                🏠 {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Nhà trọ độc lập')}
+              </p>
+            )}
           </div>
         );
       },
@@ -101,10 +107,10 @@ export const RoomTable: React.FC<RoomTableProps> = ({
     },
     {
       title: 'Giá thuê',
-      key: 'price',
+      key: 'listedPrice',
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
-        const p = Number(item.price ?? item.listedPrice ?? 0);
+        const p = Number(item.listedPrice ?? 0);
         return (
           <span className="font-medium text-stay-text">
             {p.toLocaleString()} đ/tháng
@@ -114,11 +120,11 @@ export const RoomTable: React.FC<RoomTableProps> = ({
     },
     {
       title: 'Sức chứa',
-      key: 'capacity',
+      key: 'maxCapacity',
       width: 100,
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
-        const cap = item.capacity ?? item.maxCapacity ?? 1;
+        const cap = item.maxCapacity ?? 1;
         return (
           <span className="text-xs text-stay-text-secondary">
             {cap} người
@@ -130,8 +136,28 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 130,
+      width: 120,
       render: (val: RoomStatus) => renderStatusTag(val),
+    },
+    {
+      title: 'Hiển thị',
+      key: 'isPublic',
+      width: 120,
+      render: (_: any, r: Room) => {
+        const item = r || (_ as Room) || {};
+        const isPub = item.isPublic !== false;
+        return isPub ? (
+          <Tag color="success" className="rounded-full px-2.5 py-0.5 text-[11px] inline-flex items-center gap-1">
+            <Globe className="w-3 h-3 text-emerald-500" />
+            <span>Công khai</span>
+          </Tag>
+        ) : (
+          <Tag color="default" className="rounded-full px-2.5 py-0.5 text-[11px] inline-flex items-center gap-1">
+            <EyeOff className="w-3 h-3 text-gray-400" />
+            <span>Nội bộ</span>
+          </Tag>
+        );
+      },
     },
     {
       title: 'Thao tác',
@@ -151,7 +177,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
             />
             <Popconfirm
               title="Xác nhận xóa phòng?"
-              description={`Bạn có chắc muốn xóa phòng ${item.code || item.roomCode || ''}?`}
+              description={`Bạn có chắc muốn xóa phòng "${item.name}"?`}
               onConfirm={() => onDelete(item.id)}
               okText="Xóa"
               cancelText="Hủy"

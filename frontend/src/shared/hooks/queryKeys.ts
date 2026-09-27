@@ -41,6 +41,7 @@ export const tenantKeys = {
   postApplications: (postId: string) => [...tenantKeys.applications(), 'post', postId] as const,
 
   myRoom: () => [...tenantKeys.all, 'my-room'] as const,
+  myContracts: () => [...tenantKeys.all, 'contracts'] as const,
   myBills: () => [...tenantKeys.all, 'my-bills'] as const,
   vietQRPayment: (billId: string) => [...tenantKeys.myBills(), 'qr', billId] as const,
 

@@ -10,9 +10,6 @@ import lombok.Data;
 @Schema(description = "Yêu cầu thêm mới hoặc cập nhật dịch vụ tiện ích")
 public class UtilityServiceRequest {
 
-    @Schema(description = "Mã dịch vụ", example = "DV01")
-    private String serviceCode;
-
     @NotBlank(message = "Tên dịch vụ không được để trống")
     @Schema(description = "Tên dịch vụ", example = "Điện sinh hoạt")
     private String name;

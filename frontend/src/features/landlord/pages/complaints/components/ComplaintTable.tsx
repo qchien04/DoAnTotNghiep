@@ -51,12 +51,12 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
 
   const columns = [
     {
-      title: 'Mã KN',
-      key: 'code',
-      width: 90,
+      title: 'ID',
+      key: 'id',
+      width: 70,
       render: (_: any, r: Complaint) => (
         <span className="font-mono text-xs font-semibold text-stay-text">
-          {r.code || r.complaintCode || `KN${r.id}`}
+          #{r.id}
         </span>
       ),
     },
@@ -66,7 +66,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
       render: (_: any, r: Complaint) => (
         <div>
           <span className="font-medium text-xs text-stay-text block">
-            {r.roomName || (r.roomCode ? `P.${r.roomCode}` : '---')}
+            {r.roomName || '---'}
           </span>
           {r.buildingName && (
             <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
@@ -76,16 +76,16 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
     },
     {
       title: 'Người gửi',
-      key: 'senderName',
+      key: 'tenantName',
       render: (_: any, r: Complaint) => (
-        <span className="font-medium text-sm text-stay-text">{r.senderName || r.tenantName || '---'}</span>
+        <span className="font-medium text-sm text-stay-text">{r.tenantName || '---'}</span>
       ),
     },
     {
       title: 'Loại sự cố',
-      key: 'type',
+      key: 'incidentType',
       render: (_: any, r: Complaint) => {
-        const val = r.type || r.incidentType || '';
+        const val = r.incidentType || '';
         const label =
           val === 'EQUIPMENT'
             ? 'Thiết bị điện nước'

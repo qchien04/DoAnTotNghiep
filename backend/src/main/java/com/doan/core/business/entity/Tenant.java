@@ -29,8 +29,6 @@ public class Tenant extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "tenant_code", length = 20, unique = true)
-    private String tenantCode;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;

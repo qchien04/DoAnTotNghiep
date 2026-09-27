@@ -40,7 +40,7 @@ export const DashboardStatsCards: React.FC<DashboardStatsCardsProps> = ({ dashbo
           Nợ cước chưa thu
         </span>
         <p className="text-2xl font-semibold text-red-600 dark:text-red-400 mt-1 tracking-tight">
-          {(dashboard.totalDebt ?? 0).toLocaleString()} <span className="text-sm font-normal text-stay-text-secondary">đ</span>
+          {((dashboard.overdueDebts || []).reduce((sum, item) => sum + (Number(item.debtAmount) || 0), 0)).toLocaleString()} <span className="text-sm font-normal text-stay-text-secondary">đ</span>
         </p>
         <p className="text-xs text-stay-text-secondary mt-2">
           {(dashboard.overdueDebts || []).length} phòng quá hạn

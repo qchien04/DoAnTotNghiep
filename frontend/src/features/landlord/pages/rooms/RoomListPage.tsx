@@ -40,13 +40,13 @@ export const RoomListPage: React.FC = () => {
   };
 
   const handleSubmit = async (values: CreateRoomDto) => {
-    const code = values.code || values.roomCode || 'mới';
+    const roomName = values.name || (editingRoom ? editingRoom.name : 'mới');
     if (editingRoom) {
       await updateRoom({ id: editingRoom.id, dto: values });
-      message.success(`Cập nhật phòng ${code} thành công!`);
+      message.success(`Cập nhật phòng "${roomName}" thành công!`);
     } else {
       await createRoom(values);
-      message.success(`Tạo phòng ${code} thành công!`);
+      message.success(`Tạo phòng "${roomName}" thành công!`);
     }
     setIsModalOpen(false);
   };

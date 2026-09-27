@@ -67,14 +67,11 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
             throw new BaseException(ErrorCode.TENANT_ID_CARD_EXISTS);
         }
 
-        String tenantCode = "KT" + (System.currentTimeMillis() % 1000000);
-
         boolean isRep = Boolean.TRUE.equals(request.getIsRepresentative())
                 || "REPRESENTATIVE".equalsIgnoreCase(request.getRoleInRoom());
 
         Tenant tenant = Tenant.builder()
                 .room(room)
-                .tenantCode(tenantCode)
                 .fullName(request.getFullName().trim())
                 .phone(request.getPhone().trim())
                 .idCardNumber(request.getIdCardNumber().trim())
@@ -205,6 +202,37 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
                 .isRead(false)
                 .build();
         notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional
+    public void cancelInvitation(Long landlordId, Long tenantId) {
+        log.info("Hủy lời mời liên kết tài khoản cho khách thuê id: {}", tenantId);
+
+        Tenant tenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
+
+        validateTenantBelongsToLandlord(tenant, landlordId);
+
+        if (!"PENDING".equalsIgnoreCase(tenant.getLinkStatus())) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Khách thuê này không có lời mời đang chờ xử lý");
+        }
+
+        // Xóa tất cả lời mời PENDING của tenant này
+        List<TenantLinkInvitation> pendingInvitations = invitationRepository.findByTenantId(tenantId);
+        pendingInvitations.stream()
+                .filter(inv -> "PENDING".equalsIgnoreCase(inv.getStatus()))
+                .forEach(inv -> {
+                    inv.setStatus("CANCELLED");
+                    inv.setRespondedAt(java.time.Instant.now());
+                    invitationRepository.save(inv);
+                });
+
+        tenant.setLinkStatus("NOT_LINKED");
+        tenant.setUser(null);
+        tenantRepository.save(tenant);
+
+        log.info("Đã hủy lời mời liên kết tài khoản cho khách thuê id={}", tenantId);
     }
 
     private void validateTenantBelongsToLandlord(Tenant tenant, Long landlordId) {

@@ -19,9 +19,6 @@ import java.util.List;
 @Table(name = "buildings")
 public class Building extends BaseEntity {
 
-    @Column(name = "building_code", nullable = false, unique = true, length = 20)
-    private String buildingCode;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landlord_id", nullable = false)
     private User landlord;
@@ -31,9 +28,6 @@ public class Building extends BaseEntity {
 
     @Column(name = "province", length = 100)
     private String province;
-
-    @Column(name = "district", length = 100)
-    private String district;
 
     @Column(name = "ward", length = 100)
     private String ward;
@@ -47,6 +41,12 @@ public class Building extends BaseEntity {
 
     @Column(name = "general_rules", columnDefinition = "TEXT")
     private String generalRules;
+
+    @Column(name = "latitude", precision = 10, scale = 8)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 11, scale = 8)
+    private BigDecimal longitude;
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default

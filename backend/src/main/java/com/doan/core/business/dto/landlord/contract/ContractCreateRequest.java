@@ -20,9 +20,6 @@ public class ContractCreateRequest {
     @Schema(description = "ID khách thuê làm người đại diện hợp đồng", example = "1")
     private Long representativeTenantId;
 
-    @Schema(description = "Mã hợp đồng (nếu để trống hệ thống sẽ tự sinh)", example = "HĐ-2026-P102")
-    private String contractCode;
-
     @NotNull(message = "Ngày bắt đầu không được để trống")
     @Schema(description = "Ngày bắt đầu hợp đồng", example = "2026-10-01")
     private LocalDate startDate;
@@ -46,12 +43,6 @@ public class ContractCreateRequest {
     @Schema(description = "Chu kỳ thanh toán hàng tháng (ngày thu tiền)", example = "5")
     private Integer paymentCycleDay = 5;
 
-    @Schema(description = "Chỉ số điện bắt đầu", example = "1420")
-    private Integer initialElectricIndex = 0;
-
-    @Schema(description = "Chỉ số nước bắt đầu", example = "85")
-    private Integer initialWaterIndex = 0;
-
     @Schema(description = "Các điều khoản thỏa thuận")
     private String termsAndConditions;
 
@@ -68,5 +59,7 @@ public class ContractCreateRequest {
         private String unit;
         private Long appliedUnitPrice;
         private String billingMethod;
+        @Schema(description = "Chỉ số bàn giao ban đầu cho dịch vụ tính theo đồng hồ (kWh, m3)", example = "0")
+        private Integer initialIndex = 0;
     }
 }

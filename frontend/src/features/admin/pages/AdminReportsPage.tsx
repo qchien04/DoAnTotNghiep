@@ -58,10 +58,11 @@ export const AdminReportsPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'Mã hồ sơ',
-      dataIndex: 'code',
-      key: 'code',
-      render: (val: string) => <span className="font-bold text-stay-primary">{val}</span>,
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 70,
+      render: (_: any, r: DisputeReport) => <span className="font-bold text-stay-primary">#{r.id}</span>,
     },
     {
       title: 'Người báo cáo',

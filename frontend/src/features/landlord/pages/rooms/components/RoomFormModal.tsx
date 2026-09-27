@@ -6,6 +6,7 @@ import {
   Select,
   Button,
   Tag,
+  Switch,
   LocationPickerModal,
   LocationSelectedData,
   message,
@@ -46,9 +47,13 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   useEffect(() => {
     if (open) {
       if (editingRoom) {
-        setSelectedBuildingId(editingRoom.buildingId);
-        if (editingRoom.latitude && editingRoom.longitude) {
-          setCurrentCoords({ lat: Number(editingRoom.latitude), lng: Number(editingRoom.longitude) });
+        setSelectedBuildingId(editingRoom.buildingId || null);
+        const matchedBld = buildings.find((b: any) => String(b.id) === String(editingRoom.buildingId));
+        const effectiveLat = editingRoom.latitude ?? matchedBld?.latitude;
+        const effectiveLng = editingRoom.longitude ?? matchedBld?.longitude;
+
+        if (effectiveLat && effectiveLng) {
+          setCurrentCoords({ lat: Number(effectiveLat), lng: Number(effectiveLng) });
         } else {
           setCurrentCoords(null);
         }
@@ -64,38 +69,75 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
           (editingRoom.services ? (editingRoom.services as any[]).map((s: any) => s.id) : []);
 
         form.setFieldsValue({
-          buildingId: editingRoom.buildingId,
-          code: editingRoom.code || editingRoom.roomCode,
+          buildingId: editingRoom.buildingId || null,
+          province: editingRoom.province || matchedBld?.province || 'Thành phố Hà Nội',
+          ward: editingRoom.ward || matchedBld?.ward || '',
+          addressDetail: editingRoom.addressDetail || matchedBld?.addressDetail || '',
           name: editingRoom.name,
-          floor: editingRoom.floor,
+          floor: editingRoom.floor ?? 1,
           area: editingRoom.area,
-          price: editingRoom.price || editingRoom.listedPrice,
-          deposit: editingRoom.deposit || editingRoom.standardDeposit,
-          capacity: editingRoom.capacity || editingRoom.maxCapacity,
+          listedPrice: editingRoom.listedPrice,
+          standardDeposit: editingRoom.standardDeposit,
+          maxCapacity: editingRoom.maxCapacity,
           amenities: parsedAmenities,
           serviceIds: roomServiceIds,
           description: editingRoom.description,
           status: editingRoom.status,
-          latitude: editingRoom.latitude,
-          longitude: editingRoom.longitude,
+          isPublic: editingRoom.isPublic !== undefined ? Boolean(editingRoom.isPublic) : true,
+          latitude: effectiveLat,
+          longitude: effectiveLng,
         });
       } else {
         form.resetFields();
-        setCurrentCoords(null);
-        const initialBldId = buildings.length > 0 ? buildings[0].id : null;
-        setSelectedBuildingId(initialBldId);
+        const initialBld = buildings.length > 0 ? buildings[0] : null;
+        setSelectedBuildingId(initialBld ? initialBld.id : null);
+        if (initialBld?.latitude && initialBld?.longitude) {
+          setCurrentCoords({ lat: Number(initialBld.latitude), lng: Number(initialBld.longitude) });
+        } else {
+          setCurrentCoords(null);
+        }
         form.setFieldsValue({
-          buildingId: initialBldId,
+          buildingId: initialBld ? initialBld.id : null,
+          province: initialBld?.province || 'Thành phố Hà Nội',
+          ward: initialBld?.ward || '',
+          addressDetail: initialBld?.addressDetail || '',
+          latitude: initialBld?.latitude,
+          longitude: initialBld?.longitude,
           floor: 1,
           area: 25,
-          capacity: 2,
-          price: 3500000,
-          deposit: 3500000,
+          maxCapacity: 2,
+          listedPrice: 3500000,
+          standardDeposit: 3500000,
+          isPublic: true,
           serviceIds: services.map((s: any) => s.id),
         });
       }
     }
   }, [open, editingRoom, buildings, services, form]);
+
+  const handleBuildingChange = (val: number | string | null) => {
+    setSelectedBuildingId(val);
+    if (val) {
+      const bld = buildings.find((b: any) => String(b.id) === String(val));
+      if (bld) {
+        form.setFieldsValue({
+          province: bld.province || 'Thành phố Hà Nội',
+          ward: bld.ward || '',
+          addressDetail: bld.addressDetail || '',
+          latitude: bld.latitude,
+          longitude: bld.longitude,
+        });
+        if (bld.latitude && bld.longitude) {
+          setCurrentCoords({ lat: Number(bld.latitude), lng: Number(bld.longitude) });
+          message.info(`Đã tự động nạp địa chỉ & vị trí bản đồ từ tòa nhà: ${bld.name}`);
+        } else {
+          message.info(`Đã tự động nạp địa chỉ từ tòa nhà: ${bld.name}`);
+        }
+      }
+    } else {
+      message.info('Đã chọn phòng trọ / nhà trọ độc lập. Bạn có thể tự nhập địa chỉ và vị trí bản đồ bên dưới.');
+    }
+  };
 
   const handleLocationConfirmed = (data: LocationSelectedData) => {
     setCurrentCoords({ lat: data.latitude, lng: data.longitude });
@@ -144,7 +186,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   return (
     <>
       <Modal
-        title={editingRoom ? `Cập nhật phòng ${editingRoom.code || editingRoom.roomCode || ''}` : 'Thêm phòng trọ mới'}
+        title={editingRoom ? `Cập nhật phòng: ${editingRoom.name}` : 'Thêm phòng trọ mới'}
         open={open}
         onOk={handleOk}
         onCancel={onCancel}
@@ -162,34 +204,101 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
 
             <Form.Item
-              label={<span className="font-semibold text-stay-text text-sm">Chọn tòa nhà chứa phòng (*)</span>}
+              label={
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-semibold text-stay-text text-sm">
+                    Thuộc tòa nhà / Khu trọ (Không bắt buộc)
+                  </span>
+                  <span className="text-[11px] text-stay-text-secondary font-normal">
+                    (Phòng có thể là nhà trọ độc lập)
+                  </span>
+                </div>
+              }
               name="buildingId"
-              rules={[{ required: true, message: 'Vui lòng chọn tòa nhà (*)' }]}
               className="mb-2"
             >
               <Select
-                onChange={(val) => setSelectedBuildingId(val)}
+                allowClear
+                placeholder="Chọn tòa nhà hoặc để trống nếu là phòng trọ / nhà riêng độc lập"
+                onChange={handleBuildingChange}
                 className="w-full h-11"
-                options={buildings.map((b: any) => ({
-                  label: `${b.buildingCode || b.code || ''} - ${b.name}`,
-                  value: b.id,
-                }))}
+                options={[
+                  {
+                    label: '🏠 Phòng trọ / Nhà trọ độc lập (không thuộc tòa nhà nào)',
+                    value: null as any,
+                  },
+                  ...buildings.map((b: any) => ({
+                    label: `🏢 ${b.name}`,
+                    value: b.id,
+                  })),
+                ]}
               />
             </Form.Item>
 
             {curBld && (
               <div className="p-3 rounded-lg bg-stay-card-bg border border-stay-border text-xs flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-stay-text text-xs">{curBld.name}</p>
+                  <p className="font-semibold text-stay-text text-xs flex items-center gap-1.5">
+                    <span>🏢 {curBld.name}</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-medium">
+                      ✓ Đã tự động điền địa chỉ & vị trí
+                    </span>
+                  </p>
                   <p className="text-[11px] text-stay-text-secondary mt-0.5">
-                    {curBld.address || curBld.addressDetail || 'Chưa có địa chỉ chi tiết'}
+                    {curBld.addressDetail || 'Chưa có địa chỉ chi tiết'}
+                    {curBld.latitude && curBld.longitude && (
+                      <span className="ml-2 font-mono text-[10px] text-stay-primary font-semibold">
+                        📍 ({Number(curBld.latitude).toFixed(4)}, {Number(curBld.longitude).toFixed(4)})
+                      </span>
+                    )}
                   </p>
                 </div>
                 <Tag className="m-0 bg-stay-bg-app text-stay-text border-stay-border font-medium text-xs px-2.5 py-0.5">
-                  {curBld.totalFloors || curBld.numFloors || 1} tầng
+                  {curBld.numFloors || 1} tầng
                 </Tag>
               </div>
             )}
+
+            {/* ĐỊA CHỈ PHÒNG / NHÀ TRỌ (2 CẤP: TỈNH/TP VÀ PHƯỜNG/XÃ) */}
+            <div className="p-3.5 rounded-lg bg-stay-card-bg border border-stay-border space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-stay-text">
+                  Địa chỉ phòng / nhà trọ (2 cấp hành chính: Tỉnh/TP và Phường/Xã)
+                </span>
+                <span className="text-[10px] text-stay-text-secondary">
+                  Không còn cấp quận/huyện
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-xs">Tỉnh / Thành phố (*)</span>}
+                  name="province"
+                  rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / Thành phố (*)' }]}
+                  className="mb-0"
+                >
+                  <Input placeholder="Ví dụ: Thành phố Hà Nội" className="h-10 text-xs" />
+                </Form.Item>
+
+                <Form.Item
+                  label={<span className="font-semibold text-stay-text text-xs">Phường / Xã (*)</span>}
+                  name="ward"
+                  rules={[{ required: true, message: 'Vui lòng nhập Phường / Xã (*)' }]}
+                  className="mb-0"
+                >
+                  <Input placeholder="Ví dụ: Phường Bách Khoa" className="h-10 text-xs" />
+                </Form.Item>
+              </div>
+
+              <Form.Item
+                label={<span className="font-semibold text-stay-text text-xs">Địa chỉ chi tiết (Số nhà, tên ngõ/ngách/đường) (*)</span>}
+                name="addressDetail"
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết (*)' }]}
+                className="mb-0"
+              >
+                <Input placeholder="Ví dụ: Số 12 ngõ 40 Tạ Quang Bửu" className="h-10 text-xs" />
+              </Form.Item>
+            </div>
 
             {/* GPS & Bản đồ */}
             <div className="p-3.5 rounded-lg bg-stay-card-bg border border-stay-border space-y-2.5">
@@ -250,25 +359,13 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               2. Thông tin phòng & giá cước niêm yết
             </h3>
             <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                <div className="sm:col-span-4">
-                  <Form.Item
-                    label={<span className="font-semibold text-stay-text text-sm">Mã phòng (*)</span>}
-                    name="code"
-                    rules={[{ required: true, message: 'Nhập mã phòng (*)' }]}
-                  >
-                    <Input placeholder="Ví dụ: P301..." className="w-full h-11" />
-                  </Form.Item>
-                </div>
-                <div className="sm:col-span-8">
-                  <Form.Item
-                    label={<span className="font-semibold text-stay-text text-sm">Tên phòng / Tiêu đề hiển thị</span>}
-                    name="name"
-                  >
-                    <Input placeholder="Ví dụ: Phòng 301 ban công thoáng mát..." className="w-full h-11" />
-                  </Form.Item>
-                </div>
-              </div>
+              <Form.Item
+                label={<span className="font-semibold text-stay-text text-sm">Tên phòng (*)</span>}
+                name="name"
+                rules={[{ required: true, message: 'Vui lòng nhập tên phòng (*)' }]}
+              >
+                <Input placeholder="Ví dụ: Phòng 101, Phòng Studio ban công, P.202..." className="w-full h-11" />
+              </Form.Item>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Form.Item
@@ -299,7 +396,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 </Form.Item>
                 <Form.Item
                   label={<span className="font-semibold text-stay-text text-sm">Sức chứa tối đa (*)</span>}
-                  name="capacity"
+                  name="maxCapacity"
                   rules={[{ required: true, message: 'Nhập sức chứa (*)' }]}
                   initialValue={2}
                 >
@@ -315,7 +412,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Form.Item
                   label={<span className="font-semibold text-stay-text text-sm">Giá thuê phòng niêm yết (*)</span>}
-                  name="price"
+                  name="listedPrice"
                   rules={[{ required: true, message: 'Nhập giá thuê (*)' }]}
                   initialValue={3500000}
                 >
@@ -328,7 +425,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 </Form.Item>
                 <Form.Item
                   label={<span className="font-semibold text-stay-text text-sm">Tiền cọc tiêu chuẩn (*)</span>}
-                  name="deposit"
+                  name="standardDeposit"
                   rules={[{ required: true, message: 'Nhập tiền cọc (*)' }]}
                   initialValue={3500000}
                 >
@@ -441,6 +538,31 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   />
                 </Form.Item>
               </div>
+
+              {/* CÀI ĐẶT CÔNG KHAI PHÒNG LÊN TRANG CHỦ */}
+              <div className="pt-2">
+                <Form.Item
+                  name="isPublic"
+                  valuePropName="checked"
+                  className="mb-0"
+                >
+                  <div className="flex items-center justify-between p-3.5 bg-stay-card-bg border border-stay-border rounded-xl">
+                    <div className="pr-4">
+                      <div className="font-semibold text-stay-text text-sm flex items-center gap-2">
+                        <span>Công khai phòng lên trang chủ</span>
+                        <Tag color="blue" className="rounded-full px-2 text-[10px]">Trang chủ tìm kiếm</Tag>
+                      </div>
+                      <p className="text-xs text-stay-text-secondary mt-0.5">
+                        Khi bật, phòng trọ sẽ được hiển thị công khai trên trang chủ để khách thuê có thể tìm kiếm, xem chi tiết và liên hệ thuê.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={form.getFieldValue('isPublic') !== false}
+                      onChange={(checked) => form.setFieldsValue({ isPublic: checked })}
+                    />
+                  </div>
+                </Form.Item>
+              </div>
             </div>
           </div>
         </Form>
@@ -453,7 +575,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         onConfirm={handleLocationConfirmed}
         initialLat={currentCoords?.lat || (editingRoom?.latitude ? Number(editingRoom.latitude) : 21.0285)}
         initialLng={currentCoords?.lng || (editingRoom?.longitude ? Number(editingRoom.longitude) : 105.8048)}
-        title={editingRoom ? `Chọn Vị Trí Bản Đồ Cho Phòng ${editingRoom.code || editingRoom.name}` : 'Chọn Vị Trí Bản Đồ Cho Phòng Trọ Mới'}
+        title={editingRoom ? `Chọn Vị Trí Bản Đồ Cho Phòng: ${editingRoom.name}` : 'Chọn Vị Trí Bản Đồ Cho Phòng Trọ Mới'}
       />
     </>
   );

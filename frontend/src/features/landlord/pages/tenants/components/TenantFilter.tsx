@@ -36,7 +36,7 @@ export const TenantFilter: React.FC<TenantFilterProps> = ({
         allowClear
         className="w-full sm:w-60 h-10"
         options={buildings.map((b: any) => ({
-          label: `${b.buildingCode || b.code || ''} - ${b.name}`,
+          label: b.name,
           value: b.id,
         }))}
       />

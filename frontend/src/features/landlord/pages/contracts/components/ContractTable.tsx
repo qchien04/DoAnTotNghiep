@@ -43,11 +43,12 @@ export const ContractTable: React.FC<ContractTableProps> = ({
 
   const columns = [
     {
-      title: 'Mã hợp đồng',
-      key: 'contractNumber',
+      title: 'ID',
+      key: 'id',
+      width: 70,
       render: (_: any, r: RentalContract) => (
         <span className="font-mono text-xs font-semibold text-stay-text">
-          {r.contractCode || r.contractNumber || `HD #${r.id}`}
+          #{r.id}
         </span>
       ),
     },
@@ -57,7 +58,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
       render: (_: any, r: RentalContract) => (
         <div>
           <span className="font-medium text-xs text-stay-text block">
-            {r.roomCode ? `P.${r.roomCode}` : r.roomName || '---'}
+            {r.roomName || '---'}
           </span>
           {r.buildingName && (
             <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
@@ -67,15 +68,15 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     },
     {
       title: 'Khách đại diện',
-      key: 'tenantName',
+      key: 'representativeTenantName',
       render: (_: any, r: RentalContract) => (
         <div>
           <p className="font-medium text-sm text-stay-text">
-            {r.representativeTenantName || r.tenantName || '---'}
+            {r.representativeTenantName || '---'}
           </p>
-          {(r.representativeTenantPhone || r.tenantPhone) && (
+          {r.representativeTenantPhone && (
             <p className="text-xs text-stay-text-secondary">
-              {r.representativeTenantPhone || r.tenantPhone}
+              {r.representativeTenantPhone}
             </p>
           )}
         </div>
@@ -92,9 +93,9 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     },
     {
       title: 'Tiền thuê',
-      key: 'monthlyRent',
+      key: 'rentPrice',
       render: (_: any, r: RentalContract) => {
-        const val = r.rentPrice ?? r.monthlyRent ?? 0;
+        const val = r.rentPrice ?? 0;
         return (
           <span className="font-medium text-stay-text">
             {Number(val).toLocaleString()} đ/tháng

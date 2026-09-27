@@ -57,12 +57,12 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-1.5 text-stay-text">
           <p className="text-stay-text-secondary">
-            Hóa đơn: <strong className="text-stay-text">{bill?.invoiceCode || bill?.billNumber}</strong>
+            Hóa đơn: <strong className="text-stay-text">Kỳ {bill?.billingPeriod} (#{bill?.id})</strong>
           </p>
           <p className="text-stay-text-secondary">
             Phòng:{' '}
-            <strong className="text-stay-text">{bill?.roomCode || bill?.roomName}</strong> (
-            {bill?.representativeTenantName || bill?.tenantName})
+            <strong className="text-stay-text">{bill?.roomName}</strong> (
+            {bill?.representativeTenantName || '---'})
           </p>
           <p className="text-emerald-600 dark:text-emerald-400 font-bold text-base mt-2 pt-2 border-t border-stay-border">
             Số tiền phải thu: {(bill?.remainingAmount || bill?.totalAmount || 0).toLocaleString()} VNĐ

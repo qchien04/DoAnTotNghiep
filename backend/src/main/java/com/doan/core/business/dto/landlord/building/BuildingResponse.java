@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -17,14 +18,14 @@ import java.time.LocalDateTime;
 public class BuildingResponse {
 
     private Long id;
-    private String buildingCode;
     private String name;
     private String province;
-    private String district;
     private String ward;
     private String addressDetail;
     private Integer numFloors;
     private String generalRules;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private Boolean isActive;
     private LocalDateTime createdAt;
 
@@ -42,14 +43,14 @@ public class BuildingResponse {
 
         return BuildingResponse.builder()
                 .id(building.getId())
-                .buildingCode(building.getBuildingCode())
                 .name(building.getName())
                 .province(building.getProvince())
-                .district(building.getDistrict())
                 .ward(building.getWard())
                 .addressDetail(building.getAddressDetail())
                 .numFloors(building.getNumFloors())
                 .generalRules(building.getGeneralRules())
+                .latitude(building.getLatitude())
+                .longitude(building.getLongitude())
                 .isActive(building.getIsActive())
                 .createdAt(building.getCreatedAt())
                 .totalRooms(totalRooms)

@@ -22,6 +22,7 @@ import java.util.Map;
 public class HomeController {
 
     private final UserService userService;
+    private final com.doan.core.business.repository.RoomRepository roomRepository;
 
     @Value("${app.info.title:Hệ Thống Quản Lý Đồ Án Tốt Nghiệp}")
     private String projectTitle;
@@ -50,5 +51,15 @@ public class HomeController {
                 .build();
 
         return ResponseEntity.ok(ResponseData.success("Lấy thông tin trang chủ thành công", response));
+    }
+
+    @GetMapping("/rooms")
+    @Operation(summary = "Lấy danh sách phòng trọ công khai cho trang chủ", description = "Chỉ trả về các phòng có isPublic = true và status = AVAILABLE")
+    public ResponseEntity<ResponseData<java.util.List<com.doan.core.business.dto.landlord.room.RoomResponse>>> getPublicRooms() {
+        java.util.List<com.doan.core.business.dto.landlord.room.RoomResponse> list = roomRepository.findPublicRooms("AVAILABLE")
+                .stream()
+                .map(com.doan.core.business.dto.landlord.room.RoomResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(ResponseData.success("Lấy danh sách phòng trọ công khai thành công", list));
     }
 }

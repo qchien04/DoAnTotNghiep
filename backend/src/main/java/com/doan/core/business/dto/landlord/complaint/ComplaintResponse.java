@@ -18,9 +18,8 @@ import java.time.LocalDateTime;
 public class ComplaintResponse {
 
     private Long id;
-    private String complaintCode;
     private Long roomId;
-    private String roomCode;
+    private String roomName;
     private String buildingName;
     private Long tenantId;
     private String tenantName;
@@ -33,12 +32,14 @@ public class ComplaintResponse {
     private String status;
     private String resolutionNote;
     private Instant resolvedAt;
+    private Integer rating;
+    private String feedback;
     private LocalDateTime createdAt;
 
     public static ComplaintResponse fromEntity(Complaint complaint) {
         if (complaint == null) return null;
 
-        String rCode = complaint.getRoom() != null ? complaint.getRoom().getRoomCode() : null;
+        String rName = complaint.getRoom() != null ? complaint.getRoom().getName() : null;
         String bName = (complaint.getRoom() != null && complaint.getRoom().getBuilding() != null)
                 ? complaint.getRoom().getBuilding().getName() : null;
 
@@ -47,9 +48,8 @@ public class ComplaintResponse {
 
         return ComplaintResponse.builder()
                 .id(complaint.getId())
-                .complaintCode(complaint.getComplaintCode())
                 .roomId(complaint.getRoom() != null ? complaint.getRoom().getId() : null)
-                .roomCode(rCode)
+                .roomName(rName)
                 .buildingName(bName)
                 .tenantId(complaint.getTenant() != null ? complaint.getTenant().getId() : null)
                 .tenantName(tName)
@@ -62,6 +62,8 @@ public class ComplaintResponse {
                 .status(complaint.getStatus())
                 .resolutionNote(complaint.getResolutionNote())
                 .resolvedAt(complaint.getResolvedAt())
+                .rating(complaint.getRating())
+                .feedback(complaint.getFeedback())
                 .createdAt(complaint.getCreatedAt())
                 .build();
     }

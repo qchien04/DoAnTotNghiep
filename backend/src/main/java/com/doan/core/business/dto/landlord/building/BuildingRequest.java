@@ -15,18 +15,12 @@ import java.util.List;
 @Schema(description = "Yêu cầu thêm mới / cập nhật tòa nhà")
 public class BuildingRequest {
 
-    @Schema(description = "Mã tòa nhà (nếu để trống hệ thống sẽ tự sinh)", example = "TN01")
-    private String buildingCode;
-
     @NotBlank(message = "Tên tòa nhà không được để trống")
     @Schema(description = "Tên tòa nhà", example = "Tòa nhà Ánh Dương")
     private String name;
 
     @Schema(description = "Tỉnh / Thành phố", example = "Hà Nội")
     private String province;
-
-    @Schema(description = "Quận / Huyện", example = "Cầu Giấy")
-    private String district;
 
     @Schema(description = "Phường / Xã", example = "Quan Hoa")
     private String ward;
@@ -43,15 +37,9 @@ public class BuildingRequest {
     @Schema(description = "Quy định chung của tòa nhà", example = "Không làm ồn sau 23h, để xe đúng vị trí")
     private String generalRules;
 
-    @Deprecated
-    private List<String> commonAmenities;
-
-    @Deprecated
-    private List<Long> serviceIds;
-
-    @Deprecated
+    @Schema(description = "Vĩ độ vị trí tòa nhà (Latitude)", example = "21.033333")
     private BigDecimal latitude;
 
-    @Deprecated
+    @Schema(description = "Kinh độ vị trí tòa nhà (Longitude)", example = "105.783333")
     private BigDecimal longitude;
 }

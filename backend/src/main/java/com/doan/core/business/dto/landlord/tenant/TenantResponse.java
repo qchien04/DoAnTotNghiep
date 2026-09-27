@@ -18,9 +18,7 @@ import java.time.LocalDateTime;
 public class TenantResponse {
 
     private Long id;
-    private String tenantCode;
     private Long roomId;
-    private String roomCode;
     private String roomName;
     private String buildingName;
     private Long contractId;
@@ -45,7 +43,7 @@ public class TenantResponse {
     public static TenantResponse fromEntity(Tenant tenant) {
         if (tenant == null) return null;
 
-        String rCode = tenant.getRoom() != null ? tenant.getRoom().getRoomCode() : null;
+        String rName = tenant.getRoom() != null ? tenant.getRoom().getName() : null;
         String bName = (tenant.getRoom() != null && tenant.getRoom().getBuilding() != null)
                 ? tenant.getRoom().getBuilding().getName()
                 : null;
@@ -57,10 +55,8 @@ public class TenantResponse {
 
         return TenantResponse.builder()
                 .id(tenant.getId())
-                .tenantCode(tenant.getTenantCode())
                 .roomId(tenant.getRoom() != null ? tenant.getRoom().getId() : null)
-                .roomCode(rCode)
-                .roomName(rCode)
+                .roomName(rName)
                 .buildingName(bName)
                 .contractId(tenant.getContract() != null ? tenant.getContract().getId() : null)
                 .userId(tenant.getUser() != null ? tenant.getUser().getId() : null)

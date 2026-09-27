@@ -73,8 +73,8 @@ public class LandlordDashboardServiceImpl implements LandlordDashboardService {
                 .map(inv -> {
                     long remaining = Math.max(0, inv.getTotalAmount() - (inv.getPaidAmount() != null ? inv.getPaidAmount() : 0L));
                     long daysLate = java.time.temporal.ChronoUnit.DAYS.between(inv.getDueDate(), LocalDate.now());
-                    String rCode = (inv.getContract() != null && inv.getContract().getRoom() != null)
-                            ? inv.getContract().getRoom().getRoomCode() : "---";
+                    String rName = (inv.getContract() != null && inv.getContract().getRoom() != null)
+                            ? inv.getContract().getRoom().getName() : "---";
                     String bName = (inv.getContract() != null && inv.getContract().getRoom() != null && inv.getContract().getRoom().getBuilding() != null)
                             ? inv.getContract().getRoom().getBuilding().getName() : "---";
                     String tName = (inv.getContract() != null && inv.getContract().getRepresentativeTenant() != null)
@@ -83,7 +83,7 @@ public class LandlordDashboardServiceImpl implements LandlordDashboardService {
                             ? inv.getContract().getRepresentativeTenant().getPhone() : "---";
 
                     return LandlordDashboardResponse.OverdueDebtItem.builder()
-                            .roomName("Phòng " + rCode)
+                            .roomName(rName)
                             .buildingName(bName)
                             .tenantName(tName)
                             .phone(phone)

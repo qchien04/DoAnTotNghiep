@@ -14,19 +14,21 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findByContractId(Long contractId);
 
+    @Query("SELECT i FROM Invoice i WHERE i.contract.id IN :contractIds ORDER BY i.id DESC")
+    List<Invoice> findByContractIdInOrderByIdDesc(@Param("contractIds") List<Long> contractIds);
+
     Optional<Invoice> findByIdAndContractLandlordId(Long id, Long landlordId);
 
-    boolean existsByInvoiceCode(String invoiceCode);
 
     boolean existsByContractIdAndBillingPeriodAndStatusNot(Long contractId, String billingPeriod, String status);
 
     @Query("SELECT DISTINCT i FROM Invoice i " +
            "JOIN FETCH i.contract c " +
            "JOIN FETCH c.room r " +
-           "JOIN FETCH r.building b " +
+           "LEFT JOIN FETCH r.building b " +
            "LEFT JOIN FETCH c.representativeTenant t " +
            "WHERE c.landlord.id = :landlordId " +
-           "AND (:buildingId IS NULL OR b.id = :buildingId) " +
+           "AND (:buildingId IS NULL OR (b IS NOT NULL AND b.id = :buildingId)) " +
            "AND (:billingPeriod IS NULL OR i.billingPeriod = :billingPeriod) " +
            "AND (:status IS NULL OR i.status = :status) " +
            "ORDER BY i.id DESC")

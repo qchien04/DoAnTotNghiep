@@ -19,4 +19,6 @@ public interface LandlordTenantService {
     void removeTenant(Long landlordId, Long tenantId);
 
     void inviteUserLink(Long landlordId, Long tenantId, TenantLinkInviteRequest request);
+
+    void cancelInvitation(Long landlordId, Long tenantId);
 }

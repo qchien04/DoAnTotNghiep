@@ -29,19 +29,17 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
         form.setFieldsValue({
           fullName: editingTenant.fullName,
           phone: editingTenant.phone,
-          identityCard: editingTenant.identityCard || editingTenant.idCardNumber,
+          idCardNumber: editingTenant.idCardNumber,
           hometown: editingTenant.hometown,
           gender: editingTenant.gender,
-          birthDate: editingTenant.birthDate || editingTenant.dateOfBirth,
+          dateOfBirth: editingTenant.dateOfBirth,
           isRepresentative: Boolean(editingTenant.isRepresentative),
           roomId: editingTenant.roomId,
-          buildingId: editingTenant.buildingId,
         });
       } else {
         if (rooms.length > 0) {
           form.setFieldsValue({
             roomId: rooms[0].id,
-            buildingId: rooms[0].buildingId,
             isRepresentative: false,
             hometown: 'Hải Phòng',
           });
@@ -105,7 +103,7 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
                 label={<span className="text-stay-text font-medium text-xs">Số định danh CCCD / CMND (*)</span>}
-                name="identityCard"
+                name="idCardNumber"
                 rules={[{ required: true, message: 'Nhập số CCCD (*)' }]}
                 className="mb-0"
               >
@@ -139,7 +137,7 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
                 <Select
                   className="w-full h-10"
                   options={rooms.map((r: any) => ({
-                    label: `${r.roomCode || r.code || ''} - ${r.name}`,
+                    label: r.name,
                     value: r.id,
                   }))}
                 />

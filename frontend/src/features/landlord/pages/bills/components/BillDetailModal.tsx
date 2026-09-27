@@ -14,6 +14,7 @@ interface BillDetailModalProps {
   bill: Bill | null;
   onCancel: () => void;
   onOpenPayment: (bill: Bill) => void;
+  onPublish?: (bill: Bill) => void;
 }
 
 export const BillDetailModal: React.FC<BillDetailModalProps> = ({
@@ -21,9 +22,16 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
   bill,
   onCancel,
   onOpenPayment,
+  onPublish,
 }) => {
   const renderStatus = (st: BillStatus) => {
     switch (st) {
+      case 'DRAFT':
+        return (
+          <Tag color="warning" icon={<Clock className="w-3 h-3 inline mr-1" />}>
+            Bản nháp (Chưa phát hành)
+          </Tag>
+        );
       case 'PAID':
         return (
           <Tag color="green" icon={<CheckCircle className="w-3 h-3 inline mr-1" />}>
@@ -56,13 +64,26 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
 
   return (
     <Modal
-      title={`Chi tiết hóa đơn ${bill?.invoiceCode || bill?.billNumber || ''}`}
+      title={bill ? `Chi tiết hóa đơn: Kỳ ${bill.billingPeriod} (${bill.roomName || ''})` : 'Chi tiết hóa đơn'}
       open={open}
       onCancel={onCancel}
       footer={[
         <Button key="close" onClick={onCancel} className="rounded-lg">
           Đóng
         </Button>,
+        bill && bill.status === 'DRAFT' && (
+          <Button
+            key="publish"
+            type="primary"
+            onClick={() => {
+              onCancel();
+              onPublish && onPublish(bill);
+            }}
+            className="bg-amber-600 hover:bg-amber-700 font-semibold rounded-lg text-white"
+          >
+            🚀 Ban hành hóa đơn cho khách thuê
+          </Button>
+        ),
         bill &&
           (bill.status === 'PENDING' || bill.status === 'UNPAID' || bill.status === 'OVERDUE') && (
             <Button
@@ -82,28 +103,33 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
     >
       {bill && (
         <div className="mt-4 space-y-4 text-xs">
+          {bill.status === 'DRAFT' && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-200 flex items-center justify-between">
+              <span>⚠️ Hóa đơn này hiện đang được lưu ở dạng <strong>Bản nháp</strong>. Khách thuê chưa nhận được thông báo và chưa thấy hóa đơn này trong tài khoản.</span>
+            </div>
+          )}
           {/* Header info card */}
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-stay-text-secondary text-xs">Mã hóa đơn:</p>
+              <p className="text-stay-text-secondary text-xs">Hóa đơn số:</p>
               <p className="font-bold text-base text-stay-primary">
-                {bill.invoiceCode || bill.billNumber}
+                #{bill.id} - Kỳ {bill.billingPeriod}
               </p>
               <p className="text-stay-text-secondary text-xs mt-2">Phòng / Tòa nhà:</p>
               <p className="font-semibold text-stay-text text-sm">
-                {bill.roomCode || bill.roomName}{' '}
+                {bill.roomName}{' '}
                 {bill.buildingName && <span className="text-stay-text-secondary">({bill.buildingName})</span>}
               </p>
             </div>
             <div>
               <p className="text-stay-text-secondary text-xs">Khách thuê đại diện:</p>
               <p className="font-semibold text-stay-text text-sm">
-                {bill.representativeTenantName || bill.tenantName || '---'}
+                {bill.representativeTenantName || '---'}
                 {bill.representativeTenantPhone && ` - ${bill.representativeTenantPhone}`}
               </p>
               <p className="text-stay-text-secondary text-xs mt-2">Kỳ cước & Hạn nộp:</p>
               <p className="font-semibold text-stay-text text-sm">
-                {bill.billingPeriod || bill.billingMonth} | Hạn: {bill.dueDate || '---'}
+                {bill.billingPeriod} | Hạn: {bill.dueDate || '---'}
               </p>
             </div>
           </div>
@@ -127,62 +153,52 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                     <td className="p-3 font-semibold text-stay-text">Tiền thuê phòng</td>
                     <td className="p-3 text-center text-stay-text-secondary">1 tháng</td>
                     <td className="p-3 text-right text-stay-text-secondary">
-                      {(bill.roomPrice || bill.roomRent || 0).toLocaleString()} đ
+                      {(bill.roomPrice || 0).toLocaleString()} đ
                     </td>
                     <td className="p-3 text-right font-bold text-stay-text">
-                      {(bill.roomPrice || bill.roomRent || 0).toLocaleString()} đ
+                      {(bill.roomPrice || 0).toLocaleString()} đ
                     </td>
                   </tr>
 
                   {/* Danh sách items */}
                   {bill.items && bill.items.length > 0 ? (
                     bill.items.map((it, idx) => {
-                      const name = it.itemName || it.name || '';
+                      const name = it.itemName || '';
+                      const isDiscount = it.itemType === 'DISCOUNT' || name.toLowerCase().includes('giảm trừ') || (it.amount || 0) < 0;
+                      const isSurcharge = it.itemType === 'SURCHARGE' || name.toLowerCase().includes('phụ thu');
+                      const displayQty = it.note || (
+                        it.previousIndex !== undefined && it.currentIndex !== undefined
+                          ? `${it.quantity ?? (it.currentIndex - it.previousIndex)} (Số cũ: ${it.previousIndex} ➔ Số mới: ${it.currentIndex})`
+                          : `${it.quantity || 1}`
+                      );
                       return (
                         <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
                           <td className="p-3 font-medium text-stay-text">
                             {name}
+                            {isDiscount && (
+                              <Tag color="error" className="ml-1.5 text-[10px] py-0 px-1">
+                                Giảm trừ
+                              </Tag>
+                            )}
+                            {isSurcharge && (
+                              <Tag color="warning" className="ml-1.5 text-[10px] py-0 px-1">
+                                Phụ thu
+                              </Tag>
+                            )}
                           </td>
                           <td className="p-3 text-center text-stay-text-secondary">
-                            {it.note || `${it.quantity || 1} ${it.unit || ''}`}
+                            {displayQty}
                           </td>
                           <td className="p-3 text-right text-stay-text-secondary">
-                            {(it.unitPrice || 0).toLocaleString()} đ
+                            {Math.abs(it.unitPrice || 0).toLocaleString()} đ
                           </td>
-                          <td className="p-3 text-right font-bold text-stay-text">
-                            {(it.amount || it.totalPrice || 0).toLocaleString()} đ
+                          <td className={`p-3 text-right font-bold ${isDiscount ? 'text-red-500' : 'text-stay-text'}`}>
+                            {isDiscount ? '-' : ''}{Math.abs(it.amount || 0).toLocaleString()} đ
                           </td>
                         </tr>
                       );
                     })
-                  ) : (
-                    <>
-                      {bill.currentElectricIndex !== undefined && (
-                        <tr className="hover:bg-stay-bg-app/40 transition-colors">
-                          <td className="p-3 text-stay-text">Tiền điện sinh hoạt</td>
-                          <td className="p-3 text-center text-stay-text-secondary">
-                            {bill.electricConsumed || 0} kWh (Từ số {bill.previousElectricIndex || 0} đến {bill.currentElectricIndex})
-                          </td>
-                          <td className="p-3 text-right text-stay-text-secondary">3.800 đ</td>
-                          <td className="p-3 text-right font-bold text-stay-text">
-                            {((bill.electricConsumed || 0) * 3800).toLocaleString()} đ
-                          </td>
-                        </tr>
-                      )}
-                      {bill.currentWaterIndex !== undefined && (
-                        <tr className="hover:bg-stay-bg-app/40 transition-colors">
-                          <td className="p-3 text-stay-text">Tiền nước sinh hoạt</td>
-                          <td className="p-3 text-center text-stay-text-secondary">
-                            {bill.waterConsumed || 0} m³ (Từ số {bill.previousWaterIndex || 0} đến {bill.currentWaterIndex})
-                          </td>
-                          <td className="p-3 text-right text-stay-text-secondary">30.000 đ</td>
-                          <td className="p-3 text-right font-bold text-stay-text">
-                            {((bill.waterConsumed || 0) * 30000).toLocaleString()} đ
-                          </td>
-                        </tr>
-                      )}
-                    </>
-                  )}
+                  ) : null}
 
                   {/* Phụ thu nếu có */}
                   {bill.otherAmount && bill.otherAmount > 0 && (
@@ -232,7 +248,7 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
               <QrCode className="w-12 h-12 text-stay-primary" />
               <div className="text-[11px] text-stay-text-secondary">
                 <p className="font-bold text-stay-text text-xs">Quét VietQR nộp tiền</p>
-                <p>MB Bank: 0905111222</p>
+                <p>Chuyển khoản trực tiếp</p>
                 <p className="font-medium text-stay-text-secondary mt-0.5">Tự động gạch nợ</p>
               </div>
             </div>

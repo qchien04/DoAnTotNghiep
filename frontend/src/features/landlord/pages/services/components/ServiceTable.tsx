@@ -40,12 +40,11 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
 
   const columns = [
     {
-      title: 'Mã',
-      key: 'serviceCode',
-      width: 90,
+      title: 'ID',
+      key: 'id',
+      width: 70,
       render: (_: any, r: UtilityService) => {
-        const code = r.serviceCode || r.code || `DV${String(r.id || '').padStart(2, '0')}`;
-        return <span className="font-mono text-xs text-stay-text-secondary">{code}</span>;
+        return <span className="font-mono text-xs text-stay-text-secondary">#{r.id}</span>;
       },
     },
     {
@@ -73,9 +72,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       key: 'unitPrice',
       width: 140,
       render: (_: any, r: UtilityService) => {
-        const p = Number(
-          r.unitPrice !== undefined ? r.unitPrice : r.price !== undefined ? r.price : 0
-        );
+        const p = Number(r.unitPrice ?? 0);
         return <span className="font-medium text-sm text-stay-text">{p.toLocaleString()} đ</span>;
       },
     },
@@ -84,7 +81,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       key: 'billingMethod',
       width: 150,
       render: (_: any, r: UtilityService) => {
-        const method = r.billingMethod || r.chargingType;
+        const method = r.billingMethod;
         let label = 'Cố định';
         if (method === 'METER_INDEX') label = 'Theo công tơ';
         else if (method === 'FIXED_PER_PERSON') label = 'Theo người';
@@ -97,7 +94,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       key: 'scope',
       width: 110,
       render: (_: any, r: UtilityService) => (
-        <span className="text-xs text-stay-text-muted">{r.scope || r.appliedScope || 'Tất cả'}</span>
+        <span className="text-xs text-stay-text-muted">{r.scope || 'Tất cả'}</span>
       ),
     },
     {
@@ -105,7 +102,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       key: 'isActive',
       width: 130,
       render: (_: any, r: UtilityService) => {
-        const active = r.isActive !== undefined ? r.isActive : r.status === 'ACTIVE';
+        const active = Boolean(r.isActive);
         return active ? (
           <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />

@@ -41,7 +41,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
           (c: any) => Number(c.roomId) === Number(r.id) && c.status === 'ACTIVE'
         ) || contracts.find((c: any) => Number(c.roomId) === Number(r.id));
 
-      const tenantName = contract?.representativeTenantName || contract?.tenantName || 'Chưa ký HĐ';
+      const tenantName = contract?.representativeTenantName || 'Chưa ký HĐ';
       const isRented = r.status === 'RENTED' || !!contract;
       return {
         ...r,
@@ -63,19 +63,10 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
 
     const rent = Number(
       targetContract?.rentPrice ??
-        targetContract?.monthlyRent ??
         targetRoom?.listedPrice ??
-        targetRoom?.price ??
         3800000
     );
     setRoomRentPrice(rent);
-
-    const initialElec = Number(
-      targetContract?.initialElectricIndex ?? targetContract?.initialElectricityReading ?? 0
-    );
-    const initialWater = Number(
-      targetContract?.initialWaterIndex ?? targetContract?.initialWaterReading ?? 0
-    );
 
     const contractServices: ContractServiceItem[] = targetContract?.services || [];
     let items: DynamicServiceItem[] = [];
@@ -89,19 +80,10 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         let qty = 1;
 
         if (method === 'METER_INDEX') {
-          const nameLower = (cs.serviceName || '').toLowerCase();
-          if (nameLower.includes('điện')) {
-            prevIdx = prevIdx > 0 ? prevIdx : (initialElec || 1420);
-            curIdx = prevIdx + 115;
-          } else if (nameLower.includes('nước')) {
-            prevIdx = prevIdx > 0 ? prevIdx : (initialWater || 85);
-            curIdx = prevIdx + 8;
-          } else {
-            curIdx = prevIdx + 10;
-          }
+          curIdx = prevIdx;
           qty = Math.max(0, curIdx - prevIdx);
         } else if (method === 'FIXED_PER_PERSON') {
-          qty = Number(targetRoom?.currentOccupancy || 2);
+          qty = Number(targetRoom?.currentOccupancy || 1);
         } else {
           qty = 1;
         }
@@ -123,8 +105,8 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         };
       });
     } else {
-      const defaultElecPrev = initialElec || 1420;
-      const defaultWaterPrev = initialWater || 85;
+      const defaultElecPrev = 0;
+      const defaultWaterPrev = 0;
       items = [
         {
           key: `default-elec-${Date.now()}`,
@@ -133,9 +115,9 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
           unit: 'kWh',
           unitPrice: 3800,
           previousIndex: defaultElecPrev,
-          currentIndex: defaultElecPrev + 115,
-          quantity: 115,
-          amount: 115 * 3800,
+          currentIndex: defaultElecPrev,
+          quantity: 0,
+          amount: 0,
           note: 'Theo công tơ',
         },
         {
@@ -145,9 +127,9 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
           unit: 'm³',
           unitPrice: 30000,
           previousIndex: defaultWaterPrev,
-          currentIndex: defaultWaterPrev + 8,
-          quantity: 8,
-          amount: 8 * 30000,
+          currentIndex: defaultWaterPrev,
+          quantity: 0,
+          amount: 0,
           note: 'Theo đồng hồ nước',
         },
         {
@@ -287,7 +269,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
     return Math.max(0, roomRentPrice + servicesTotal + totalSurcharge - totalDiscount);
   }, [roomRentPrice, servicesTotal, totalSurcharge, totalDiscount]);
 
-  const handleFinish = async () => {
+  const handleFinish = async (isDraft: boolean = false) => {
     try {
       const values = await form.validateFields();
       if (!selectedRoomId) {
@@ -317,30 +299,23 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         ) ||
         contracts.find((c: any) => Number(c.roomId) === Number(selectedRoomId));
 
-      const electricItem = dynamicServices.find(
-        (s) => s.serviceName.toLowerCase().includes('điện') && s.billingMethod === 'METER_INDEX'
-      );
-      const waterItem = dynamicServices.find(
-        (s) => s.serviceName.toLowerCase().includes('nước') && s.billingMethod === 'METER_INDEX'
-      );
-
       // Đóng gói các dòng phụ thu / giảm trừ thành các invoice item minh bạch
       const adjustmentInvoiceItems = adjustments.map((adj) => {
         const isSurcharge = adj.type === 'SURCHARGE';
         const prefix = isSurcharge ? '[Phụ thu]' : '[Giảm trừ]';
         const reason = adj.reason.trim() || (isSurcharge ? 'Phụ thu phát sinh' : 'Giảm trừ chi phí');
         const qty = Number(adj.quantity || 1);
-        const cost = Number(adj.unitCost || 0);
-        const amount = isSurcharge ? qty * cost : -(qty * cost);
-        const unitPrice = isSurcharge ? cost : -cost;
+        const cost = Math.abs(Number(adj.unitCost || 0));
+        const amount = qty * cost;
         const unit = adj.unit?.trim() || 'lần';
 
         return {
           contractServiceId: undefined,
+          itemType: adj.type,
           itemName: `${prefix} ${reason}`,
           billingMethod: 'FIXED_PER_UNIT',
           quantity: qty,
-          unitPrice: unitPrice,
+          unitPrice: cost,
           amount: amount,
           note: `${qty} ${unit} x ${cost.toLocaleString()} đ${adj.reason ? ` - ${adj.reason}` : ''}`,
         };
@@ -350,7 +325,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         .map(
           (a) =>
             `${a.type === 'SURCHARGE' ? '+' : '-'}${a.reason.trim() || 'Khoản phát sinh'}: ${(
-              Number(a.quantity || 1) * Number(a.unitCost || 0)
+              Number(a.quantity || 1) * Math.abs(Number(a.unitCost || 0))
             ).toLocaleString()} đ`
         )
         .join('; ');
@@ -360,13 +335,13 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         roomId: selectedRoomId,
         billingPeriod: values.billingPeriod,
         dueDate: values.dueDate,
-        currentElectricIndex: electricItem?.currentIndex,
-        currentWaterIndex: waterItem?.currentIndex,
         otherAmount: 0,
         otherNote: adjustmentSummaryNote || undefined,
+        isDraft: isDraft,
         items: [
           ...dynamicServices.map((item) => ({
             contractServiceId: item.contractServiceId,
+            itemType: 'SERVICE' as const,
             itemName: item.serviceName,
             billingMethod: item.billingMethod,
             previousIndex: item.previousIndex,
@@ -395,12 +370,36 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
     <Modal
       title="Lập hóa đơn thu tiền"
       open={open}
-      onOk={handleFinish}
       onCancel={onCancel}
-      confirmLoading={confirmLoading}
-      okText="Phát hành hóa đơn"
-      cancelText="Đóng"
       width={920}
+      footer={
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <div className="text-xs text-stay-text-secondary flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-500 inline-block animate-pulse" />
+            <span>Lưu nháp: Có thể chỉnh sửa lại sau, khách thuê chưa nhận thông báo.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={onCancel} disabled={confirmLoading}>
+              Đóng
+            </Button>
+            <Button
+              className="border-amber-500 text-amber-600 hover:text-amber-500 hover:border-amber-400 font-medium"
+              loading={confirmLoading}
+              onClick={() => handleFinish(true)}
+            >
+              📝 Lưu bản nháp
+            </Button>
+            <Button
+              type="primary"
+              loading={confirmLoading}
+              onClick={() => handleFinish(false)}
+              className="bg-stay-primary hover:bg-stay-primary-hover font-medium"
+            >
+              🚀 Lập & Ban hành thật
+            </Button>
+          </div>
+        </div>
+      }
     >
       <Form
         form={form}
@@ -432,7 +431,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
                     String(option?.label || '').toLowerCase().includes(input.toLowerCase())
                   }
                   options={availableRoomsForBill.map((r: any) => ({
-                    label: `${r.roomCode || r.code || r.name} - ${r.tenantName} (${(r.listedPrice || r.price || 0).toLocaleString()} đ)`,
+                    label: `${r.name} - ${r.tenantName} (${(r.listedPrice || r.price || 0).toLocaleString()} đ)`,
                     value: r.id,
                   }))}
                 />
@@ -465,7 +464,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
             <p className="text-stay-text-secondary text-[11px]">Hợp đồng thuê phòng:</p>
             <p className="font-semibold text-stay-text text-xs">
               {activeContract
-                ? activeContract.contractCode || activeContract.contractNumber || `HĐ #${activeContract.id}`
+                ? `HĐ #${activeContract.id}`
                 : 'Chưa gắn hợp đồng - Dùng giá phòng mặc định'}
               {activeContract?.representativeTenantName && ` (Khách: ${activeContract.representativeTenantName})`}
             </p>

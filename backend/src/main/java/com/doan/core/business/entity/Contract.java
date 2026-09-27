@@ -19,9 +19,6 @@ import java.util.List;
 @Table(name = "contracts")
 public class Contract extends BaseEntity {
 
-    @Column(name = "contract_code", nullable = false, unique = true, length = 50)
-    private String contractCode;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
@@ -49,20 +46,6 @@ public class Contract extends BaseEntity {
     @Column(name = "payment_cycle_day", nullable = false)
     @Builder.Default
     private Integer paymentCycleDay = 5;
-
-    @Column(name = "initial_electric_index", nullable = false)
-    @Builder.Default
-    private Integer initialElectricIndex = 0;
-
-    @Column(name = "initial_water_index", nullable = false)
-    @Builder.Default
-    private Integer initialWaterIndex = 0;
-
-    @Column(name = "final_electric_index")
-    private Integer finalElectricIndex;
-
-    @Column(name = "final_water_index")
-    private Integer finalWaterIndex;
 
     @Column(name = "deposit_refund_amount")
     private Long depositRefundAmount;

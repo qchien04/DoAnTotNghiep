@@ -25,7 +25,7 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
       form.resetFields();
       form.setFieldsValue({
         status: complaint.status === 'NEW' ? 'PROCESSING' : complaint.status,
-        responseNote: complaint.responseNote || 'Chủ nhà đã hẹn thợ kiểm tra và khắc phục.',
+        resolutionNote: complaint.resolutionNote || 'Chủ nhà đã hẹn thợ kiểm tra và khắc phục.',
       });
     }
   }, [open, complaint]);
@@ -56,9 +56,9 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-2 text-stay-text">
           <p>
-            Mã khiếu nại: <strong className="text-stay-primary">{complaint?.code}</strong> | Phòng:{' '}
+            Khiếu nại: <strong className="text-stay-primary">#{complaint?.id}</strong> | Phòng:{' '}
             <strong className="text-stay-text">{complaint?.roomName}</strong> (
-            {complaint?.senderName})
+            {complaint?.tenantName})
           </p>
           <p>
             Nội dung phản ánh:{' '}
@@ -80,7 +80,7 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
 
         <Form.Item
           label={<span className="text-stay-text font-medium text-xs">Nội dung phản hồi / Lịch hẹn khách thuê (*)</span>}
-          name="responseNote"
+          name="resolutionNote"
           rules={[{ required: true, message: 'Nhập nội dung phản hồi (*)' }]}
         >
           <Input.TextArea

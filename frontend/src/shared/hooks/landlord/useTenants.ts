@@ -44,6 +44,13 @@ export const useTenants = (params?: TenantFilterParams) => {
     },
   });
 
+  const cancelInviteMutation = useMutation({
+    mutationFn: (tenantId: string | number) => landlordService.cancelTenantInvitation(tenantId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: landlordKeys.tenants() });
+    },
+  });
+
   return {
     tenants: Array.isArray(listQuery.data) ? listQuery.data : (listQuery.data as any)?.items ?? [],
     pageInfo: listQuery.data,
@@ -60,5 +67,7 @@ export const useTenants = (params?: TenantFilterParams) => {
     isDeleting: deleteMutation.isPending,
     inviteTenantLink: inviteMutation.mutateAsync,
     isInviting: inviteMutation.isPending,
+    cancelInvitation: cancelInviteMutation.mutateAsync,
+    isCancellingInvite: cancelInviteMutation.isPending,
   };
 };

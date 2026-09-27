@@ -14,6 +14,8 @@ import {
   Home,
   Users,
   Compass,
+  Receipt,
+  Wrench,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -34,35 +36,132 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
 
-  const navLinks = [
-    { label: 'Tìm phòng trọ', path: '/', icon: Compass },
-    { label: 'Ở ghép', path: '/roommates', icon: Users },
-    { label: 'Phòng của tôi', path: '/tenant/my-room', icon: Home },
-    { label: 'Kênh chủ trọ', path: '/landlord', icon: Building2 },
-  ];
+  const role = user?.role;
 
-  const handlePostListing = () => {
+  // 1. Dynamic Navigation Links based on User Role
+  const getNavLinks = () => {
+    const commonLinks = [
+      { label: 'Tìm phòng trọ', path: '/', icon: Compass },
+      { label: 'Ở ghép', path: '/roommates', icon: Users },
+    ];
+
+    if (role === 'ROLE_TENANT') {
+      return [
+        ...commonLinks,
+        { label: 'Phòng của tôi', path: '/tenant/my-room', icon: Home },
+        { label: 'Hóa đơn', path: '/tenant/bills', icon: Receipt },
+        { label: 'Khiếu nại', path: '/tenant/complaints', icon: Wrench },
+      ];
+    }
+
+    if (role === 'ROLE_LANDLORD') {
+      return [
+        ...commonLinks,
+        { label: 'Kênh chủ trọ', path: '/landlord', icon: Building2 },
+        { label: 'Quản lý phòng', path: '/landlord/rooms', icon: Home },
+        { label: 'Hóa đơn', path: '/landlord/bills', icon: Receipt },
+      ];
+    }
+
+    if (role === 'ROLE_ADMIN') {
+      return [
+        ...commonLinks,
+        { label: 'Quản trị hệ thống', path: '/admin', icon: ShieldAlert },
+        { label: 'Người dùng', path: '/admin/users', icon: Users },
+      ];
+    }
+
+    // Guest / Unauthenticated
+    return [
+      ...commonLinks,
+      { label: 'Kênh chủ trọ', path: '/landlord', icon: Building2 },
+    ];
+  };
+
+  const navLinks = getNavLinks();
+
+  // 2. Dynamic Primary Action Button
+  const handlePrimaryAction = () => {
     if (onPostListingClick) {
       onPostListingClick();
+      return;
+    }
+
+    if (role === 'ROLE_TENANT') {
+      navigate('/tenant/create-post');
+    } else if (role === 'ROLE_LANDLORD') {
+      navigate('/landlord/rooms');
+    } else if (role === 'ROLE_ADMIN') {
+      navigate('/admin');
     } else {
       navigate('/roommates/create');
     }
   };
 
-  const userMenuItems: MenuProps['items'] = [
+  const getPrimaryActionConfig = () => {
+    if (role === 'ROLE_TENANT') {
+      return {
+        label: 'Đăng tin tìm bạn',
+        icon: <PlusCircle className="w-4 h-4" />,
+      };
+    }
+    if (role === 'ROLE_LANDLORD') {
+      return {
+        label: 'Quản lý phòng trọ',
+        icon: <Building2 className="w-4 h-4" />,
+      };
+    }
+    if (role === 'ROLE_ADMIN') {
+      return {
+        label: 'Bảng quản trị',
+        icon: <ShieldAlert className="w-4 h-4" />,
+      };
+    }
+    return {
+      label: 'Đăng tin',
+      icon: <PlusCircle className="w-4 h-4" />,
+    };
+  };
+
+  const actionConfig = getPrimaryActionConfig();
+
+  // Role Badge Styling
+  const getRoleBadge = () => {
+    switch (role) {
+      case 'ROLE_ADMIN':
+        return (
+          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-500/10 text-purple-600 border border-purple-500/20">
+            Quản trị viên
+          </span>
+        );
+      case 'ROLE_LANDLORD':
+        return (
+          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
+            Chủ trọ
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
+            Người thuê
+          </span>
+        );
+    }
+  };
+
+  // 3. Dynamic User Menu Items based on Role
+  const getUserMenuItems = (): MenuProps['items'] => [
     {
       key: 'user-info',
       label: (
-        <div className="px-1 py-1.5 min-w-[180px]">
-          <p className="font-bold text-sm text-stay-text">{user?.fullName || user?.username || 'Người dùng'}</p>
-          <p className="text-xs text-slate-500 truncate">{user?.email || 'user@stayconnect.vn'}</p>
-          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-stay-primary-subtle text-stay-primary">
-            {user?.role === 'ROLE_ADMIN'
-              ? 'Quản trị viên'
-              : user?.role === 'ROLE_LANDLORD'
-                ? 'Chủ trọ'
-                : 'Người thuê'}
-          </span>
+        <div className="px-1 py-1.5 min-w-[200px]">
+          <p className="font-bold text-sm text-stay-text line-clamp-1">
+            {user?.fullName || user?.username || 'Người dùng'}
+          </p>
+          <p className="text-xs text-stay-text-secondary truncate">
+            {user?.email || 'user@stayconnect.vn'}
+          </p>
+          {getRoleBadge()}
         </div>
       ),
       disabled: true,
@@ -70,7 +169,7 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
     { type: 'divider' },
     {
       key: 'profile',
-      icon: <User className="w-4 h-4 text-slate-500" />,
+      icon: <User className="w-4 h-4 text-stay-text-secondary" />,
       label: <Link to="/profile">Hồ sơ cá nhân</Link>,
     },
     {
@@ -78,22 +177,69 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
       icon: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
       label: <Link to="/verify">Xác thực danh tính</Link>,
     },
-    {
-      key: 'my-room',
-      icon: <Home className="w-4 h-4 text-stay-primary" />,
-      label: <Link to="/tenant/my-room">Phòng & hợp đồng của tôi</Link>,
-    },
     { type: 'divider' },
-    {
-      key: 'landlord-portal',
-      icon: <Building2 className="w-4 h-4 text-amber-500" />,
-      label: <Link to="/landlord">Kênh quản trị chủ trọ</Link>,
-    },
-    {
-      key: 'admin-portal',
-      icon: <ShieldAlert className="w-4 h-4 text-purple-500" />,
-      label: <Link to="/admin">Quản trị hệ thống</Link>,
-    },
+
+    // Role-specific sections
+    ...(role === 'ROLE_TENANT'
+      ? [
+          {
+            key: 'my-room',
+            icon: <Home className="w-4 h-4 text-stay-primary" />,
+            label: <Link to="/tenant/my-room">Phòng & hợp đồng của tôi</Link>,
+          },
+          {
+            key: 'my-bills',
+            icon: <Receipt className="w-4 h-4 text-blue-500" />,
+            label: <Link to="/tenant/bills">Quản lý hóa đơn & VietQR</Link>,
+          },
+          {
+            key: 'my-complaints',
+            icon: <Wrench className="w-4 h-4 text-amber-500" />,
+            label: <Link to="/tenant/complaints">Khiếu nại & Báo hỏng sự cố</Link>,
+          },
+          {
+            key: 'my-posts',
+            icon: <Users className="w-4 h-4 text-indigo-500" />,
+            label: <Link to="/tenant/posts">Bài đăng ở ghép của tôi</Link>,
+          },
+        ]
+      : []),
+
+    ...(role === 'ROLE_LANDLORD'
+      ? [
+          {
+            key: 'landlord-portal',
+            icon: <Building2 className="w-4 h-4 text-amber-500" />,
+            label: <Link to="/landlord">Kênh quản trị chủ trọ</Link>,
+          },
+          {
+            key: 'landlord-rooms',
+            icon: <Home className="w-4 h-4 text-blue-500" />,
+            label: <Link to="/landlord/rooms">Quản lý tòa nhà & phòng</Link>,
+          },
+          {
+            key: 'landlord-bills',
+            icon: <Receipt className="w-4 h-4 text-emerald-500" />,
+            label: <Link to="/landlord/bills">Hóa đơn & Thu tiền trọ</Link>,
+          },
+        ]
+      : []),
+
+    ...(role === 'ROLE_ADMIN'
+      ? [
+          {
+            key: 'admin-portal',
+            icon: <ShieldAlert className="w-4 h-4 text-purple-500" />,
+            label: <Link to="/admin">Trang quản trị hệ thống</Link>,
+          },
+          {
+            key: 'admin-users',
+            icon: <Users className="w-4 h-4 text-blue-500" />,
+            label: <Link to="/admin/users">Quản lý người dùng</Link>,
+          },
+        ]
+      : []),
+
     { type: 'divider' },
     {
       key: 'logout',
@@ -126,10 +272,11 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
                 <Link
                   key={item.label}
                   to={item.path}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${isActive
-                    ? 'text-stay-primary bg-stay-primary-subtle font-semibold shadow-2xs'
-                    : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
-                    }`}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                    isActive
+                      ? 'text-stay-primary bg-stay-primary-subtle font-semibold shadow-2xs'
+                      : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+                  }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   <span>{item.label}</span>
@@ -144,40 +291,40 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
           {/* 1-Click Theme Switcher */}
           <ThemeSwitcher />
 
-          {/* Đăng tin cho thuê / tìm bạn Button */}
+          {/* Role-specific CTA Button */}
           <Button
             variant="primary"
             size="sm"
-            icon={<PlusCircle className="w-4 h-4" />}
-            onClick={handlePostListing}
+            icon={actionConfig.icon}
+            onClick={handlePrimaryAction}
             className="font-semibold shadow-xs"
           >
-            Đăng tin
+            {actionConfig.label}
           </Button>
 
           {/* Notification Dropdown */}
           <NotificationDropdown
-            viewAllLink="/tenant/my-room"
-            viewAllText="Xem phòng & hợp đồng của tôi"
+            viewAllLink={role === 'ROLE_LANDLORD' ? '/landlord/complaints' : '/tenant/my-room'}
+            viewAllText="Xem tất cả thông báo"
           />
 
           {/* Auth State Button / Profile Dropdown */}
           {isAuthenticated && user ? (
-            <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
+            <Dropdown menu={{ items: getUserMenuItems() }} trigger={['click']} placement="bottomRight">
               <div className="flex items-center gap-2 cursor-pointer p-1 pl-2 rounded-xl border border-stay-border hover:bg-stay-bg-app transition-colors">
                 <div className="w-8 h-8 rounded-lg bg-stay-primary text-white flex items-center justify-center font-bold text-xs">
                   {(user.fullName || user.username || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="text-left hidden lg:block leading-tight pr-1">
-                  <p className="text-xs font-semibold text-stay-text line-clamp-1">
+                  <p className="text-xs font-semibold text-stay-text line-clamp-1 max-w-[130px]">
                     {user.fullName || user.username}
                   </p>
-                  <p className="text-[10px] text-stay-secondary font-medium">
-                    {user.role === 'ROLE_ADMIN'
+                  <p className="text-[10px] text-stay-primary font-bold">
+                    {role === 'ROLE_ADMIN'
                       ? 'Quản trị viên'
-                      : user.role === 'ROLE_LANDLORD'
-                        ? 'Chủ trọ'
-                        : 'Người thuê'}
+                      : role === 'ROLE_LANDLORD'
+                      ? 'Chủ trọ'
+                      : 'Người thuê'}
                   </p>
                 </div>
               </div>
@@ -195,8 +342,8 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
         <div className="flex sm:hidden items-center gap-2">
           <ThemeSwitcher compact />
           <NotificationDropdown
-            viewAllLink="/tenant/my-room"
-            viewAllText="Xem phòng & hợp đồng của tôi"
+            viewAllLink={role === 'ROLE_LANDLORD' ? '/landlord/complaints' : '/tenant/my-room'}
+            viewAllText="Xem thông báo"
           />
           <button
             type="button"
@@ -215,8 +362,20 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={290}
+        styles={{
+          body: { backgroundColor: 'var(--stay-card-bg)', color: 'var(--stay-text)' },
+          header: { backgroundColor: 'var(--stay-card-bg)', color: 'var(--stay-text)', borderBottom: '1px solid var(--stay-border)' },
+        }}
       >
         <div className="space-y-4">
+          {isAuthenticated && user && (
+            <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+              <p className="font-bold text-sm text-stay-text">{user.fullName || user.username}</p>
+              <p className="text-xs text-stay-text-secondary truncate">{user.email}</p>
+              {getRoleBadge()}
+            </div>
+          )}
+
           <div className="space-y-1">
             {navLinks.map((item) => {
               const Icon = item.icon;
@@ -230,10 +389,11 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
                   key={item.label}
                   to={item.path}
                   onClick={() => setDrawerOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isActive
-                    ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
-                    : 'text-stay-text hover:bg-stay-bg-app'
-                    }`}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                      : 'text-stay-text hover:bg-stay-bg-app'
+                  }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   <span>{item.label}</span>
@@ -242,30 +402,27 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
             })}
           </div>
 
-          <div className="pt-4 border-t border-stay-border space-y-2">
-            <Button
-              variant="primary"
-              block
-              icon={<PlusCircle className="w-4 h-4" />}
+          {/* Quick Primary Action */}
+          <div className="pt-2">
+            <button
+              type="button"
               onClick={() => {
                 setDrawerOpen(false);
-                handlePostListing();
+                handlePrimaryAction();
               }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-stay-primary text-white hover:bg-stay-primary-hover shadow-xs transition-colors cursor-pointer"
             >
-              Đăng tin
-            </Button>
+              {actionConfig.icon}
+              <span>{actionConfig.label}</span>
+            </button>
+          </div>
 
-            {!isAuthenticated ? (
-              <Link to="/login" onClick={() => setDrawerOpen(false)} className="block">
-                <Button variant="outline" block>
-                  Đăng nhập / Đăng ký
-                </Button>
-              </Link>
-            ) : (
+          <div className="pt-4 border-t border-stay-border">
+            {isAuthenticated ? (
               <Button
-                variant="ghost"
-                block
-                className="text-red-500 hover:bg-red-50"
+                variant="outline"
+                size="md"
+                className="w-full text-red-500 border-red-200 hover:bg-red-50"
                 onClick={() => {
                   setDrawerOpen(false);
                   logout();
@@ -273,62 +430,23 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
               >
                 Đăng xuất
               </Button>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/login" onClick={() => setDrawerOpen(false)}>
+                  <Button variant="primary" size="md" className="w-full">
+                    Đăng nhập
+                  </Button>
+                </Link>
+                <Link to="/register" onClick={() => setDrawerOpen(false)}>
+                  <Button variant="outline" size="md" className="w-full">
+                    Đăng ký
+                  </Button>
+                </Link>
+              </div>
             )}
-          </div>
-
-          {/* Social Channels in Mobile Drawer */}
-          <div className="pt-4 border-t border-stay-border space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-stay-text-secondary">
-              Kênh kết nối & Hỗ trợ
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <a
-                href="https://zalo.me"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center justify-center p-2 rounded-xl bg-stay-bg-app hover:bg-blue-50 border border-stay-border transition-colors text-center"
-              >
-                <span className="w-6 h-6 rounded-full bg-[#0068FF] text-white flex items-center justify-center font-bold text-[9px] leading-none mb-1">
-                  Zalo
-                </span>
-                <span className="text-[10px] font-medium text-stay-text">Zalo OA</span>
-              </a>
-
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center justify-center p-2 rounded-xl bg-stay-bg-app hover:bg-blue-50 border border-stay-border transition-colors text-center"
-              >
-                <svg className="w-6 h-6 fill-[#1877F2] mb-1" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                </svg>
-                <span className="text-[10px] font-medium text-stay-text">Facebook</span>
-              </a>
-
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center justify-center p-2 rounded-xl bg-stay-bg-app hover:bg-red-50 border border-stay-border transition-colors text-center"
-              >
-                <svg className="w-6 h-6 fill-[#FF0000] mb-1" viewBox="0 0 24 24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
-                <span className="text-[10px] font-medium text-stay-text">YouTube</span>
-              </a>
-            </div>
-
-            <div className="pt-1 text-center">
-              <span className="text-[11px] text-slate-500">
-                Hotline hỗ trợ: <strong className="text-stay-text font-bold">1900 8899</strong>
-              </span>
-            </div>
           </div>
         </div>
       </Drawer>
     </header>
   );
 };
-
-export default StayConnectHeader;

@@ -25,6 +25,7 @@ export const TenantListPage: React.FC = () => {
     isDeleting,
     inviteTenantLink,
     isInviting,
+    cancelInvitation,
   } = useTenants({ keyword, buildingId });
 
   // Modal State
@@ -72,6 +73,15 @@ export const TenantListPage: React.FC = () => {
     setInviteModalOpen(true);
   };
 
+  const handleCancelInvite = async (tnt: Tenant) => {
+    try {
+      await cancelInvitation(tnt.id);
+      message.success(`Đã hủy lời mời liên kết cho ${tnt.fullName}!`);
+    } catch (err: any) {
+      message.error(err.message || 'Không thể hủy lời mời');
+    }
+  };
+
   const handleSendInvite = async () => {
     if (!selectedTenant) return;
     try {
@@ -117,6 +127,7 @@ export const TenantListPage: React.FC = () => {
         onEdit={handleOpenEdit}
         onDelete={handleDelete}
         onInvite={handleOpenInvite}
+        onCancelInvite={handleCancelInvite}
       />
 
       {/* Form Modal */}

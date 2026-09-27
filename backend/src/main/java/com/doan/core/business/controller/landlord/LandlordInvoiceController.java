@@ -65,6 +65,15 @@ public class LandlordInvoiceController {
         return ResponseEntity.ok(ResponseData.success("Cập nhật hóa đơn thành công!", updated));
     }
 
+    @PutMapping("/{id}/publish")
+    @Operation(summary = "Ban hành hóa đơn từ bản nháp", description = "Chuyển trạng thái hóa đơn từ DRAFT sang UNPAID và gửi thông báo cho khách thuê")
+    public ResponseEntity<ResponseData<InvoiceResponse>> publishInvoice(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id) {
+        InvoiceResponse published = invoiceService.publishInvoice(principal.getId(), id);
+        return ResponseEntity.ok(ResponseData.success("Ban hành hóa đơn thành công!", published));
+    }
+
     @PostMapping("/{id}/cancel")
     @Operation(summary = "UC 25: Hủy hóa đơn", description = "Hủy hóa đơn lập sai kèm lý do hủy")
     public ResponseEntity<ResponseData<InvoiceResponse>> cancelInvoice(

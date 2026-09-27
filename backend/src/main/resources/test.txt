@@ -1,0 +1,177 @@
+
+
+-- 13. Bảng Chi tiết các khoản mục trong hóa đơn
+CREATE TABLE IF NOT EXISTS invoice_items (
+    id BIGSERIAL PRIMARY KEY,
+    invoice_id   : integer NOT NULL,
+    contract_service_id   : integer,
+    item_name :VARCHAR(100) NOT NULL,
+    quantity DECIMAL(10, 2) NOT NULL DEFAULT 1,
+    unit_price   : integer NOT NULL,
+    amount   : integer NOT NULL,
+    note :VARCHAR(255),
+    CONSTRAINT fk_invoice_items_invoice FOREIGN KEY (invoice_id) REFERENCES invoices (id) ON DELETE CASCADE,
+    CONSTRAINT fk_invoice_items_service FOREIGN KEY (contract_service_id) REFERENCES contract_services (id) ON DELETE SET NULL
+);
+
+-- 14. Bảng Khiếu nại / Báo hỏng thiết bị phòng trọ
+CREATE TABLE IF NOT EXISTS complaints (
+    id BIGSERIAL PRIMARY KEY,
+    room_id   : integer NOT NULL,
+    tenant_id   : integer NOT NULL,
+    title :VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    incident_type :VARCHAR(50) NOT NULL,
+    severity :VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
+    images TEXT,
+    status :VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    resolution_note TEXT,
+    resolved_at  : TIMESTAMP WITH TIME ZONE,
+    rating INT,
+    feedback TEXT,
+    created_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    updated_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    CONSTRAINT fk_complaints_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+    CONSTRAINT fk_complaints_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE CASCADE
+);
+
+ALTER TABLE complaints ADD COLUMN IF NOT EXISTS rating INT;
+ALTER TABLE complaints ADD COLUMN IF NOT EXISTS feedback TEXT;
+
+-- 15. Bảng Tin đăng tìm người ở ghép (UC 11 - UC 13)
+CREATE TABLE IF NOT EXISTS roommate_posts (
+    id BIGSERIAL PRIMARY KEY,
+    author_id   : integer NOT NULL,
+    room_id   : integer,
+    title :VARCHAR(250) NOT NULL,
+    description TEXT,
+    post_type :VARCHAR(30) NOT NULL,
+    area_name :VARCHAR(250),
+    district :VARCHAR(100),
+    city :VARCHAR(100) DEFAULT 'Hà Nội',
+    share_price DECIMAL(12, 2) NOT NULL,
+    total_room_price DECIMAL(12, 2),
+    needed_roommates INT NOT NULL DEFAULT 1,
+    current_roommates INT NOT NULL DEFAULT 1,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    radius_km DOUBLE PRECISION,
+    gender_preference :VARCHAR(20) DEFAULT 'ANY',
+    sleep_time :VARCHAR(50) DEFAULT 'BEFORE_24H',
+    is_no_smoking BOOLEAN DEFAULT TRUE,
+    is_pet_friendly BOOLEAN DEFAULT FALSE,
+    cooking_frequency :VARCHAR(50) DEFAULT 'DAILY',
+    cleanliness_level :VARCHAR(50) DEFAULT 'VERY_CLEAN',
+    guest_allowed :VARCHAR(50) DEFAULT 'WEEKENDS_ONLY',
+    status :VARCHAR(30) NOT NULL DEFAULT 'OPEN',
+    created_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    updated_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    CONSTRAINT fk_roommate_posts_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_roommate_posts_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE SET NULL
+);
+
+-- 16. Bảng Đơn ứng tuyển xin gia nhập nhóm ở ghép (UC 14, UC 15)
+CREATE TABLE IF NOT EXISTS roommate_applications (
+    id BIGSERIAL PRIMARY KEY,
+    post_id   : integer NOT NULL,
+    applicant_id   : integer NOT NULL,
+    intro_message TEXT,
+    gender :VARCHAR(20),
+    sleep_time :VARCHAR(50),
+    is_smoking BOOLEAN DEFAULT FALSE,
+    is_pet BOOLEAN DEFAULT FALSE,
+    cooking_habit :VARCHAR(50),
+    guest_habit :VARCHAR(50),
+    compatibility_score INT DEFAULT 85,
+    status :VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    reject_reason TEXT,
+    created_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    updated_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    CONSTRAINT fk_roommate_app_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
+    CONSTRAINT fk_roommate_app_applicant FOREIGN KEY (applicant_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- 17. Bảng Thông báo hệ thống
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id   : integer NOT NULL,
+    title :VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    notification_type :VARCHAR(50) NOT NULL,
+    related_entity_type :VARCHAR(50),
+    related_entity_id   : integer,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at  : TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_ : TIMESTAMP,
+    deleted_at  : TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- =============================================================================
+-- RÀNG BUỘC KHÓA NGOẠI BỔ SUNG & HỆ THỐNG CHỈ MỤC TỐI ƯU HIỆU NĂNG (INDEXES)
+-- =============================================================================
+
+-- Khóa ngoại Hợp đồng cho Khách thuê
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'fk_tenants_contract'
+    ) THEN
+        ALTER TABLE tenants
+        ADD CONSTRAINT fk_tenants_contract FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+-- 18. Hệ thống chỉ mục (Performance Indexes cho khóa ngoại và lọc tìm kiếm)
+CREATE INDEX IF NOT EXISTS idx_buildings_landlord_id ON buildings (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_building_id ON rooms (building_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_landlord_id ON rooms (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms (status);
+CREATE INDEX IF NOT EXISTS idx_rooms_public_status ON rooms (is_public, status);
+CREATE INDEX IF NOT EXISTS idx_rooms_bld_status ON rooms (building_id, status);
+CREATE INDEX IF NOT EXISTS idx_room_images_room_id ON room_images (room_id);
+CREATE INDEX IF NOT EXISTS idx_room_services_service_id ON room_services (service_id);
+
+CREATE INDEX IF NOT EXISTS idx_tenants_room_id ON tenants (room_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_contract_id ON tenants (contract_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_user_id ON tenants (user_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_status ON tenants (status);
+
+CREATE INDEX IF NOT EXISTS idx_contracts_room_id ON contracts (room_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_landlord_id ON contracts (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_rep_tenant ON contracts (representative_tenant_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts (status);
+CREATE INDEX IF NOT EXISTS idx_contract_services_contract_id ON contract_services (contract_id);
+
+CREATE INDEX IF NOT EXISTS idx_invoices_contract_id ON invoices (contract_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_period ON invoices (billing_period);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices (status);
+CREATE INDEX IF NOT EXISTS idx_invoices_contract_period ON invoices (contract_id, billing_period);
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items (invoice_id);
+
+CREATE INDEX IF NOT EXISTS idx_services_landlord_id ON services (landlord_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_room_id ON complaints (room_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_tenant_id ON complaints (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints (status);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_roommate_posts_status ON roommate_posts (status);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read);
+
+-- =============================================================================
+-- 19. MIGRATION: LOẠI BỎ TOÀN BỘ CỘT MÃ (CODE)
+-- =============================================================================
+ALTER TABLE users DROP COLUMN IF EXISTS user_code;
+ALTER TABLE buildings DROP COLUMN IF EXISTS building_code;
+ALTER TABLE rooms DROP COLUMN IF EXISTS room_code;
+ALTER TABLE services DROP COLUMN IF EXISTS service_code;
+ALTER TABLE tenants DROP COLUMN IF EXISTS tenant_code;
+ALTER TABLE contracts DROP COLUMN IF EXISTS contract_code;
+ALTER TABLE contracts DROP COLUMN IF EXISTS initial_electric_index;
+ALTER TABLE contracts DROP COLUMN IF EXISTS initial_water_index;
+ALTER TABLE contracts DROP COLUMN IF EXISTS final_electric_index;
+ALTER TABLE contracts DROP COLUMN IF EXISTS final_water_index;
+ALTER TABLE invoices DROP COLUMN IF EXISTS invoice_code;
+ALTER TABLE complaints DROP COLUMN IF EXISTS complaint_code;
+ALTER TABLE roommate_posts DROP COLUMN IF EXISTS code;
+ALTER TABLE roommate_applications DROP COLUMN IF EXISTS code;
+

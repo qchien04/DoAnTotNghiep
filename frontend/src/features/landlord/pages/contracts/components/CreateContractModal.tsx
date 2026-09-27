@@ -58,8 +58,8 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
     const roomServices = getServicesForRoom(roomId);
     setSelectedRoomServices(roomServices);
 
-    const rent = targetRoom.price || targetRoom.listedPrice || 3800000;
-    const deposit = targetRoom.deposit || targetRoom.standardDeposit || rent;
+    const rent = targetRoom.listedPrice || 3800000;
+    const deposit = targetRoom.standardDeposit || rent;
 
     const initialMeterReadings: Record<string, number> = {};
     roomServices.forEach((s: any) => {
@@ -68,13 +68,12 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
         s.chargingType === 'METER' ||
         s.chargingType === 'METER_INDEX'
       ) {
-        const isElec = s.category === 'ELECTRICITY' || s.name?.toLowerCase().includes('điện');
-        initialMeterReadings[String(s.id)] = isElec ? 1420 : 85;
+        initialMeterReadings[String(s.id)] = 0;
       }
     });
 
     form.setFieldsValue({
-      monthlyRent: rent,
+      rentPrice: rent,
       depositAmount: deposit,
       serviceIds: roomServices.map((s) => s.id),
       meterReadings: initialMeterReadings,
@@ -112,8 +111,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
           s.chargingType === 'METER' ||
           s.chargingType === 'METER_INDEX'
         ) {
-          const isElec = s.category === 'ELECTRICITY' || s.name?.toLowerCase().includes('điện');
-          initialMeterReadings[String(s.id)] = isElec ? 1420 : 85;
+          initialMeterReadings[String(s.id)] = 0;
         }
       });
 
@@ -122,22 +120,22 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
         durationMonths: 12,
         endDate: defaultEndDate,
         paymentCycleDay: 5,
-        monthlyRent: 3800000,
+        rentPrice: 3800000,
         depositAmount: 3800000,
         meterReadings: initialMeterReadings,
       };
 
       if (firstRoom) {
         initialVals.roomId = firstRoom.id;
-        initialVals.monthlyRent = firstRoom.price || firstRoom.listedPrice || 3800000;
-        initialVals.depositAmount = firstRoom.deposit || firstRoom.standardDeposit || 3800000;
+        initialVals.rentPrice = firstRoom.listedPrice || 3800000;
+        initialVals.depositAmount = firstRoom.standardDeposit || 3800000;
         initialVals.serviceIds = initialServices.map((s) => s.id);
       } else {
         initialVals.serviceIds = services.map((s) => s.id);
       }
 
       if (tenants.length > 0) {
-        initialVals.tenantId = tenants[0].id;
+        initialVals.representativeTenantId = tenants[0].id;
       }
 
       form.setFieldsValue(initialVals);
@@ -155,28 +153,25 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
         values.endDate = start.toISOString().split('T')[0];
       }
 
-      // Tự động gán chỉ số điện và nước cho backend dựa trên các dịch vụ công tơ đã chọn
-      const elecService = meterServices.find(
-        (s: any) => s.category === 'ELECTRICITY' || s.name?.toLowerCase().includes('điện')
-      );
-      if (elecService && values.meterReadings?.[String(elecService.id)] !== undefined) {
-        values.initialElectricIndex = Number(values.meterReadings[String(elecService.id)]);
-        values.initialElectricityReading = values.initialElectricIndex;
-      } else {
-        values.initialElectricIndex = 0;
-        values.initialElectricityReading = 0;
-      }
+      // Đóng gói danh sách dịch vụ áp dụng kèm chỉ số ban đầu (initialIndex) cho các dịch vụ công tơ
+      const selectedServiceIds: (number | string)[] = values.serviceIds || [];
+      const serviceItems = selectedServiceIds.map((sId) => {
+        const srv = currentAvailableServices.find((s: any) => String(s.id) === String(sId));
+        const initVal = values.meterReadings?.[String(sId)] !== undefined
+          ? Number(values.meterReadings[String(sId)])
+          : 0;
+        return {
+          serviceId: srv ? srv.id : sId,
+          serviceName: srv ? srv.name : 'Dịch vụ',
+          unit: srv ? srv.unit : 'Tháng',
+          appliedUnitPrice: Number(srv ? srv.unitPrice : 0),
+          billingMethod: srv ? srv.billingMethod : 'FIXED_PER_ROOM',
+          initialIndex: initVal,
+        };
+      });
 
-      const waterService = meterServices.find(
-        (s: any) => s.category === 'WATER' || s.name?.toLowerCase().includes('nước')
-      );
-      if (waterService && values.meterReadings?.[String(waterService.id)] !== undefined) {
-        values.initialWaterIndex = Number(values.meterReadings[String(waterService.id)]);
-        values.initialWaterReading = values.initialWaterIndex;
-      } else {
-        values.initialWaterIndex = 0;
-        values.initialWaterReading = 0;
-      }
+      values.services = serviceItems;
+      delete values.meterReadings;
 
       await onSubmit(values as CreateContractDto);
     } catch (err: any) {
@@ -232,7 +227,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
                 className="w-full h-11"
                 onChange={(val) => handleRoomSelection(val)}
                 options={rooms.map((r: any) => ({
-                  label: `${r.roomCode || r.code} - ${r.name} (${(r.listedPrice || r.price || 0).toLocaleString()} đ)`,
+                  label: `${r.name} (${(r.listedPrice || 0).toLocaleString()} đ)`,
                   value: r.id,
                 }))}
               />
@@ -240,7 +235,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
 
             <Form.Item
               label={<span className="text-stay-text font-medium text-xs">Khách thuê đại diện hợp đồng (*)</span>}
-              name="tenantId"
+              name="representativeTenantId"
               rules={[{ required: true, message: 'Vui lòng chọn người thuê đại diện' }]}
               className="mb-0"
             >
@@ -324,7 +319,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Form.Item
               label={<span className="text-stay-text font-medium text-xs">Tiền thuê phòng thỏa thuận (*)</span>}
-              name="monthlyRent"
+              name="rentPrice"
               initialValue={3800000}
               rules={[{ required: true, message: 'Nhập tiền thuê (*)' }]}
               className="mb-0"
@@ -449,7 +444,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
                       <InputNumber
                         min={0}
                         className="w-full h-10 font-mono font-medium"
-                        placeholder={isElec ? 'Ví dụ: 1420 (kWh)...' : 'Ví dụ: 85 (m³)...'}
+                        placeholder={`Nhập chỉ số ${isElec ? 'điện' : 'nước'} bàn giao (ví dụ: 0)...`}
                       />
                     </Form.Item>
                   );

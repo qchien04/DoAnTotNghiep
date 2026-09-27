@@ -16,17 +16,25 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "rooms", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_rooms_building_code", columnNames = {"building_id", "room_code"})
-})
+@Table(name = "rooms")
 public class Room extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id", nullable = false)
+    @JoinColumn(name = "building_id", nullable = true)
     private Building building;
 
-    @Column(name = "room_code", nullable = false, length = 20)
-    private String roomCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "landlord_id", nullable = true)
+    private User landlord;
+
+    @Column(name = "province", length = 100)
+    private String province;
+
+    @Column(name = "ward", length = 100)
+    private String ward;
+
+    @Column(name = "address_detail", columnDefinition = "TEXT")
+    private String addressDetail;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -71,6 +79,10 @@ public class Room extends BaseEntity {
 
     @Column(name = "longitude", precision = 11, scale = 8)
     private BigDecimal longitude;
+
+    @Column(name = "is_public", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    @Builder.Default
+    private Boolean isPublic = true;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     @org.hibernate.annotations.BatchSize(size = 30)

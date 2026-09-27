@@ -19,10 +19,11 @@ export const BillListPage: React.FC = () => {
     isLoading,
     createBill,
     isCreating,
+    publishBill,
     cancelBill,
     confirmPayment,
     isConfirming,
-  } = useBills({ billingMonth, status: statusFilter });
+  } = useBills({ billingPeriod: billingMonth, status: statusFilter });
 
   const { rooms } = useRooms();
   const { contracts } = useContracts();
@@ -44,10 +45,23 @@ export const BillListPage: React.FC = () => {
 
   const handleCreateSubmit = async (dto: CreateBillDto) => {
     await createBill(dto);
-    message.success(
-      'Phát hành hóa đơn tiền phòng thành công! Đã tự động gửi thông báo kèm VietQR tới khách thuê.'
-    );
+    if (dto.isDraft) {
+      message.success('Đã lưu hóa đơn dưới dạng BẢN NHÁP! (Khách thuê chưa nhận được hóa đơn này).');
+    } else {
+      message.success(
+        'Phát hành hóa đơn tiền phòng thành công! Đã tự động gửi thông báo kèm VietQR tới khách thuê.'
+      );
+    }
     setCreateModalOpen(false);
+  };
+
+  const handlePublishBill = async (bill: Bill) => {
+    try {
+      await publishBill(bill.id);
+      message.success(`Đã ban hành hóa đơn #${bill.id} thành công! Khách thuê đã nhận được thông báo kèm mã VietQR.`);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể ban hành hóa đơn');
+    }
   };
 
   const handleOpenDetail = (bill: Bill) => {
@@ -117,6 +131,7 @@ export const BillListPage: React.FC = () => {
         onOpenDetail={handleOpenDetail}
         onOpenPayment={handleOpenPayment}
         onOpenCancel={handleOpenCancel}
+        onPublish={handlePublishBill}
       />
 
       {/* Create Modal */}
@@ -135,6 +150,7 @@ export const BillListPage: React.FC = () => {
         bill={viewingBill}
         onCancel={() => setDetailModalOpen(false)}
         onOpenPayment={handleOpenPayment}
+        onPublish={handlePublishBill}
       />
 
       {/* Confirm Payment Modal */}

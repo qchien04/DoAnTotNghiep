@@ -208,7 +208,7 @@ export const ComponentShowcase: React.FC = () => {
   // Sample Table Data
   const tableColumns = [
     {
-      title: 'Mã',
+      title: 'ID',
       dataIndex: 'id',
       key: 'id',
       width: 70,
