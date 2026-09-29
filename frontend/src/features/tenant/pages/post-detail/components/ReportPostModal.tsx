@@ -19,18 +19,19 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      title={<span className="text-base font-bold text-stay-text">Báo Cáo Vi Phạm Bài Đăng</span>}
+      width={560}
+      title={<span className="text-base font-bold text-stay-text">Báo cáo vi phạm</span>}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="pt-3 space-y-4">
+      <Form form={form} layout="vertical" onFinish={onSubmit} className="pt-2 space-y-4">
         <Form.Item
           name="reason"
-          label="Lý do báo cáo vi phạm"
+          label="Lý do báo cáo"
           rules={[{ required: true, message: 'Vui lòng chọn lý do!' }]}
         >
           <Select
             options={[
-              { label: 'Lừa đảo tiền cọc, thông tin phòng sai sự thật', value: 'FRAUD' },
-              { label: 'Địa chỉ hoặc hình ảnh không trùng khớp thực tế', value: 'FAKE_INFO' },
+              { label: 'Lừa đảo tiền cọc, thông tin sai sự thật', value: 'FRAUD' },
+              { label: 'Địa chỉ hoặc hình ảnh không đúng thực tế', value: 'FAKE_INFO' },
               { label: 'Ngôn từ xúc phạm, thiếu văn minh', value: 'INAPPROPRIATE' },
               { label: 'Lý do khác', value: 'OTHER' },
             ]}
@@ -39,7 +40,7 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
 
         <Form.Item
           name="description"
-          label="Mô tả cụ thể sự việc"
+          label="Mô tả cụ thể"
           rules={[{ required: true, message: 'Vui lòng nhập mô tả chi tiết!' }]}
         >
           <Input.TextArea rows={4} placeholder="Cung cấp thêm bằng chứng hoặc mô tả hiện tượng vi phạm..." />

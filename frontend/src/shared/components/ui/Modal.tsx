@@ -41,11 +41,11 @@ export const Modal: React.FC<ModalProps> & {
   const visible = open !== undefined ? open : isOpen;
 
   const sizeWidths: Record<ModalSize, number> = {
-    sm: 400,
-    md: 520,
-    lg: 680,
-    xl: 840,
-    full: 1100,
+    sm: 480,
+    md: 680,
+    lg: 840,
+    xl: 960,
+    full: 1200,
   };
 
   const modalWidth = width !== undefined ? width : sizeWidths[size];
@@ -67,7 +67,7 @@ export const Modal: React.FC<ModalProps> & {
         ...okButtonProps,
       }}
       cancelButtonProps={{
-        className: 'rounded-xl font-medium hover:bg-slate-50',
+        className: 'rounded-xl font-medium border-stay-border text-stay-text hover:bg-stay-bg-app',
         ...cancelButtonProps,
       }}
       {...props}

@@ -173,7 +173,7 @@ export const AdminReportsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Enforce Modal (UC 56) */}
+      {/* Enforce Modal */}
       <Modal
         open={enforceModalOpen}
         onCancel={() => setEnforceModalOpen(false)}
@@ -181,6 +181,7 @@ export const AdminReportsPage: React.FC = () => {
         confirmLoading={isEnforcing}
         okText="Thực thi chế tài"
         cancelText="Hủy"
+        width={680}
         title={
           <div className="flex items-center gap-2 text-stay-text font-bold">
             <Gavel className="w-5 h-5 text-red-500" />

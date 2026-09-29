@@ -25,28 +25,28 @@ export const ReviewApplicantModal: React.FC<ReviewApplicantModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={760}
+      width={840}
       title={
         <span className="text-base font-bold text-stay-text">
-          Đối Chiếu Lối Sống & Phê Duyệt Ứng Viên ({applicant.applicantName || `#${applicant.id}`})
+          Đối chiếu lối sống • {applicant.applicantName || `#${applicant.id}`}
         </span>
       }
     >
-      <div className="space-y-5 pt-3">
+      <div className="space-y-4 pt-2">
         {/* Applicant Summary */}
-        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-2 text-xs">
+        <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-2 text-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <span className="font-bold text-stay-text text-sm block">
                 {applicant.applicantName} ({applicant.birthYear || 2004})
               </span>
-              <span className="text-slate-500">
-                Quê quán: {applicant.hometown || 'Hải Dương'} • Trường: {applicant.occupationOrSchool}
+              <span className="text-stay-text-muted">
+                Quê: {applicant.hometown || 'Hải Dương'} • {applicant.occupationOrSchool}
               </span>
             </div>
-            <div className="text-right">
-              <span className="text-[11px] text-slate-500 block">Độ tương thích tổng thể:</span>
-              <span className="text-base font-bold text-emerald-700">
+            <div className="text-left sm:text-right">
+              <span className="text-[11px] text-stay-text-muted block">Độ tương thích:</span>
+              <span className="text-base font-bold text-emerald-600">
                 {applicant.compatibilityScore}% (Rất hợp)
               </span>
             </div>
@@ -106,8 +106,8 @@ export const ReviewApplicantModal: React.FC<ReviewApplicantModalProps> = ({
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-stay-text">Lời nhắn gửi</td>
-                  <td className="p-3 text-slate-500">Muốn tìm bạn ngủ sớm, giữ vệ sinh</td>
-                  <td className="p-3 text-slate-500">Ít ở phòng ban ngày, gọn gàng</td>
+                  <td className="p-3 text-stay-text-muted">Muốn tìm bạn ngủ sớm, giữ vệ sinh</td>
+                  <td className="p-3 text-stay-text-muted">Ít ở phòng ban ngày, gọn gàng</td>
                   <td className="p-3 text-emerald-700 font-semibold">Đáp ứng tốt mong muốn</td>
                 </tr>
               </tbody>

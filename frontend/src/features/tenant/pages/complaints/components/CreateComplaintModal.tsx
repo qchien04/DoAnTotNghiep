@@ -41,13 +41,13 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={680}
-      title={<span className="text-base font-bold text-stay-text">Tạo Phản Ánh / Khiếu Nại Sự Cố Phòng Trọ</span>}
+      width={800}
+      title={<span className="text-base font-bold text-stay-text">Báo hỏng & Phản ánh sự cố</span>}
     >
       <Form
         form={form}
         layout="vertical"
-        className="space-y-5 pt-3 text-xs"
+        className="space-y-4 pt-2 text-xs"
         initialValues={{
           type: 'COOLING',
           urgency: 'HIGH',
@@ -55,23 +55,24 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
           content: 'Điều hòa bật 16 độ nhưng chỉ có gió thoang thoảng, nước chảy rỉ xuống sàn gỗ từ đêm qua.',
         }}
       >
-        {/* Section 1: Label nằm ra ngoài card */}
-        <div className="space-y-2">
+        {/* Section 1 */}
+        <div className="space-y-1.5">
           <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-            1. Phân loại sự cố & Mức độ khẩn cấp
+            Phân loại & Mức độ khẩn cấp
           </label>
           <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Form.Item
               name="type"
-              label="Phân loại sự cố"
+              label="Loại sự cố "
               rules={[{ required: true, message: 'Vui lòng chọn loại sự cố!' }]}
+              className="mb-0"
             >
               <Select
                 options={[
-                  { label: 'Hỏng thiết bị điện lạnh (Điều hòa, Tủ lạnh)', value: 'COOLING' },
-                  { label: 'Điện nước sinh hoạt (Bình nóng lạnh, Bóng đèn, Vòi nước)', value: 'PLUMBING' },
-                  { label: 'Cơ sở vật chất / Cửa sổ, Khóa phòng', value: 'OTHER' },
-                  { label: 'An ninh trật tự / Tiếng ồn xung quanh', value: 'SECURITY' },
+                  { label: 'Điện lạnh (Điều hòa, Tủ lạnh)', value: 'COOLING' },
+                  { label: 'Điện nước (Bình nóng lạnh, Đèn, Vòi nước)', value: 'PLUMBING' },
+                  { label: 'Cơ sở vật chất (Cửa, Khóa, Tường)', value: 'OTHER' },
+                  { label: 'An ninh trật tự / Tiếng ồn', value: 'SECURITY' },
                   { label: 'Sai lệch số điện nước trên hóa đơn', value: 'BILL' },
                 ]}
               />
@@ -79,55 +80,58 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
 
             <Form.Item
               name="urgency"
-              label="Mức độ khẩn cấp"
+              label="Mức độ khẩn cấp "
               rules={[{ required: true, message: 'Vui lòng chọn mức độ!' }]}
+              className="mb-0"
             >
               <Select
                 options={[
-                  { label: 'Khẩn cấp (Cần xử lý ngay trong ngày)', value: 'HIGH' },
-                  { label: 'Bình thường (Xử lý trong 1-2 ngày)', value: 'MEDIUM' },
+                  { label: 'Khẩn cấp (Xử lý trong ngày)', value: 'HIGH' },
+                  { label: 'Bình thường (1-2 ngày)', value: 'MEDIUM' },
                 ]}
               />
             </Form.Item>
           </div>
         </div>
 
-        {/* Section 2: Label nằm ra ngoài card */}
-        <div className="space-y-2">
+        {/* Section 2 */}
+        <div className="space-y-1.5">
           <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-            2. Thông tin chi tiết sự cố
+            Thông tin chi tiết sự cố
           </label>
           <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4 space-y-3">
             <Form.Item
               name="title"
-              label="Tiêu đề khiếu nại (*)"
+              label="Tiêu đề "
               rules={[{ required: true, message: 'Vui lòng nhập tiêu đề sự cố!' }]}
+              className="mb-0"
             >
               <Input placeholder="Ví dụ: Điều hòa chảy nước và không mát..." />
             </Form.Item>
 
             <Form.Item
               name="content"
-              label="Mô tả chi tiết tình trạng sự cố (*)"
+              label="Mô tả sự cố "
               rules={[{ required: true, message: 'Vui lòng nhập nội dung mô tả chi tiết!' }]}
+              className="mb-0"
             >
               <Input.TextArea
                 rows={3}
-                placeholder="Mô tả hiện tượng, thời gian phát sinh và ảnh hưởng tới sinh hoạt..."
+                placeholder="Mô tả hiện tượng và thời gian phát sinh..."
               />
             </Form.Item>
           </div>
         </div>
 
-        {/* Section 3: Label nằm ra ngoài card */}
-        <div className="space-y-2">
+        {/* Section 3 */}
+        <div className="space-y-1.5">
           <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-            3. Hình ảnh / Video bằng chứng hiện trạng
+            Ảnh chụp hiện trạng
           </label>
           <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4">
             <Upload.Dragger
-              title="Kéo thả ảnh chụp sự cố vào đây hoặc nhấp để tải"
-              hint="Khuyến khích đính kèm ảnh chụp hiện trạng để chủ nhà nắm bắt chính xác và mang đúng dụng cụ sửa chữa (Tối đa 5 ảnh)"
+              title="Kéo thả ảnh vào đây hoặc nhấp để tải"
+              hint="Hỗ trợ JPG, PNG (tối đa 5 ảnh)"
               beforeUpload={() => {
                 message.success('Đã chọn ảnh hiện trạng sự cố!');
                 return false;

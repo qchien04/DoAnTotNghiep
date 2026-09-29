@@ -31,7 +31,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
   const addressText = invitation?.address || `Phòng ${invitation?.roomName || '102'} - ${buildingName}`;
   const landlordInfo = `${invitation?.landlordName || 'Chủ trọ'}${invitation?.landlordPhone ? ` - SĐT: ${invitation.landlordPhone}` : ''}`;
   const priceText = invitation?.monthlyRent ? `${invitation.monthlyRent.toLocaleString()} VNĐ/tháng` : '3.800.000 VNĐ/tháng';
-  const roleText = invitation?.roleInRoom === 'REPRESENTATIVE' ? 'Khách thuê đại diện hợp đồng' : 'Thành viên thuê cùng';
+  const roleText = invitation?.roleInRoom === 'REPRESENTATIVE' ? 'Khách đại diện' : 'Thành viên thuê cùng';
 
   return (
     <Modal
@@ -41,14 +41,14 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
         onCancel();
       }}
       footer={null}
-      width={680}
-      title={<span className="text-base font-bold text-stay-text">Chi Tiết Lời Mời Liên Kết Phòng Trọ</span>}
+      width={740}
+      title={<span className="text-base font-bold text-stay-text">Lời mời liên kết phòng trọ</span>}
     >
-      <div className="space-y-5 pt-3 text-xs">
+      <div className="space-y-4 pt-2 text-xs">
         {!rejectMode ? (
           <>
-            <p className="text-stay-text-secondary leading-relaxed">
-              Chủ trọ đã gửi đề nghị liên kết tài khoản của bạn với phòng trọ thực tế. Vui lòng đối soát các thông tin dưới đây trước khi chấp nhận:
+            <p className="text-stay-text-secondary">
+              Chủ trọ gửi đề nghị liên kết tài khoản của bạn với phòng trọ:
             </p>
 
             {/* Bảng thông tin đối soát chuẩn UC16 */}
@@ -80,12 +80,12 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
                   <tr>
                     <td className="p-3 font-semibold text-stay-text">Giá phòng thỏa thuận</td>
                     <td className="p-3 font-bold text-stay-primary">{priceText}</td>
-                    <td className="p-3 text-slate-500">Theo hợp đồng thuê</td>
+                    <td className="p-3 text-stay-text-muted">Theo hợp đồng thuê</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-semibold text-stay-text">Vai trò của bạn</td>
                     <td className="p-3 text-stay-text">{roleText}</td>
-                    <td className="p-3 text-slate-500">
+                    <td className="p-3 text-stay-text-muted">
                       {invitation?.roleInRoom === 'REPRESENTATIVE' ? 'Có quyền nhận hóa đơn' : 'Thành viên cùng phòng'}
                     </td>
                   </tr>

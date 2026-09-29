@@ -99,13 +99,13 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
             </Button>
           ),
       ]}
-      width={780}
+      width={840}
     >
       {bill && (
         <div className="mt-4 space-y-4 text-xs">
           {bill.status === 'DRAFT' && (
             <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-200 flex items-center justify-between">
-              <span>⚠️ Hóa đơn này hiện đang được lưu ở dạng <strong>Bản nháp</strong>. Khách thuê chưa nhận được thông báo và chưa thấy hóa đơn này trong tài khoản.</span>
+              <span>Hóa đơn dạng <strong>Bản nháp</strong> (chưa gửi thông báo cho khách thuê).</span>
             </div>
           )}
           {/* Header info card */}

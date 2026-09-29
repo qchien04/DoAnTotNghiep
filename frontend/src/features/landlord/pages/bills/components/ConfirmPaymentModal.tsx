@@ -52,7 +52,7 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
       confirmLoading={confirmLoading}
       okText="Xác nhận đã nhận tiền"
       cancelText="Hủy"
-      width={560}
+      width={640}
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-1.5 text-stay-text">
@@ -70,7 +70,7 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
         </div>
 
         <Form.Item
-          label={<span className="text-stay-text font-medium text-xs">Số tiền thực nhận (VNĐ) (*)</span>}
+          label={<span className="text-stay-text font-medium text-xs">Số tiền thực nhận (VNĐ) </span>}
           name="amount"
           rules={[{ required: true, message: 'Vui lòng nhập số tiền đã nhận' }]}
         >

@@ -87,11 +87,11 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div>
           <label className="text-xs font-semibold text-stay-text block mb-1.5">
-            Từ khóa khu vực / Trường ĐH / Tuyến đường
+            Khu vực / Tuyến đường / Trường ĐH
           </label>
           <Input
-            placeholder="Nhập Cầu Giấy, Bách Khoa, Duy Tân..."
-            prefix={<Search className="w-4 h-4 text-slate-400" />}
+            placeholder="Cầu Giấy, Bách Khoa, Duy Tân..."
+            prefix={<Search className="w-4 h-4 text-stay-text-muted" />}
             value={keyword}
             onChange={(e) => onKeywordChange(e.target.value)}
             allowClear
@@ -133,16 +133,16 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             options={[
               { label: 'Tất cả loại tin', value: 'ALL' },
               { label: 'Đã có sẵn phòng trọ', value: 'HAS_ROOM' },
-              { label: 'Chưa có phòng (Tìm bạn cùng thuê)', value: 'SEARCHING_ROOM' },
+              { label: 'Tìm bạn cùng thuê', value: 'SEARCHING_ROOM' },
             ]}
           />
         </div>
 
         <div>
           <div className="flex justify-between text-xs text-stay-text font-semibold mb-1">
-            <span>Khoảng giá share / người:</span>
+            <span>Khoảng giá share:</span>
             <span className="text-stay-primary">
-              {(priceRange[0] / 1000000).toFixed(1)} - {(priceRange[1] / 1000000).toFixed(1)} triệu
+              {(priceRange[0] / 1000000).toFixed(1)} - {(priceRange[1] / 1000000).toFixed(1)} tr
             </span>
           </div>
           <Slider
@@ -159,12 +159,12 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       {/* Row 2: Lifestyle Filters (UC11) */}
       <div className="pt-3 border-t border-stay-border">
         <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2.5">
-          Bộ lọc tiêu chí lối sống & sinh hoạt:
+          Tiêu chí lối sống & sinh hoạt:
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <div>
-            <span className="text-[11px] text-slate-500 block mb-1">Giới tính:</span>
+            <span className="text-[11px] text-stay-text-muted block mb-1">Giới tính:</span>
             <Select
               value={genderFilter}
               onChange={onGenderFilterChange}
@@ -178,7 +178,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           </div>
 
           <div>
-            <span className="text-[11px] text-slate-500 block mb-1">Hút thuốc lá:</span>
+            <span className="text-[11px] text-stay-text-muted block mb-1">Hút thuốc lá:</span>
             <Select
               value={noSmokingFilter === null ? 'ALL' : noSmokingFilter ? 'NO_SMOKE' : 'SMOKE'}
               onChange={(val) => {
@@ -196,7 +196,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           </div>
 
           <div>
-            <span className="text-[11px] text-slate-500 block mb-1">Giờ giấc thức - ngủ:</span>
+            <span className="text-[11px] text-stay-text-muted block mb-1">Giờ giấc thức - ngủ:</span>
             <Select
               value={sleepTimeFilter}
               onChange={onSleepTimeFilterChange}
@@ -210,7 +210,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           </div>
 
           <div>
-            <span className="text-[11px] text-slate-500 block mb-1">Nuôi thú cưng:</span>
+            <span className="text-[11px] text-stay-text-muted block mb-1">Nuôi thú cưng:</span>
             <Select
               value={noPetFilter === null ? 'ALL' : noPetFilter ? 'NO_PET' : 'PET'}
               onChange={(val) => {
@@ -228,7 +228,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           </div>
 
           <div>
-            <span className="text-[11px] text-slate-500 block mb-1">Nấu ăn tại phòng:</span>
+            <span className="text-[11px] text-stay-text-muted block mb-1">Nấu ăn tại phòng:</span>
             <Select
               value={cookingFilter === null ? 'ALL' : cookingFilter ? 'COOK' : 'NO_COOK'}
               onChange={(val) => {
@@ -248,7 +248,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       </div>
 
       {priceError && (
-        <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs">
+        <div className="p-3 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-xs">
           {priceError}
         </div>
       )}
@@ -274,7 +274,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             icon={<Check className="w-3.5 h-3.5" />}
             onClick={onApply}
           >
-            Áp dụng bộ lọc và Tìm kiếm
+            Áp dụng bộ lọc
           </Button>
         </div>
       </div>

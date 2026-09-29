@@ -18,15 +18,16 @@ export const GroupCompletedModal: React.FC<GroupCompletedModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      title={<span className="text-base font-bold text-stay-text">Nhóm Đã Đủ Thành Viên (2/2)</span>}
+      width={580}
+      title={<span className="text-base font-bold text-stay-text">Nhóm đã đủ thành viên (2/2)</span>}
     >
       <div className="space-y-4 pt-2 text-xs">
         <p className="text-stay-text leading-relaxed">
-          Chúc mừng bạn! Nhóm ở ghép phòng <strong>P102 - Tòa nhà Ánh Dương</strong> đã có đủ 2/2 thành viên (Phạm Minh Đức & Nguyễn Văn Hùng).
+          Nhóm phòng <strong>P102 - Tòa nhà Ánh Dương</strong> đã đủ 2/2 thành viên.
         </p>
 
         <div className="p-3.5 bg-stay-bg-app border border-stay-border rounded-xl space-y-2">
-          <span className="font-bold text-stay-text block">Thông tin liên lạc các thành viên trong nhóm:</span>
+          <span className="font-bold text-stay-text block">Thông tin liên lạc thành viên:</span>
           <div className="flex items-center justify-between text-stay-text">
             <span>1. Phạm Minh Đức (Chủ phòng)</span>
             <span className="font-semibold flex items-center gap-1">
@@ -36,13 +37,13 @@ export const GroupCompletedModal: React.FC<GroupCompletedModalProps> = ({
           <div className="flex items-center justify-between text-stay-text">
             <span>2. Nguyễn Văn Hùng (Thành viên mới)</span>
             <span className="font-semibold flex items-center gap-1">
-              <Phone className="w-3.5 h-3.5 text-stay-primary" /> 0966555444 (Zalo)
+              <Phone className="w-3.5 h-3.5 text-stay-primary" /> 0966555444
             </span>
           </div>
         </div>
 
-        <p className="text-slate-500">
-          Bạn có muốn chuyển trạng thái bài đăng sang <strong>HOÀN THÀNH</strong> để đóng nhận đơn mới không? Hệ thống sẽ tự động gửi lời cảm ơn và từ chối lịch sự tới các ứng viên còn lại trong danh sách chờ.
+        <p className="text-stay-text-secondary">
+          Chuyển bài đăng sang trạng thái <strong>Hoàn thành</strong> để dừng nhận đơn và từ chối các ứng viên trong danh sách chờ?
         </p>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-stay-border">

@@ -51,7 +51,7 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
       confirmLoading={confirmLoading}
       okText="Lưu phản hồi & báo khách"
       cancelText="Hủy"
-      width={640}
+      width={700}
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-2 text-stay-text">
@@ -67,9 +67,9 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
         </div>
 
         <Form.Item
-          label={<span className="text-stay-text font-medium text-xs">Trạng thái xử lý (*)</span>}
+          label={<span className="text-stay-text font-medium text-xs">Trạng thái xử lý </span>}
           name="status"
-          rules={[{ required: true, message: 'Chọn trạng thái (*)' }]}
+          rules={[{ required: true, message: 'Chọn trạng thái ' }]}
         >
           <Radio.Group className="flex flex-wrap gap-3">
             <Radio value="PROCESSING">Đang xử lý</Radio>
@@ -79,9 +79,9 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
         </Form.Item>
 
         <Form.Item
-          label={<span className="text-stay-text font-medium text-xs">Nội dung phản hồi / Lịch hẹn khách thuê (*)</span>}
+          label={<span className="text-stay-text font-medium text-xs">Nội dung phản hồi / Lịch hẹn khách thuê </span>}
           name="resolutionNote"
-          rules={[{ required: true, message: 'Nhập nội dung phản hồi (*)' }]}
+          rules={[{ required: true, message: 'Nhập nội dung phản hồi ' }]}
         >
           <Input.TextArea
             rows={4}

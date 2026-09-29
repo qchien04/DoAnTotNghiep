@@ -11,6 +11,26 @@ export interface InputProps extends AntInputProps {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
+  wrapperClassName?: string;
+}
+
+function extractLayoutClasses(className: string = '') {
+  const layoutClasses: string[] = [];
+  const otherClasses: string[] = [];
+
+  className.split(/\s+/).forEach((cls) => {
+    if (!cls) return;
+    if (/^(?:(?:sm|md|lg|xl|2xl):)?(?:w-|max-w-|min-w-|flex-|basis-)/.test(cls)) {
+      layoutClasses.push(cls);
+    } else {
+      otherClasses.push(cls);
+    }
+  });
+
+  return {
+    layoutClasses: layoutClasses.join(' '),
+    otherClasses: otherClasses.join(' '),
+  };
 }
 
 const InputBase = forwardRef<InputRef, InputProps>(
@@ -22,6 +42,7 @@ const InputBase = forwardRef<InputRef, InputProps>(
       leftIcon,
       rightIcon,
       fullWidth = true,
+      wrapperClassName,
       className = '',
       id,
       prefix,
@@ -32,9 +53,15 @@ const InputBase = forwardRef<InputRef, InputProps>(
     ref
   ) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+    const { layoutClasses, otherClasses } = extractLayoutClasses(className);
+    const effectiveWrapperWidth = wrapperClassName !== undefined
+      ? wrapperClassName
+      : layoutClasses || (fullWidth ? 'w-full' : '');
 
     return (
-      <div className={`space-y-1.5 ${fullWidth ? 'w-full' : ''}`}>
+      <div
+        className={`${label || error || helperText ? 'space-y-1.5' : ''} ${effectiveWrapperWidth}`.trim()}
+      >
         {label && (
           <label htmlFor={inputId} className="block text-xs font-semibold text-stay-text">
             {label}
@@ -48,7 +75,7 @@ const InputBase = forwardRef<InputRef, InputProps>(
           prefix={prefix || leftIcon}
           suffix={suffix || rightIcon}
           status={error ? 'error' : status}
-          className={`w-full py-2 px-3.5 rounded-xl border-stay-border text-xs sm:text-sm text-stay-text hover:border-stay-primary focus:border-stay-primary transition-all ${className}`}
+          className={`w-full py-2 px-3.5 rounded-xl border-stay-border text-xs sm:text-sm text-stay-text hover:border-stay-primary focus:border-stay-primary transition-all ${otherClasses}`}
           {...props}
         />
 

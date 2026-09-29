@@ -14,6 +14,7 @@ import {
   message,
   Popconfirm,
 } from '@/shared/components';
+import { Tooltip } from 'antd';
 import {
   Sliders,
   Plus,
@@ -21,6 +22,7 @@ import {
   Trash2,
   Sparkles,
   Percent,
+  HelpCircle,
 } from 'lucide-react';
 import { LifestyleCriterion, CreateLifestyleCriterionDto, UpdateLifestyleCriterionDto } from '@/shared/types/admin';
 
@@ -250,7 +252,7 @@ export const AdminMasterDataPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Create / Edit Modal (UC 52 & UC 53) */}
+      {/* Create / Edit Modal */}
       <Modal
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
@@ -258,10 +260,11 @@ export const AdminMasterDataPage: React.FC = () => {
         confirmLoading={isCreating || isUpdating}
         okText={editingCriterion ? 'Lưu cập nhật' : 'Tạo tiêu chí'}
         cancelText="Hủy"
+        width={720}
         title={
           <div className="flex items-center gap-2 text-stay-text font-bold">
             <Sliders className="w-5 h-5 text-stay-primary" />
-            <span>{editingCriterion ? 'Cập Nhật Tiêu Chí Lối Sống (UC 53)' : 'Thêm Tiêu Chí Lối Sống Mới (UC 52)'}</span>
+            <span>{editingCriterion ? 'Cập Nhật Tiêu Chí Lối Sống' : 'Thêm Tiêu Chí Lối Sống'}</span>
           </div>
         }
       >
@@ -295,7 +298,7 @@ export const AdminMasterDataPage: React.FC = () => {
 
             <Form.Item
               name="name"
-              label="Tên tiêu chí hiển thị"
+              label="Tên tiêu chí"
               rules={[{ required: true, message: 'Vui lòng nhập tên tiêu chí!' }]}
             >
               <Input placeholder="Ví dụ: Giờ giấc ngủ, Hút thuốc lá, Nuôi thú cưng..." />
@@ -303,7 +306,14 @@ export const AdminMasterDataPage: React.FC = () => {
 
             <Form.Item
               name="algorithmWeight"
-              label="Trọng số thuật toán matching (%)"
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <span>Trọng số matching (%)</span>
+                  <Tooltip title="Mức độ ảnh hưởng đến điểm tương thích khi ghép người ở cùng">
+                    <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer" />
+                  </Tooltip>
+                </span>
+              }
               rules={[{ required: true, message: 'Vui lòng nhập trọng số!' }]}
             >
               <Input type="number" min={1} max={100} suffix="%" />
@@ -311,7 +321,14 @@ export const AdminMasterDataPage: React.FC = () => {
 
             <Form.Item
               name="optionsText"
-              label="Các lựa chọn (phân cách bằng dấu phẩy)"
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <span>Các lựa chọn</span>
+                  <Tooltip title="Nhập danh sách lựa chọn cách nhau bởi dấu phẩy">
+                    <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer" />
+                  </Tooltip>
+                </span>
+              }
               rules={[{ required: true, message: 'Vui lòng nhập các lựa chọn!' }]}
             >
               <Input placeholder="Ví dụ: Không hút, Có hút ở ban công, Hút trong phòng" />

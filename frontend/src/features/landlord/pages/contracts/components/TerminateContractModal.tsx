@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form } from '@/shared/components';
-import { InputNumber, message } from 'antd';
+import { InputNumber, message, Tooltip } from 'antd';
+import { HelpCircle } from 'lucide-react';
 import { RentalContract, TerminateContractDto } from '@/shared/types/landlord';
 
 interface TerminateContractModalProps {
@@ -95,7 +96,7 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
       confirmLoading={confirmLoading}
       okText="Xác nhận thanh lý"
       cancelText="Hủy"
-      width={680}
+      width={780}
     >
       <Form
         form={form}
@@ -202,16 +203,18 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         {calculatedRefund !== null && (
           <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">
-                Số tiền hoàn trả khách thuê:
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">
+                  Số tiền hoàn trả khách thuê:
+                </span>
+                <Tooltip title="Số tiền hoàn trả = Tiền cọc gốc - Chi phí điện nước ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản">
+                  <HelpCircle className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 hover:opacity-80 cursor-pointer inline" />
+                </Tooltip>
+              </div>
               <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                 {calculatedRefund.toLocaleString()} VNĐ
               </span>
             </div>
-            <p className="text-xs text-stay-text-secondary mt-1.5">
-              * Số tiền hoàn trả = Tiền cọc gốc - Chi phí điện nước ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản.
-            </p>
           </div>
         )}
       </Form>

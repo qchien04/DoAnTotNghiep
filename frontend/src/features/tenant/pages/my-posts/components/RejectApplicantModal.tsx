@@ -21,17 +21,19 @@ export const RejectApplicantModal: React.FC<RejectApplicantModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      title={<span className="text-base font-bold text-stay-text">Lý Do Từ Chối Ứng Viên</span>}
+      width={560}
+      title={<span className="text-base font-bold text-stay-text">Từ chối ứng viên</span>}
     >
-      <div className="space-y-4 pt-3 text-xs">
+      <div className="space-y-4 pt-2 text-xs">
         <div>
-          <label className="text-slate-500 block mb-1">
-            Lý do gửi phản hồi tới ứng viên (tùy chọn):
+          <label className="text-stay-text-secondary block mb-1">
+            Lý do từ chối (tùy chọn):
           </label>
           <Input.TextArea
             rows={3}
             value={reason}
             onChange={(e) => onReasonChange(e.target.value)}
+            placeholder="Nhập lý do gửi đến ứng viên..."
           />
         </div>
 

@@ -71,7 +71,7 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
       confirmLoading={confirmLoading}
       okText={editingTenant ? 'Lưu cập nhật' : 'Lưu khách thuê'}
       cancelText="Hủy"
-      width={720}
+      width={820}
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         {/* SECTION 1: NHÂN THÂN & LIÊN HỆ */}
@@ -82,18 +82,18 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Họ và tên khách thuê (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Họ và tên khách thuê </span>}
                 name="fullName"
-                rules={[{ required: true, message: 'Nhập họ và tên (*)' }]}
+                rules={[{ required: true, message: 'Nhập họ và tên ' }]}
                 className="mb-0"
               >
                 <Input placeholder="Ví dụ: Lê Văn Cường..." className="h-10" />
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Số điện thoại liên lạc (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Số điện thoại liên lạc </span>}
                 name="phone"
-                rules={[{ required: true, message: 'Nhập số điện thoại (*)' }]}
+                rules={[{ required: true, message: 'Nhập số điện thoại ' }]}
                 className="mb-0"
               >
                 <Input placeholder="Ví dụ: 0905111222..." className="h-10" />
@@ -102,9 +102,9 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Số định danh CCCD / CMND (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Số định danh CCCD / CMND </span>}
                 name="idCardNumber"
-                rules={[{ required: true, message: 'Nhập số CCCD (*)' }]}
+                rules={[{ required: true, message: 'Nhập số CCCD ' }]}
                 className="mb-0"
               >
                 <Input placeholder="Ví dụ: 001200009999..." className="h-10 font-mono" />
@@ -129,9 +129,9 @@ export const TenantFormModal: React.FC<TenantFormModalProps> = ({
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Chọn phòng trọ bố trí (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Chọn phòng trọ bố trí </span>}
                 name="roomId"
-                rules={[{ required: true, message: 'Vui lòng chọn phòng (*)' }]}
+                rules={[{ required: true, message: 'Vui lòng chọn phòng ' }]}
                 className="mb-0"
               >
                 <Select

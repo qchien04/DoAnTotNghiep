@@ -41,11 +41,11 @@ Hậu điều kiện: Tòa nhà mới được tạo lập và lưu trữ thành
 Kịch bản chính:
   1. Tại trang Quản lý tòa nhà, chủ trọ bấm vào nút 'Thêm mới tòa nhà'.
   2. Hệ thống hiển thị Modal pop-up 'Thêm tòa nhà mới' (BuildingFormModal) gồm các trường:
-     - Tên tòa nhà / Khu trọ (*): Ô nhập văn bản (Placeholder: Ví dụ: Tòa nhà Ánh Dương, KTX Bách Khoa...).
-     - Tỉnh / Thành phố (*): Ô nhập văn bản (Mặc định: 'Thành phố Hà Nội').
-     - Phường / Xã (*): Ô nhập văn bản (Ví dụ: Phường Bách Khoa).
-     - Số tầng (*): Ô nhập số nguyên dương (Mặc định: 5, tối thiểu 1).
-     - Địa chỉ chi tiết (*): Ô nhập văn bản (Ví dụ: Số 15 Ngõ 165 Cầu Giấy...).
+     - Tên tòa nhà / Khu trọ : Ô nhập văn bản (Placeholder: Ví dụ: Tòa nhà Ánh Dương, KTX Bách Khoa...).
+     - Tỉnh / Thành phố : Ô nhập văn bản (Mặc định: 'Thành phố Hà Nội').
+     - Phường / Xã : Ô nhập văn bản (Ví dụ: Phường Bách Khoa).
+     - Số tầng : Ô nhập số nguyên dương (Mặc định: 5, tối thiểu 1).
+     - Địa chỉ chi tiết : Ô nhập văn bản (Ví dụ: Số 15 Ngõ 165 Cầu Giấy...).
      - Tọa độ GPS / Vị trí tòa nhà: Khối ghim vị trí kèm 2 nút tương tác:
        + Nút 'Vị trí hiện tại': Sử dụng HTML5 Geolocation của trình duyệt để lấy vĩ độ/kinh độ GPS thực tế.
        + Nút 'Chọn trên bản đồ': Mở cửa sổ bản đồ số tương tác (LocationPickerModal) cho phép click ghim tọa độ.
@@ -62,7 +62,7 @@ Kịch bản chính:
 Ngoại lệ:
   2. Chủ trọ bấm nút 'Hủy', hệ thống đóng modal và giữ nguyên giao diện danh sách.
   3. Chủ trọ bấm 'Vị trí hiện tại' nhưng từ chối cấp quyền định vị trên trình duyệt, hệ thống hiển thị cảnh báo: "Vui lòng cấp quyền truy cập vị trí trên trình duyệt" hoặc "Không thể lấy vị trí hiện tại".
-  4. Chủ trọ để trống trường bắt buộc (Tên tòa nhà, Phường/Xã, Địa chỉ chi tiết), form viền đỏ các ô nhập và báo lỗi: "Vui lòng nhập tên tòa nhà (*)", "Vui lòng nhập địa chỉ chi tiết (*)".
+  4. Chủ trọ để trống trường bắt buộc (Tên tòa nhà, Phường/Xã, Địa chỉ chi tiết), form viền đỏ các ô nhập và báo lỗi: "Vui lòng nhập tên tòa nhà ", "Vui lòng nhập địa chỉ chi tiết ".
   5. Tài khoản chủ trọ không tồn tại hoặc phiên hết hạn, hệ thống trả về lỗi USER_NOT_FOUND (404) hoặc yêu cầu đăng nhập lại.
 
 ============================================================
@@ -144,12 +144,12 @@ Kịch bản chính:
   1. Tại trang Quản lý phòng trọ, chủ trọ bấm nút 'Thêm phòng mới'.
   2. Hệ thống hiển thị Modal 'Thêm phòng mới' (RoomFormModal) gồm các trường:
      - Tòa nhà trực thuộc: Dropdown chọn tòa nhà hoặc để trống (tương ứng 'Nhà trọ độc lập').
-     - Tên phòng (*): Ô nhập văn bản (Ví dụ: 'Phòng 302', 'Studio 401'...).
-     - Tầng (*): Ô nhập số nguyên (Mặc định: 1).
-     - Diện tích (m²) (*): Ô nhập số thực dương (Ví dụ: 28 m²).
-     - Giá thuê niêm yết (VNĐ/tháng) (*): Ô nhập số tiền (Ví dụ: 3.900.000 đ).
-     - Tiền đặt cọc tiêu chuẩn (VNĐ) (*): Mặc định bằng 1 tháng tiền thuê (3.900.000 đ).
-     - Sức chứa tối đa (người) (*): Ô nhập số nguyên (Mặc định: 2 người).
+     - Tên phòng : Ô nhập văn bản (Ví dụ: 'Phòng 302', 'Studio 401'...).
+     - Tầng : Ô nhập số nguyên (Mặc định: 1).
+     - Diện tích (m²) : Ô nhập số thực dương (Ví dụ: 28 m²).
+     - Giá thuê niêm yết (VNĐ/tháng) : Ô nhập số tiền (Ví dụ: 3.900.000 đ).
+     - Tiền đặt cọc tiêu chuẩn (VNĐ) : Mặc định bằng 1 tháng tiền thuê (3.900.000 đ).
+     - Sức chứa tối đa (người) : Ô nhập số nguyên (Mặc định: 2 người).
      - Mức độ nội thất: Dropdown chọn BASIC (Cơ bản), FULL (Đầy đủ đồ), LUXURY (Cao cấp).
      - Tiện nghi phòng: Danh sách chọn (Checkbox/Tags: Điều hòa, Bình nóng lạnh, Tủ lạnh, Máy giặt, Giường nệm, Tủ quần áo, Kệ bếp, Ban công riêng, Khóa vân tay...).
      - Dịch vụ tiện ích áp dụng: Danh sách checkbox chọn các dịch vụ tính cước (Điện sinh hoạt, Nước sinh hoạt, Internet Wifi, Vệ sinh rác...).
@@ -258,9 +258,9 @@ Kịch bản chính:
   1. Tại trang Cấu hình dịch vụ, chủ trọ bấm nút 'Thêm dịch vụ mới'.
   2. Hệ thống hiển thị Modal 'Thêm dịch vụ tiện ích' (ServiceFormModal) với các trường nhập liệu:
      - Phân loại dịch vụ: Dropdown chọn (ELECTRICITY - Điện, WATER - Nước, INTERNET - Wifi, CLEANING - Vệ sinh rác, PARKING - Gửi xe, ELEVATOR - Thang máy, OTHER - Tiện ích khác).
-     - Tên dịch vụ (*): Tự động điền theo phân loại hoặc tùy chỉnh.
-     - Đơn vị tính (*): kWh (Số), m³ (Khối), Phòng/Tháng, Người/Tháng, Xe/Tháng, Lần...
-     - Đơn giá (VNĐ) (*): Ô nhập số tiền (Ví dụ: 120.000 đ).
+     - Tên dịch vụ : Tự động điền theo phân loại hoặc tùy chỉnh.
+     - Đơn vị tính : kWh (Số), m³ (Khối), Phòng/Tháng, Người/Tháng, Xe/Tháng, Lần...
+     - Đơn giá (VNĐ) : Ô nhập số tiền (Ví dụ: 120.000 đ).
      - Hình thức tính phí: METER_INDEX (Theo công tơ), FIXED_PER_ROOM (Theo phòng), FIXED_PER_PERSON (Theo người), FIXED_PER_UNIT (Cố định theo xe/đơn vị).
      - Phạm vi áp dụng: Dropdown chọn 'Tất cả' (ALL) hoặc chọn tòa nhà cụ thể.
      - Trạng thái áp dụng: Switch Bật/Tắt (Mặc định Bật - Đang áp dụng).
@@ -353,11 +353,11 @@ Hậu điều kiện: Hồ sơ khách thuê mới được tạo với trạng t
 Kịch bản chính:
   1. Tại trang Quản lý khách thuê, chủ trọ bấm nút 'Thêm khách thuê'.
   2. Hệ thống hiển thị Modal 'Thêm khách thuê mới' (TenantFormModal) gồm các trường:
-     - Phòng trọ (*): Dropdown chọn phòng trọ tiếp nhận khách (Ví dụ: Phòng 102 - Tòa nhà Ánh Dương).
-     - Họ và tên (*): Ô nhập văn bản (Ví dụ: 'Lê Văn Cường', trim).
-     - Số điện thoại (*): Ô nhập SĐT (10 số, ví dụ: '0905111222').
-     - Số CMND / CCCD (*): Ô nhập CCCD (12 chữ số, ví dụ: '001200009999').
-     - Giới tính (*): Radio chọn Nam / Nữ / Khác.
+     - Phòng trọ : Dropdown chọn phòng trọ tiếp nhận khách (Ví dụ: Phòng 102 - Tòa nhà Ánh Dương).
+     - Họ và tên : Ô nhập văn bản (Ví dụ: 'Lê Văn Cường', trim).
+     - Số điện thoại : Ô nhập SĐT (10 số, ví dụ: '0905111222').
+     - Số CMND / CCCD : Ô nhập CCCD (12 chữ số, ví dụ: '001200009999').
+     - Giới tính : Radio chọn Nam / Nữ / Khác.
      - Ngày sinh: DatePicker chọn ngày sinh (Ví dụ: 15/08/2002).
      - Quê quán / Thường trú: Ô nhập địa chỉ quê quán (Ví dụ: 'Hải Phòng').
      - Vai trò trong phòng: Radio chọn 'Đại diện hợp đồng' (REPRESENTATIVE) hoặc 'Thành viên ở cùng' (MEMBER).
@@ -376,7 +376,7 @@ Kịch bản chính:
   --- | --- | --- | --- | --- | --- | ---
   Lê Văn Cường (0905111222) | 001200009999 | Hải Phòng | Phòng 102 | Thành viên | Chưa liên kết | Liên kết | Sửa | Xóa
 Ngoại lệ:
-  3. Để trống các trường bắt buộc (Họ tên, SĐT, CCCD, Phòng), form báo lỗi viền đỏ: "Vui lòng nhập đầy đủ các trường bắt buộc (*)".
+  3. Để trống các trường bắt buộc (Họ tên, SĐT, CCCD, Phòng), form báo lỗi viền đỏ: "Vui lòng nhập đầy đủ các trường bắt buộc ".
   6. Số CCCD '001200009999' đã tồn tại trong danh sách một khách đang ở phòng khác trên hệ thống, backend ném lỗi BaseException(ErrorCode.TENANT_ID_CARD_EXISTS). Hệ thống hiển thị cảnh báo: "Số CCCD này hiện đã tồn tại ở một khách đang thuê phòng khác! Vui lòng kiểm tra lại".
   6. Phòng không tồn tại hoặc không thuộc chủ trọ, backend ném ROOM_NOT_FOUND.
 
@@ -484,12 +484,12 @@ Hậu điều kiện: Hợp đồng thuê mới được khởi tạo ở trạn
 Kịch bản chính:
   1. Tại trang Quản lý hợp đồng, chủ trọ bấm nút 'Tạo hợp đồng mới'.
   2. Hệ thống hiển thị Modal 'Tạo hợp đồng thuê phòng' (CreateContractModal) gồm các phần:
-     - Chọn phòng trọ (*): Dropdown danh sách các phòng đang còn trống. Khi chọn phòng (ví dụ Phòng 102), hệ thống tự động điền giá thuê niêm yết (3.800.000 đ), tiền cọc tiêu chuẩn (3.800.000 đ) và tải danh sách dịch vụ của phòng.
-     - Chọn khách đại diện (*): Dropdown chọn khách thuê đại diện ký hợp đồng (Ví dụ: Phạm Minh Đức).
-     - Ngày bắt đầu (*): DatePicker chọn ngày nhận phòng (Ví dụ: 01/10/2026).
-     - Thời hạn thuê (*): Dropdown chọn 6 tháng / 12 tháng / 24 tháng hoặc chọn ngày kết thúc cụ thể (Mặc định 12 tháng: 30/09/2027).
-     - Tiền thuê phòng thỏa thuận (*): Ô nhập số tiền (Ví dụ: 3.800.000 đ/tháng).
-     - Tiền đặt cọc giữ chỗ (*): Ô nhập số tiền cọc (Ví dụ: 3.800.000 đ).
+     - Chọn phòng trọ : Dropdown danh sách các phòng đang còn trống. Khi chọn phòng (ví dụ Phòng 102), hệ thống tự động điền giá thuê niêm yết (3.800.000 đ), tiền cọc tiêu chuẩn (3.800.000 đ) và tải danh sách dịch vụ của phòng.
+     - Chọn khách đại diện : Dropdown chọn khách thuê đại diện ký hợp đồng (Ví dụ: Phạm Minh Đức).
+     - Ngày bắt đầu : DatePicker chọn ngày nhận phòng (Ví dụ: 01/10/2026).
+     - Thời hạn thuê : Dropdown chọn 6 tháng / 12 tháng / 24 tháng hoặc chọn ngày kết thúc cụ thể (Mặc định 12 tháng: 30/09/2027).
+     - Tiền thuê phòng thỏa thuận : Ô nhập số tiền (Ví dụ: 3.800.000 đ/tháng).
+     - Tiền đặt cọc giữ chỗ : Ô nhập số tiền cọc (Ví dụ: 3.800.000 đ).
      - Ngày chốt nộp tiền hàng tháng: Ô nhập số ngày (Mặc định ngày 05 hàng tháng).
      - Danh sách dịch vụ tiện ích & Chỉ số công tơ ban đầu:
        + Điện sinh hoạt: Ô nhập chỉ số công tơ ban đầu (Ví dụ: 1420 kWh).
@@ -612,9 +612,9 @@ Hậu điều kiện: Hóa đơn tiền phòng tháng được khởi tạo vớ
 Kịch bản chính:
   1. Tại trang Quản lý hóa đơn, chủ trọ bấm nút 'Tính tiền phòng & Lập hóa đơn'.
   2. Hệ thống hiển thị Modal 'Lập hóa đơn tiền phòng' (CreateBillModal) gồm:
-     - Chọn phòng trọ (*): Dropdown danh sách các phòng đang cho thuê.
-     - Kỳ cước (*): Chọn tháng thu tiền (Ví dụ: Tháng 10/2026 - 10/2026).
-     - Hạn nộp tiền (*): DatePicker chọn ngày hết hạn (Mặc định cộng 10 ngày từ ngày tạo).
+     - Chọn phòng trọ : Dropdown danh sách các phòng đang cho thuê.
+     - Kỳ cước : Chọn tháng thu tiền (Ví dụ: Tháng 10/2026 - 10/2026).
+     - Hạn nộp tiền : DatePicker chọn ngày hết hạn (Mặc định cộng 10 ngày từ ngày tạo).
   3. Chủ trọ chọn Phòng 102 (Ánh Dương). Hệ thống tự động liên kết hợp đồng hoạt động (#HĐ-2), điền tên khách đại diện Phạm Minh Đức, nạp giá tiền thuê phòng (3.800.000 đ), và hiển thị danh sách các dịch vụ tính cước:
      - Điện sinh hoạt: Hiển thị chỉ số cũ (1420 kWh). Ô nhập chỉ số mới: Chủ trọ nhập 1535 (tiêu thụ 115 kWh).
      - Nước sinh hoạt: Hiển thị chỉ số cũ (85 m³). Ô nhập chỉ số mới: Chủ trọ nhập 94 (tiêu thụ 9 m³).
@@ -695,7 +695,7 @@ Kịch bản chính:
   1. Khi nhận được tiền phòng của khách Phạm Minh Đức (Phòng 102), chủ trọ bấm nút 'Thu tiền' tại dòng hóa đơn #HD-102.
   2. Hệ thống hiển thị Modal 'Xác nhận thu tiền' (ConfirmPaymentModal) gồm:
      - Tóm tắt hóa đơn: Kỳ 10/2026 (#102), Phòng 102 (Phạm Minh Đức), Số tiền phải thu: 4.707.000 VNĐ.
-     - Số tiền thực nhận (VNĐ) (*): Tự động điền số tiền còn thiếu (4.707.000 đ).
+     - Số tiền thực nhận (VNĐ) : Tự động điền số tiền còn thiếu (4.707.000 đ).
      - Hình thức thanh toán: Radio chọn 'Chuyển khoản' (BANK_TRANSFER) hoặc 'Tiền mặt' (CASH).
      - Ghi chú xác nhận: Ô nhập văn bản (Ví dụ: 'Đã nhận qua MB Bank lúc 10h15').
   3. Chủ trọ chọn hình thức 'Chuyển khoản', kiểm tra số tiền 4.707.000 đ và bấm nút 'Xác nhận đã nhận tiền'.
@@ -743,8 +743,8 @@ Kịch bản chính:
   1. Tại danh sách khiếu nại, chủ trọ bấm nút 'Phản hồi' tại khiếu nại #KN-101 (Phòng 102 - Điều hòa chảy nước).
   2. Hệ thống hiển thị Modal 'Phản hồi khiếu nại' (ComplaintProgressModal) gồm:
      - Tóm tắt phản ánh: Mã KN (#101), Phòng 102 (Phạm Minh Đức), Tiêu đề: 'Điều hòa chảy nước và không mát'.
-     - Trạng thái xử lý (*): Radio chọn 'Đang xử lý' (PROCESSING), 'Đã giải quyết' (RESOLVED), hoặc 'Từ chối' (REJECTED).
-     - Nội dung phản hồi / Lịch hẹn khách thuê (*): TextArea nhập nội dung.
+     - Trạng thái xử lý : Radio chọn 'Đang xử lý' (PROCESSING), 'Đã giải quyết' (RESOLVED), hoặc 'Từ chối' (REJECTED).
+     - Nội dung phản hồi / Lịch hẹn khách thuê : TextArea nhập nội dung.
   3. Chủ trọ chọn trạng thái 'Đang xử lý' và nhập nội dung: "Chủ nhà đã tiếp nhận và hẹn thợ điện lạnh qua phòng kiểm tra lúc 14h00 chiều nay".
   4. Chủ trọ bấm nút 'Lưu phản hồi & báo khách'.
   5. Frontend gửi payload ComplaintHandleRequest qua PUT /api/v1/landlord/complaints/101/handle.
@@ -753,7 +753,7 @@ Kịch bản chính:
   8. Sau khi thợ sửa xong, chủ trọ mở lại khiếu nại #KN-101, chuyển sang 'Đã giải quyết' (RESOLVED), nhập ghi chú: "Đã thông tắc đường ống nước thải và nạp thêm gas điều hòa", bấm lưu. Backend ghi nhận thời điểm hoàn tất resolvedAt = Instant.now().
 Ngoại lệ:
   3. Khiếu nại vô lý hoặc do lỗi chủ quan của khách tự làm vỡ tài sản không thuộc bảo hành, chủ trọ chọn trạng thái 'Từ chối' (REJECTED) và ghi rõ lý do.
-  5. Để trống nội dung phản hồi, form báo lỗi: "Vui lòng nhập nội dung phản hồi (*)".
+  5. Để trống nội dung phản hồi, form báo lỗi: "Vui lòng nhập nội dung phản hồi ".
   6. Khiếu nại không tồn tại hoặc không thuộc chủ trọ, backend ném ErrorCode.COMPLAINT_NOT_FOUND.
 
 ============================================================
@@ -1074,7 +1074,7 @@ Tiền điều kiện: Người thuê đã liên kết với phòng trọ; thi�
 Hậu điều kiện: Yêu cầu báo hỏng đính kèm hình ảnh được gửi ngay tới chủ nhà trọ.
 Kịch bản chính:
   1. Người thuê vào mục 'Báo hỏng & Khiếu nại' -> bấm nút 'Tạo khiếu nại mới'.
-  2. Hệ thống hiển thị Form tạo khiếu nại gồm: Phân loại sự cố (Hỏng điện lạnh, Điện nước, Cửa khóa, An ninh), Tiêu đề (*), Mức độ khẩn cấp, Mô tả (*), Khu vực tải ảnh.
+  2. Hệ thống hiển thị Form tạo khiếu nại gồm: Phân loại sự cố (Hỏng điện lạnh, Điện nước, Cửa khóa, An ninh), Tiêu đề , Mức độ khẩn cấp, Mô tả , Khu vực tải ảnh.
   3. Người thuê chọn: 'Hỏng điện lạnh', nhập Tiêu đề: 'Điều hòa chảy nước và không mát', Mức độ: Khẩn cấp, Mô tả: 'Điều hòa bật 16 độ chỉ có gió, nước chảy xuống sàn', đính kèm 2 ảnh chụp hiện trạng.
   4. Người thuê bấm nút 'Gửi khiếu nại'.
   5. Hệ thống cấp mã KN101, lưu trạng thái 'Mới gửi' và bắn thông báo tức thời tới chủ trọ.
@@ -1131,7 +1131,7 @@ Tiền điều kiện: Quản trị viên đăng nhập với quyền Admin.
 Hậu điều kiện: Tài khoản người dùng mới được khởi tạo và lưu vào hệ thống.
 Kịch bản chính:
   1. Tại trang Quản lý người dùng, quản trị viên bấm nút 'Thêm tài khoản mới'.
-  2. Hệ thống hiển thị Form tạo tài khoản gồm: Tên đăng nhập (*), Mật khẩu khởi tạo (*), Họ và tên (*), Email (*), Số điện thoại (*), Phân quyền vai trò (Dropdown: ROLE_LANDLORD, ROLE_TENANT, ROLE_ADMIN), Trạng thái kích hoạt.
+  2. Hệ thống hiển thị Form tạo tài khoản gồm: Tên đăng nhập , Mật khẩu khởi tạo , Họ và tên , Email , Số điện thoại , Phân quyền vai trò (Dropdown: ROLE_LANDLORD, ROLE_TENANT, ROLE_ADMIN), Trạng thái kích hoạt.
   3. Quản trị viên nhập thông tin tài khoản hỗ trợ kỹ thuật viên và gán quyền ROLE_ADMIN.
   4. Quản trị viên bấm nút 'Lưu tài khoản'.
   5. Hệ thống mã hóa mật khẩu theo chuẩn BCrypt, lưu tài khoản vào cơ sở dữ liệu và hiển thị thông báo thành công.
@@ -1205,7 +1205,7 @@ Tiền điều kiện: Quản trị viên đăng nhập với quyền Admin.
 Hậu điều kiện: Bản ghi Master Data mới được lưu trữ và tự động đồng bộ vào các form khảo sát của người dùng.
 Kịch bản chính:
   1. Tại tab Bộ tiêu chí lối sống, quản trị viên bấm nút 'Thêm tiêu chí mới'.
-  2. Hệ thống hiển thị Form thêm tiêu chí gồm: Mã tiêu chí (*), Tên tiêu chí (*), Nhóm phân loại (*), Các đáp án lựa chọn, Trọng số (%), Trạng thái kích hoạt.
+  2. Hệ thống hiển thị Form thêm tiêu chí gồm: Mã tiêu chí , Tên tiêu chí , Nhóm phân loại , Các đáp án lựa chọn, Trọng số (%), Trạng thái kích hoạt.
   3. Quản trị viên nhập: Mã TC06, Tên: 'Mức độ giao tiếp / Hướng nội - Hướng ngoại', Nhóm: Thói quen cá nhân, Trọng số: 10%, Đáp án: 'Thích yên tĩnh đọc sách' và 'Thích trò chuyện bạn bè'.
   4. Quản trị viên bấm 'Lưu tiêu chí'.
   5. Hệ thống lưu bản ghi mới và cập nhật tức thì vào bộ câu hỏi khảo sát ở ghép.

@@ -28,16 +28,17 @@ export const RateComplaintModal: React.FC<RateComplaintModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
+      width={560}
       title={
         <span className="text-base font-bold text-stay-text">
-          Đánh Giá Chất Lượng Sửa Chữa (#{complaint.id})
+          Đánh giá xử lý sự cố #{complaint.id}
         </span>
       }
     >
-      <div className="space-y-4 pt-3 text-xs">
+      <div className="space-y-4 pt-2 text-xs">
         <div>
-          <label className="text-slate-500 block mb-2">
-            Mức độ hài lòng với thợ sửa chữa:
+          <label className="text-stay-text-secondary block mb-2">
+            Mức độ hài lòng:
           </label>
           <div className="flex items-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -61,7 +62,7 @@ export const RateComplaintModal: React.FC<RateComplaintModalProps> = ({
         </div>
 
         <div>
-          <label className="text-slate-500 block mb-1">
+          <label className="text-stay-text-secondary block mb-1">
             Nhận xét phản hồi (tùy chọn):
           </label>
           <Input.TextArea

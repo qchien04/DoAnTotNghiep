@@ -213,10 +213,10 @@ export const TenantBillsPage: React.FC = () => {
                 key={tab.key}
                 type="button"
                 onClick={() => setStatusFilter(tab.key as any)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   statusFilter === tab.key
                     ? 'bg-stay-primary text-white font-bold'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
                 }`}
               >
                 {tab.label}
@@ -226,21 +226,21 @@ export const TenantBillsPage: React.FC = () => {
 
             {/* Search bar */}
             <div className="relative w-full md:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-stay-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Tìm theo tháng, phòng..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-stay-text focus:outline-none focus:border-stay-primary focus:bg-white transition-colors"
+                className="w-full pl-8 pr-3 py-1.5 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:border-stay-primary transition-colors"
               />
             </div>
           </div>
 
           {/* Bill List */}
           {filteredBills.length === 0 ? (
-            <div className="bg-white border border-stay-border rounded-2xl p-10 text-center space-y-3 shadow-2xs">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+            <div className="bg-stay-card-bg border border-stay-border rounded-2xl p-10 text-center space-y-3 shadow-2xs">
+              <div className="w-12 h-12 rounded-full bg-stay-bg-app border border-stay-border flex items-center justify-center mx-auto text-stay-text-muted">
                 <Receipt className="w-6 h-6" />
               </div>
               <p className="text-sm font-semibold text-stay-text">Không tìm thấy hóa đơn nào</p>

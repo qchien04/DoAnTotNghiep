@@ -21,12 +21,12 @@ export const TenantFilter: React.FC<TenantFilterProps> = ({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Input
-        placeholder="Tìm theo tên khách, SĐT, số CCCD hoặc số phòng..."
+        placeholder="Tìm tên khách, SĐT, phòng..."
         prefix={<Search className="w-4 h-4 text-stay-text-muted" />}
         value={keyword}
         onChange={(e) => onKeywordChange(e.target.value)}
         allowClear
-        className="w-full sm:w-80 h-10"
+        className="w-full sm:w-72 h-10"
       />
 
       <Select

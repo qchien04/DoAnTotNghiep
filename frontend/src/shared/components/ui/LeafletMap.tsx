@@ -81,10 +81,10 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
       // - Giao diện hiện đại, đường nét sắc nét, màu sắc hài hòa
       // - Tuyệt đối không có đường lưỡi bò phi pháp
       // - Tốc độ tải cực nhanh qua CDN toàn cầu của Carto
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> &bull; Chủ quyền Việt Nam',
+        subdomains: ['a', 'b', 'c'],
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Chủ quyền Việt Nam',
       }).addTo(map);
 
       // Layer khẳng định chủ quyền Quần đảo Hoàng Sa & Quần đảo Trường Sa (Việt Nam)

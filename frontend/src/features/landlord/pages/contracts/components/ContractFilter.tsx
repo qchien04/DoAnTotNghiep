@@ -19,12 +19,12 @@ export const ContractFilter: React.FC<ContractFilterProps> = ({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Input
-        placeholder="Tìm theo tên khách hoặc tên phòng..."
+        placeholder="Tìm tên khách, số phòng..."
         prefix={<Search className="w-4 h-4 text-stay-text-muted" />}
         value={keyword}
         onChange={(e) => onKeywordChange(e.target.value)}
         allowClear
-        className="w-full sm:w-80 h-10"
+        className="w-full sm:w-64 h-10"
       />
 
       <Select

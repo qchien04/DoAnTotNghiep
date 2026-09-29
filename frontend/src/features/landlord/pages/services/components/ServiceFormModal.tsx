@@ -133,7 +133,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
       confirmLoading={confirmLoading}
       okText={editingService ? 'Cập nhật' : 'Lưu dịch vụ'}
       cancelText="Hủy"
-      width={720}
+      width={820}
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         {/* SECTION 1: ĐỊNH DANH */}
@@ -144,18 +144,18 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Tên dịch vụ (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Tên dịch vụ </span>}
                 name="name"
-                rules={[{ required: true, message: 'Vui lòng nhập tên dịch vụ (*)' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập tên dịch vụ ' }]}
                 className="mb-0"
               >
                 <Input placeholder="Ví dụ: Điện sinh hoạt, Nước sạch, Wifi..." className="h-10" />
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Phân loại dịch vụ (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Phân loại dịch vụ </span>}
                 name="category"
-                rules={[{ required: true, message: 'Chọn phân loại (*)' }]}
+                rules={[{ required: true, message: 'Chọn phân loại ' }]}
                 className="mb-0"
               >
                 <Select
@@ -184,18 +184,18 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Đơn vị tính (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Đơn vị tính </span>}
                 name="unit"
-                rules={[{ required: true, message: 'Nhập đơn vị tính (*)' }]}
+                rules={[{ required: true, message: 'Nhập đơn vị tính ' }]}
                 className="mb-0"
               >
                 <Input placeholder="kWh (Số), m³, Phòng/Tháng..." className="h-10" />
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Đơn giá (VNĐ) (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Đơn giá (VNĐ) </span>}
                 name="unitPrice"
-                rules={[{ required: true, message: 'Nhập đơn giá (*)' }]}
+                rules={[{ required: true, message: 'Nhập đơn giá ' }]}
                 className="mb-0"
               >
                 <InputNumber
@@ -208,18 +208,18 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Hình thức thu phí (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Hình thức thu phí </span>}
                 name="billingMethod"
-                rules={[{ required: true, message: 'Chọn hình thức thu (*)' }]}
+                rules={[{ required: true, message: 'Chọn hình thức thu ' }]}
                 className="mb-0"
               >
                 <Select
                   className="w-full h-10"
                   options={[
-                    { label: 'Theo công tơ (METER_INDEX)', value: 'METER_INDEX' },
-                    { label: 'Cố định theo phòng (FIXED_PER_ROOM)', value: 'FIXED_PER_ROOM' },
-                    { label: 'Theo số người ở (FIXED_PER_PERSON)', value: 'FIXED_PER_PERSON' },
-                    { label: 'Theo số lượng phát sinh (FIXED_PER_UNIT)', value: 'FIXED_PER_UNIT' },
+                    { label: 'Theo công tơ', value: 'METER_INDEX' },
+                    { label: 'Cố định theo phòng', value: 'FIXED_PER_ROOM' },
+                    { label: 'Theo số người ở', value: 'FIXED_PER_PERSON' },
+                    { label: 'Theo số lượng phát sinh', value: 'FIXED_PER_UNIT' },
                   ]}
                 />
               </Form.Item>
@@ -230,17 +230,10 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
         {/* SECTION 3: PHẠM VI & TRẠNG THÁI */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-stay-text">
-            3. Phạm vi áp dụng & trạng thái hoạt động
+            3. Trạng thái hoạt động
           </h3>
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Phạm vi áp dụng</span>}
-                name="scope"
-                className="mb-0"
-              >
-                <Input placeholder="ALL (Tất cả) hoặc tên tòa nhà..." className="h-10" />
-              </Form.Item>
 
               <Form.Item
                 label={<span className="text-stay-text font-medium text-xs">Trạng thái áp dụng</span>}

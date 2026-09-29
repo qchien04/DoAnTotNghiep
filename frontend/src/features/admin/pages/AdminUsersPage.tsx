@@ -308,6 +308,7 @@ export const AdminUsersPage: React.FC = () => {
         confirmLoading={isCreating}
         okText="Tạo tài khoản"
         cancelText="Hủy"
+        width={680}
         title={
           <div className="flex items-center gap-2 text-stay-text font-bold">
             <Plus className="w-5 h-5 text-stay-primary" />
@@ -362,6 +363,7 @@ export const AdminUsersPage: React.FC = () => {
         confirmLoading={isUpdating}
         okText="Lưu thay đổi"
         cancelText="Hủy"
+        width={680}
         title={
           <div className="flex items-center gap-2 text-stay-text font-bold">
             <Edit2 className="w-5 h-5 text-stay-primary" />
@@ -406,6 +408,7 @@ export const AdminUsersPage: React.FC = () => {
         confirmLoading={isTogglingLock}
         okText={lockingUser?.status === 'ACTIVE' ? 'Xác nhận khóa' : 'Mở khóa ngay'}
         cancelText="Hủy"
+        width={600}
         title={
           <div className="flex items-center gap-2 text-stay-text font-bold">
             {lockingUser?.status === 'ACTIVE' ? (

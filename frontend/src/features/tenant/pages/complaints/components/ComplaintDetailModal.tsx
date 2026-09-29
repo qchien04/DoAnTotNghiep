@@ -20,7 +20,7 @@ export const ComplaintDetailModal: React.FC<ComplaintDetailModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={640}
+      width={740}
       title={
         <span className="text-base font-bold text-stay-text">
           Chi Tiết Khiếu Nại / Báo Hỏng (#{complaint.id})

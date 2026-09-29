@@ -37,7 +37,7 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
             <div>
               <label className="text-xs font-semibold text-stay-text block mb-1.5">
-                Địa chỉ cơ quan / Trường học làm mốc (*)
+                Địa chỉ cơ quan / Trường học làm mốc
               </label>
               <Input
                 placeholder="Ví dụ: Trường Đại học Bách Khoa Hà Nội"

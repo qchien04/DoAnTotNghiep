@@ -641,7 +641,7 @@ export const HomePage: React.FC = () => {
           open={bookingModalOpen}
           onCancel={() => setBookingModalOpen(false)}
           footer={null}
-          width={720}
+          width={840}
         >
           <div className="space-y-6 pt-2">
             {/* Gallery Image */}
@@ -673,19 +673,19 @@ export const HomePage: React.FC = () => {
             {/* Key Specs */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border text-center">
-                <span className="text-[10px] text-slate-400 block">Diện tích</span>
+                <span className="text-[10px] text-stay-text-muted block">Diện tích</span>
                 <span className="text-sm font-bold text-stay-text">{selectedRoom.area}</span>
               </div>
               <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border text-center">
-                <span className="text-[10px] text-slate-400 block">Tiền cọc</span>
+                <span className="text-[10px] text-stay-text-muted block">Tiền cọc</span>
                 <span className="text-sm font-bold text-stay-text">{selectedRoom.deposit}</span>
               </div>
               <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border text-center">
-                <span className="text-[10px] text-slate-400 block">Tiền điện</span>
+                <span className="text-[10px] text-stay-text-muted block">Tiền điện</span>
                 <span className="text-sm font-bold text-stay-text">{selectedRoom.electricity}</span>
               </div>
               <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border text-center">
-                <span className="text-[10px] text-slate-400 block">Tiền nước</span>
+                <span className="text-[10px] text-stay-text-muted block">Tiền nước</span>
                 <span className="text-sm font-bold text-stay-text">{selectedRoom.water}</span>
               </div>
             </div>

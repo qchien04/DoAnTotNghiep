@@ -3,9 +3,10 @@ import {
   Plus,
   Minus,
   Trash2,
+  HelpCircle,
 } from 'lucide-react';
 import { Modal, Form, Input, Select, Button, Tag } from '@/shared/components';
-import { InputNumber, Alert, message } from 'antd';
+import { InputNumber, message, Tooltip } from 'antd';
 import { CreateBillDto, Room, RentalContract, ContractServiceItem } from '@/shared/types/landlord';
 import { DynamicServiceItem, BillAdjustmentItem } from '../types';
 
@@ -63,8 +64,8 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
 
     const rent = Number(
       targetContract?.rentPrice ??
-        targetRoom?.listedPrice ??
-        3800000
+      targetRoom?.listedPrice ??
+      3800000
     );
     setRoomRentPrice(rent);
 
@@ -371,31 +372,31 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
       title="Lập hóa đơn thu tiền"
       open={open}
       onCancel={onCancel}
-      width={920}
+      width={960}
       footer={
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
           <div className="text-xs text-stay-text-secondary flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 inline-block animate-pulse" />
-            <span>Lưu nháp: Có thể chỉnh sửa lại sau, khách thuê chưa nhận thông báo.</span>
           </div>
           <div className="flex items-center gap-2">
             <Button onClick={onCancel} disabled={confirmLoading}>
               Đóng
             </Button>
-            <Button
-              className="border-amber-500 text-amber-600 hover:text-amber-500 hover:border-amber-400 font-medium"
-              loading={confirmLoading}
-              onClick={() => handleFinish(true)}
-            >
-              📝 Lưu bản nháp
-            </Button>
+            <Tooltip title="Lưu nháp để chỉnh sửa sau, khách thuê chưa nhận được thông báo cước">
+              <Button
+                className="border-amber-500 text-amber-600 hover:text-amber-500 hover:border-amber-400 font-medium"
+                loading={confirmLoading}
+                onClick={() => handleFinish(true)}
+              >
+                Lưu bản nháp
+              </Button>
+            </Tooltip>
             <Button
               type="primary"
               loading={confirmLoading}
               onClick={() => handleFinish(false)}
               className="bg-stay-primary hover:bg-stay-primary-hover font-medium"
             >
-              🚀 Lập & Ban hành thật
+              Lập hóa đơn
             </Button>
           </div>
         </div>
@@ -419,9 +420,9 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Chọn phòng trọ (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Chọn phòng trọ </span>}
                 name="roomId"
-                rules={[{ required: true, message: 'Vui lòng chọn phòng (*)' }]}
+                rules={[{ required: true, message: 'Vui lòng chọn phòng ' }]}
                 className="mb-0"
               >
                 <Select
@@ -438,18 +439,18 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Kỳ cước hóa đơn (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Kỳ cước hóa đơn </span>}
                 name="billingPeriod"
-                rules={[{ required: true, message: 'Nhập kỳ cước (MM/YYYY) (*)' }]}
+                rules={[{ required: true, message: 'Nhập kỳ cước (MM/YYYY) ' }]}
                 className="mb-0"
               >
                 <Input placeholder="10/2026..." className="h-9 text-xs" />
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Hạn nộp tiền (*)</span>}
+                label={<span className="text-stay-text font-medium text-xs">Hạn nộp tiền </span>}
                 name="dueDate"
-                rules={[{ required: true, message: 'Chọn hạn nộp (*)' }]}
+                rules={[{ required: true, message: 'Chọn hạn nộp ' }]}
                 className="mb-0"
               >
                 <Input type="date" className="h-9 text-xs" />
@@ -479,17 +480,19 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
 
         {/* SECTION 2: BẢNG DỊCH VỤ THEO HỢP ĐỒNG */}
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Các khoản mục dịch vụ theo hợp đồng ({dynamicServices.length})
-          </h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-stay-text">
+              2. Dịch vụ hợp đồng ({dynamicServices.length})
+            </h3>
+            <Tooltip title="Chỉ số điện/nước và phí dịch vụ cố định được tải từ hợp đồng thuê phòng">
+              <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
+            </Tooltip>
+          </div>
 
           {dynamicServices.length === 0 ? (
-            <Alert
-              message="Phòng này chưa cấu hình dịch vụ trong hợp đồng. Nếu có chi phí phát sinh, bạn có thể thêm ở mục Phụ thu bên dưới."
-              type="info"
-              showIcon
-              className="rounded-xl text-xs"
-            />
+            <div className="p-3.5 rounded-xl border border-dashed border-stay-border bg-stay-card-bg text-center text-xs text-stay-text-secondary">
+              Phòng chưa cấu hình dịch vụ trong hợp đồng.
+            </div>
           ) : (
             <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
               <table className="w-full text-left border-collapse text-xs">
@@ -514,8 +517,8 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
                           {svc.billingMethod === 'METER_INDEX'
                             ? 'Theo công tơ'
                             : svc.billingMethod === 'FIXED_PER_PERSON'
-                            ? 'Theo người'
-                            : 'Cố định'}
+                              ? 'Theo người'
+                              : 'Cố định'}
                         </p>
                       </td>
 
@@ -551,7 +554,6 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
                             value={svc.quantity}
                             onChange={(val) => handleServiceChange(svc.key, 'quantity', val)}
                             className="w-full h-8 text-xs font-bold text-center"
-                            addonAfter="người"
                           />
                         ) : (
                           <InputNumber
@@ -559,7 +561,6 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
                             value={svc.quantity}
                             onChange={(val) => handleServiceChange(svc.key, 'quantity', val)}
                             className="w-full h-8 text-xs font-bold text-center"
-                            addonAfter={svc.unit}
                           />
                         )}
                       </td>
@@ -597,9 +598,14 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         {/* SECTION 3: BẢNG PHỤ THU & GIẢM TRỪ */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-stay-text">
-              3. Phụ thu phát sinh & giảm trừ cước phí ({adjustments.length})
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-stay-text">
+                3. Phụ thu & giảm trừ ({adjustments.length})
+              </h3>
+              <Tooltip title="Thêm khoản phát sinh ngoài hợp đồng như tiền thẻ xe, làm chìa khóa hoặc chiết khấu">
+                <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
+              </Tooltip>
+            </div>
 
             {/* 2 nút thao tác chuẩn, trung tính */}
             <div className="flex items-center gap-2">
@@ -609,7 +615,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
                 onClick={() => handleAddAdjustment('SURCHARGE')}
                 className="text-xs font-medium rounded-lg"
               >
-                Thêm phụ thu (+)
+                Phụ thu (+)
               </Button>
               <Button
                 size="small"
@@ -617,14 +623,14 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
                 onClick={() => handleAddAdjustment('DISCOUNT')}
                 className="text-xs font-medium rounded-lg"
               >
-                Thêm giảm tiền (-)
+                Giảm trừ (-)
               </Button>
             </div>
           </div>
 
           {adjustments.length === 0 ? (
-            <div className="p-4 rounded-xl border border-dashed border-stay-border bg-stay-card-bg text-center text-xs text-stay-text-secondary">
-              Chưa có phụ thu hoặc giảm trừ nào trong kỳ cước này. Bấm <strong>Thêm phụ thu (+)</strong> nếu có chi phí phát sinh hoặc <strong>Thêm giảm tiền (-)</strong> nếu có khuyến mãi/bù trừ.
+            <div className="p-3.5 rounded-xl border border-dashed border-stay-border bg-stay-card-bg text-center text-xs text-stay-text-secondary">
+              Chưa có phụ thu hoặc giảm trừ nào.
             </div>
           ) : (
             <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
@@ -731,7 +737,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         {/* SECTION 4: BẢNG CHIẾT TÍNH CHI PHÍ */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-stay-text">
-            4. Bảng chiết tính chi phí kỳ này
+            4. Chiết tính chi phí
           </h3>
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-2.5 text-xs">
             <div className="space-y-1 text-stay-text divide-y divide-stay-border/60">

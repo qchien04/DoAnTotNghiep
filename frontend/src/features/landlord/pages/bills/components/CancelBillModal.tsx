@@ -28,7 +28,7 @@ export const CancelBillModal: React.FC<CancelBillModalProps> = ({
       okText="Xác nhận hủy hóa đơn"
       okButtonProps={{ danger: true }}
       cancelText="Bỏ qua"
-      width={520}
+      width={580}
     >
       <div className="py-2 space-y-4">
         <p className="text-xs text-stay-text-secondary leading-relaxed">

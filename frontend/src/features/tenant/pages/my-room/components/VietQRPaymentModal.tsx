@@ -31,14 +31,14 @@ export const VietQRPaymentModal: React.FC<VietQRPaymentModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={720}
+      width={800}
       title={
         <span className="text-base font-bold text-stay-text">
-          Chi Tiết Hóa Đơn & Thanh Toán VietQR {activeBill.billingPeriod ? `(Kỳ ${activeBill.billingPeriod})` : ''}
+          Hóa đơn & Thanh toán VietQR {activeBill.billingPeriod ? `• Kỳ ${activeBill.billingPeriod}` : ''}
         </span>
       }
     >
-      <div className="space-y-5 pt-3 text-xs">
+      <div className="space-y-4 pt-2 text-xs">
         {/* Chiết tính từng mục chi phí */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
@@ -103,36 +103,36 @@ export const VietQRPaymentModal: React.FC<VietQRPaymentModalProps> = ({
 
         {/* VietQR Section */}
         <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex flex-col sm:flex-row items-center gap-6">
-          <div className="shrink-0 p-2 bg-white rounded-xl border border-stay-border shadow-xs">
+          <div className="shrink-0 p-2 bg-stay-card-bg rounded-xl border border-stay-border shadow-xs">
             {vietQRData?.qrCodeUrl ? (
               <img
                 src={vietQRData.qrCodeUrl}
                 alt="VietQR Mã Thanh Toán"
-                className="w-40 h-40 object-contain"
+                className="w-40 h-40 object-contain rounded-lg"
               />
             ) : (
-              <div className="w-40 h-40 flex flex-col items-center justify-center bg-slate-50 text-slate-400 text-center p-2 rounded-lg border border-dashed border-stay-border">
+              <div className="w-40 h-40 flex flex-col items-center justify-center bg-stay-bg-app text-stay-text-muted text-center p-2 rounded-lg border border-dashed border-stay-border">
                 <span className="text-xs">Chưa có mã QR</span>
-                <span className="text-[10px] text-slate-400 mt-1">Chủ trọ chưa cấu hình STK</span>
+                <span className="text-[10px] text-stay-text-muted mt-1">Chủ trọ chưa cấu hình STK</span>
               </div>
             )}
           </div>
 
           <div className="space-y-2 flex-1 w-full text-xs">
             <span className="font-bold text-stay-text text-sm block">
-              Thông tin chuyển khoản ngân hàng:
+              Thông tin chuyển khoản:
             </span>
 
-            <div className="space-y-1 text-slate-600">
+            <div className="space-y-1 text-stay-text-secondary">
               <p>Ngân hàng: <strong>{vietQRData?.bankName || '---'}</strong></p>
               <p>Số tài khoản: <strong className="text-stay-primary font-mono text-sm">{vietQRData?.accountNumber || '---'}</strong></p>
               <p>Chủ tài khoản: <strong>{vietQRData?.accountHolder || '---'}</strong></p>
               <p>Số tiền: <strong className="text-stay-primary">{activeBill.totalAmount.toLocaleString()} đ</strong></p>
-              <p>Nội dung CK: <strong className="text-stay-text bg-white px-2 py-0.5 rounded border border-stay-border font-mono">{vietQRData?.transferContent || `HD${activeBill.id} thanh toan`}</strong></p>
+              <p>Nội dung CK: <strong className="text-stay-text bg-stay-card-bg px-2 py-0.5 rounded border border-stay-border font-mono">{vietQRData?.transferContent || `HD${activeBill.id} thanh toan`}</strong></p>
             </div>
 
-            <p className="text-[11px] text-slate-400">
-              * Quét mã QR bằng ứng dụng ngân hàng để tự động điền số tiền và nội dung chuyển khoản.
+            <p className="text-[11px] text-stay-text-muted">
+              * Quét mã QR bằng ứng dụng ngân hàng để tự động điền số tiền và nội dung.
             </p>
           </div>
         </div>
