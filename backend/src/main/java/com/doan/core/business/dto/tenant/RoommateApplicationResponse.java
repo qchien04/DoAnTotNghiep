@@ -29,6 +29,9 @@ public class RoommateApplicationResponse {
     private String guestHabit;
 
     private Integer compatibilityScore; // Điểm tương thích %
+    private String lifestyleVector;
+    private Boolean isCustomized;
+    private java.util.List<UserLifestyleAnswerDto> lifestyleAnswers;
     private String status; // PENDING, APPROVED, REJECTED
     private String rejectReason;
     private LocalDateTime createdAt;

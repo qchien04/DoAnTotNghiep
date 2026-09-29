@@ -21,6 +21,7 @@ interface AuthState {
   login: (payload: LoginPayload) => Promise<boolean>;
   register: (payload: RegisterPayload) => Promise<boolean>;
   fetchProfile: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<boolean>;
   logout: () => Promise<void> | void;
   clearError: () => void;
 }
@@ -103,6 +104,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       clearAuth();
       set({ user: null, token: null, isAuthenticated: false });
+    }
+  },
+
+  updateProfile: async (data: Partial<User>): Promise<boolean> => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await authService.updateProfile(data as any);
+      if (response.code === '00' && response.data) {
+        setStoredUser(response.data);
+        set({ user: response.data, isLoading: false, error: null });
+        return true;
+      } else {
+        set({ isLoading: false, error: response.message || 'Cập nhật thất bại' });
+        return false;
+      }
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.errorDesc ||
+        'Không thể cập nhật thông tin cá nhân';
+      set({ isLoading: false, error: message });
+      return false;
     }
   },
 

@@ -46,4 +46,6 @@ public class RoommatePostRequest {
     private String cookingFrequency;
     private String cleanlinessLevel;
     private String guestAllowed;
+
+    private java.util.List<SaveLifestyleAnswersRequest.AnswerItem> lifestyleAnswers;
 }

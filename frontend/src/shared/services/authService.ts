@@ -42,4 +42,16 @@ export const authService = {
     const res = await apiClient.get<ResponseData<PageResponse<User>>>('/api/v1/users', { params });
     return res.data;
   },
+
+  updateProfile: async (data: {
+    fullName?: string;
+    phone?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    bio?: string;
+    avatarUrl?: string;
+  }): Promise<ResponseData<User>> => {
+    const res = await apiClient.put<ResponseData<User>>('/api/v1/users/profile', data);
+    return res.data;
+  },
 };

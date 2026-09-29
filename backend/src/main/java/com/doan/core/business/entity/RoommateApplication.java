@@ -53,6 +53,13 @@ public class RoommateApplication extends BaseEntity {
     @Builder.Default
     private Integer compatibilityScore = 85;
 
+    @Column(name = "lifestyle_vector", length = 255)
+    private String lifestyleVector;
+
+    @Column(name = "is_customized")
+    @Builder.Default
+    private Boolean isCustomized = false;
+
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
     private String status = "PENDING"; // PENDING, APPROVED, REJECTED

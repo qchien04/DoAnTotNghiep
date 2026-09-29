@@ -1,0 +1,37 @@
+================================================================================
+HỆ THỐNG QUẢN LÝ NHÀ TRỌ HỖ TRỢ GHÉP NGƯỜI Ở CHUNG
+TÀI LIỆU XÁC ĐỊNH ACTOR VÀ MÔ TẢ USE CASE HỆ THỐNG (MỨC TỔNG QUAN)
+================================================================================
+
+Ta có thể đề xuất được các actor của hệ thống: Chủ trọ, Người thuê, Quản trị viên, Khách vãng lai .Trong đó Chủ trọ, Người thuê, Quản trị viên đều có các chức năng quản lý tài khoản giống Người dùng hệ thống (User) nên kế thừa từ User.
+Các chức năng tương ứng với từng actor:
+ User (Người dùng hệ thống): đăng nhập, đăng xuất, đổi mật khẩu, cập nhật thông tin cá nhân
+ Landlord (Chủ trọ): đăng nhập, đăng xuất, đổi mật khẩu, cập nhật thông tin cá nhân, cập nhật (thêm, sửa, xóa) các thông tin tòa nhà, cập nhật (thêm, sửa, xóa) các thông tin phòng trọ, cập nhật (thêm, sửa, xóa) các dịch vụ tiện ích, cập nhật (thêm, sửa, xóa, mời liên kết tài khoản) thông tin khách thuê, tạo và thanh lý hợp đồng thuê phòng, tính tiền phòng theo tháng (lập hóa đơn, điều chỉnh hóa đơn, xác nhận thanh toán), tiếp nhận và xử lý khiếu nại của khách thuê, xem báo cáo thống kê doanh thu và tỷ lệ lấp đầy phòng.
+ Tenant (Người thuê): đăng nhập, đăng xuất, đổi mật khẩu, cập nhật thông tin cá nhân, tìm kiếm phòng trọ và bài đăng ở ghép, đăng bài tìm người ở ghép (khi đã có phòng trọ hoặc chưa có phòng trọ theo bản đồ), cập nhật (sửa, đóng/xóa) bài đăng ở ghép, xin gia nhập nhóm ở ghép, duyệt thành viên nhóm và cập nhật lối sống chung, xác nhận liên kết phòng trọ với chủ trọ, xem hợp đồng và lịch sử hóa đơn tiền phòng, thanh toán hóa đơn bằng mã QR, gửi khiếu nại và theo dõi tiến độ sửa chữa.
+ Admin (Quản trị viên): đăng nhập, đăng xuất, đổi mật khẩu, cập nhật thông tin cá nhân, quản lý tài khoản người dùng (thêm, sửa, phân quyền, khóa/mở khóa), quản lý Master Data (thêm, sửa, xóa danh mục tiện ích và tiêu chí lối sống), duyệt khiếu nại và xử lý vi phạm toàn sàn, xem thống kê toàn hệ thống.
+ Guest (Khách vãng lai): tìm kiếm phòng trọ và bài đăng ở ghép, xem chi tiết bài đăng và bản đồ bán kính, đăng ký tài khoản thành viên.
+Mô tả các use case như sau:
+ Login (Đăng nhập): UC này cho phép người dùng (Chủ trọ, Người thuê hoặc Quản trị viên) sử dụng tài khoản đã có trong hệ thống để thực hiện truy cập vào hệ thống.
+ Logout (Đăng xuất): UC này cho phép người dùng thoát ra khỏi tài khoản đã đăng nhập hiện tại.
+ Change password (Đổi mật khẩu): UC này cho phép người dùng thay đổi mật khẩu của tài khoản mà người dùng đang sử dụng hiện tại.
+ Register (Đăng ký tài khoản): UC này cho phép khách vãng lai vào hệ thống đăng ký trở thành thành viên theo thông tin mà khách hàng cung cấp.
+ Search (Tìm kiếm): UC này cho phép người dùng tìm kiếm phòng trọ hoặc bài đăng tìm bạn ở ghép dựa trên từ khóa khu vực, khoảng giá, vị trí bản đồ và bộ lọc tiêu chí lối sống.
+ Manage building (Quản lý tòa nhà): UC này cho phép chủ trọ quản lý thông tin các tòa nhà/khu trọ trong hệ thống (thêm, sửa, xóa, xem danh sách).
+ Manage room (Quản lý phòng trọ): UC này cho phép chủ trọ quản lý thông tin các phòng trọ trong tòa nhà (thêm, sửa, xóa, theo dõi trạng thái còn trống hay đang thuê).
+ Manage utility service (Quản lý dịch vụ tiện ích): UC này cho phép chủ trọ quản lý bảng giá và định mức thu các loại dịch vụ tiện ích như điện, nước, internet, rác (thêm, sửa, xóa).
+ Manage tenant (Quản lý khách thuê): UC này cho phép chủ trọ quản lý thông tin khách thuê phòng (thêm, sửa, xóa) và gửi lời mời liên kết tài khoản hệ thống tới khách thuê.
+ Manage contract (Quản lý hợp đồng): UC này cho phép chủ trọ tạo lập hợp đồng thuê phòng mới, cập nhật điều khoản và thực hiện thanh lý hợp đồng (nghiệm thu cơ sở vật chất, chốt điện nước, hoàn trả cọc) khi khách trả phòng.
+ Monthly billing (Tính tiền phòng theo tháng): UC này cho phép chủ trọ chốt số điện nước, lập hóa đơn tháng, điều chỉnh sai sót và xác nhận thanh toán (gạch nợ) khi khách nộp tiền.
+ Handle complaint (Xử lý khiếu nại): UC này cho phép chủ trọ tiếp nhận, điều động thợ sửa chữa và cập nhật tiến độ giải quyết các khiếu nại/sự cố từ khách thuê gửi lên.
+ View Landlord Dashboard (Xem thống kê chủ trọ): UC này cho phép chủ trọ xem các loại báo cáo thống kê về doanh thu hàng tháng, tỷ lệ lấp đầy phòng và danh sách phòng nợ tiền trọ.
+ Manage roommate post (Quản lý bài đăng ở ghép): UC này cho phép người thuê tạo bài đăng tìm bạn ở ghép (khi đã có phòng trọ thực tế hoặc phòng ảo; hoặc khi chưa có phòng theo tọa độ bản đồ và bán kính tìm kiếm), chỉnh sửa và đóng bài đăng khi đã đủ người.
+ Roommate matching (Ghép nhóm ở ghép): UC này cho phép người thuê xin gia nhập nhóm (nộp khảo sát lối sống), chủ bài đăng xem xét đối chiếu độ tương thích lối sống, duyệt thành viên vào nhóm (hệ thống tự cập nhật lối sống chung) và chốt nhóm hoàn thành.
+ Link room (Liên kết phòng trọ): UC này cho phép người thuê tiếp nhận và xác nhận lời mời liên kết phòng trọ từ chủ nhà để bắt đầu nhận hóa đơn và thông báo trực tiếp qua ứng dụng.
+ View rental history & bills (Xem lịch sử thuê phòng & hóa đơn): UC này cho phép người thuê xem lại thông tin hợp đồng đang ở, theo dõi chi tiết hóa đơn điện nước từng tháng và thanh toán nhanh bằng quét mã QR.
+ Report incident (Báo hỏng & Khiếu nại sự cố): UC này cho phép người thuê gửi yêu cầu sửa chữa thiết bị (kèm hình ảnh hiện trạng) tới chủ nhà và theo dõi tiến độ khắc phục.
+ Manage user (Quản lý người dùng): UC này cho phép quản trị viên quản lý danh sách tài khoản người dùng toàn sàn (thêm mới, phân quyền vai trò, khóa hoặc mở khóa tài khoản vi phạm).
+ Manage master data (Quản lý Master Data): UC này cho phép quản trị viên quản lý các dữ liệu dùng chung của hệ thống (danh mục tiện ích phòng, bộ tiêu chí khảo sát lối sống ở ghép và địa bàn hành chính).
+ Approve dispute (Duyệt khiếu nại & Kiểm duyệt vi phạm): UC này cho phép quản trị viên kiểm duyệt các tin báo lừa đảo tiền cọc, giải quyết tranh chấp giữa chủ trọ và người thuê, thực hiện gỡ bài đăng và khóa tài khoản vi phạm.
+ View Admin Dashboard (Xem thống kê toàn hệ thống): UC này cho phép quản trị viên xem các báo cáo thống kê tăng trưởng tài khoản, số lượng phòng trọ, bài đăng ghép phòng và tỷ lệ kết nối ở ghép thành công.
+
+================================================================================

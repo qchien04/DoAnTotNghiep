@@ -98,6 +98,9 @@ public class RoommatePost extends BaseEntity {
     @Builder.Default
     private String guestAllowed = "WEEKENDS_ONLY";
 
+    @Column(name = "lifestyle_vector", length = 255)
+    private String lifestyleVector;
+
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
     private String status = "OPEN"; // OPEN, COMPLETED, CLOSED

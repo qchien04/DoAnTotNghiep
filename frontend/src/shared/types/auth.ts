@@ -11,6 +11,7 @@ export interface User {
   dateOfBirth?: string;
   gender?: string;
   bio?: string;
+  lifestyleVector?: string;
   role: Role;
   status?: string;
   enabled: boolean;

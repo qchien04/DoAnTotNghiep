@@ -126,21 +126,67 @@ export interface RoommateApplication {
   introMessage: string;
   lifestyle: LifestyleSurvey;
   compatibilityScore: number; // 94%
-  compatibilitySummary?: {
-    criterion: string;
-    applicantValue: string;
-    hostValue: string;
-    matched: boolean;
-  }[];
+  lifestyleVector?: string;
+  isCustomized?: boolean;
+  lifestyleAnswers?: UserLifestyleAnswerDto[];
   status: ApplicationStatus;
   rejectReason?: string;
   createdAt: string;
 }
 
+export interface LifestyleOptionResponse {
+  id: number;
+  questionId: number;
+  label: string;
+  value: number;
+  sortOrder: number;
+}
+
+export interface LifestyleQuestionResponse {
+  id: number;
+  code: string;
+  label: string;
+  category?: string;
+  qType: string;
+  isHard: boolean;
+  weight: number;
+  sortOrder: number;
+  options: LifestyleOptionResponse[];
+}
+
+export interface UserLifestyleAnswerDto {
+  questionId: number;
+  questionCode?: string;
+  questionLabel?: string;
+  optionId: number;
+  optionLabel?: string;
+  optionValue?: number;
+  fromProfile?: boolean;
+}
+
+export interface UserLifestyleProfileResponse {
+  userId: number;
+  fullName: string;
+  lifestyleVector?: string;
+  answers: UserLifestyleAnswerDto[];
+}
+
+export interface SaveLifestyleAnswersRequest {
+  answers: { questionId: number; optionId: number }[];
+}
+
 export interface ApplyRoommateDto {
   postId: string;
   introMessage: string;
-  lifestyle: LifestyleSurvey;
+  gender?: string;
+  sleepTime?: string;
+  isSmoking?: boolean;
+  isPet?: boolean;
+  cookingHabit?: string;
+  guestHabit?: string;
+  lifestyleAnswers?: { questionId: number; optionId: number }[];
+  isCustomized?: boolean;
+  lifestyle?: LifestyleSurvey;
 }
 
 // 3. Phòng của tôi & Lời mời liên kết (UC 41 - 42)

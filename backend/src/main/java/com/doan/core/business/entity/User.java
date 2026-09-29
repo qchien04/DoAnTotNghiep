@@ -46,6 +46,9 @@ public class User extends BaseEntity {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "lifestyle_vector", length = 255)
+    private String lifestyleVector;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 30)
     @Builder.Default

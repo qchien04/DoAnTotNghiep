@@ -55,6 +55,9 @@ public class UserDto {
     @Schema(description = "Trạng thái kích hoạt", example = "true")
     private Boolean enabled;
 
+    @Schema(description = "Vector lối sống của người dùng", example = "0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500")
+    private String lifestyleVector;
+
     @Schema(description = "Thời điểm tạo tài khoản")
     private LocalDateTime createdAt;
 
@@ -70,6 +73,7 @@ public class UserDto {
                 .dateOfBirth(user.getDateOfBirth())
                 .gender(user.getGender())
                 .bio(user.getBio())
+                .lifestyleVector(user.getLifestyleVector())
                 .role(user.getRole())
                 .status(user.getStatus())
                 .enabled(user.getEnabled())

@@ -10,8 +10,13 @@
 -- Gỡ bỏ liên kết vòng lặp giữa contracts và tenants trước khi xóa
 UPDATE contracts SET representative_tenant_id = NULL WHERE representative_tenant_id IS NOT NULL;
 
+DELETE FROM roommate_application_lifestyle_answers;
 DELETE FROM roommate_applications;
+DELETE FROM roommate_post_lifestyle_answers;
 DELETE FROM roommate_posts;
+DELETE FROM user_lifestyle_answers;
+DELETE FROM lifestyle_options;
+DELETE FROM lifestyle_questions;
 DELETE FROM complaints;
 DELETE FROM invoice_items;
 DELETE FROM invoices;
@@ -32,13 +37,14 @@ DELETE FROM users;
 -- 1. TÀI KHOẢN NGƯỜI DÙNG (USERS)
 -- Hash BCrypt chuẩn cho mật khẩu '123456': $2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve
 -- =============================================================================
-INSERT INTO users (id, username, password_hash, full_name, email, phone, role, status, avatar_url, enabled, created_at, updated_at)
+INSERT INTO users (id, username, password_hash, full_name, email, phone, role, status, avatar_url, lifestyle_vector, enabled, created_at, updated_at)
 VALUES
-(1, 'admin', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Quản Trị Viên Hệ Thống', 'admin@stayhub.vn', '0900000001', 'ROLE_ADMIN', 'ACTIVE', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'landlord', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Nguyễn Văn Thành', 'landlord@stayhub.vn', '0912345678', 'ROLE_LANDLORD', 'ACTIVE', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 'tenant', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Trần Quang Chiến', 'tenant@stayhub.vn', '0987654321', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, 'tenant2', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Lê Thị Mai', 'tenant2@stayhub.vn', '0934567890', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(5, 'tenant3', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Hoàng Đức Anh', 'ducanh@stayhub.vn', '0912888999', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'admin', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Quản Trị Viên Hệ Thống', 'admin@stayhub.vn', '0900000001', 'ROLE_ADMIN', 'ACTIVE', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'landlord', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Nguyễn Văn Thành', 'landlord@stayhub.vn', '0912345678', 'ROLE_LANDLORD', 'ACTIVE', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'tenant', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Trần Quang Chiến', 'tenant@stayhub.vn', '0987654321', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150', '0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'tenant2', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Lê Thị Mai', 'tenant2@stayhub.vn', '0934567890', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '1.000,0.000,0.000,0.000,0.500,1.000,0.000,0.500', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 'tenant3', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Hoàng Đức Anh', 'ducanh@stayhub.vn', '0912888999', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '0.000,0.500,0.000,0.000,1.000,0.500,0.500,0.500', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
 
 -- =============================================================================
 -- 2. TÒA NHÀ / KHU TRỌ (BUILDINGS)
@@ -172,23 +178,115 @@ VALUES
 (2, 2, 1, 'Bóng đèn led hành lang tầng 1 bị chập chờn', 'Đèn chớp tắt liên tục vào ban đêm gây khó quan sát khi đi lại.', 'ELECTRICITY', 'LOW', 'RESOLVED', 'Đã thay bóng Philips 18W mới lúc 15h ngày 25/09.', '2026-09-25 15:00:00+07', 5, 'Thợ thay bóng rất nhanh và nhiệt tình, đèn sáng bình thường.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =============================================================================
--- 13. TIN ĐĂNG TÌM BẠN Ở GHÉP (ROOMMATE_POSTS - UC 11 - UC 13)
+-- 13. DANH MỤC CÂU HỎI & LỰA CHỌN LỐI SỐNG (LIFESTYLE_QUESTIONS & OPTIONS)
 -- =============================================================================
-INSERT INTO roommate_posts (id, author_id, room_id, title, description, post_type, area_name, district, city, share_price, total_room_price, needed_roommates, current_roommates, latitude, longitude, radius_km, gender_preference, sleep_time, is_no_smoking, is_pet_friendly, cooking_frequency, cleanliness_level, guest_allowed, status, created_at, updated_at)
+INSERT INTO lifestyle_questions (id, code, label, category, q_type, is_hard, weight, sort_order, is_active)
 VALUES
-(1, 3, 2, 'Tìm 1 bạn nam ở ghép phòng 32m2 khép kín Triều Khúc, full đồ', 'Phòng rộng rãi sạch sẽ, có gác xép, điều hòa, máy giặt, tủ lạnh riêng. Tiêu chuẩn ở gọn gàng văn minh, giữ yên tĩnh sau 23h.', 'HAS_ROOM', 'Số 15 ngõ 68 Triều Khúc, Thanh Xuân Nam', 'Thanh Xuân', 'Hà Nội', 1900000.00, 3800000.00, 1, 1, 20.98525000, 105.79820000, 3.0, 'MALE', 'BEFORE_24H', TRUE, FALSE, 'DAILY', 'VERY_CLEAN', 'WEEKENDS_ONLY', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 4, NULL, 'Tìm bạn nữ ở ghép CCMN Cầu Giấy gần ĐH Quốc Gia, ban công thoáng mát', 'Chung cư mini mới xây, thang máy quẹt thẻ, bảo vệ 24/7. Tìm 1 bạn nữ ngoan ngoãn chia sẻ tiền phòng.', 'HAS_ROOM', 'Ngõ 175 Xuân Thủy, Dịch Vọng Hậu', 'Cầu Giấy', 'Hà Nội', 2200000.00, 4400000.00, 1, 1, 21.03710000, 105.78320000, 2.5, 'FEMALE', 'BEFORE_23H', TRUE, FALSE, 'SOMETIMES', 'VERY_CLEAN', 'NO', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 3, NULL, 'Nhóm 2 bạn nam tìm thêm 1 bạn cùng tìm thuê nhà nguyên căn Hai Bà Trưng', 'Đang tìm nhà nguyên căn 3 phòng ngủ quanh khu vực ĐH Bách Khoa - Xây Dựng để chia tiền cho rẻ.', 'SEARCHING_ROOM', 'Khu vực Đại Cồ Việt - Tạ Quang Bửu', 'Hai Bà Trưng', 'Hà Nội', 1600000.00, 4800000.00, 2, 2, 21.00680000, 105.84520000, 4.0, 'MALE', 'BEFORE_24H', TRUE, TRUE, 'DAILY', 'VERY_CLEAN', 'FLEXIBLE', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'GENDER', 'Giới tính mong muốn / Bản thân', 'PERSONAL', 'SINGLE', TRUE, 1.00, 1, TRUE),
+(2, 'SLEEP_TIME', 'Giờ giấc đi ngủ ban đêm', 'HABIT', 'SINGLE', FALSE, 1.20, 2, TRUE),
+(3, 'SMOKING', 'Thói quen hút thuốc lá', 'HABIT', 'SINGLE', TRUE, 1.50, 3, TRUE),
+(4, 'PET', 'Thú cưng (Chó / Mèo)', 'HABIT', 'SINGLE', FALSE, 1.00, 4, TRUE),
+(5, 'COOKING', 'Tần suất nấu ăn tại phòng', 'LIVING', 'SINGLE', FALSE, 0.80, 5, TRUE),
+(6, 'CLEANLINESS', 'Mức độ giữ gìn sạch sẽ, ngăn nắp', 'LIVING', 'SINGLE', FALSE, 1.00, 6, TRUE),
+(7, 'GUEST', 'Quy định tiếp khách / Bạn bè về phòng', 'LIVING', 'SINGLE', FALSE, 1.00, 7, TRUE),
+(8, 'PERSONALITY', 'Tính cách & Không gian sống', 'PERSONAL', 'SINGLE', FALSE, 0.80, 8, TRUE);
+
+INSERT INTO lifestyle_options (id, question_id, label, value, sort_order, is_active)
+VALUES
+-- Question 1: GENDER
+(1, 1, 'Nam', 0.000, 1, TRUE),
+(2, 1, 'Nữ', 1.000, 2, TRUE),
+(3, 1, 'Không quan trọng / Linh hoạt', 0.500, 3, TRUE),
+-- Question 2: SLEEP_TIME
+(4, 2, 'Ngủ sớm trước 23h', 0.000, 1, TRUE),
+(5, 2, 'Ngủ khoảng 23h - 24h', 0.500, 2, TRUE),
+(6, 2, 'Thức khuya sau 24h', 1.000, 3, TRUE),
+-- Question 3: SMOKING
+(7, 3, 'Hoàn toàn không hút thuốc', 0.000, 1, TRUE),
+(8, 3, 'Thỉnh thoảng / Chỉ ra ngoài hút', 0.500, 2, TRUE),
+(9, 3, 'Thường xuyên hút thuốc', 1.000, 3, TRUE),
+-- Question 4: PET
+(10, 4, 'Không nuôi thú cưng', 0.000, 1, TRUE),
+(11, 4, 'Yêu thích / Thỉnh thoảng chăm sóc', 0.500, 2, TRUE),
+(12, 4, 'Đang nuôi chó / mèo trong phòng', 1.000, 3, TRUE),
+-- Question 5: COOKING
+(13, 5, 'Hiếm khi nấu ăn / Ăn ngoài', 0.000, 1, TRUE),
+(14, 5, 'Thỉnh thoảng nấu ăn', 0.500, 2, TRUE),
+(15, 5, 'Thường xuyên tự nấu bữa tối', 1.000, 3, TRUE),
+-- Question 6: CLEANLINESS
+(16, 6, 'Linh hoạt, thoải mái', 0.000, 1, TRUE),
+(17, 6, 'Gọn gàng, vệ sinh định kỳ', 0.500, 2, TRUE),
+(18, 6, 'Rất sạch sẽ, ngăn nắp hàng ngày', 1.000, 3, TRUE),
+-- Question 7: GUEST
+(19, 7, 'Không dẫn bạn bè về phòng', 0.000, 1, TRUE),
+(20, 7, 'Báo trước / Chỉ tiếp cuối tuần', 0.500, 2, TRUE),
+(21, 7, 'Thoải mái tiếp bạn bè', 1.000, 3, TRUE),
+-- Question 8: PERSONALITY
+(22, 8, 'Hướng nội, thích yên tĩnh tuyệt đối', 0.000, 1, TRUE),
+(23, 8, 'Cân bằng, vui vẻ hòa đồng', 0.500, 2, TRUE),
+(24, 8, 'Hướng ngoại, thích giao lưu trò chuyện', 1.000, 3, TRUE);
 
 -- =============================================================================
--- 14. ĐƠN ỨNG TUYỂN XIN GIA NHẬP NHÓM Ở GHÉP (ROOMMATE_APPLICATIONS - UC 14, UC 15)
+-- 14. CÂU TRẢ LỜI LỐI SỐNG GỐC CỦA NGƯỜI DÙNG (USER_LIFESTYLE_ANSWERS)
+-- User 3: Nam, ngủ 23h-24h, không thuốc, không pet, thường xuyên nấu, rất sạch, báo trước khách, cân bằng
+-- Vector: 0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500
 -- =============================================================================
-INSERT INTO roommate_applications (id, post_id, applicant_id, intro_message, gender, sleep_time, is_smoking, is_pet, cooking_habit, guest_habit, compatibility_score, status, reject_reason, created_at, updated_at)
+INSERT INTO user_lifestyle_answers (user_id, question_id, option_id, answered_at)
 VALUES
-(1, 1, 4, 'Chào bạn, mình là Mai đang học năm 3, tính tình hòa đồng, sạch sẽ, không hút thuốc, muốn xin gia nhập ở ghép cùng nhóm!', 'Nữ', 'Khoảng 23h30 - 6h30', FALSE, FALSE, 'Nấu ăn ngày 1 lần', 'Chỉ dẫn bạn gái về vào cuối tuần', 94, 'PENDING', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 1, 1, CURRENT_TIMESTAMP),
+(3, 2, 5, CURRENT_TIMESTAMP),
+(3, 3, 7, CURRENT_TIMESTAMP),
+(3, 4, 10, CURRENT_TIMESTAMP),
+(3, 5, 15, CURRENT_TIMESTAMP),
+(3, 6, 18, CURRENT_TIMESTAMP),
+(3, 7, 20, CURRENT_TIMESTAMP),
+(3, 8, 23, CURRENT_TIMESTAMP),
+-- User 4 (Lê Thị Mai): Nữ, ngủ trước 23h, không thuốc, không pet, thỉnh thoảng nấu, rất sạch, không khách, cân bằng
+-- Vector: 1.000,0.000,0.000,0.000,0.500,1.000,0.000,0.500
+(4, 1, 2, CURRENT_TIMESTAMP),
+(4, 2, 4, CURRENT_TIMESTAMP),
+(4, 3, 7, CURRENT_TIMESTAMP),
+(4, 4, 10, CURRENT_TIMESTAMP),
+(4, 5, 14, CURRENT_TIMESTAMP),
+(4, 6, 18, CURRENT_TIMESTAMP),
+(4, 7, 19, CURRENT_TIMESTAMP),
+(4, 8, 23, CURRENT_TIMESTAMP);
 
 -- =============================================================================
--- 15. ĐỒNG BỘ AUTO-INCREMENT SEQUENCES CHO POSTGRESQL
+-- 15. TIN ĐĂNG TÌM BẠN Ở GHÉP (ROOMMATE_POSTS - UC 11 - UC 13)
+-- =============================================================================
+INSERT INTO roommate_posts (id, author_id, room_id, title, description, post_type, area_name, district, city, share_price, total_room_price, needed_roommates, current_roommates, latitude, longitude, radius_km, gender_preference, sleep_time, is_no_smoking, is_pet_friendly, cooking_frequency, cleanliness_level, guest_allowed, lifestyle_vector, status, created_at, updated_at)
+VALUES
+(1, 3, 2, 'Tìm 1 bạn nam ở ghép phòng 32m2 khép kín Triều Khúc, full đồ', 'Phòng rộng rãi sạch sẽ, có gác xép, điều hòa, máy giặt, tủ lạnh riêng. Tiêu chuẩn ở gọn gàng văn minh, giữ yên tĩnh sau 23h.', 'HAS_ROOM', 'Số 15 ngõ 68 Triều Khúc, Thanh Xuân Nam', 'Thanh Xuân', 'Hà Nội', 1900000.00, 3800000.00, 1, 1, 20.98525000, 105.79820000, 3.0, 'MALE', 'BEFORE_24H', TRUE, FALSE, 'DAILY', 'VERY_CLEAN', 'WEEKENDS_ONLY', '0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 4, NULL, 'Tìm bạn nữ ở ghép CCMN Cầu Giấy gần ĐH Quốc Gia, ban công thoáng mát', 'Chung cư mini mới xây, thang máy quẹt thẻ, bảo vệ 24/7. Tìm 1 bạn nữ ngoan ngoãn chia sẻ tiền phòng.', 'HAS_ROOM', 'Ngõ 175 Xuân Thủy, Dịch Vọng Hậu', 'Cầu Giấy', 'Hà Nội', 2200000.00, 4400000.00, 1, 1, 21.03710000, 105.78320000, 2.5, 'FEMALE', 'BEFORE_23H', TRUE, FALSE, 'SOMETIMES', 'VERY_CLEAN', 'NO', '1.000,0.000,0.000,0.000,0.500,1.000,0.000,0.500', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 3, NULL, 'Nhóm 2 bạn nam tìm thêm 1 bạn cùng tìm thuê nhà nguyên căn Hai Bà Trưng', 'Đang tìm nhà nguyên căn 3 phòng ngủ quanh khu vực ĐH Bách Khoa - Xây Dựng để chia tiền cho rẻ.', 'SEARCHING_ROOM', 'Khu vực Đại Cồ Việt - Tạ Quang Bửu', 'Hai Bà Trưng', 'Hà Nội', 1600000.00, 4800000.00, 2, 2, 21.00680000, 105.84520000, 4.0, 'MALE', 'BEFORE_24H', TRUE, TRUE, 'DAILY', 'VERY_CLEAN', 'FLEXIBLE', '0.000,0.500,0.000,0.500,1.000,1.000,1.000,0.500', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Lối sống riêng của bài đăng (điền sẵn từ profile tác giả)
+INSERT INTO roommate_post_lifestyle_answers (post_id, question_id, option_id, from_profile)
+VALUES
+(1, 1, 1, TRUE), (1, 2, 5, TRUE), (1, 3, 7, TRUE), (1, 4, 10, TRUE), (1, 5, 15, TRUE), (1, 6, 18, TRUE), (1, 7, 20, TRUE), (1, 8, 23, TRUE),
+(2, 1, 2, TRUE), (2, 2, 4, TRUE), (2, 3, 7, TRUE), (2, 4, 10, TRUE), (2, 5, 14, TRUE), (2, 6, 18, TRUE), (2, 7, 19, TRUE), (2, 8, 23, TRUE);
+
+-- =============================================================================
+-- 16. ĐƠN ỨNG TUYỂN XIN GIA NHẬP NHÓM Ở GHÉP (ROOMMATE_APPLICATIONS - UC 14, UC 15)
+-- =============================================================================
+INSERT INTO roommate_applications (id, post_id, applicant_id, intro_message, gender, sleep_time, is_smoking, is_pet, cooking_habit, guest_habit, lifestyle_vector, compatibility_score, is_customized, status, reject_reason, created_at, updated_at)
+VALUES
+(1, 1, 5, 'Chào bạn Chiến, mình là Đức Anh học ĐHBK Hà Nội, tính tình gọn gàng, ít khi ở phòng ban ngày, muốn xin vào ở ghép phòng P102 Triều Khúc!', 'Nam', 'Khoảng 23h30 - 6h30', FALSE, FALSE, 'Nấu ăn bữa tối', 'Báo trước khi có bạn', '0.000,0.500,0.000,0.000,1.000,0.500,0.500,0.500', 94, FALSE, 'PENDING', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO roommate_application_lifestyle_answers (application_id, question_id, option_id, from_profile)
+VALUES
+(1, 1, 1, TRUE),
+(1, 2, 5, TRUE),
+(1, 3, 7, TRUE),
+(1, 4, 10, TRUE),
+(1, 5, 15, TRUE),
+(1, 6, 17, TRUE),
+(1, 7, 20, TRUE),
+(1, 8, 23, TRUE);
+
+-- =============================================================================
+-- 17. ĐỒNG BỘ AUTO-INCREMENT SEQUENCES CHO POSTGRESQL
 -- =============================================================================
 SELECT setval('users_id_seq', COALESCE((SELECT MAX(id) FROM users), 1));
 SELECT setval('buildings_id_seq', COALESCE((SELECT MAX(id) FROM buildings), 1));
@@ -202,5 +300,8 @@ SELECT setval('contract_services_id_seq', COALESCE((SELECT MAX(id) FROM contract
 SELECT setval('invoices_id_seq', COALESCE((SELECT MAX(id) FROM invoices), 1));
 SELECT setval('invoice_items_id_seq', COALESCE((SELECT MAX(id) FROM invoice_items), 1));
 SELECT setval('complaints_id_seq', COALESCE((SELECT MAX(id) FROM complaints), 1));
+SELECT setval('lifestyle_questions_id_seq', COALESCE((SELECT MAX(id) FROM lifestyle_questions), 1));
+SELECT setval('lifestyle_options_id_seq', COALESCE((SELECT MAX(id) FROM lifestyle_options), 1));
 SELECT setval('roommate_posts_id_seq', COALESCE((SELECT MAX(id) FROM roommate_posts), 1));
 SELECT setval('roommate_applications_id_seq', COALESCE((SELECT MAX(id) FROM roommate_applications), 1));
+

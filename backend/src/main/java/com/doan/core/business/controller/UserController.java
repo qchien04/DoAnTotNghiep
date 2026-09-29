@@ -37,4 +37,14 @@ public class UserController {
         UserDto userDto = userService.getUserById(id);
         return ResponseEntity.ok(ResponseData.success(userDto));
     }
+
+    @PutMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Cập nhật thông tin cá nhân của người dùng hiện tại")
+    public ResponseEntity<ResponseData<UserDto>> updateProfile(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.doan.core.common.security.UserPrincipal principal,
+            @RequestBody com.doan.core.business.dto.request.UpdateProfileRequest request) {
+        UserDto userDto = userService.updateProfile(principal.getId(), request);
+        return ResponseEntity.ok(ResponseData.success("Cập nhật thông tin cá nhân thành công!", userDto));
+    }
 }

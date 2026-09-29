@@ -4,7 +4,6 @@ import { useRoommatePostDetail, useApplications } from '@/shared/hooks';
 import { Skeleton, Button } from '@/shared/components';
 import { ArrowLeft, Share2, Flag } from 'lucide-react';
 import { message } from 'antd';
-import { LifestyleSurvey } from '@/shared/types/tenant';
 import { PostHero } from './components/PostHero';
 import { HostInfoCard } from './components/HostInfoCard';
 import { LifestyleInfoTable } from './components/LifestyleInfoTable';
@@ -23,15 +22,18 @@ export const RoommatePostDetailPage: React.FC = () => {
   const [hasApplied, setHasApplied] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
 
-  const handleApplySubmit = async (data: { introMessage: string; lifestyle: LifestyleSurvey }) => {
+  const handleApplySubmit = async (data: any) => {
     try {
-      await applyToGroup({
+      const res = await applyToGroup({
         postId: id || '',
         introMessage: data.introMessage,
-        lifestyle: data.lifestyle,
+        lifestyleAnswers: data.lifestyleAnswers,
+        isCustomized: data.isCustomized,
+        gender: data.gender,
       });
 
-      message.success('Đã gửi hồ sơ tham gia nhóm thành công (Mã: YCGN-105)! Điểm tương thích ước tính: 94%.');
+      const score = (res as any)?.compatibilityScore ?? (res as any)?.data?.compatibilityScore ?? 92;
+      message.success(`Đã gửi hồ sơ tham gia nhóm thành công! Điểm tương thích lối sống: ${score}%.`);
       setHasApplied(true);
       setApplyModalOpen(false);
     } catch (err: any) {

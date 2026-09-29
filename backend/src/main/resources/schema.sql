@@ -1,6 +1,11 @@
 DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS roommate_application_lifestyle_answers CASCADE;
 DROP TABLE IF EXISTS roommate_applications CASCADE;
+DROP TABLE IF EXISTS roommate_post_lifestyle_answers CASCADE;
 DROP TABLE IF EXISTS roommate_posts CASCADE;
+DROP TABLE IF EXISTS user_lifestyle_answers CASCADE;
+DROP TABLE IF EXISTS lifestyle_options CASCADE;
+DROP TABLE IF EXISTS lifestyle_questions CASCADE;
 DROP TABLE IF EXISTS complaints CASCADE;
 DROP TABLE IF EXISTS invoice_items CASCADE;
 DROP TABLE IF EXISTS invoices CASCADE;
@@ -39,6 +44,7 @@ CREATE TABLE IF NOT EXISTS users (
     date_of_birth DATE,
     gender VARCHAR(10),
     bio TEXT,
+    lifestyle_vector VARCHAR(255),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -73,10 +79,6 @@ CREATE TABLE IF NOT EXISTS buildings (
     CONSTRAINT fk_buildings_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT
 );
 
-ALTER TABLE buildings DROP COLUMN IF EXISTS district;
-ALTER TABLE buildings ADD COLUMN IF NOT EXISTS latitude NUMERIC(10, 8);
-ALTER TABLE buildings ADD COLUMN IF NOT EXISTS longitude NUMERIC(11, 8);
-
 -- 4. Bảng Phòng trọ
 CREATE TABLE IF NOT EXISTS rooms (
     id BIGSERIAL PRIMARY KEY,
@@ -105,20 +107,6 @@ CREATE TABLE IF NOT EXISTS rooms (
     CONSTRAINT fk_rooms_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT
 );
 
-ALTER TABLE rooms ALTER COLUMN building_id DROP NOT NULL;
-ALTER TABLE rooms ADD COLUMN IF NOT EXISTS landlord_id BIGINT;
-ALTER TABLE rooms ADD COLUMN IF NOT EXISTS province VARCHAR(100);
-ALTER TABLE rooms ADD COLUMN IF NOT EXISTS ward VARCHAR(100);
-ALTER TABLE rooms ADD COLUMN IF NOT EXISTS address_detail TEXT;
-ALTER TABLE rooms ALTER COLUMN address_detail TYPE TEXT;
-ALTER TABLE rooms ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT TRUE;
-ALTER TABLE rooms DROP CONSTRAINT IF EXISTS uk_rooms_building_code;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_rooms_landlord') THEN
-        ALTER TABLE rooms ADD CONSTRAINT fk_rooms_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT;
-    END IF;
-END $$;
 
 -- 5. Bảng Ảnh phòng trọ
 CREATE TABLE IF NOT EXISTS room_images (
@@ -292,14 +280,70 @@ CREATE TABLE IF NOT EXISTS complaints (
     CONSTRAINT fk_complaints_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE CASCADE
 );
 
-ALTER TABLE complaints ADD COLUMN IF NOT EXISTS rating INT;
-ALTER TABLE complaints ADD COLUMN IF NOT EXISTS feedback TEXT;
+-- 15. Bảng Thông báo hệ thống
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    notification_type VARCHAR(50) NOT NULL,
+    related_entity_type VARCHAR(50),
+    related_entity_id BIGINT,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
 
--- 15. Bảng Tin đăng tìm người ở ghép (UC 11 - UC 13)
+-- =============================================================================
+-- Module tìm kiếm ghép trọ
+-- =============================================================================
+
+-- 1. Câu hỏi lối sống (cấu hình)
+CREATE TABLE IF NOT EXISTS lifestyle_questions (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    label VARCHAR(255) NOT NULL,
+    category VARCHAR(30),
+    q_type VARCHAR(10) NOT NULL DEFAULT 'SINGLE',
+    is_hard BOOLEAN NOT NULL DEFAULT FALSE,
+    weight NUMERIC(4, 2) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Lựa chọn của câu hỏi
+CREATE TABLE IF NOT EXISTS lifestyle_options (
+    id BIGSERIAL PRIMARY KEY,
+    question_id BIGINT NOT NULL,
+    label VARCHAR(150) NOT NULL,
+    value NUMERIC(4, 3) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_lifestyle_options_question FOREIGN KEY (question_id) REFERENCES lifestyle_questions (id) ON DELETE CASCADE,
+    CONSTRAINT uq_lifestyle_options_id_question UNIQUE (id, question_id),
+    CONSTRAINT chk_lifestyle_options_value CHECK (value >= 0 AND value <= 1)
+);
+
+-- 3. Câu trả lời gốc của người dùng (điền sẵn khi đăng tin)
+-- Câu SINGLE: 1 dòng. Câu MULTI: mỗi lựa chọn 1 dòng.
+CREATE TABLE IF NOT EXISTS user_lifestyle_answers (
+    user_id BIGINT NOT NULL,
+    question_id BIGINT NOT NULL,
+    option_id BIGINT NOT NULL,
+    answered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, question_id, option_id),
+    CONSTRAINT fk_ula_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_ula_option FOREIGN KEY (option_id, question_id) REFERENCES lifestyle_options (id, question_id) ON DELETE CASCADE
+);
+
+
 CREATE TABLE IF NOT EXISTS roommate_posts (
     id BIGSERIAL PRIMARY KEY,
     author_id BIGINT NOT NULL,
     room_id BIGINT,
+    contract_id BIGINT,
     title VARCHAR(250) NOT NULL,
     description TEXT,
     post_type VARCHAR(30) NOT NULL,
@@ -320,6 +364,7 @@ CREATE TABLE IF NOT EXISTS roommate_posts (
     cooking_frequency VARCHAR(50) DEFAULT 'DAILY',
     cleanliness_level VARCHAR(50) DEFAULT 'VERY_CLEAN',
     guest_allowed VARCHAR(50) DEFAULT 'WEEKENDS_ONLY',
+    lifestyle_vector VARCHAR(255),
     status VARCHAR(30) NOT NULL DEFAULT 'OPEN',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -327,7 +372,19 @@ CREATE TABLE IF NOT EXISTS roommate_posts (
     CONSTRAINT fk_roommate_posts_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE SET NULL
 );
 
--- 16. Bảng Đơn ứng tuyển xin gia nhập nhóm ở ghép (UC 14, UC 15)
+
+-- 5. Lối sống khai riêng cho tin (điền sẵn từ hồ sơ, được chỉnh; đăng xong tách khỏi hồ sơ)
+CREATE TABLE IF NOT EXISTS roommate_post_lifestyle_answers (
+    post_id BIGINT NOT NULL,
+    question_id BIGINT NOT NULL,
+    option_id BIGINT NOT NULL,
+    from_profile BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (post_id, question_id, option_id),
+    CONSTRAINT fk_rpla_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
+    CONSTRAINT fk_rpla_option FOREIGN KEY (option_id, question_id) REFERENCES lifestyle_options (id, question_id) ON DELETE CASCADE
+);
+
+-- 6. Đơn xin gia nhập nhóm ở ghép (UC 14, UC 15)
 CREATE TABLE IF NOT EXISTS roommate_applications (
     id BIGSERIAL PRIMARY KEY,
     post_id BIGINT NOT NULL,
@@ -339,45 +396,28 @@ CREATE TABLE IF NOT EXISTS roommate_applications (
     is_pet BOOLEAN DEFAULT FALSE,
     cooking_habit VARCHAR(50),
     guest_habit VARCHAR(50),
-    compatibility_score INT DEFAULT 85,
+    lifestyle_vector VARCHAR(255),
+    compatibility_score INT DEFAULT 0,
+    is_customized BOOLEAN NOT NULL DEFAULT FALSE,
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
     reject_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_roommate_app_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
-    CONSTRAINT fk_roommate_app_applicant FOREIGN KEY (applicant_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_rma_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
+    CONSTRAINT fk_rma_applicant FOREIGN KEY (applicant_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT uq_rma_post_applicant UNIQUE (post_id, applicant_id)
 );
 
--- 17. Bảng Thông báo hệ thống
-CREATE TABLE IF NOT EXISTS notifications (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    title VARCHAR(200) NOT NULL,
-    content TEXT NOT NULL,
-    notification_type VARCHAR(50) NOT NULL,
-    related_entity_type VARCHAR(50),
-    related_entity_id BIGINT,
-    is_read BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+-- 7. Câu trả lời lối sống của đơn ứng tuyển (Clone từ user_lifestyle_answers, có thể tinh chỉnh)
+CREATE TABLE IF NOT EXISTS roommate_application_lifestyle_answers (
+    application_id BIGINT NOT NULL,
+    question_id BIGINT NOT NULL,
+    option_id BIGINT NOT NULL,
+    from_profile BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (application_id, question_id, option_id),
+    CONSTRAINT fk_rala_app FOREIGN KEY (application_id) REFERENCES roommate_applications (id) ON DELETE CASCADE,
+    CONSTRAINT fk_rala_option FOREIGN KEY (option_id, question_id) REFERENCES lifestyle_options (id, question_id) ON DELETE CASCADE
 );
-
--- =============================================================================
--- RÀNG BUỘC KHÓA NGOẠI BỔ SUNG & HỆ THỐNG CHỈ MỤC TỐI ƯU HIỆU NĂNG (INDEXES)
--- =============================================================================
-
--- Khóa ngoại Hợp đồng cho Khách thuê
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'fk_tenants_contract'
-    ) THEN
-        ALTER TABLE tenants
-        ADD CONSTRAINT fk_tenants_contract FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE SET NULL;
-    END IF;
-END $$;
 
 -- 18. Hệ thống chỉ mục (Performance Indexes cho khóa ngoại và lọc tìm kiếm)
 CREATE INDEX IF NOT EXISTS idx_buildings_landlord_id ON buildings (landlord_id);
@@ -411,33 +451,13 @@ CREATE INDEX IF NOT EXISTS idx_complaints_room_id ON complaints (room_id);
 CREATE INDEX IF NOT EXISTS idx_complaints_tenant_id ON complaints (tenant_id);
 CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints (status);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens (user_id);
-CREATE INDEX IF NOT EXISTS idx_roommate_posts_status ON roommate_posts (status);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read);
 
--- =============================================================================
--- 19. MIGRATION: LOẠI BỎ TOÀN BỘ CỘT MÃ (CODE)
--- =============================================================================
-ALTER TABLE users DROP COLUMN IF EXISTS user_code;
-ALTER TABLE buildings DROP COLUMN IF EXISTS building_code;
-ALTER TABLE rooms DROP COLUMN IF EXISTS room_code;
-ALTER TABLE services DROP COLUMN IF EXISTS service_code;
-ALTER TABLE tenants DROP COLUMN IF EXISTS tenant_code;
-ALTER TABLE contracts DROP COLUMN IF EXISTS contract_code;
-ALTER TABLE contracts DROP COLUMN IF EXISTS initial_electric_index;
-ALTER TABLE contracts DROP COLUMN IF EXISTS initial_water_index;
-ALTER TABLE contracts DROP COLUMN IF EXISTS final_electric_index;
-ALTER TABLE contracts DROP COLUMN IF EXISTS final_water_index;
-ALTER TABLE invoices DROP COLUMN IF EXISTS invoice_code;
-ALTER TABLE invoices DROP COLUMN IF EXISTS previous_electric_index;
-ALTER TABLE invoices DROP COLUMN IF EXISTS current_electric_index;
-ALTER TABLE invoices DROP COLUMN IF EXISTS previous_water_index;
-ALTER TABLE rooms ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE;
-UPDATE rooms SET is_public = TRUE WHERE is_public IS NULL;
-ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS previous_index INT;
-ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS current_index INT;
-ALTER TABLE invoice_items ADD COLUMN IF NOT EXISTS item_type VARCHAR(20) DEFAULT 'SERVICE';
-UPDATE invoice_items SET item_type = 'SERVICE' WHERE item_type IS NULL;
-ALTER TABLE complaints DROP COLUMN IF EXISTS complaint_code;
-ALTER TABLE roommate_posts DROP COLUMN IF EXISTS code;
-ALTER TABLE roommate_applications DROP COLUMN IF EXISTS code;
-
+CREATE INDEX IF NOT EXISTS idx_roommate_posts_author ON roommate_posts (author_id);
+CREATE INDEX IF NOT EXISTS idx_roommate_posts_status ON roommate_posts (status);
+CREATE INDEX IF NOT EXISTS idx_rma_post_id ON roommate_applications (post_id);
+CREATE INDEX IF NOT EXISTS idx_rma_applicant_id ON roommate_applications (applicant_id);
+CREATE INDEX IF NOT EXISTS idx_rma_status ON roommate_applications (status);
+CREATE INDEX IF NOT EXISTS idx_rala_app_id ON roommate_application_lifestyle_answers (application_id);
+CREATE INDEX IF NOT EXISTS idx_rpla_post_id ON roommate_post_lifestyle_answers (post_id);
+CREATE INDEX IF NOT EXISTS idx_ula_user_id ON user_lifestyle_answers (user_id);

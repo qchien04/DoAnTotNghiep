@@ -8,6 +8,9 @@ import {
   PostSearchParams,
   RoommateApplication,
   ApplyRoommateDto,
+  LifestyleQuestionResponse,
+  UserLifestyleProfileResponse,
+  SaveLifestyleAnswersRequest,
   MyRoomDetails,
   TenantContractHistory,
   VietQRPaymentData,
@@ -17,6 +20,22 @@ import {
 import { Bill, Complaint } from '@/shared/types/landlord';
 
 export const tenantService = {
+  // 0. Khảo sát lối sống & Vector Profile
+  getLifestyleQuestions: async (): Promise<ResponseData<LifestyleQuestionResponse[]>> => {
+    const res = await apiClient.get<ResponseData<LifestyleQuestionResponse[]>>('/api/v1/tenant/lifestyle/questions');
+    return res.data;
+  },
+
+  getUserLifestyleProfile: async (): Promise<ResponseData<UserLifestyleProfileResponse>> => {
+    const res = await apiClient.get<ResponseData<UserLifestyleProfileResponse>>('/api/v1/tenant/lifestyle/profile');
+    return res.data;
+  },
+
+  saveUserLifestyleProfile: async (data: SaveLifestyleAnswersRequest): Promise<ResponseData<UserLifestyleProfileResponse>> => {
+    const res = await apiClient.put<ResponseData<UserLifestyleProfileResponse>>('/api/v1/tenant/lifestyle/profile', data);
+    return res.data;
+  },
+
   // 1. Bài đăng ở ghép (UC 30 - 35, 40)
   searchPosts: async (params?: PostSearchParams): Promise<ResponseData<PageResponse<RoommatePost>>> => {
     const res = await apiClient.get<ResponseData<PageResponse<RoommatePost>>>('/api/v1/tenant/posts/search', { params });

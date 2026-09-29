@@ -1,9 +1,6 @@
 package com.doan.core.business.controller.tenant;
 
-import com.doan.core.business.dto.tenant.RoommateApplicationRequest;
-import com.doan.core.business.dto.tenant.RoommateApplicationResponse;
-import com.doan.core.business.dto.tenant.RoommatePostRequest;
-import com.doan.core.business.dto.tenant.RoommatePostResponse;
+import com.doan.core.business.dto.tenant.*;
 import com.doan.core.business.service.TenantRoommateService;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
@@ -31,9 +28,38 @@ public class TenantRoommateController {
 
     private final TenantRoommateService roommateService;
 
+    @GetMapping("/lifestyle/questions")
+    @Operation(summary = "Lấy danh mục câu hỏi và lựa chọn khảo sát lối sống", description = "Dùng để render bảng khảo sát lối sống ở Frontend")
+    public ResponseEntity<ResponseData<List<LifestyleQuestionResponse>>> getLifestyleQuestions() {
+        List<LifestyleQuestionResponse> list = roommateService.getLifestyleQuestions();
+        return ResponseEntity.ok(ResponseData.success(list));
+    }
+
+    @GetMapping("/lifestyle/profile")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Lấy hồ sơ lối sống gốc của người dùng", description = "Lấy các câu trả lời gốc và vector lối sống của tài khoản hiện tại")
+    public ResponseEntity<ResponseData<UserLifestyleProfileResponse>> getUserLifestyleProfile(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        UserLifestyleProfileResponse response = roommateService.getUserLifestyleProfile(principal.getId());
+        return ResponseEntity.ok(ResponseData.success(response));
+    }
+
+    @PutMapping("/lifestyle/profile")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Lưu / Cập nhật hồ sơ lối sống gốc", description = "Cập nhật câu trả lời gốc và tự động tái tính toán users.lifestyle_vector")
+    public ResponseEntity<ResponseData<UserLifestyleProfileResponse>> saveUserLifestyleProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody SaveLifestyleAnswersRequest request) {
+        UserLifestyleProfileResponse response = roommateService.saveUserLifestyleProfile(principal.getId(), request);
+        return ResponseEntity.ok(ResponseData.success("Cập nhật hồ sơ lối sống thành công!", response));
+    }
+
     @GetMapping("/posts/search")
-    @Operation(summary = "UC 11: Tìm kiếm phòng trọ & bài đăng ở ghép", description = "Tìm kiếm theo từ khóa khu vực, khoảng giá và các tiêu chí lối sống sinh hoạt")
+    @Operation(summary = "UC 11: Tìm kiếm phòng trọ & bài đăng ở ghép", description = "Tìm kiếm theo từ khóa khu vực, khoảng giá và các tiêu chí lối sống sinh hoạt (tính độ khớp dựa trên vector)")
     public ResponseEntity<ResponseData<Page<RoommatePostResponse>>> searchPosts(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String postType,
@@ -44,8 +70,9 @@ public class TenantRoommateController {
             @RequestParam(required = false) String sleepTime,
             @PageableDefault(size = 10) Pageable pageable) {
 
+        Long currentUserId = principal != null ? principal.getId() : null;
         Page<RoommatePostResponse> result = roommateService.searchPosts(
-                keyword, district, postType, minPrice, maxPrice, gender, noSmoking, sleepTime, pageable);
+                currentUserId, keyword, district, postType, minPrice, maxPrice, gender, noSmoking, sleepTime, pageable);
         return ResponseEntity.ok(ResponseData.success(result));
     }
 

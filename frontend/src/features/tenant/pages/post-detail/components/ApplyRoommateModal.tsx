@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Select } from '@/shared/components';
-import { LifestyleSurvey } from '@/shared/types/tenant';
+import { useLifestyle } from '@/shared/hooks';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { Sparkles, CheckCircle2, RotateCcw } from 'lucide-react';
 
 interface ApplyRoommateModalProps {
   open: boolean;
   onCancel: () => void;
-  onSubmit: (data: { introMessage: string; lifestyle: LifestyleSurvey }) => Promise<void>;
+  onSubmit: (data: {
+    introMessage: string;
+    lifestyleAnswers: { questionId: number; optionId: number }[];
+    isCustomized: boolean;
+    gender?: string;
+    sleepTime?: string;
+    isSmoking?: boolean;
+    isPet?: boolean;
+    cookingHabit?: string;
+    guestHabit?: string;
+  }) => Promise<void>;
   loading?: boolean;
 }
 
@@ -15,35 +27,95 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
   onSubmit,
   loading,
 }) => {
-  const [applicantSurvey, setApplicantSurvey] = useState({
-    fullName: 'Nguyễn Văn Hùng',
-    birthYear: '2004',
-    hometown: 'Hải Dương',
-    schoolOrJob: 'Sinh viên năm 3 Đại học Giao thông Vận tải',
-    introMessage: 'Chào bạn, mình học ngay gần đường Cầu Giấy, tính tình gọn gàng, ít khi ở phòng ban ngày, rất mong muốn được ghép phòng cùng bạn!',
-    gender: 'Nam',
-    sleepTime: 'Khoảng 23h30 - 6h30',
-    smoking: 'Không hút thuốc',
-    pet: 'Không nuôi',
-    cooking: 'Chỉ nấu bữa tối đơn giản',
-    guest: 'Chỉ thỉnh thoảng và luôn báo trước',
-  });
+  const { user } = useAuthStore();
+  const { questions, profile } = useLifestyle();
+
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [introMessage, setIntroMessage] = useState('');
+  
+  // Mapping questionId -> optionId[] đã chọn (hỗ trợ SINGLE và MULTI)
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number[]>>({});
+  const [isCustomized, setIsCustomized] = useState(false);
+
+  // Khi modal mở, tự động clone câu trả lời từ hồ sơ gốc của user
+  useEffect(() => {
+    if (open) {
+      setFullName(user?.fullName || profile?.fullName || '');
+      setPhone(user?.phone || '');
+      setIntroMessage(
+        'Chào bạn, mình xem thông tin phòng thấy rất phù hợp với lối sống và sinh hoạt của mình. Rất mong muốn được trao đổi thêm để vào ở ghép cùng phòng!'
+      );
+
+      // Clone các câu trả lời gốc từ user profile (nhóm theo questionId)
+      const initialMap: Record<number, number[]> = {};
+      if (profile?.answers && profile.answers.length > 0) {
+        profile.answers.forEach((ans) => {
+          if (ans.questionId && ans.optionId) {
+            if (!initialMap[ans.questionId]) {
+              initialMap[ans.questionId] = [];
+            }
+            if (!initialMap[ans.questionId].includes(ans.optionId)) {
+              initialMap[ans.questionId].push(ans.optionId);
+            }
+          }
+        });
+      } else if (questions.length > 0) {
+        // Fallback: Lấy lựa chọn đầu tiên của từng câu hỏi
+        questions.forEach((q) => {
+          if (q.options && q.options.length > 0) {
+            initialMap[q.id] = [q.options[0].id];
+          }
+        });
+      }
+      setSelectedAnswers(initialMap);
+      setIsCustomized(false);
+    }
+  }, [open, profile, questions, user]);
+
+  const handleOptionChange = (questionId: number, val: any, isMulti: boolean) => {
+    const newOptions: number[] = isMulti
+      ? Array.isArray(val) ? val.map(Number) : [Number(val)]
+      : [Number(val)];
+
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionId]: newOptions,
+    }));
+    setIsCustomized(true);
+  };
+
+  const handleResetToProfile = () => {
+    const profileMap: Record<number, number[]> = {};
+    if (profile?.answers) {
+      profile.answers.forEach((ans) => {
+        if (ans.questionId && ans.optionId) {
+          if (!profileMap[ans.questionId]) {
+            profileMap[ans.questionId] = [];
+          }
+          if (!profileMap[ans.questionId].includes(ans.optionId)) {
+            profileMap[ans.questionId].push(ans.optionId);
+          }
+        }
+      });
+    }
+    setSelectedAnswers(profileMap);
+    setIsCustomized(false);
+  };
 
   const handleConfirm = async () => {
-    const survey: LifestyleSurvey = {
-      genderPreference: applicantSurvey.gender === 'Nam' ? 'MALE' : 'FEMALE',
-      sleepTime: 'AROUND_23H_24H',
-      smoking: applicantSurvey.smoking.includes('Có hút'),
-      petFriendly: applicantSurvey.pet.includes('Có nuôi'),
-      cookingFrequency: 'SOMETIMES',
-      cleanlinessLevel: 'VERY_CLEAN',
-      personality: 'BALANCED',
-      guestsAllowed: 'WEEKENDS_ONLY',
-    };
+    const answersList = Object.entries(selectedAnswers).flatMap(([qId, oIds]) =>
+      oIds.map((oId) => ({
+        questionId: Number(qId),
+        optionId: Number(oId),
+      }))
+    );
 
     await onSubmit({
-      introMessage: applicantSurvey.introMessage,
-      lifestyle: survey,
+      introMessage,
+      lifestyleAnswers: answersList,
+      isCustomized,
+      gender: user?.gender || 'Nam',
     });
   };
 
@@ -52,11 +124,39 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={720}
-      title={<span className="text-base font-bold text-stay-text">Hồ Sơ Ứng Tuyển Ở Ghép</span>}
+      width={760}
+      title={
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-stay-primary" />
+          <span className="text-base font-bold text-stay-text">
+            Hồ Sơ Ứng Tuyển Ở Ghép
+          </span>
+        </div>
+      }
     >
-      <div className="space-y-5 pt-3">
-        {/* Section 1: Label nằm ra ngoài card */}
+      <div className="space-y-5 pt-2 max-h-[75vh] overflow-y-auto pr-1">
+        {/* Banner thông báo cơ chế clone & tinh chỉnh */}
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2.5 text-xs text-blue-900">
+          <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <span className="font-semibold block">Hệ thống đã tự động sao chép các tiêu chí từ Hồ sơ lối sống của bạn:</span>
+            <p className="text-blue-700 mt-0.5">
+              Bạn có thể <strong>tinh chỉnh lại từng câu trả lời</strong> bên dưới để thể hiện sự hòa hợp tốt nhất với chủ bài đăng mà không làm ảnh hưởng đến hồ sơ gốc.
+            </p>
+          </div>
+          {isCustomized && (
+            <button
+              type="button"
+              onClick={handleResetToProfile}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 hover:text-blue-900 bg-white border border-blue-300 rounded-md px-2 py-1 cursor-pointer transition-colors shadow-2xs shrink-0"
+              title="Khôi phục lại lựa chọn theo hồ sơ gốc"
+            >
+              <RotateCcw className="w-3 h-3" /> Đặt lại gốc
+            </button>
+          )}
+        </div>
+
+        {/* Section 1: Thông tin cá nhân & Giới thiệu bản thân */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
             1. Thông tin cá nhân & Giới thiệu bản thân
@@ -66,29 +166,17 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
               <div>
                 <span className="text-slate-500 block mb-1">Họ và tên:</span>
                 <Input
-                  value={applicantSurvey.fullName}
-                  onChange={(e) => setApplicantSurvey({ ...applicantSurvey, fullName: e.target.value })}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Nhập họ và tên"
                 />
               </div>
               <div>
-                <span className="text-slate-500 block mb-1">Năm sinh:</span>
+                <span className="text-slate-500 block mb-1">Số điện thoại liên hệ:</span>
                 <Input
-                  value={applicantSurvey.birthYear}
-                  onChange={(e) => setApplicantSurvey({ ...applicantSurvey, birthYear: e.target.value })}
-                />
-              </div>
-              <div>
-                <span className="text-slate-500 block mb-1">Quê quán:</span>
-                <Input
-                  value={applicantSurvey.hometown}
-                  onChange={(e) => setApplicantSurvey({ ...applicantSurvey, hometown: e.target.value })}
-                />
-              </div>
-              <div>
-                <span className="text-slate-500 block mb-1">Nghề nghiệp / Trường học:</span>
-                <Input
-                  value={applicantSurvey.schoolOrJob}
-                  onChange={(e) => setApplicantSurvey({ ...applicantSurvey, schoolOrJob: e.target.value })}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Nhập số điện thoại"
                 />
               </div>
             </div>
@@ -99,133 +187,87 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
               </span>
               <Input.TextArea
                 rows={3}
-                value={applicantSurvey.introMessage}
-                onChange={(e) => setApplicantSurvey({ ...applicantSurvey, introMessage: e.target.value })}
+                value={introMessage}
+                onChange={(e) => setIntroMessage(e.target.value)}
+                placeholder="Chia sẻ lý do bạn muốn ở ghép, giờ giấc học tập/làm việc để chủ phòng nhanh chóng xét duyệt..."
               />
             </div>
           </div>
         </div>
 
-        {/* Section 2: Label nằm ra ngoài card */}
+        {/* Section 2: Khảo sát lối sống có thể tinh chỉnh */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-            2. Bảng trả lời khảo sát lối sống sinh hoạt của ứng viên
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+              2. Tiêu chí lối sống cho bài đăng này
+            </label>
+            <span className="text-[11px] text-slate-500 italic">
+              {isCustomized ? 'Đã tinh chỉnh theo bài đăng' : 'Đang dùng câu trả lời từ hồ sơ gốc'}
+            </span>
+          </div>
+
           <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
-                  <th className="p-3 w-1/3">Tiêu chí khảo sát</th>
-                  <th className="p-3 w-1/3">Câu trả lời của ứng viên</th>
-                  <th className="p-3 w-1/3">Mức độ tự đánh giá</th>
+                  <th className="p-3 w-5/12">Tiêu chí lối sống</th>
+                  <th className="p-3 w-7/12">Lựa chọn của bạn cho bài đăng này</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stay-border">
-                <tr>
-                  <td className="p-3 font-semibold text-stay-text">Giới tính</td>
-                  <td className="p-3">
-                    <Select
-                      value={applicantSurvey.gender}
-                      onChange={(val) => setApplicantSurvey({ ...applicantSurvey, gender: val })}
-                      className="w-full text-xs"
-                      options={[
-                        { label: 'Nam', value: 'Nam' },
-                        { label: 'Nữ', value: 'Nữ' },
-                      ]}
-                    />
-                  </td>
-                  <td className="p-3 text-emerald-600 font-semibold">Khớp yêu cầu</td>
-                </tr>
+                {questions.map((q) => {
+                  const isMulti = q.qType === 'MULTI';
+                  const currentSelectedOption = isMulti
+                    ? selectedAnswers[q.id] || []
+                    : selectedAnswers[q.id]?.[0];
+                  const options = q.options.map((opt) => ({
+                    label: opt.label,
+                    value: opt.id,
+                  }));
 
-                <tr>
-                  <td className="p-3 font-semibold text-stay-text">Thời gian ngủ đêm</td>
-                  <td className="p-3">
-                    <Select
-                      value={applicantSurvey.sleepTime}
-                      onChange={(val) => setApplicantSurvey({ ...applicantSurvey, sleepTime: val })}
-                      className="w-full text-xs"
-                      options={[
-                        { label: 'Khoảng 23h30 - 6h30', value: 'Khoảng 23h30 - 6h30' },
-                        { label: 'Trước 23h00', value: 'Trước 23h00' },
-                        { label: 'Sau 24h00', value: 'Sau 24h00' },
-                      ]}
-                    />
-                  </td>
-                  <td className="p-3 text-slate-500">Tương đồng</td>
-                </tr>
-
-                <tr>
-                  <td className="p-3 font-semibold text-stay-text">Hút thuốc lá</td>
-                  <td className="p-3">
-                    <Select
-                      value={applicantSurvey.smoking}
-                      onChange={(val) => setApplicantSurvey({ ...applicantSurvey, smoking: val })}
-                      className="w-full text-xs"
-                      options={[
-                        { label: 'Không hút thuốc', value: 'Không hút thuốc' },
-                        { label: 'Có hút thuốc', value: 'Có hút thuốc' },
-                      ]}
-                    />
-                  </td>
-                  <td className="p-3 text-emerald-600 font-semibold">Khớp yêu cầu 100%</td>
-                </tr>
-
-                <tr>
-                  <td className="p-3 font-semibold text-stay-text">Nuôi thú cưng</td>
-                  <td className="p-3">
-                    <Select
-                      value={applicantSurvey.pet}
-                      onChange={(val) => setApplicantSurvey({ ...applicantSurvey, pet: val })}
-                      className="w-full text-xs"
-                      options={[
-                        { label: 'Không nuôi', value: 'Không nuôi' },
-                        { label: 'Có nuôi', value: 'Có nuôi' },
-                      ]}
-                    />
-                  </td>
-                  <td className="p-3 text-emerald-600 font-semibold">Khớp yêu cầu 100%</td>
-                </tr>
-
-                <tr>
-                  <td className="p-3 font-semibold text-stay-text">Tần suất nấu ăn</td>
-                  <td className="p-3">
-                    <Select
-                      value={applicantSurvey.cooking}
-                      onChange={(val) => setApplicantSurvey({ ...applicantSurvey, cooking: val })}
-                      className="w-full text-xs"
-                      options={[
-                        { label: 'Chỉ nấu bữa tối đơn giản', value: 'Chỉ nấu bữa tối đơn giản' },
-                        { label: 'Nấu ăn thường xuyên', value: 'Nấu ăn thường xuyên' },
-                        { label: 'Không nấu ăn', value: 'Không nấu ăn' },
-                      ]}
-                    />
-                  </td>
-                  <td className="p-3 text-slate-500">Hòa đồng</td>
-                </tr>
-
-                <tr>
-                  <td className="p-3 font-semibold text-stay-text">Dẫn bạn bè về phòng</td>
-                  <td className="p-3">
-                    <Select
-                      value={applicantSurvey.guest}
-                      onChange={(val) => setApplicantSurvey({ ...applicantSurvey, guest: val })}
-                      className="w-full text-xs"
-                      options={[
-                        { label: 'Chỉ thỉnh thoảng và luôn báo trước', value: 'Chỉ thỉnh thoảng và luôn báo trước' },
-                        { label: 'Tự do thoải mái', value: 'Tự do thoải mái' },
-                      ]}
-                    />
-                  </td>
-                  <td className="p-3 text-slate-500">Tôn trọng không gian chung</td>
-                </tr>
+                  return (
+                    <tr key={q.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="p-3">
+                        <div className="font-semibold text-stay-text">{q.label}</div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          {isMulti ? (
+                            <span className="text-[10px] text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded font-medium">
+                              Chọn nhiều
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded font-medium">
+                              Chọn 1
+                            </span>
+                          )}
+                          {q.isHard && (
+                            <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-medium">
+                              Quan trọng
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <Select
+                          mode={isMulti ? 'multiple' : undefined}
+                          value={currentSelectedOption}
+                          onChange={(val) => handleOptionChange(q.id, val, isMulti)}
+                          className="w-full text-xs"
+                          options={options}
+                          placeholder={isMulti ? 'Chọn các lựa chọn phù hợp...' : 'Chọn thói quen...'}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
 
+        {/* Footer Actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-stay-border">
           <Button variant="outline" size="md" onClick={onCancel}>
-            Hủy
+            Hủy bỏ
           </Button>
           <Button
             variant="primary"

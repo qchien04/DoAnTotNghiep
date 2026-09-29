@@ -12,8 +12,18 @@ import java.util.List;
 
 public interface TenantRoommateService {
 
-    // UC 11: Tìm kiếm bài đăng ở ghép kèm bộ lọc lối sống
+    // Master data câu hỏi & lựa chọn lối sống
+    List<com.doan.core.business.dto.tenant.LifestyleQuestionResponse> getLifestyleQuestions();
+
+    // Hồ sơ lối sống gốc của người dùng
+    com.doan.core.business.dto.tenant.UserLifestyleProfileResponse getUserLifestyleProfile(Long userId);
+
+    // Lưu / Cập nhật hồ sơ lối sống gốc (và tự động sinh users.lifestyle_vector)
+    com.doan.core.business.dto.tenant.UserLifestyleProfileResponse saveUserLifestyleProfile(Long userId, com.doan.core.business.dto.tenant.SaveLifestyleAnswersRequest request);
+
+    // UC 11: Tìm kiếm bài đăng ở ghép kèm bộ lọc lối sống và tính độ khớp theo vector
     Page<RoommatePostResponse> searchPosts(
+            Long currentUserId,
             String keyword,
             String district,
             String postType,

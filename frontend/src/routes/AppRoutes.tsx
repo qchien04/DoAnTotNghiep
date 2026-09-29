@@ -8,6 +8,7 @@ import { HomePage } from '@/features/home/pages/HomePage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { UserListPage } from '@/features/user/pages/UserListPage';
+import { ProfilePage } from '@/features/user/pages/ProfilePage';
 import { ComponentShowcase } from '@/features/showcase/pages/ComponentShowcase';
 
 // Landlord Pages (UC 01 - 29)
@@ -53,6 +54,7 @@ export const AppRoutes: React.FC = () => {
 
         {/* Protected Feature Routes */}
         <Route element={<ProtectedRoute />}>
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/users" element={<UserListPage />} />
         </Route>
       </Route>

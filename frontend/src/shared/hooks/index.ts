@@ -13,6 +13,7 @@ export * from './landlord/useLandlordDashboard';
 // Tenant hooks (UC 30 - 46)
 export * from './tenant/useRoommatePosts';
 export * from './tenant/useApplications';
+export * from './tenant/useLifestyle';
 export * from './tenant/useMyRoom';
 export * from './tenant/useMyBills';
 export * from './tenant/useMyComplaints';

@@ -21,4 +21,8 @@ public class RoommateApplicationRequest {
     private Boolean isPet;
     private String cookingHabit;
     private String guestHabit;
+
+    // Danh sách câu trả lời tinh chỉnh từ hồ sơ
+    private java.util.List<SaveLifestyleAnswersRequest.AnswerItem> lifestyleAnswers;
+    private Boolean isCustomized;
 }

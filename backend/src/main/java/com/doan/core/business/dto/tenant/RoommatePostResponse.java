@@ -44,6 +44,9 @@ public class RoommatePostResponse {
     private String cleanlinessLevel;
     private String guestAllowed;
 
+    private String lifestyleVector;
+    private java.util.List<UserLifestyleAnswerDto> lifestyleAnswers;
+
     private Integer matchPercentage;
     private String status;
     private List<String> roomImages;
