@@ -365,14 +365,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
       centered
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
-        {/* Hidden inputs for latitude & longitude - Completely invisible on UI */}
-        <Form.Item name="latitude" hidden>
-          <Input />
-        </Form.Item>
-        <Form.Item name="longitude" hidden>
-          <Input />
-        </Form.Item>
-
         {/* SECTION 1: TÒA NHÀ & VỊ TRÍ - ĐỊA CHỈ (2 CỘT TỶ LỆ 6:4) */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-stay-text">
@@ -490,6 +482,14 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                       placeholder="Số nhà, ngõ/ngách, tên đường..."
                       className="w-full p-2 text-xs rounded-lg"
                     />
+                  </Form.Item>
+
+                  {/* Ẩn hoàn toàn tọa độ khỏi UI nhưng vẫn nạp vào Form payload */}
+                  <Form.Item name="latitude" noStyle>
+                    <input type="hidden" />
+                  </Form.Item>
+                  <Form.Item name="longitude" noStyle>
+                    <input type="hidden" />
                   </Form.Item>
                 </div>
               </div>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Modal, Button, message, Spin, Tag } from 'antd';
+import { Modal, Button, Input, message, Spin, Tag } from 'antd';
 import {
   MapPin,
   Navigation,
+  Search,
   Check,
   Copy,
 } from 'lucide-react';
@@ -89,6 +90,8 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
   const [province, setProvince] = useState<string>('');
   const [district, setDistrict] = useState<string>('');
   const [ward, setWard] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isGeolocating, setIsGeolocating] = useState<boolean>(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
 
@@ -159,11 +162,14 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
         zoomControl: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          maxZoom: 19,
+          subdomains: 'abcd',
+          attribution: '&copy; OpenStreetMap &bull; Chủ quyền Việt Nam',
+        }
+      ).addTo(map);
 
       // Marker có thể kéo thả
       const marker = L.marker(defaultPos, {
@@ -195,17 +201,10 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
       if (!initialAddress) {
         reverseGeocode(defaultPos[0], defaultPos[1]);
       }
-    }, 200);
-
-    const timer2 = setTimeout(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
-      }
-    }, 450);
+    }, 150);
 
     return () => {
       clearTimeout(timer);
-      clearTimeout(timer2);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -258,6 +257,54 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
     );
   };
 
+  // Tìm kiếm địa điểm bằng Nominatim OpenStreetMap
+  const handleSearchLocation = async () => {
+    if (!searchQuery.trim()) {
+      message.info('Vui lòng nhập địa chỉ cần tìm kiếm');
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery.trim()
+        )}&countrycodes=vn&limit=1`,
+        {
+          headers: {
+            'Accept-Language': 'vi,en',
+          },
+        }
+      );
+      if (res.ok) {
+        const results = await res.json();
+        if (results && results.length > 0) {
+          const item = results[0];
+          const lat = parseFloat(item.lat);
+          const lng = parseFloat(item.lon);
+          const newPos: [number, number] = [lat, lng];
+
+          setPosition(newPos);
+          setAddress(item.display_name);
+
+          if (mapInstanceRef.current && markerRef.current) {
+            mapInstanceRef.current.flyTo(newPos, 16, { duration: 1.0 });
+            markerRef.current.setLatLng(newPos);
+          }
+
+          reverseGeocode(lat, lng);
+          message.success('Đã tìm thấy địa điểm trên bản đồ!');
+        } else {
+          message.warning('Không tìm thấy địa điểm tương ứng, hãy thử nhập tên đường hoặc quận huyện.');
+        }
+      }
+    } catch {
+      message.error('Lỗi khi tìm kiếm địa chỉ');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Xác nhận vị trí đã chọn
   const handleConfirm = () => {
     onConfirm({
@@ -279,97 +326,98 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div className="flex items-center gap-2 text-stay-text font-bold text-base">
-          <MapPin className="w-5 h-5 text-stay-primary" />
-          <span>{title}</span>
-        </div>
-      }
+      title={title}
       open={open}
       onCancel={onClose}
-      width={840}
+      width={880}
+      footer={null}
       destroyOnClose
       centered
-      zIndex={1100}
-      footer={
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-          <div className="text-xs text-stay-text text-left flex items-center gap-1.5 truncate flex-1 min-w-0">
-            <MapPin className="w-4 h-4 text-stay-primary shrink-0" />
-            {isReverseGeocoding ? (
-              <span className="text-stay-text-muted italic flex items-center gap-1">
-                <Spin size="small" /> Đang nhận diện địa chỉ...
-              </span>
-            ) : address ? (
-              <span className="truncate font-medium text-stay-text" title={address}>
-                {address}
-              </span>
-            ) : (
-              <span className="text-stay-text-muted">Nhấp chuột vào bản đồ để chọn vị trí</span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 justify-end shrink-0">
-            <Button onClick={onClose}>Hủy bỏ</Button>
-            <Button
-              type="primary"
-              icon={<Check className="w-4 h-4" />}
-              onClick={handleConfirm}
-              className="bg-stay-primary hover:bg-stay-primary-hover font-bold px-5"
-            >
-              Xác nhận vị trí này
-            </Button>
-          </div>
-        </div>
-      }
     >
-      <div className="space-y-2 py-1">
-        {/* Top Control Bar: Coordinates & Quick GPS */}
-        <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-stay-bg-app border border-stay-border text-xs">
-          <div className="flex items-center gap-2">
-            <Tag color="blue" className="font-mono text-xs px-2 py-0.5 m-0 font-bold">
-              LAT: {position[0].toFixed(6)}
-            </Tag>
-            <Tag color="cyan" className="font-mono text-xs px-2 py-0.5 m-0 font-bold">
-              LNG: {position[1].toFixed(6)}
-            </Tag>
-            <Button
-              size="small"
-              type="text"
-              icon={<Copy className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary" />}
-              onClick={copyCoordinates}
-              title="Sao chép tọa độ"
-            />
-          </div>
+      <div className="space-y-3 mt-1 max-h-[calc(85vh-100px)] overflow-y-auto pr-1.5 custom-modal-scroll">
+        {/* Thanh tìm kiếm & Nút lấy vị trí hiện tại */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <Input.Search
+            placeholder="Tìm theo địa chỉ, tên đường, trường đại học (Ví dụ: Ngõ 80 Cầu Giấy)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onSearch={handleSearchLocation}
+            loading={isSearching}
+            enterButton={<Search className="w-4 h-4" />}
+            className="flex-1"
+          />
 
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-stay-text-muted hidden sm:inline">
-              Nhấp hoặc kéo ghim đỏ để chọn vị trí
-            </span>
-            <Button
-              size="small"
-              icon={<Navigation className="w-3.5 h-3.5 text-emerald-600" />}
-              onClick={handleGetCurrentLocation}
-              loading={isGeolocating}
-              className="font-semibold text-xs border-emerald-500 text-emerald-600 hover:bg-emerald-50 shrink-0"
-            >
-              Vị trí hiện tại
-            </Button>
-          </div>
+          <Button
+            icon={<Navigation className="w-4 h-4 text-emerald-600" />}
+            onClick={handleGetCurrentLocation}
+            loading={isGeolocating}
+            className="font-semibold border-emerald-500 text-emerald-600 hover:bg-emerald-50 shrink-0"
+          >
+            Vị trí hiện tại
+          </Button>
         </div>
 
-        {/* Leaflet Map Container */}
-        <div className="relative rounded-xl overflow-hidden border border-stay-border shadow-inner">
+        {/* Vùng hiển thị bản đồ Leaflet */}
+        <div className="relative rounded-2xl overflow-hidden border border-stay-border shadow-inner">
           <div
             ref={mapContainerRef}
-            style={{ width: '100%', height: '390px' }}
+            style={{ width: '100%', height: '340px' }}
             className="z-0"
           />
 
-          {isGeolocating && (
-            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50">
-              <Spin tip="Đang định vị tọa độ GPS..." />
+          {(isSearching || isGeolocating) && (
+            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-1000">
+              <Spin tip="Đang định vị tọa độ..." />
             </div>
           )}
+        </div>
+
+        {/* Thông tin tọa độ & địa chỉ đã chọn */}
+        <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border space-y-2 text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Tag color="blue" className="font-mono text-xs px-2 py-0.5 m-0 font-bold">
+                LAT: {position[0].toFixed(6)}
+              </Tag>
+              <Tag color="cyan" className="font-mono text-xs px-2 py-0.5 m-0 font-bold">
+                LNG: {position[1].toFixed(6)}
+              </Tag>
+              <Button
+                size="small"
+                type="text"
+                icon={<Copy className="w-3 h-3 text-slate-500" />}
+                onClick={copyCoordinates}
+                title="Sao chép tọa độ"
+              />
+            </div>
+            {isReverseGeocoding && (
+              <span className="text-slate-400 text-[11px] italic flex items-center gap-1">
+                <Spin size="small" /> Đang nhận diện địa chỉ...
+              </span>
+            )}
+          </div>
+
+          {address && (
+            <div className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300">
+              <MapPin className="w-4 h-4 text-stay-primary shrink-0 mt-0.5" />
+              <p className="line-clamp-2 leading-relaxed">
+                <strong>Địa chỉ ước tính:</strong> {address}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Nút thao tác xác nhận */}
+        <div className="flex justify-end items-center gap-2 pt-2 border-t border-stay-border">
+          <Button onClick={onClose}>Hủy bỏ</Button>
+          <Button
+            type="primary"
+            icon={<Check className="w-4 h-4" />}
+            onClick={handleConfirm}
+            className="bg-stay-primary hover:bg-stay-primary-hover font-bold px-5"
+          >
+            Xác nhận vị trí này
+          </Button>
         </div>
       </div>
     </Modal>

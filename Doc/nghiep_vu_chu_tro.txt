@@ -1,0 +1,723 @@
+================================================================================
+HỆ THỐNG QUẢN LÝ NHÀ TRỌ HỖ TRỢ GHÉP NGƯỜI Ở CHUNG (STAYCONNECT)
+TÀI LIỆU ĐẶC TẢ CHI TIẾT NGHIỆP VỤ - ROLE: CHỦ TRỌ (LANDLORD) (29 USE CASES)
+================================================================================
+
+################################################################################
+PHẦN 1: CÁC USE CASE DÀNH CHO ROLE: CHỦ TRỌ (LANDLORD)
+################################################################################
+
+Header 2: 1. Chức năng xem danh sách tòa nhà
+------------------------------------------------------------
+Use case: View Building List (Xem danh sách các tòa nhà / khu trọ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập thành công vào hệ thống với vai trò Chủ trọ.
+Hậu điều kiện: Danh sách các tòa nhà thuộc quyền quản lý của chủ trọ được hiển thị đầy đủ kèm số liệu thống kê phòng (tổng phòng, phòng đang ở, phòng còn trống).
+Kịch bản chính:
+  1. Chủ trọ đăng nhập vào hệ thống, từ thanh menu điều hướng chọn mục 'Quản lý tòa nhà'.
+  2. Hệ thống tải dữ liệu và hiển thị danh sách các tòa nhà/khu trọ thuộc quyền quản lý của chủ trọ, tự động tính toán tổng số phòng, số phòng đang có người ở và số phòng còn trống cho từng tòa nhà.
+  3. Hệ thống hiển thị giao diện gồm: Thanh tìm kiếm theo tên tòa nhà hoặc địa chỉ, nút 'Thêm mới tòa nhà', và bảng dữ liệu tổng quan:
+  Mã | Tên tòa nhà | Địa chỉ chi tiết | Số tầng | Tổng phòng | Đang ở | Phòng trống | Tùy chọn
+  --- | --- | --- | --- | --- | --- | --- | ---
+  #1 | Tòa nhà Ánh Dương | Số 12 Ngõ 80 Cầu Giấy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội | 5 | 20 | 16 | 4 | Sửa | Xóa
+  #2 | Tòa nhà Bách Khoa Plaza | Số 45 Tạ Quang Bửu, Bách Khoa, Hai Bà Trưng, Hà Nội | 6 | 24 | 23 | 1 | Sửa | Xóa
+  #3 | Khu nhà trọ Triều Khúc | Số 88 Triều Khúc, Thanh Xuân Nam, Thanh Xuân, Hà Nội | 4 | 16 | 16 | 0 | Sửa | Xóa
+  4. Chủ trọ có thể nhập từ khóa vào ô tìm kiếm để lọc nhanh tòa nhà mong muốn theo tên hoặc địa chỉ.
+  5. Hệ thống tự động lọc và hiển thị các bản ghi tương ứng trong bảng theo thời gian thực.
+Ngoại lệ:
+  2. Chủ trọ mới đăng ký tài khoản chưa có tòa nhà nào trong hệ thống, hệ thống hiển thị bảng trống kèm thông báo: "Bạn chưa có tòa nhà nào. Vui lòng bấm Thêm mới tòa nhà để bắt đầu".
+  4. Không tìm thấy tòa nhà nào khớp với từ khóa tìm kiếm, hệ thống hiển thị bảng rỗng kèm thông báo: "Không tìm thấy tòa nhà phù hợp".
+
+============================================================
+
+Header 2: 2. Chức năng thêm mới tòa nhà
+------------------------------------------------------------
+Use case: Add Building (Thêm tòa nhà / khu trọ mới)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Tòa nhà mới được tạo lập và lưu trữ thành công vào hệ thống, sẵn sàng để cấu hình tạo các phòng trọ.
+Kịch bản chính:
+  1. Tại trang Quản lý tòa nhà, chủ trọ bấm vào nút 'Thêm mới tòa nhà'.
+  2. Hệ thống hiển thị biểu mẫu thêm tòa nhà mới gồm các thành phần:
+     - Bản đồ số định vị vị trí: Bản đồ trực quan kèm ghim vị trí cho phép chủ trọ click chuột chọn vị trí, kéo thả ghim đến vị trí chính xác của khu trọ hoặc bấm nút 'Vị trí hiện tại' để hệ thống tự động định vị theo vị trí thực tế của thiết bị. Khi vị trí được xác định, hệ thống tự động nhận diện và điền sẵn Tỉnh/Thành phố, Phường/Xã và Địa chỉ chi tiết.
+     - Tên tòa nhà / Khu trọ: Ô nhập văn bản (Ví dụ: Tòa nhà Ánh Dương, KTX Bách Khoa... Bắt buộc).
+     - Tỉnh / Thành phố: Tự động điền theo vị trí bản đồ hoặc nhập thủ công.
+     - Phường / Xã: Tự động điền theo vị trí bản đồ hoặc nhập thủ công.
+     - Địa chỉ chi tiết: Số nhà, ngõ/ngách, tên đường (Bắt buộc).
+     - Số tầng: Ô nhập số nguyên dương (Mặc định: 5 tầng, tối thiểu 1 tầng).
+     - Quy định chung của tòa nhà: Vùng nhập văn bản nhiều dòng để ghi rõ nội quy giờ giấc, an ninh, khóa cổng, giữ gìn vệ sinh chung, phòng cháy chữa cháy.
+     - Nút 'Hủy' và nút 'Thêm mới tòa nhà'.
+  3. Chủ trọ chọn vị trí trên bản đồ (hoặc bấm 'Vị trí hiện tại'), hệ thống tự động điền Tỉnh/TP: 'Thành phố Hà Nội', Phường/Xã: 'Dịch Vọng Hậu', Địa chỉ chi tiết: 'Số 15 Ngõ 165 Cầu Giấy'; chủ trọ nhập Tên tòa nhà: 'Nhà trọ Cầu Giấy Xanh', Số tầng: 5; nhập quy định chung: 'Khóa cổng 23h00, không gây ồn sau 22h, giữ gìn vệ sinh chung, cấm sạc xe điện qua đêm tại hầm'.
+  4. Chủ trọ kiểm tra lại thông tin và bấm nút 'Thêm mới tòa nhà'.
+  5. Hệ thống kiểm tra tính hợp lệ của dữ liệu:
+     - Tên tòa nhà và địa chỉ chi tiết không được để trống.
+     - Số tầng phải là số nguyên dương hợp lệ.
+  6. Hệ thống lưu thông tin tòa nhà mới vào cơ sở dữ liệu, đóng biểu mẫu, hiển thị thông báo "Thêm mới tòa nhà thành công!" và tự động bổ sung tòa nhà mới vào bảng danh sách:
+  Mã | Tên tòa nhà | Địa chỉ chi tiết | Số tầng | Tổng phòng | Đang ở | Phòng trống | Tùy chọn
+  --- | --- | --- | --- | --- | --- | --- | ---
+  #4 | Nhà trọ Cầu Giấy Xanh | Số 15 Ngõ 165 Cầu Giấy, Dịch Vọng Hậu, Hà Nội | 5 | 0 | 0 | 0 | Sửa | Xóa
+Ngoại lệ:
+  2. Chủ trọ bấm nút 'Hủy', hệ thống đóng biểu mẫu và giữ nguyên giao diện danh sách.
+  3. Chủ trọ bấm 'Vị trí hiện tại' nhưng từ chối cấp quyền định vị trên trình duyệt, hệ thống hiển thị cảnh báo: "Vui lòng cấp quyền truy cập vị trí trên trình duyệt hoặc chọn vị trí trực tiếp trên bản đồ".
+  5. Chủ trọ để trống trường bắt buộc (Tên tòa nhà, Địa chỉ chi tiết), hệ thống đánh dấu đỏ ô nhập và thông báo lỗi: "Vui lòng nhập tên tòa nhà!", "Vui lòng nhập địa chỉ chi tiết!".
+
+============================================================
+
+Header 2: 3. Chức năng sửa thông tin tòa nhà
+------------------------------------------------------------
+Use case: Update Building (Cập nhật thông tin tòa nhà)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, tòa nhà cần chỉnh sửa đã tồn tại trong hệ thống và thuộc quyền sở hữu của chủ trọ.
+Hậu điều kiện: Thông tin cập nhật của tòa nhà (tên, địa chỉ, số tầng, quy định chung, vị trí bản đồ) được lưu thành công vào cơ sở dữ liệu.
+Kịch bản chính:
+  1. Tại bảng danh sách tòa nhà, chủ trọ tìm tòa nhà cần sửa (ví dụ: Tòa nhà Ánh Dương) và bấm nút 'Sửa'.
+  2. Hệ thống hiển thị biểu mẫu cập nhật thông tin tòa nhà với đầy đủ dữ liệu hiện tại (vị trí trên bản đồ, tên, địa chỉ, số tầng, quy định chung).
+  3. Chủ trọ tiến hành chỉnh sửa các trường cần thay đổi: Bổ sung vào Quy định chung: "Đã lắp thêm máy giặt sấy tầng 1 và hệ thống PCCC tự động đạt chuẩn; cư dân tuân thủ nội quy phân loại rác".
+  4. Chủ trọ bấm nút 'Lưu thay đổi'.
+  5. Hệ thống kiểm tra tính hợp lệ của dữ liệu vừa chỉnh sửa.
+  6. Hệ thống cập nhật các thay đổi vào cơ sở dữ liệu, đóng biểu mẫu, hiển thị thông báo "Cập nhật thông tin tòa nhà thành công!" và làm mới bảng dữ liệu tòa nhà.
+Ngoại lệ:
+  2. Chủ trọ bấm nút 'Hủy', hệ thống đóng biểu mẫu và không lưu các thay đổi vừa nhập.
+  5. Chủ trọ xóa trắng tên tòa nhà hoặc địa chỉ chi tiết, hệ thống cảnh báo lỗi và chặn không cho lưu.
+
+============================================================
+
+Header 2: 4. Chức năng xóa tòa nhà
+------------------------------------------------------------
+Use case: Delete Building (Xóa tòa nhà khỏi hệ thống)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, tòa nhà cần xóa đang tồn tại và thuộc quyền quản lý của chủ trọ.
+Hậu điều kiện: Tòa nhà được xóa hoàn toàn khỏi cơ sở dữ liệu nếu không còn phòng nào đang có khách thuê.
+Kịch bản chính:
+  1. Tại bảng danh sách tòa nhà, chủ trọ bấm nút 'Xóa' tại hàng của tòa nhà muốn xóa (ví dụ: Nhà trọ Cầu Giấy Xanh).
+  2. Hệ thống hiển thị hộp thoại xác nhận: "Bạn có chắc chắn muốn xóa tòa nhà này không? Thao tác này không thể hoàn tác." kèm 2 nút 'Hủy' và 'Xác nhận xóa'.
+  3. Chủ trọ bấm nút 'Xác nhận xóa'.
+  4. Hệ thống thực hiện kiểm tra ràng buộc phòng đang thuê: Kiểm tra xem trong tòa nhà có phòng trọ nào đang có khách thuê hay không.
+  5. Tòa nhà không có phòng nào đang có khách thuê, hệ thống tiến hành xóa bản ghi tòa nhà khỏi cơ sở dữ liệu.
+  6. Hệ thống đóng hộp thoại, hiển thị thông báo "Xóa tòa nhà thành công!" và loại bỏ tòa nhà khỏi bảng danh sách.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hộp thoại đóng lại và tòa nhà không bị xóa.
+  4. Tòa nhà đang chứa các phòng trọ có khách đang thuê, hệ thống từ chối xóa và hiển thị cảnh báo: "Không thể xóa tòa nhà đang có phòng có khách thuê! Vui lòng thanh lý hợp đồng và trả phòng trước khi xóa".
+
+============================================================
+
+Header 2: 5. Chức năng xem danh sách và trạng thái phòng trọ
+------------------------------------------------------------
+Use case: View Room List (Xem danh sách và trạng thái phòng trọ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Danh sách phòng cùng trạng thái (Còn trống, Đang thuê, Đang sửa chữa, Ngừng sử dụng) và chế độ hiển thị công khai được hiển thị đầy đủ.
+Kịch bản chính:
+  1. Chủ trọ chọn mục 'Quản lý phòng trọ' trên thanh menu điều hướng.
+  2. Hệ thống tải dữ liệu và hiển thị giao diện quản lý phòng trọ gồm:
+     - Bộ lọc tìm kiếm: Bộ lọc Tòa nhà, Bộ lọc Tầng, Bộ lọc Trạng thái phòng (Tất cả, Còn trống, Đang thuê, Đang sửa chữa, Ngừng sử dụng).
+     - Nút 'Thêm phòng mới'.
+     - Bảng danh sách phòng trọ:
+  Mã | Tên phòng & Tòa nhà | Tầng | Diện tích | Giá thuê (đ/tháng) | Sức chứa | Trạng thái | Hiển thị | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | --- | ---
+  #101 | Phòng 101 (Tòa nhà Ánh Dương) | Tầng 1 | 25 m² | 3.500.000 đ | 2 người | Đang thuê | Công khai | Sửa | Xóa
+  #102 | Phòng 102 (Tòa nhà Ánh Dương) | Tầng 1 | 28 m² | 3.800.000 đ | 3 người | Còn trống | Công khai | Sửa | Xóa
+  #201 | Phòng 201 (Tòa nhà Ánh Dương) | Tầng 2 | 22 m² | 3.200.000 đ | 2 người | Đang sửa chữa | Ẩn | Sửa | Xóa
+  3. Chủ trọ có thể chọn lọc theo Tòa nhà Ánh Dương và trạng thái 'Còn trống'; bảng dữ liệu lọc nhanh hiển thị riêng các phòng trống sẵn sàng đón khách mới.
+Ngoại lệ:
+  2. Chủ trọ chưa tạo phòng nào trong hệ thống, giao diện hiển thị thông báo: "Chưa có dữ liệu phòng trọ. Bấm Thêm phòng mới để bắt đầu cấu hình".
+  3. Không có phòng nào thỏa mãn tiêu chí bộ lọc, hệ thống hiển thị thông báo: "Không tìm thấy phòng trọ phù hợp với tiêu chí lọc".
+
+============================================================
+
+Header 2: 6. Chức năng thêm phòng trọ mới
+------------------------------------------------------------
+Use case: Add Room (Tạo mới phòng trọ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Phòng trọ mới được khởi tạo thành công với trạng thái mặc định 'Còn trống', số người ở hiện tại bằng 0.
+Kịch bản chính:
+  1. Tại trang Quản lý phòng trọ, chủ trọ bấm nút 'Thêm phòng mới'.
+  2. Hệ thống hiển thị biểu mẫu tạo phòng mới gồm các thông tin:
+     - Tòa nhà trực thuộc: Danh sách chọn tòa nhà thuộc sở hữu của chủ trọ hoặc để trống (nếu là nhà trọ độc lập). Khi chọn tòa nhà, hệ thống tự động kế thừa địa chỉ và vị trí của tòa nhà đó.
+     - Bản đồ vị trí: Hiển thị vị trí phòng trọ, hỗ trợ định vị chính xác hoặc tự động đồng bộ theo tòa nhà.
+     - Tên phòng: Ô nhập văn bản (Ví dụ: 'Phòng 302', 'Studio 401'... Bắt buộc).
+     - Tầng: Ô nhập số nguyên (Mặc định: 1, tối thiểu 1).
+     - Diện tích (m²): Ô nhập số thực dương (Ví dụ: 28 m², Bắt buộc).
+     - Giá thuê niêm yết (VNĐ/tháng): Ô nhập số tiền (Ví dụ: 3.900.000 đ, Bắt buộc).
+     - Tiền đặt cọc tiêu chuẩn (VNĐ): Mặc định bằng 1 tháng tiền thuê (3.900.000 đ).
+     - Sức chứa tối đa (người): Ô nhập số nguyên (Mặc định: 2 người).
+     - Mức độ nội thất: Danh mục chọn (Cơ bản, Đầy đủ đồ, Cao cấp).
+     - Tiện nghi phòng: Danh sách chọn (Điều hòa, Bình nóng lạnh, Tủ lạnh, Máy giặt, Giường nệm, Tủ quần áo, Kệ bếp, Ban công riêng, Khóa vân tay...).
+     - Dịch vụ tiện ích áp dụng: Danh sách tích chọn các dịch vụ tính cước (Điện sinh hoạt, Nước sinh hoạt, Internet Wifi, Vệ sinh rác...).
+     - Cho phép hiển thị tìm kiếm công khai: Nút bật/tắt (Mặc định Bật).
+     - Nút 'Hủy' và nút 'Tạo phòng'.
+  3. Chủ trọ chọn Tòa nhà Ánh Dương; nhập Tên phòng: 'Phòng 302'; Tầng: 3; Diện tích: 28 m²; Giá thuê: 3.900.000 đ; Tiền cọc: 3.900.000 đ; Sức chứa: 2 người; Nội thất: Đầy đủ đồ; tích chọn các tiện nghi: Điều hòa, Nóng lạnh, Giường nệm, Tủ quần áo, Ban công; Chọn dịch vụ: Điện, Nước, Internet; Bật hiển thị công khai.
+  4. Chủ trọ bấm nút 'Tạo phòng'.
+  5. Hệ thống kiểm tra tính hợp lệ của dữ liệu:
+     - Đảm bảo tên phòng không bị trùng lặp trong cùng tòa nhà.
+     - Giá thuê và diện tích phải là số dương lớn hơn 0.
+  6. Hệ thống khởi tạo phòng mới với trạng thái 'Còn trống', số người đang ở là 0, lưu thông tin vào cơ sở dữ liệu.
+  7. Hệ thống đóng biểu mẫu, hiển thị thông báo "Tạo phòng thành công!" và bổ sung phòng mới vào bảng danh sách:
+  Mã | Tên phòng | Tầng | Diện tích | Giá thuê | Sức chứa | Trạng thái | Hiển thị
+  --- | --- | --- | --- | --- | --- | --- | ---
+  #105 | Phòng 302 (Tòa nhà Ánh Dương) | Tầng 3 | 28 m² | 3.900.000 đ | 2 người | Còn trống | Công khai
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hệ thống đóng biểu mẫu và không tạo phòng.
+  5. Tên phòng 'Phòng 302' đã tồn tại trong tòa nhà Ánh Dương, hệ thống cảnh báo: "Tên phòng đã tồn tại trong tòa nhà này! Vui lòng chọn tên phòng khác".
+  5. Chủ trọ nhập giá thuê hoặc diện tích <= 0, hệ thống cảnh báo: "Giá phòng và diện tích phải là số nguyên dương lớn hơn 0".
+
+============================================================
+
+Header 2: 7. Chức năng sửa thông tin phòng trọ
+------------------------------------------------------------
+Use case: Update Room (Cập nhật thông tin phòng trọ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, phòng trọ cần sửa đã tồn tại và thuộc quyền quản lý của chủ trọ.
+Hậu điều kiện: Các thông tin cập nhật (giá thuê, diện tích, tiện nghi, trạng thái, chế độ công khai) được lưu vào cơ sở dữ liệu.
+Kịch bản chính:
+  1. Tại bảng danh sách phòng, chủ trọ bấm nút 'Sửa' tại hàng của phòng cần sửa (ví dụ: Phòng 102).
+  2. Hệ thống hiển thị biểu mẫu cập nhật thông tin phòng với đầy đủ dữ liệu hiện tại (tòa nhà, giá thuê, tiện nghi, dịch vụ, trạng thái).
+  3. Chủ trọ tiến hành chỉnh sửa: Điều chỉnh giá thuê niêm yết từ 3.800.000 đ lên 4.000.000 đ/tháng; bổ sung tiện nghi 'Tủ lạnh mini 90L'; chuyển trạng thái từ 'Đang sửa chữa' sang 'Còn trống'.
+  4. Chủ trọ bấm nút 'Lưu thay đổi'.
+  5. Hệ thống kiểm tra tính hợp lệ:
+     - Nếu phòng đang có hợp đồng thuê hiệu lực, hệ thống không cho phép đổi trạng thái về 'Còn trống'.
+  6. Hệ thống cập nhật thông tin phòng vào cơ sở dữ liệu, đóng biểu mẫu, hiển thị thông báo "Cập nhật phòng thành công!" và cập nhật dòng bản ghi trong bảng danh sách phòng.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hệ thống đóng biểu mẫu và giữ nguyên dữ liệu cũ.
+  5. Phòng đang có hợp đồng thuê hoạt động, chủ trọ cố tình đổi trạng thái sang 'Còn trống', hệ thống từ chối và cảnh báo: "Phòng trọ đang có hợp đồng thuê còn hiệu lực, không thể chuyển trạng thái sang Còn trống!".
+
+============================================================
+
+Header 2: 8. Chức năng xóa phòng trọ
+------------------------------------------------------------
+Use case: Delete Room (Xóa phòng trọ khỏi hệ thống)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, phòng trọ cần xóa đang tồn tại và thuộc quyền quản lý của chủ trọ.
+Hậu điều kiện: Phòng trọ được xóa khỏi hệ thống nếu chưa từng phát sinh hợp đồng hoặc hóa đơn thanh toán.
+Kịch bản chính:
+  1. Tại bảng danh sách phòng, chủ trọ bấm nút 'Xóa' tại hàng của phòng cần xóa (ví dụ: Phòng 302 vừa tạo nhầm).
+  2. Hệ thống hiển thị hộp thoại xác nhận: "Bạn có chắc chắn muốn xóa phòng trọ này không? Thao tác này không thể hoàn tác." kèm 2 nút 'Hủy' và 'Xác nhận xóa'.
+  3. Chủ trọ bấm nút 'Xác nhận xóa'.
+  4. Hệ thống thực hiện kiểm tra ràng buộc lịch sử giao dịch:
+     - Kiểm tra phòng đã từng phát sinh hợp đồng thuê hoặc hóa đơn thanh toán nào chưa.
+  5. Nếu phòng chưa từng có hợp đồng và hóa đơn, hệ thống tiến hành xóa phòng trọ khỏi cơ sở dữ liệu.
+  6. Hệ thống đóng hộp thoại, hiển thị thông báo "Xóa phòng trọ thành công!" và xóa dòng phòng trọ khỏi bảng dữ liệu.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hộp thoại đóng lại và phòng không bị xóa.
+  4. Phòng trọ đã từng phát sinh hợp đồng thuê hoặc có lịch sử hóa đơn thu tiền, hệ thống từ chối xóa và hiển thị thông báo: "Không thể xóa phòng trọ đã từng phát sinh hợp đồng hoặc hóa đơn! Bạn chỉ có thể chuyển trạng thái phòng sang 'Ngừng sử dụng'".
+
+============================================================
+
+Header 2: 9. Chức năng xem danh mục dịch vụ tiện ích
+------------------------------------------------------------
+Use case: View Service List (Xem bảng giá dịch vụ tiện ích)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Danh mục toàn bộ các dịch vụ tiện ích (Điện, nước, mạng, rác, gửi xe...) kèm đơn giá và phương thức tính cước được hiển thị đầy đủ.
+Kịch bản chính:
+  1. Chủ trọ chọn mục 'Cấu hình dịch vụ' trên thanh menu điều hướng.
+  2. Hệ thống tải dữ liệu và hiển thị danh mục các dịch vụ tiện ích đang áp dụng tính cước:
+  Mã | Tên dịch vụ | Phân loại | Đơn giá (VNĐ) | Đơn vị tính | Hình thức tính cước | Bắt buộc | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | ---
+  #1 | Điện sinh hoạt | Điện | 3.800 đ | kWh (Số) | Theo chỉ số công tơ | Có | Sửa | Xóa
+  #2 | Nước sinh hoạt | Nước | 30.000 đ | m³ (Khối) | Theo chỉ số công tơ | Có | Sửa | Xóa
+  #3 | Internet Wifi tốc độ cao | Internet | 100.000 đ | Phòng / Tháng | Cố định theo phòng | Có | Sửa | Xóa
+  #4 | Vệ sinh & Thu gom rác | Vệ sinh | 50.000 đ | Người / Tháng | Cố định theo người | Có | Sửa | Xóa
+  #5 | Phí gửi xe máy số | Gửi xe | 80.000 đ | Xe / Tháng | Cố định theo người | Không | Sửa | Xóa
+  3. Chủ trọ có thể theo dõi rõ ràng đơn giá từng loại dịch vụ để chuẩn bị áp dụng vào việc lập hóa đơn và ký hợp đồng thuê.
+Ngoại lệ:
+  2. Chủ trọ chưa cấu hình dịch vụ nào, hệ thống hiển thị bảng trống kèm gợi ý: "Chưa có dịch vụ tiện ích nào. Vui lòng bấm Thêm dịch vụ mới để thiết lập biểu giá điện, nước, internet".
+
+============================================================
+
+Header 2: 10. Chức năng thêm mới dịch vụ tiện ích
+------------------------------------------------------------
+Use case: Add Utility Service (Thêm dịch vụ tiện ích mới)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Dịch vụ tiện ích mới được tạo lập, lưu vào cơ sở dữ liệu và sẵn sàng áp dụng vào cấu hình phòng hoặc hợp đồng.
+Kịch bản chính:
+  1. Tại trang Cấu hình dịch vụ, chủ trọ bấm nút 'Thêm dịch vụ mới'.
+  2. Hệ thống hiển thị biểu mẫu thêm dịch vụ tiện ích với các trường:
+     - Phân loại dịch vụ: Danh mục chọn (Điện, Nước, Internet, Vệ sinh rác, Gửi xe, Thang máy, Tiện ích khác).
+     - Tên dịch vụ: Ô nhập văn bản (Ví dụ: 'Phí gửi xe máy', Bắt buộc).
+     - Đơn vị tính: Ô nhập văn bản (Ví dụ: 'Xe/Tháng', Bắt buộc).
+     - Đơn giá (VNĐ): Ô nhập số tiền (Ví dụ: 120.000 đ, Bắt buộc).
+     - Hình thức tính cước: Danh mục chọn (Theo chỉ số công tơ, Cố định theo phòng, Cố định theo đầu người).
+     - Dịch vụ bắt buộc: Nút bật/tắt (Mặc định Tắt).
+     - Mô tả chi tiết: Vùng văn bản ghi chú quy định tính phí.
+     - Nút 'Hủy' và nút 'Lưu dịch vụ'.
+  3. Chủ trọ chọn Phân loại: Gửi xe; Tên dịch vụ: 'Phí gửi xe tay ga'; Đơn vị tính: 'Xe/tháng'; Đơn giá: 120.000 đ; Hình thức tính: Cố định theo đầu người; Bắt buộc: Tắt; Mô tả: 'Áp dụng cho khách thuê có đăng ký xe máy để tại hầm'.
+  4. Chủ trọ bấm nút 'Lưu dịch vụ'.
+  5. Hệ thống kiểm tra dữ liệu: Đơn giá không được âm, tên dịch vụ không để trống.
+  6. Hệ thống lưu dịch vụ mới vào cơ sở dữ liệu, đóng biểu mẫu, hiển thị thông báo "Thêm dịch vụ thành công!" và bổ sung dịch vụ vào bảng danh sách:
+  Mã | Tên dịch vụ | Phân loại | Đơn giá | Đơn vị | Hình thức tính | Bắt buộc | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | ---
+  #7 | Phí gửi xe tay ga | Gửi xe | 120.000 đ | Xe/tháng | Cố định theo người | Không | Sửa | Xóa
+Ngoại lệ:
+  2. Chủ trọ bấm nút 'Hủy', hệ thống đóng biểu mẫu và không lưu.
+  5. Chủ trọ nhập đơn giá âm hoặc để trống tên dịch vụ, hệ thống hiển thị cảnh báo lỗi và chặn không cho lưu.
+
+============================================================
+
+Header 2: 11. Chức năng sửa dịch vụ tiện ích
+------------------------------------------------------------
+Use case: Update Utility Service (Cập nhật đơn giá và thông tin dịch vụ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, dịch vụ tiện ích cần sửa đã tồn tại và thuộc quyền quản lý của chủ trọ.
+Hậu điều kiện: Đơn giá và thông tin dịch vụ được cập nhật, áp dụng cho các kỳ hóa đơn và hợp đồng tiếp theo.
+Kịch bản chính:
+  1. Tại bảng danh mục dịch vụ, chủ trọ bấm nút 'Sửa' tại dòng của dịch vụ Điện sinh hoạt.
+  2. Hệ thống hiển thị biểu mẫu cập nhật dịch vụ chứa đầy đủ thông tin hiện tại của dịch vụ điện.
+  3. Do biểu giá điện có sự điều chỉnh, chủ trọ cập nhật Đơn giá từ 3.800 đ lên 4.000 đ/kWh; giữ nguyên đơn vị và hình thức tính.
+  4. Chủ trọ bấm nút 'Lưu thay đổi'.
+  5. Hệ thống kiểm tra và cập nhật thông tin dịch vụ vào cơ sở dữ liệu.
+  6. Hệ thống đóng biểu mẫu, hiển thị thông báo "Cập nhật dịch vụ thành công!" và làm mới giá trị đơn giá trên bảng danh sách.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hệ thống đóng biểu mẫu và giữ nguyên đơn giá cũ.
+
+============================================================
+
+Header 2: 12. Chức năng xóa dịch vụ tiện ích
+------------------------------------------------------------
+Use case: Delete Utility Service (Xóa dịch vụ tiện ích khỏi danh mục)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, dịch vụ cần xóa tồn tại trong danh mục của chủ trọ.
+Hậu điều kiện: Dịch vụ được gỡ bỏ khỏi danh mục tính cước của chủ trọ.
+Kịch bản chính:
+  1. Tại bảng danh mục dịch vụ, chủ trọ bấm nút 'Xóa' tại hàng của dịch vụ muốn xóa (ví dụ: Phí gửi xe tay ga).
+  2. Hệ thống hiển thị hộp thoại xác nhận: "Bạn có chắc chắn muốn xóa dịch vụ tiện ích này không? Lưu ý: Các phòng đang sử dụng dịch vụ này có thể bị ảnh hưởng khi tính tiền" cùng 2 nút 'Hủy' và 'Xác nhận xóa'.
+  3. Chủ trọ bấm nút 'Xác nhận xóa'.
+  4. Hệ thống kiểm tra xem dịch vụ có đang được áp dụng trong các hợp đồng thuê đang có hiệu lực hay không.
+  5. Nếu dịch vụ chưa bị ràng buộc trong hợp đồng nào đang hiệu lực, hệ thống tiến hành xóa dịch vụ khỏi danh mục.
+  6. Hệ thống đóng hộp thoại, thông báo "Xóa dịch vụ thành công!" và loại bỏ dịch vụ khỏi bảng.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hộp thoại đóng lại và dịch vụ không bị xóa.
+  4. Dịch vụ đang được áp dụng trong các hợp đồng thuê đang có hiệu lực, hệ thống từ chối xóa và hiển thị cảnh báo: "Không thể xóa dịch vụ đang được áp dụng trong hợp đồng thuê còn hiệu lực!".
+
+============================================================
+
+Header 2: 13. Chức năng xem danh sách khách thuê phòng
+------------------------------------------------------------
+Use case: View Tenant List (Xem danh sách khách đang thuê phòng)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Danh sách toàn bộ khách đang thuê phòng, thông tin cá nhân, CCCD, vai trò và trạng thái liên kết tài khoản được hiển thị đầy đủ.
+Kịch bản chính:
+  1. Chủ trọ bấm vào mục 'Quản lý khách thuê' trên thanh menu điều hướng.
+  2. Hệ thống tải dữ liệu và hiển thị danh sách khách đang thuê phòng gồm:
+     - Thanh tìm kiếm theo Họ tên, Số điện thoại hoặc Số CCCD.
+     - Bộ lọc theo Tòa nhà và Phòng trọ.
+     - Nút 'Thêm khách thuê'.
+     - Bảng danh sách khách thuê:
+  Mã | Họ và tên | Phòng trọ & Tòa nhà | Số điện thoại | Số CCCD/CMND | Giới tính | Quê quán | Đại diện hợp đồng | Trạng thái liên kết | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+  #1 | Phạm Minh Đức | Phòng 102 (Ánh Dương) | 0988123456 | 001200001234 | Nam | Hà Nội | Có (Đại diện) | Đã liên kết | Sửa | Xóa
+  #2 | Trần Thị Mai | Phòng 102 (Ánh Dương) | 0977654321 | 001201004321 | Nữ | Hải Phòng | Thành viên | Đã liên kết | Sửa | Xóa
+  #3 | Nguyễn Văn An | Phòng 101 (Ánh Dương) | 0912345678 | 034200005678 | Nam | Thái Bình | Có (Đại diện) | Chưa liên kết | Sửa | Liên kết | Xóa
+  3. Chủ trọ có thể nhập 'Phạm Minh Đức' vào ô tìm kiếm; hệ thống tự động lọc hiển thị hồ sơ của khách thuê tương ứng.
+Ngoại lệ:
+  2. Chưa có khách thuê nào trong hệ thống, hiển thị thông báo: "Chưa có khách thuê nào. Bấm Thêm khách thuê để thêm hồ sơ người thuê phòng".
+  3. Không tìm thấy khách thuê khớp với từ khóa tìm kiếm, hiển thị bảng rỗng kèm thông báo: "Không tìm thấy khách thuê phù hợp".
+
+============================================================
+
+Header 2: 14. Chức năng thêm khách thuê vào phòng
+------------------------------------------------------------
+Use case: Add Tenant (Tạo hồ sơ và gán khách thuê vào phòng)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, phòng trọ tiếp nhận khách đã tồn tại trong hệ thống.
+Hậu điều kiện: Hồ sơ khách thuê mới được tạo với trạng thái 'Đang ở', liên kết với phòng trọ và số lượng người ở hiện tại của phòng tăng thêm 1.
+Kịch bản chính:
+  1. Tại trang Quản lý khách thuê, chủ trọ bấm nút 'Thêm khách thuê'.
+  2. Hệ thống hiển thị biểu mẫu thêm khách thuê mới gồm các trường:
+     - Phòng trọ tiếp nhận: Danh sách chọn phòng trọ (Ví dụ: Phòng 102 - Tòa nhà Ánh Dương, Bắt buộc).
+     - Họ và tên: Ô nhập văn bản (Ví dụ: 'Lê Văn Cường', Bắt buộc).
+     - Số điện thoại: Ô nhập số điện thoại (Ví dụ: '0905111222', 10 chữ số, Bắt buộc).
+     - Số CCCD/CMND: Ô nhập văn bản (Ví dụ: '001202008899', 12 chữ số).
+     - Ngày sinh & Giới tính: Lựa chọn ngày sinh và chọn Nam / Nữ.
+     - Quê quán / Thường trú: Ô nhập văn bản (Ví dụ: 'Hải Hậu, Nam Định').
+     - Là người đại diện hợp đồng: Nút chọn (Mặc định Tắt).
+     - Ghi chú: Ô nhập văn bản (Ví dụ: 'Sinh viên năm 2 ĐH Bách Khoa').
+     - Nút 'Hủy' và nút 'Lưu khách thuê'.
+  3. Chủ trọ chọn Phòng 102, nhập Họ tên: 'Lê Văn Cường', SĐT: '0905111222', CCCD: '001202008899', Giới tính: Nam, Quê quán: 'Nam Định'.
+  4. Chủ trọ bấm nút 'Lưu khách thuê'.
+  5. Hệ thống kiểm tra sức chứa tối đa của phòng: Kiểm tra số người ở hiện tại so với sức chứa tối đa quy định của phòng.
+  6. Phòng còn sức chứa, hệ thống tạo hồ sơ khách thuê mới với trạng thái 'Đang ở', tự động tăng số lượng người ở của phòng thêm 1, lưu thông tin vào cơ sở dữ liệu.
+  7. Hệ thống đóng biểu mẫu, thông báo "Thêm khách thuê thành công!" và hiển thị khách thuê mới trong bảng dữ liệu:
+  Mã | Họ và tên | Phòng trọ | Số điện thoại | CCCD | Giới tính | Quê quán | Đại diện | Trạng thái liên kết | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+  #4 | Lê Văn Cường | Phòng 102 (Ánh Dương) | 0905111222 | 001202008899 | Nam | Nam Định | Thành viên | Chưa liên kết | Sửa | Liên kết | Xóa
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hệ thống đóng biểu mẫu và không lưu.
+  5. Phòng đã đạt sức chứa tối đa (ví dụ phòng tối đa 2 người nhưng đã có 2 người đang ở), hệ thống từ chối và cảnh báo: "Phòng trọ này đã đủ số lượng người ở tối đa theo quy định!".
+  5. Để trống Họ tên hoặc số điện thoại không hợp lệ, hệ thống hiển thị cảnh báo lỗi viền đỏ.
+
+============================================================
+
+Header 2: 15. Chức năng sửa thông tin khách thuê
+------------------------------------------------------------
+Use case: Update Tenant (Cập nhật thông tin hồ sơ khách thuê)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, hồ sơ khách thuê đã tồn tại và thuộc phòng do chủ trọ quản lý.
+Hậu điều kiện: Thông tin cá nhân, CCCD, số điện thoại, quê quán hoặc vai trò đại diện của khách thuê được cập nhật thành công.
+Kịch bản chính:
+  1. Tại danh sách khách thuê, chủ trọ bấm nút 'Sửa' tại hàng của khách thuê Lê Văn Cường.
+  2. Hệ thống hiển thị biểu mẫu sửa thông tin khách thuê chứa đầy đủ dữ liệu hiện tại của khách.
+  3. Chủ trọ tiến hành chỉnh sửa: Cập nhật lại số điện thoại chính xác '0905111333' và điều chỉnh lại số CCCD chính xác.
+  4. Chủ trọ bấm nút 'Lưu thay đổi'.
+  5. Hệ thống kiểm tra tính hợp lệ của dữ liệu.
+  6. Hệ thống cập nhật các trường thông tin vào cơ sở dữ liệu, đóng biểu mẫu, hiển thị thông báo "Cập nhật thông tin khách thuê thành công!" và cập nhật dòng bản ghi trong danh sách.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', biểu mẫu đóng lại và giữ nguyên thông tin cũ.
+
+============================================================
+
+Header 2: 16. Chức năng xóa hoặc chuyển khách thuê ra khỏi phòng
+------------------------------------------------------------
+Use case: Remove Tenant (Gỡ khách thuê khỏi phòng trọ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập, khách thuê đang có tên trong phòng và không phải là người đứng tên đại diện hợp đồng chính.
+Hậu điều kiện: Khách thuê chuyển sang trạng thái đã rời đi, số người ở hiện tại của phòng giảm đi 1.
+Kịch bản chính:
+  1. Khi một thành viên ở ghép chuyển đi (ví dụ: khách thuê Lê Văn Cường chuyển ra khỏi phòng 102), chủ trọ bấm nút 'Xóa' tại dòng của khách.
+  2. Hệ thống hiển thị hộp thoại xác nhận: "Bạn có chắc chắn muốn xóa khách này khỏi phòng không? Khách sẽ được chuyển sang trạng thái đã rời đi." cùng 2 nút 'Hủy' và 'Xác nhận xóa'.
+  3. Chủ trọ bấm nút 'Xác nhận xóa'.
+  4. Hệ thống thực hiện kiểm tra vai trò đại diện hợp đồng: Kiểm tra xem khách có đang là người đại diện đứng tên hợp đồng hay không.
+  5. Khách không phải đại diện hợp đồng, hệ thống cập nhật trạng thái của khách sang 'Đã rời đi', ngắt liên kết phòng, giảm số người ở của phòng đi 1 và lưu vào cơ sở dữ liệu.
+  6. Hệ thống đóng hộp thoại, thông báo "Gỡ khách thuê khỏi phòng thành công!" và loại bỏ khách Lê Văn Cường khỏi danh sách đang ở.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', hộp thoại đóng lại và khách thuê không bị xóa.
+  4. Khách thuê đang là người đứng tên đại diện hợp đồng, hệ thống từ chối xóa và hiển thị cảnh báo: "Không thể xóa khách thuê đang là đại diện hợp đồng! Vui lòng thanh lý hợp đồng hoặc đổi người đại diện trước khi gỡ khách".
+
+============================================================
+
+Header 2: 17. Chức năng mời liên kết tài khoản khách thuê
+------------------------------------------------------------
+Use case: Invite & Cancel Tenant User Link (Mời liên kết và hủy lời mời liên kết tài khoản)
+Actor: Chủ trọ, Khách thuê
+Tiền điều kiện: Chủ trọ đã đăng nhập, khách thuê có hồ sơ trong phòng và có tài khoản người dùng đã đăng ký trên hệ thống.
+Hậu điều kiện: Lời mời liên kết ở trạng thái Chờ xác nhận được tạo, hệ thống gửi thông báo đẩy tới ứng dụng của khách thuê để xác nhận kết nối phòng trọ.
+Kịch bản chính:
+  1. Tại bảng danh sách khách thuê, chủ trọ tìm khách thuê chưa liên kết (ví dụ: Lê Văn Cường, trạng thái 'Chưa liên kết') và bấm nút 'Liên kết'.
+  2. Hệ thống hiển thị biểu mẫu mời liên kết tài khoản với hướng dẫn: "Sau khi khách thuê xác nhận, tài khoản sẽ được kết nối để xem hóa đơn và nhận mã VietQR thanh toán tự động".
+  3. Chủ trọ nhập số điện thoại hoặc email đăng ký tài khoản của khách: '0905111333'.
+  4. Chủ trọ bấm nút 'Gửi lời mời liên kết'.
+  5. Hệ thống tìm kiếm tài khoản người dùng theo thông tin cung cấp, kiểm tra khách thuê chưa liên kết tài khoản nào khác, tạo lời mời ở trạng thái 'Chờ xác nhận', tự động gửi thông báo đến tài khoản ứng dụng của khách thuê.
+  6. Hệ thống đóng biểu mẫu, chuyển trạng thái liên kết của khách sang 'Chờ xác nhận'.
+  7. Nếu chủ trọ gửi nhầm số điện thoại hoặc muốn thu hồi lời mời: Chủ trọ bấm nút 'Hủy lời mời', hệ thống hủy lời mời kết nối và đưa trạng thái về 'Chưa liên kết'.
+Ngoại lệ:
+  5. Số điện thoại hoặc email chưa đăng ký tài khoản trên hệ thống, hệ thống cảnh báo: "Không tìm thấy tài khoản người dùng khớp với thông tin cung cấp! Vui lòng yêu cầu khách tải ứng dụng và đăng ký tài khoản trước".
+  5. Khách thuê này đã được liên kết với một tài khoản khác trước đó, hệ thống cảnh báo: "Khách thuê này đã được liên kết tài khoản từ trước".
+
+============================================================
+
+Header 2: 18. Chức năng xem danh sách hợp đồng thuê
+------------------------------------------------------------
+Use case: View Contract List (Xem danh sách các hợp đồng thuê phòng)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Danh sách toàn bộ các hợp đồng thuê phòng, thời hạn hiệu lực, tiền cọc, chu kỳ thanh toán và trạng thái được hiển thị trực quan.
+Kịch bản chính:
+  1. Chủ trọ chọn mục 'Quản lý hợp đồng' trên thanh menu điều hướng.
+  2. Hệ thống tải dữ liệu và hiển thị danh sách các hợp đồng thuê phòng gồm:
+     - Bộ lọc Tòa nhà và Bộ lọc Trạng thái (Tất cả, Đang hiệu lực, Sắp hết hạn trong vòng 30 ngày, Đã thanh lý).
+     - Nút 'Tạo hợp đồng mới'.
+     - Bảng danh sách hợp đồng:
+  Mã HĐ | Phòng trọ & Tòa nhà | Khách đại diện | Tiền thuê (đ/tháng) | Tiền đặt cọc (đ) | Ngày bắt đầu | Ngày kết thúc | Chu kỳ thu | Trạng thái | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+  #HĐ-1 | Phòng 101 (Ánh Dương) | Nguyễn Văn An | 3.500.000 đ | 3.500.000 đ | 01/05/2026 | 31/10/2026 | 1 tháng | Sắp hết hạn | Gia hạn | Thanh lý
+  #HĐ-2 | Phòng 102 (Ánh Dương) | Phạm Minh Đức | 3.800.000 đ | 3.800.000 đ | 01/10/2026 | 30/09/2027 | 1 tháng | Đang hiệu lực | Sửa | Thanh lý
+  #HĐ-3 | Phòng 201 (Ánh Dương) | Trần Quang Chế | 3.200.000 đ | 3.200.000 đ | 01/01/2026 | 31/12/2026 | 3 tháng | Đang hiệu lực | Sửa | Thanh lý
+  3. Chủ trọ có thể theo dõi hợp đồng sắp hết hạn để kịp thời liên hệ khách thỏa thuận gia hạn hoặc chuẩn bị kế hoạch tìm người thuê mới.
+Ngoại lệ:
+  2. Chủ trọ chưa tạo hợp đồng nào, hệ thống hiển thị bảng trống kèm thông báo: "Chưa có hợp đồng thuê phòng nào. Bấm Tạo hợp đồng mới để bắt đầu cho thuê".
+
+============================================================
+
+Header 2: 19. Chức năng tạo hợp đồng thuê phòng
+------------------------------------------------------------
+Use case: Create Rental Contract (Tạo hợp đồng thuê phòng mới)
+Actor: Chủ trọ, Khách thuê đại diện
+Tiền điều kiện: Phòng trọ được chọn đang ở trạng thái 'Còn trống', khách thuê đại diện đã có hồ sơ trong hệ thống.
+Hậu điều kiện: Hợp đồng thuê mới được khởi tạo ở trạng thái 'Đang hiệu lực', tự động chuyển trạng thái phòng sang 'Đang thuê', gán vai trò đại diện cho khách và lưu danh sách dịch vụ kèm chỉ số ban đầu.
+Kịch bản chính:
+  1. Tại trang Quản lý hợp đồng, chủ trọ bấm nút 'Tạo hợp đồng mới'.
+  2. Hệ thống hiển thị biểu mẫu tạo hợp đồng thuê phòng gồm:
+     - Chọn phòng trọ: Danh sách các phòng đang còn trống. Khi chọn phòng (ví dụ: Phòng 102), hệ thống tự động điền giá thuê niêm yết (3.800.000 đ), tiền cọc tiêu chuẩn (3.800.000 đ) và tải danh sách dịch vụ của phòng.
+     - Chọn khách đại diện: Danh sách chọn khách thuê đại diện đứng tên ký hợp đồng.
+     - Thời hạn thuê: Chọn Ngày bắt đầu (01/10/2026) và Ngày kết thúc (30/09/2027) (thời hạn 12 tháng).
+     - Chu kỳ thanh toán: Lựa chọn chu kỳ đóng tiền (1 tháng/lần, 3 tháng/lần, 6 tháng/lần).
+     - Ngày thu tiền hàng tháng: Nhập ngày thu tiền định kỳ (Ví dụ: Ngày 5 hàng tháng).
+     - Chỉ số công tơ ban đầu ngày bàn giao phòng: Nhập chỉ số điện ban đầu (Ví dụ: 1420 kWh) và chỉ số nước ban đầu (Ví dụ: 85 m³).
+     - Bảng dịch vụ áp dụng: Danh sách các dịch vụ kèm đơn giá chốt trong hợp đồng.
+     - Điều khoản & Quy định: Nhập thỏa thuận riêng về giờ giấc, bàn giao chìa khóa, trách nhiệm bảo quản tài sản.
+     - Nút 'Hủy' và nút 'Tạo hợp đồng'.
+  3. Chủ trọ điền đầy đủ các thông tin thỏa thuận với khách Phạm Minh Đức, kiểm tra số tiền cọc 3.800.000 đ và chỉ số điện nước ban đầu.
+  4. Chủ trọ bấm nút 'Tạo hợp đồng'.
+  5. Hệ thống kiểm tra dữ liệu:
+     - Đảm bảo phòng trọ được chọn đang ở trạng thái 'Còn trống'.
+     - Ngày kết thúc hợp đồng phải sau ngày bắt đầu.
+  6. Hệ thống tự động sinh mã hợp đồng chuẩn (Ví dụ: HD-ROOM102-202610), gán vai trò đại diện cho khách thuê Phạm Minh Đức, cập nhật trạng thái phòng sang 'Đang thuê', lưu hợp đồng với trạng thái 'Đang hiệu lực' cùng danh mục dịch vụ và chỉ số công tơ ban đầu vào cơ sở dữ liệu.
+  7. Hệ thống đóng biểu mẫu, thông báo "Tạo hợp đồng thành công!" và hiển thị hợp đồng mới trên bảng danh sách:
+  Mã HĐ | Phòng trọ | Khách đại diện | Tiền thuê | Tiền cọc | Ngày bắt đầu | Ngày kết thúc | Chu kỳ | Trạng thái | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+  #HĐ-2 | Phòng 102 | Phạm Minh Đức | 3.800.000 đ | 3.800.000 đ | 01/10/2026 | 30/09/2027 | 1 tháng | Đang hiệu lực | Sửa | Thanh lý
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', biểu mẫu đóng lại và không tạo hợp đồng.
+  5. Phòng trọ đã có hợp đồng thuê còn hiệu lực hoặc đang sửa chữa, hệ thống cảnh báo: "Phòng trọ này hiện không ở trạng thái sẵn sàng cho thuê!".
+  5. Ngày kết thúc hợp đồng nhỏ hơn hoặc bằng ngày bắt đầu, hệ thống báo lỗi: "Ngày kết thúc hợp đồng phải sau ngày bắt đầu".
+
+============================================================
+
+Header 2: 20. Chức năng cập nhật điều khoản hợp đồng
+------------------------------------------------------------
+Use case: Update Contract / Renewal (Cập nhật điều khoản hoặc gia hạn hợp đồng)
+Actor: Chủ trọ, Khách thuê đại diện
+Tiền điều kiện: Hợp đồng đang ở trạng thái hiệu lực; hai bên đồng thuận điều chỉnh điều khoản hoặc gia hạn thời gian thuê.
+Hậu điều kiện: Thời hạn hợp đồng được gia hạn mới, hoặc giá thuê phòng thỏa thuận mới được cập nhật vào cơ sở dữ liệu.
+Kịch bản chính:
+  1. Khi hợp đồng #HĐ-1 (Phòng 101 - Khách Nguyễn Văn An) sắp hết hạn, chủ trọ và khách thỏa thuận gia hạn thêm 12 tháng.
+  2. Tại bảng danh sách hợp đồng, chủ trọ bấm nút 'Sửa / Gia hạn' tại dòng hợp đồng tương ứng.
+  3. Hệ thống hiển thị biểu mẫu gia hạn và cập nhật hợp đồng.
+  4. Chủ trọ tiến hành điều chỉnh: Cập nhật Ngày kết thúc hợp đồng từ 31/10/2026 sang 31/10/2027; cập nhật giá thuê mới thỏa thuận là 3.600.000 đ/tháng; bổ sung ghi chú phụ lục gia hạn hợp đồng.
+  5. Chủ trọ bấm nút 'Lưu cập nhật'.
+  6. Hệ thống kiểm tra tính hợp lệ của ngày gia hạn mới.
+  7. Hệ thống cập nhật ngày kết thúc, giá thuê và điều khoản bổ sung vào cơ sở dữ liệu. Trạng thái hợp đồng tự động chuyển về 'Đang hiệu lực'.
+  8. Hệ thống đóng biểu mẫu, thông báo "Cập nhật hợp đồng thành công!" và làm mới thời hạn hợp đồng trên bảng.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', biểu mẫu đóng lại và giữ nguyên thông tin cũ.
+  6. Hợp đồng đã bị thanh lý từ trước, hệ thống từ chối cập nhật và cảnh báo: "Hợp đồng này đã thanh lý, không thể gia hạn!".
+
+============================================================
+
+Header 2: 21. Chức năng thanh lý hợp đồng và xử lý trả phòng
+------------------------------------------------------------
+Use case: Terminate Contract & Check-out (Nghiệm thu phòng, hoàn cọc, thanh lý hợp đồng)
+Actor: Chủ trọ, Khách thuê đại diện
+Tiền điều kiện: Hợp đồng đang ở trạng thái hiệu lực; khách thuê thông báo kết thúc hợp đồng hoặc hết hạn hợp đồng trả phòng.
+Hậu điều kiện: Hợp đồng chuyển sang trạng thái 'Đã thanh lý', ghi nhận số tiền hoàn trả cọc thực tế, phòng trọ tự động chuyển về trạng thái 'Còn trống', số người ở về 0, toàn bộ khách thuê trong phòng được chuyển sang trạng thái đã rời đi.
+Kịch bản chính:
+  1. Tại danh sách hợp đồng, chủ trọ bấm nút 'Thanh lý' tại hàng hợp đồng của phòng trả (ví dụ: hợp đồng #HĐ-4 của Phòng 202 - khách Hoàng Văn Tuấn).
+  2. Hệ thống hiển thị biểu mẫu thanh lý hợp đồng gồm các thông tin:
+     - Tóm tắt hợp đồng: Mã HĐ (#4), Phòng 202, Khách đại diện (Hoàng Văn Tuấn), Tiền cọc gốc ban đầu: 3.500.000 VNĐ.
+     - Ngày trả phòng thực tế: Chọn ngày nghiệm thu bàn giao phòng.
+     - Chốt chỉ số công tơ ngày bàn giao:
+       + Số điện ngày trả: Nhập 1680 (Số cũ chốt hóa đơn trước: 1640 -> Tiêu thụ 40 số * 3.800 đ = 152.000 đ).
+       + Số nước ngày trả: Nhập 98 (Số cũ: 95 -> Tiêu thụ 3 m³ * 30.000 đ = 90.000 đ).
+     - Khấu trừ hư hỏng / Bồi thường tài sản (nếu có): Chủ trọ bấm 'Thêm khoản trừ' -> Nhập: 'Làm hỏng vòi sen nhà tắm': 150.000 đ; 'Chưa vệ sinh phòng sạch sẽ': 100.000 đ.
+     - Bảng quyết toán tài chính trực quan:
+       + Tiền đặt cọc ban đầu: +3.500.000 VNĐ
+       + Tiền điện nước phát sinh ngày trả: -242.000 VNĐ
+       + Tiền khấu trừ đền bù tài sản: -250.000 VNĐ
+       + Số tiền thực tế hoàn trả cho khách: = 3.008.000 VNĐ (Hiển thị nổi bật màu xanh lá).
+     - Ghi chú biên bản nghiệm thu: Nhập nội dung bàn giao chìa khóa, thẻ từ.
+     - Nút 'Hủy' và nút 'Xác nhận thanh lý & Hoàn cọc'.
+  3. Chủ trọ và khách thuê đối chiếu quyết toán tài chính, xác nhận số tiền cọc hoàn lại là 3.008.000 đ.
+  4. Chủ trọ bấm nút 'Xác nhận thanh lý & Hoàn cọc'.
+  5. Hệ thống thực hiện quy trình hoàn tất thanh lý:
+     - Cập nhật trạng thái hợp đồng sang 'Đã thanh lý', lưu ngày kết thúc thực tế và số tiền cọc thực hoàn trả.
+     - Cập nhật trạng thái phòng trọ về 'Còn trống', số người đang ở về 0.
+     - Chuyển toàn bộ khách thuê trong phòng sang trạng thái 'Đã rời đi', ngắt liên kết phòng.
+  6. Hệ thống đóng biểu mẫu, hiển thị thông báo "Thanh lý hợp đồng và nghiệm thu trả phòng thành công!" và chuyển trạng thái phòng 202 về 'Còn trống' sẵn sàng đón khách mới.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', biểu mẫu đóng lại và hợp đồng giữ nguyên hiệu lực.
+  4. Tổng chi phí điện nước và hư hại vượt quá tiền cọc (số tiền hoàn trả < 0), hệ thống hiển thị số tiền âm màu đỏ: "Khách thuê phải nộp thêm: [số tiền] VNĐ" để chủ trọ thu bù tiền từ khách trước khi hoàn tất thủ tục bàn giao chìa khóa.
+
+============================================================
+
+Header 2: 22. Chức năng xem danh sách hóa đơn tháng
+------------------------------------------------------------
+Use case: View Monthly Bills (Xem danh sách hóa đơn tiền phòng hàng tháng)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Toàn bộ danh sách hóa đơn theo từng kỳ cước tháng, trạng thái thanh toán và số tiền còn nợ được hiển thị chi tiết.
+Kịch bản chính:
+  1. Chủ trọ chọn mục 'Quản lý hóa đơn & Thu tiền' trên thanh menu điều hướng.
+  2. Hệ thống tải dữ liệu và hiển thị danh sách hóa đơn theo kỳ cước tháng hiện tại gồm:
+     - Bộ lọc Kỳ cước (chọn tháng/năm), Bộ lọc Tòa nhà, Bộ lọc Trạng thái thanh toán (Tất cả, Bản nháp, Chờ thanh toán, Đã thanh toán, Thanh toán một phần, Quá hạn, Đã hủy).
+     - Nút 'Tính tiền phòng & Lập hóa đơn'.
+     - Bảng danh sách hóa đơn:
+  Mã HĐ | Phòng trọ & Tòa nhà | Khách đại diện | Kỳ cước | Tiền phòng | Tiền điện | Tiền nước | Phí dịch vụ | Tổng tiền | Đã thu | Còn nợ | Hạn nộp | Trạng thái | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+  #HD-101 | P101 (Ánh Dương) | Nguyễn Văn An | 10/2026 | 3.500.000 | 456.000 | 240.000 | 200.000 | 4.396.000 | 4.396.000 | 0 | 10/10/2026 | Đã thanh toán | Xem | In
+  #HD-102 | P102 (Ánh Dương) | Phạm Minh Đức | 10/2026 | 3.800.000 | 437.000 | 270.000 | 200.000 | 4.707.000 | 0 | 4.707.000 | 15/10/2026 | Chờ thanh toán | Sửa | Thu tiền | Hủy
+  #HD-201 | P201 (Ánh Dương) | Trần Quang Chế | 10/2026 | 3.200.000 | 380.000 | 180.000 | 150.000 | 3.910.000 | 0 | 3.910.000 | 05/10/2026 | Quá hạn | Thu tiền | Hủy
+  3. Chủ trọ có thể theo dõi nhanh các hóa đơn quá hạn chưa đóng tiền để liên hệ khách nhắc nợ.
+Ngoại lệ:
+  2. Kỳ cước được chọn chưa có hóa đơn nào được lập, hệ thống hiển thị thông báo: "Kỳ cước 10/2026 chưa có hóa đơn nào. Bấm 'Tính tiền phòng & Lập hóa đơn' để tạo hóa đơn thu tiền cho các phòng".
+
+============================================================
+
+Header 2: 23. Chức năng ghi chỉ số điện nước và lập hóa đơn mới
+------------------------------------------------------------
+Use case: Monthly Meter Reading & Create Invoice (Ghi chỉ số công tơ và phát hành hóa đơn)
+Actor: Chủ trọ
+Tiền điều kiện: Phòng trọ đang có hợp đồng thuê ở trạng thái hiệu lực, đến ngày chốt tiền phòng hàng tháng.
+Hậu điều kiện: Hóa đơn tiền phòng tháng được khởi tạo với đầy đủ các khoản mục chi phí minh bạch; chỉ số công tơ mới được ghi nhận vào hợp đồng; mã chuyển khoản VietQR được tạo tự động; thông báo phát hành hóa đơn được gửi tới khách thuê.
+Kịch bản chính:
+  1. Tại trang Quản lý hóa đơn, chủ trọ bấm nút 'Tính tiền phòng & Lập hóa đơn'.
+  2. Hệ thống hiển thị biểu mẫu lập hóa đơn tiền phòng gồm:
+     - Chọn phòng trọ: Danh sách chọn các phòng đang cho thuê.
+     - Kỳ cước: Chọn tháng thu tiền (Ví dụ: Tháng 10/2026).
+     - Hạn nộp tiền: Lựa chọn ngày hết hạn (Mặc định cộng 10 ngày từ ngày tạo).
+  3. Chủ trọ chọn Phòng 102 (Ánh Dương). Hệ thống tự động liên kết hợp đồng hoạt động, điền tên khách đại diện Phạm Minh Đức, nạp giá tiền thuê phòng (3.800.000 đ), và hiển thị danh sách các dịch vụ tính cước:
+     - Điện sinh hoạt: Hiển thị chỉ số cũ (1420 kWh). Ô nhập chỉ số mới: Chủ trọ nhập 1535 (tiêu thụ 115 kWh * 3.800 đ = 437.000 đ).
+     - Nước sinh hoạt: Hiển thị chỉ số cũ (85 m³). Ô nhập chỉ số mới: Chủ trọ nhập 94 (tiêu thụ 9 m³ * 30.000 đ = 270.000 đ).
+     - Internet Wifi: Cố định 1 phòng: 100.000 đ.
+     - Vệ sinh & Rác: Cố định theo số người (2 người * 50.000 đ = 100.000 đ).
+     - Phụ thu / Chi phí khác (nếu có): Chủ trọ có thể nhập thêm khoản phụ thu hoặc giảm trừ chiết khấu.
+  4. Hệ thống tự động tính toán tổng số tiền hóa đơn theo công thức thời gian thực:
+  Khoản mục cước | Chỉ số cũ | Chỉ số mới | Tiêu thụ / SL | Đơn giá (VNĐ) | Thành tiền (VNĐ)
+  --- | --- | --- | --- | --- | ---
+  Tiền thuê phòng P102 | - | - | 1 tháng | 3.800.000 đ | 3.800.000 đ
+  Tiền điện sinh hoạt | 1420 | 1535 | 115 kWh | 3.800 đ/kWh | 437.000 đ
+  Tiền nước sinh hoạt | 85 | 94 | 9 m³ | 30.000 đ/m³ | 270.000 đ
+  Internet Wifi | - | - | 1 phòng | 100.000 đ | 100.000 đ
+  Vệ sinh & Rác | - | - | 2 người | 50.000 đ/người | 100.000 đ
+  TỔNG CỘNG HÓA ĐƠN |  |  |  |  | 4.707.000 đ
+  5. Chủ trọ có 2 tùy chọn lưu:
+     - 'Lưu nháp': Lưu tạm hóa đơn ở trạng thái Bản nháp để kiểm tra lại sau, chưa gửi thông báo cho khách.
+     - 'Phát hành hóa đơn': Chính thức ban hành hóa đơn ở trạng thái Chờ thanh toán.
+  6. Chủ trọ bấm 'Phát hành hóa đơn'.
+  7. Hệ thống kiểm tra không trùng lặp hóa đơn trong cùng kỳ cước, cập nhật chỉ số chốt mới của điện nước vào hợp đồng, lưu chi tiết các khoản mục hóa đơn, tự động tạo mã chuyển khoản VietQR gắn với số tiền hóa đơn và gửi thông báo cước đến tài khoản ứng dụng của khách thuê đại diện.
+  8. Hệ thống đóng biểu mẫu và hiển thị hóa đơn #HD-102 ở trạng thái 'Chờ thanh toán' trên bảng danh sách.
+Ngoại lệ:
+  3. Chỉ số điện hoặc nước mới nhỏ hơn chỉ số cũ (ví dụ nhập số điện 1400 < 1420), hệ thống báo lỗi: "Chỉ số mới không được nhỏ hơn chỉ số cũ".
+  7. Hóa đơn cho hợp đồng này trong kỳ cước 10/2026 đã tồn tại và chưa bị hủy, hệ thống cảnh báo: "Hóa đơn cho hợp đồng này trong kỳ cước đã tồn tại! Vui lòng kiểm tra lại danh sách".
+
+============================================================
+
+Header 2: 24. Chức năng cập nhật điều chỉnh hóa đơn
+------------------------------------------------------------
+Use case: Update Invoice (Chỉnh sửa hoặc điều chỉnh hóa đơn chưa thanh toán)
+Actor: Chủ trọ
+Tiền điều kiện: Hóa đơn đang ở trạng thái 'Bản nháp' hoặc 'Chờ thanh toán', chưa được thanh toán hoàn tất.
+Hậu điều kiện: Các khoản mục chi phí, chỉ số điện nước hoặc phụ thu phát sinh được tính toán lại chính xác.
+Kịch bản chính:
+  1. Do phát hiện ghi nhầm số nước ngày chốt (ghi 94 thay vì 92), chủ trọ bấm nút 'Sửa' tại hóa đơn #HD-102 trên bảng danh sách.
+  2. Hệ thống hiển thị biểu mẫu điều chỉnh hóa đơn với các khoản mục cước hiện tại.
+  3. Chủ trọ sửa lại số nước mới từ 94 thành 92 khối (tiêu thụ 7 m³ thay vì 9 m³); số tiền nước giảm từ 270.000 đ xuống 210.000 đ.
+  4. Hệ thống tự động tính lại Tổng tiền hóa đơn giảm 60.000 đ (từ 4.707.000 đ xuống 4.647.000 đ) và cập nhật lại thông tin mã VietQR với số tiền mới.
+  5. Chủ trọ bấm nút 'Lưu thay đổi' (hoặc bấm 'Ban hành hóa đơn' nếu trước đó đang ở trạng thái Bản nháp).
+  6. Hệ thống cập nhật các khoản mục chi phí vào cơ sở dữ liệu, đóng biểu mẫu, hiển thị thông báo "Cập nhật hóa đơn thành công!" và làm mới số tiền trên bảng danh sách hóa đơn.
+Ngoại lệ:
+  2. Hóa đơn đã được thanh toán hoàn tất, hệ thống khóa chức năng sửa và cảnh báo: "Không thể chỉnh sửa hóa đơn đã thanh toán hoàn tất!".
+  3. Chỉ số nước mới sửa nhỏ hơn chỉ số cũ, hệ thống chặn lại và hiển thị cảnh báo lỗi.
+
+============================================================
+
+Header 2: 25. Chức năng hủy hóa đơn
+------------------------------------------------------------
+Use case: Cancel Invoice (Hủy hóa đơn lập sai kèm lý do)
+Actor: Chủ trọ
+Tiền điều kiện: Hóa đơn chưa thanh toán, phát sinh sai sót lớn hoặc phòng đột xuất trả hợp đồng.
+Hậu điều kiện: Hóa đơn chuyển sang trạng thái 'Đã hủy', lưu lại lý do hủy chứng từ.
+Kịch bản chính:
+  1. Tại bảng danh sách hóa đơn, chủ trọ bấm nút 'Hủy' tại hóa đơn cần hủy.
+  2. Hệ thống hiển thị hộp thoại yêu cầu nhập lý do hủy kèm 2 nút 'Hủy thao tác' và 'Xác nhận hủy hóa đơn'.
+  3. Chủ trọ nhập lý do: 'Lập nhầm phòng, chuyển sang phòng 202 tính lại'.
+  4. Chủ trọ bấm 'Xác nhận hủy hóa đơn'.
+  5. Hệ thống kiểm tra trạng thái hóa đơn chưa thanh toán, cập nhật trạng thái hóa đơn sang 'Đã hủy' và lưu lại lý do hủy chứng từ cùng thời điểm hủy.
+  6. Hệ thống đóng hộp thoại, hiển thị thông báo "Hủy hóa đơn thành công!" và chuyển trạng thái hóa đơn sang 'Đã hủy' trên danh sách.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy thao tác', hộp thoại đóng lại và hóa đơn giữ nguyên trạng thái.
+  4. Chủ trọ để trống ô lý do hủy, hệ thống báo lỗi: "Vui lòng nhập lý do hủy hóa đơn".
+  5. Hóa đơn đã được thanh toán, hệ thống từ chối hủy và cảnh báo: "Không thể hủy hóa đơn đã thanh toán!".
+
+============================================================
+
+Header 2: 26. Chức năng xác nhận thanh toán hóa đơn
+------------------------------------------------------------
+Use case: Confirm Invoice Payment (Xác nhận thu tiền và gạch nợ hóa đơn)
+Actor: Chủ trọ
+Tiền điều kiện: Khách thuê đã chuyển khoản hoặc đóng tiền mặt; hóa đơn đang ở trạng thái 'Chờ thanh toán', 'Thanh toán một phần' hoặc 'Quá hạn'.
+Hậu điều kiện: Số tiền thu được cộng dồn vào số tiền đã thu, trạng thái hóa đơn chuyển sang 'Đã thanh toán' hoặc 'Thanh toán một phần', ghi nhận thời điểm thanh toán.
+Kịch bản chính:
+  1. Khi nhận được tiền phòng của khách Phạm Minh Đức (Phòng 102), chủ trọ bấm nút 'Thu tiền' tại dòng hóa đơn #HD-102.
+  2. Hệ thống hiển thị biểu mẫu xác nhận thu tiền gồm:
+     - Tóm tắt hóa đơn: Kỳ 10/2026 (#102), Phòng 102 (Phạm Minh Đức), Số tiền phải thu: 4.707.000 VNĐ.
+     - Số tiền thực nhận (VNĐ): Tự động điền số tiền còn thiếu (4.707.000 đ).
+     - Hình thức thanh toán: Lựa chọn 'Chuyển khoản' hoặc 'Tiền mặt'.
+     - Ghi chú xác nhận: Ô nhập văn bản (Ví dụ: 'Đã nhận qua MB Bank lúc 10h15').
+  3. Chủ trọ chọn hình thức 'Chuyển khoản', kiểm tra số tiền 4.707.000 đ và bấm nút 'Xác nhận đã nhận tiền'.
+  4. Hệ thống thực hiện cộng dồn tiền đã thanh toán:
+     - Nếu số tiền nộp đủ toàn bộ tổng tiền hóa đơn, hệ thống cập nhật trạng thái hóa đơn sang 'Đã thanh toán', ghi nhận thời điểm thanh toán và lưu vào cơ sở dữ liệu.
+  5. Hệ thống đóng biểu mẫu, thông báo "Xác nhận thanh toán thành công!" và chuyển trạng thái hóa đơn sang 'Đã thanh toán', số tiền còn nợ chuyển về 0 đ.
+Ngoại lệ:
+  4. Khách thuê chỉ đóng trước một phần (ví dụ đóng 2.000.000 đ, còn thiếu 2.707.000 đ): Hệ thống cập nhật số tiền đã thu là 2.000.000 đ và chuyển trạng thái sang 'Thanh toán một phần'. Cột còn nợ hiển thị: 2.707.000 VNĐ.
+
+============================================================
+
+Header 2: 27. Chức năng xem danh sách khiếu nại của khách thuê
+------------------------------------------------------------
+Use case: View Complaints (Xem danh sách phản ánh sự cố hỏng hóc)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đã đăng nhập vào hệ thống.
+Hậu điều kiện: Danh sách các sự cố báo hỏng thiết bị, điện nước, an ninh do khách thuê gửi được hiển thị đầy đủ kèm hình ảnh và mức độ khẩn cấp.
+Kịch bản chính:
+  1. Chủ trọ chọn mục 'Khiếu nại & Báo hỏng' trên thanh menu điều hướng.
+  2. Hệ thống tải dữ liệu và hiển thị danh sách các phản ánh sự cố hỏng hóc gồm:
+     - Bộ lọc Tòa nhà và Bộ lọc Trạng thái (Tất cả, Mới gửi, Đang xử lý, Đã giải quyết, Từ chối).
+     - Bảng danh sách sự cố:
+  Mã KN | Phòng trọ & Tòa nhà | Khách thuê gửi & SĐT | Tiêu đề sự cố | Mức độ ưu tiên | Ngày gửi | Trạng thái | Thao tác
+  --- | --- | --- | --- | --- | --- | --- | ---
+  #KN-101 | P102 (Ánh Dương) | Phạm Minh Đức - 0988123456 | Điều hòa chảy nước và không mát | Cao | 02/10/2026 | Mới gửi | Phản hồi | Xem ảnh
+  #KN-102 | P101 (Ánh Dương) | Nguyễn Văn An - 0912345678 | Bóng đèn nhà tắm bị chập cháy | Trung bình | 01/10/2026 | Đang xử lý | Cập nhật | Xem ảnh
+  #KN-103 | P201 (Ánh Dương) | Trần Quang Chế | Cửa sổ ban công bị kẹt khóa | Thấp | 28/09/2026 | Đã giải quyết | Chi tiết
+  3. Chủ trọ có thể bấm vào dòng khiếu nại để xem chi tiết ảnh chụp hỏng hóc thực tế và mô tả chi tiết từ khách thuê.
+Ngoại lệ:
+  2. Không có phản ánh báo hỏng nào, hệ thống hiển thị thông báo: "Hiện tại không có khiếu nại hoặc báo hỏng thiết bị nào".
+
+============================================================
+
+Header 2: 28. Chức năng xử lý và cập nhật tiến độ khiếu nại
+------------------------------------------------------------
+Use case: Handle Complaint (Tiếp nhận, phản hồi và cập nhật tiến độ sửa chữa)
+Actor: Chủ trọ, Khách thuê
+Tiền điều kiện: Có khiếu nại đang ở trạng thái 'Mới gửi' hoặc 'Đang xử lý'.
+Hậu điều kiện: Trạng thái xử lý sự cố được cập nhật, ghi chú phản hồi được lưu trữ và thông báo tự động gửi đến ứng dụng của khách thuê.
+Kịch bản chính:
+  1. Tại danh sách khiếu nại, chủ trọ bấm nút 'Phản hồi' tại khiếu nại #KN-101 (Phòng 102 - Điều hòa chảy nước).
+  2. Hệ thống hiển thị biểu mẫu phản hồi khiếu nại gồm:
+     - Tóm tắt phản ánh: Mã KN (#101), Phòng 102 (Phạm Minh Đức), Tiêu đề: 'Điều hòa chảy nước và không mát'.
+     - Trạng thái xử lý: Lựa chọn 'Đang xử lý', 'Đã giải quyết', hoặc 'Từ chối'.
+     - Nội dung phản hồi / Lịch hẹn khách thuê: Ô nhập văn bản nội dung.
+  3. Chủ trọ chọn trạng thái 'Đang xử lý' và nhập phản hồi: "Chủ nhà đã liên hệ thợ điện lạnh, thợ sẽ qua kiểm tra và thông tắc máng nước lúc 15h30 chiều nay. Bạn vui lòng có người ở phòng để mở cửa".
+  4. Chủ trọ bấm nút 'Cập nhật tiến độ'.
+  5. Hệ thống lưu nội dung phản hồi, cập nhật trạng thái sự cố sang 'Đang xử lý', ghi nhận thời gian xử lý và tự động gửi thông báo đến tài khoản ứng dụng của khách thuê.
+  6. Hệ thống đóng biểu mẫu, thông báo "Cập nhật tiến độ xử lý khiếu nại thành công!" và chuyển trạng thái khiếu nại sang 'Đang xử lý'.
+  7. Sau khi thợ sửa xong: Chủ trọ mở lại biểu mẫu, chuyển trạng thái sang 'Đã giải quyết' kèm ghi chú 'Đã vệ sinh lưới lọc và thông đường ống nước thải điều hòa', hệ thống lưu lại và thông báo cho khách nghiệm thu.
+Ngoại lệ:
+  2. Chủ trọ bấm 'Hủy', biểu mẫu đóng lại và không lưu phản hồi.
+  3. Chủ trọ chọn 'Từ chối', hệ thống yêu cầu nhập bắt buộc lý do từ chối (Ví dụ: 'Sự cố do khách tự ý tháo lắp thiết bị sai quy cách, không thuộc phạm vi bảo hành của chủ trọ').
+
+============================================================
+
+Header 2: 29. Chức năng xem Dashboard thống kê chủ trọ
+------------------------------------------------------------
+Use case: View Landlord Dashboard (Theo dõi doanh thu, tỷ lệ lấp đầy, số phòng trống và công nợ)
+Actor: Chủ trọ
+Tiền điều kiện: Chủ trọ đăng nhập thành công vào hệ thống.
+Hậu điều kiện: Báo cáo tổng quan số liệu tài chính, hiệu suất khai thác phòng và danh sách công nợ quá hạn được hiển thị trực quan.
+Kịch bản chính:
+  1. Chủ trọ chọn trang 'Dashboard' từ thanh menu điều hướng.
+  2. Hệ thống tổng hợp dữ liệu tài chính và vận hành, hiển thị giao diện báo cáo tổng quan gồm 4 khu vực:
+     - Khu vực 1 - Thẻ chỉ số tổng quan:
+       + Doanh thu tháng: 45.800.000 đ (Tăng 12% so với tháng trước).
+       + Tỷ lệ lấp đầy phòng: 87.5% (21/24 phòng đang có khách ở).
+       + Phòng còn trống: 3 phòng (Đang sẵn sàng đón khách thuê mới).
+       + Tiền cước chưa thu: 9.414.000 đ (2 hóa đơn chưa thanh toán).
+       + Sự cố chờ xử lý: 1 khiếu nại (Đang chờ sửa chữa).
+     - Khu vực 2 - Biểu đồ doanh thu 6 tháng gần nhất: Biểu đồ cột trực quan biểu diễn xu hướng doanh thu từ Tháng 5/2026 đến Tháng 10/2026.
+     - Khu vực 3 - Bảng theo dõi hóa đơn quá hạn cần đôn đốc:
+  Mã HĐ | Phòng trọ | Khách thuê | Kỳ cước | Số tiền nợ | Số ngày quá hạn | Thao tác
+  --- | --- | --- | --- | --- | --- | ---
+  #HD-201 | Phòng 201 (Ánh Dương) | Trần Quang Chế | 10/2026 | 3.910.000 đ | 5 ngày quá hạn | Thu tiền
+  #HD-302 | Phòng 302 (Bách Khoa) | Vũ Hoàng Nam | 10/2026 | 5.504.000 đ | 7 ngày quá hạn | Thu tiền
+     - Khu vực 4 - Bảng theo dõi hợp đồng sắp hết hạn trong vòng 30 ngày:
+  Mã HĐ | Phòng trọ | Khách đại diện | Ngày hết hạn | Số ngày còn lại | Thao tác
+  --- | --- | --- | --- | --- | ---
+  #HĐ-1 | Phòng 101 (Ánh Dương) | Nguyễn Văn An | 31/10/2026 | Còn 15 ngày | Gia hạn
+  #HĐ-5 | Phòng 203 (Bách Khoa) | Lê Thị Thúy | 25/10/2026 | Còn 9 ngày | Gia hạn
+  3. Chủ trọ có thể bấm trực tiếp vào từng hóa đơn nợ quá hạn để mở biểu mẫu thu tiền hoặc bấm vào hợp đồng sắp hết hạn để xử lý gia hạn nhanh chóng.
+Ngoại lệ:
+  2. Chủ trọ mới đăng ký tài khoản chưa có dữ liệu nhà trọ, dashboard hiển thị các chỉ số mặc định bằng 0 kèm gợi ý tạo tòa nhà và phòng trọ đầu tiên.
+
+============================================================

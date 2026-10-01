@@ -296,14 +296,6 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
       centered
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
-        {/* Hidden fields for latitude & longitude - Completely invisible on UI */}
-        <Form.Item name="latitude" hidden>
-          <Input />
-        </Form.Item>
-        <Form.Item name="longitude" hidden>
-          <Input />
-        </Form.Item>
-
         {/* THÔNG TIN TÊN & SỐ TẦNG */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Form.Item
@@ -409,6 +401,14 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                   placeholder="Số 12 Ngõ 80 Cầu Giấy, Dịch Vọng Hậu..."
                   className="w-full p-2 text-xs rounded-lg"
                 />
+              </Form.Item>
+
+              {/* Ẩn hoàn toàn tọa độ khỏi UI nhưng vẫn nạp vào Form payload */}
+              <Form.Item name="latitude" noStyle>
+                <input type="hidden" />
+              </Form.Item>
+              <Form.Item name="longitude" noStyle>
+                <input type="hidden" />
               </Form.Item>
             </div>
           </div>
