@@ -64,6 +64,14 @@ public class User extends BaseEntity {
     @Column(name = "locked_until")
     private Instant lockedUntil;
 
+    @Column(name = "failed_login_attempts", columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    public Integer getFailedLoginAttempts() {
+        return failedLoginAttempts != null ? failedLoginAttempts : 0;
+    }
+
     @Column(name = "enabled", nullable = false)
     @Builder.Default
     private Boolean enabled = true;

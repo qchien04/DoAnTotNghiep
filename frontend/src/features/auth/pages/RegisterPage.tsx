@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { authService } from '@/shared/services/authService';
@@ -16,8 +17,6 @@ export const RegisterPage: React.FC = () => {
     otpCode: string;
   }>({
     username: '',
-    password: '',
-    fullName: '',
     email: '',
     phone: '',
     role: 'ROLE_TENANT',
@@ -44,6 +43,7 @@ export const RegisterPage: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     clearError();
+    setFormError(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -302,3 +302,4 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 };
+

@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -43,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private long refreshExpirationInMs;
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = BaseException.class)
     public AuthResponse login(LoginRequest request) {
         log.info("Xử lý đăng nhập cho người dùng: {}", request.getUsername());
 
@@ -55,7 +56,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Tự động giải phóng khóa tài khoản nếu đã quá hạn locked_until
-        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null && user.getLockedUntil().isBefore(Instant.now())) {
+        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null
+                && user.getLockedUntil().isBefore(Instant.now())) {
             user.setStatus("ACTIVE");
             user.setLockedUntil(null);
             user.setLockedReason(null);
@@ -66,18 +68,49 @@ public class AuthServiceImpl implements AuthService {
             throw new BaseException(ErrorCode.USER_DISABLED);
         }
 
+        // 3. Kiểm tra mật khẩu
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            int currentAttempts = (user.getFailedLoginAttempts() != null ? user.getFailedLoginAttempts() : 0) + 1;
+            user.setFailedLoginAttempts(currentAttempts);
+
+            if (currentAttempts >= 5) {
+                user.setLockedUntil(Instant.now().plus(Duration.ofMinutes(15)));
+                user.setLockedReason("Nhập sai mật khẩu 5 lần liên tiếp. Tài khoản tạm khóa 15 phút.");
+                userRepository.save(user);
+                log.warn("Tài khoản {} đã bị tạm khóa 15 phút do nhập sai 5 lần liên tiếp", user.getUsername());
+                throw new BaseException(ErrorCode.ACCOUNT_TEMPORARILY_LOCKED,
+                        "Tài khoản đã bị tạm khóa 15 phút do nhập sai mật khẩu 5 lần liên tiếp.");
+            }
+
+            userRepository.save(user);
+            int remaining = 5 - currentAttempts;
+            throw new BaseException(ErrorCode.INVALID_CREDENTIALS,
+                    String.format(
+                            "Tên đăng nhập hoặc mật khẩu không chính xác. Bạn còn %d lần thử trước khi tài khoản bị tạm khóa.",
+                            remaining));
+        }
+
+        // 4. Đăng nhập thành công -> Reset bộ đếm số lần sai và mở khóa
+        if ((user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0)
+                || user.getLockedUntil() != null) {
+            user.setFailedLoginAttempts(0);
+            user.setLockedUntil(null);
+            user.setLockedReason(null);
+            userRepository.save(user);
+        }
+
         // Tạo UserPrincipal và phát hành JWT Access Token
         UserPrincipal userPrincipal = UserPrincipal.create(user);
         String accessToken = jwtTokenProvider.generateToken(userPrincipal);
 
-        // Thu hồi các refresh token cũ (nếu có) và tạo mới Refresh Token
+        // Thu hồi các refresh token cũ và tạo mới Refresh Token được băm an toàn
         refreshTokenRepository.revokeAllByUserId(user.getId());
 
-        RefreshToken refreshToken = createRefreshToken(user);
+        String refreshToken = createRefreshToken(user);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken.getToken())
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtExpirationInMs)
                 .user(UserDto.fromEntity(user))
@@ -115,6 +148,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(assignRole)
                 .status("ACTIVE")
                 .enabled(true)
+                .failedLoginAttempts(0)
                 .build();
 
         User savedUser = userRepository.save(newUser);
@@ -139,7 +173,8 @@ public class AuthServiceImpl implements AuthService {
 
         // 🚨 TOKEN REUSE DETECTION (Phát hiện tấn công phát lại token đã thu hồi)
         if (Boolean.TRUE.equals(refreshToken.getRevoked())) {
-            log.warn("🚨 PHÁT HIỆN TẤN CÔNG PHÁT LẠI TOKEN (Token Reuse) đối với User ID: {} (Username: {})", user.getId(), user.getUsername());
+            log.warn("🚨 PHÁT HIỆN TẤN CÔNG PHÁT LẠI TOKEN (Token Reuse) đối với User ID: {} (Username: {})",
+                    user.getId(), user.getUsername());
             // Lập tức thu hồi tất cả Refresh Token của người dùng này để bảo vệ tài khoản
             refreshTokenRepository.revokeAllByUserId(user.getId());
             throw new BaseException(ErrorCode.TOKEN_REUSE_DETECTED);
@@ -152,7 +187,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Tự động giải phóng khóa tài khoản nếu đã quá hạn locked_until
-        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null && user.getLockedUntil().isBefore(Instant.now())) {
+        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null
+                && user.getLockedUntil().isBefore(Instant.now())) {
             user.setStatus("ACTIVE");
             user.setLockedUntil(null);
             user.setLockedReason(null);
@@ -171,11 +207,11 @@ public class AuthServiceImpl implements AuthService {
         refreshToken.setRevoked(true);
         refreshTokenRepository.save(refreshToken);
 
-        RefreshToken newRefreshToken = createRefreshToken(user);
+        String newRefreshToken = createRefreshToken(user);
 
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken.getToken())
+                .refreshToken(newRefreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtExpirationInMs)
                 .user(UserDto.fromEntity(user))
@@ -260,13 +296,15 @@ public class AuthServiceImpl implements AuthService {
         return UserDto.fromEntity(user);
     }
 
-    private RefreshToken createRefreshToken(User user) {
+    private String createRefreshToken(User user) {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())
                 .expiryDate(Instant.now().plusMillis(refreshExpirationInMs))
                 .revoked(false)
                 .build();
-        return refreshTokenRepository.save(refreshToken);
+
+        RefreshToken saved = refreshTokenRepository.save(refreshToken);
+        return saved.getToken();
     }
 }

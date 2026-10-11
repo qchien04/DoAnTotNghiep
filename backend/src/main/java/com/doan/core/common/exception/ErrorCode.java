@@ -17,6 +17,8 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED("405", "Phương thức HTTP không được hỗ trợ", HttpStatus.METHOD_NOT_ALLOWED),
     CONFLICT("409", "Dữ liệu đã tồn tại hoặc xảy ra xung đột", HttpStatus.CONFLICT),
     INTERNAL_SERVER_ERROR("500", "Lỗi máy chủ nội bộ, vui lòng thử lại sau", HttpStatus.INTERNAL_SERVER_ERROR),
+    TOO_MANY_REQUESTS("429", "Bạn đã gửi quá nhiều yêu cầu, vui lòng thử lại sau ít phút",
+            HttpStatus.TOO_MANY_REQUESTS),
 
     // Lỗi Nghiệp Vụ - Auth & User
     USERNAME_ALREADY_EXISTS("AUTH_001", "Tên đăng nhập đã tồn tại trong hệ thống", HttpStatus.CONFLICT),
@@ -28,13 +30,17 @@ public enum ErrorCode {
     TOKEN_INVALID("AUTH_007", "Token xác thực không hợp lệ hoặc đã bị chỉnh sửa", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_EXPIRED("AUTH_008", "Refresh token đã hết hạn, vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_NOT_FOUND("AUTH_009", "Refresh token không tồn tại hoặc đã bị thu hồi", HttpStatus.UNAUTHORIZED),
-    TOKEN_REUSE_DETECTED("AUTH_010", "Phát hiện hành vi sử dụng lại token đã thu hồi. Toàn bộ phiên đăng nhập đã bị vô hiệu hóa vì lý do an toàn", HttpStatus.UNAUTHORIZED),
+    TOKEN_REUSE_DETECTED("AUTH_010",
+            "Phát hiện hành vi sử dụng lại token đã thu hồi. Toàn bộ phiên đăng nhập đã bị vô hiệu hóa vì lý do an toàn",
+            HttpStatus.UNAUTHORIZED),
     INVALID_OLD_PASSWORD("AUTH_011", "Mật khẩu cũ không chính xác", HttpStatus.BAD_REQUEST),
     PASSWORD_CONFIRM_NOT_MATCH("AUTH_012", "Mật khẩu xác nhận không khớp với mật khẩu mới", HttpStatus.BAD_REQUEST),
     OTP_REQUIRED("AUTH_013", "Vui lòng nhập mã xác thực OTP gửi qua email", HttpStatus.BAD_REQUEST),
     INVALID_OTP("AUTH_014", "Mã xác thực OTP không chính xác", HttpStatus.BAD_REQUEST),
-    OTP_EXPIRED("AUTH_015", "Mã xác thực OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới", HttpStatus.BAD_REQUEST),
-    OTP_RATE_LIMITED("AUTH_016", "Vui lòng chờ ít nhất 60 giây trước khi yêu cầu gửi lại mã OTP", HttpStatus.TOO_MANY_REQUESTS),
+    OTP_EXPIRED("AUTH_015", "Mã xác thực OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới",
+            HttpStatus.BAD_REQUEST),
+    OTP_RATE_LIMITED("AUTH_016", "Vui lòng chờ ít nhất 60 giây trước khi yêu cầu gửi lại mã OTP",
+            HttpStatus.TOO_MANY_REQUESTS),
     OTP_MAX_ATTEMPTS("AUTH_017", "Bạn đã nhập sai mã OTP quá 5 lần. Vui lòng yêu cầu mã mới", HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Tòa nhà (Building)
@@ -46,18 +52,22 @@ public enum ErrorCode {
     ROOM_NOT_FOUND("ROOM_001", "Không tìm thấy thông tin phòng trọ", HttpStatus.NOT_FOUND),
     ROOM_CODE_EXISTS("ROOM_002", "Mã phòng đã tồn tại trong tòa nhà này", HttpStatus.CONFLICT),
     ROOM_NOT_AVAILABLE("ROOM_003", "Phòng này hiện không ở trạng thái còn trống", HttpStatus.BAD_REQUEST),
-    ROOM_HAS_ACTIVE_CONTRACT("ROOM_004", "Phòng hiện đang có hợp đồng hiệu lực, không thể thao tác", HttpStatus.BAD_REQUEST),
-    ROOM_HAS_HISTORY("ROOM_005", "Phòng đã có lịch sử thuê hoặc hóa đơn, không thể xóa vĩnh viễn", HttpStatus.BAD_REQUEST),
+    ROOM_HAS_ACTIVE_CONTRACT("ROOM_004", "Phòng hiện đang có hợp đồng hiệu lực, không thể thao tác",
+            HttpStatus.BAD_REQUEST),
+    ROOM_HAS_HISTORY("ROOM_005", "Phòng đã có lịch sử thuê hoặc hóa đơn, không thể xóa vĩnh viễn",
+            HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Dịch vụ tiện ích (Service)
     SERVICE_NOT_FOUND("SRV_001", "Không tìm thấy dịch vụ tiện ích", HttpStatus.NOT_FOUND),
     SERVICE_ALREADY_EXISTS("SRV_002", "Tên dịch vụ tiện ích này đã tồn tại", HttpStatus.CONFLICT),
-    SERVICE_IN_USE("SRV_003", "Dịch vụ đang được áp dụng trong các hợp đồng hiệu lực, không thể xóa", HttpStatus.BAD_REQUEST),
+    SERVICE_IN_USE("SRV_003", "Dịch vụ đang được áp dụng trong các hợp đồng hiệu lực, không thể xóa",
+            HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Khách thuê (Tenant)
     TENANT_NOT_FOUND("TNT_001", "Không tìm thấy hồ sơ khách thuê", HttpStatus.NOT_FOUND),
     TENANT_ID_CARD_EXISTS("TNT_002", "Số CCCD này đang được ghi nhận ở phòng khác", HttpStatus.CONFLICT),
-    TENANT_IS_REPRESENTATIVE("TNT_003", "Khách thuê là người đại diện hợp đồng, không thể xóa trực tiếp", HttpStatus.BAD_REQUEST),
+    TENANT_IS_REPRESENTATIVE("TNT_003", "Khách thuê là người đại diện hợp đồng, không thể xóa trực tiếp",
+            HttpStatus.BAD_REQUEST),
     TENANT_ALREADY_LINKED("TNT_004", "Khách thuê đã được liên kết với tài khoản hệ thống", HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Hợp đồng (Contract)

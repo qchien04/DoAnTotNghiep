@@ -3,6 +3,7 @@ package com.doan.core.common.security;
 import com.doan.core.common.constant.SecurityConstants;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.exception.BaseException;
+import com.doan.core.common.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -54,11 +55,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.debug("Đã xác thực thành công user: {} cho URI: {}", userPrincipal.getUsername(), request.getRequestURI());
             }
         } catch (BaseException ex) {
+            SecurityContextHolder.clearContext();
             log.warn("Lỗi xác thực JWT: {} khi gọi {}", ex.getMessage(), request.getRequestURI());
             handleAuthenticationError(response, ex);
             return;
         } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
             log.error("Không thể thiết lập xác thực người dùng trong security context", ex);
+            handleAuthenticationError(response, new BaseException(ErrorCode.UNAUTHORIZED, "Không thể xác thực token người dùng"));
+            return;
         }
 
         filterChain.doFilter(request, response);

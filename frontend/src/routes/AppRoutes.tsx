@@ -3,7 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout, AuthLayout, LandlordLayout, AdminLayout, TenantLayout } from '@/shared/layouts';
 import { ProtectedRoute } from './ProtectedRoute';
 
-// Home & Showcase & Auth
+// Home & Room & Showcase & Auth
+import { RoomSearchPage } from '@/features/room/pages/RoomSearchPage';
+import { RoomDetailPage } from '@/features/room/pages/RoomDetailPage';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
@@ -42,7 +44,10 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       {/* 1. Public / Main Website Layout */}
       <Route element={<MainLayout />}>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<RoomSearchPage />} />
+        <Route path="/rooms" element={<RoomSearchPage />} />
+        <Route path="/rooms/:id" element={<RoomDetailPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/components" element={<ComponentShowcase />} />
 
         {/* Roommate Search & Discovery (Public) */}

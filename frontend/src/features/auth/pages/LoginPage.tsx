@@ -47,6 +47,7 @@ export const LoginPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Error Message */}
       {error && (
         <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2.5 text-xs text-rose-600 dark:text-rose-400">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
@@ -54,6 +55,7 @@ export const LoginPage: React.FC = () => {
         </div>
       )}
 
+      {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-stay-text mb-1.5">
@@ -95,6 +97,7 @@ export const LoginPage: React.FC = () => {
             </div>
             <input
               type={showPassword ? 'text' : 'password'}
+              type={showPassword ? 'text' : 'password'}
               required
               value={password}
               onChange={(e) => {
@@ -114,13 +117,28 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Remember Me */}
+        <div className="flex items-center gap-2 pt-0.5">
+          <input
+            id="rememberMe"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 rounded border-stay-border text-stay-primary focus:ring-stay-primary/30 accent-blue-600 cursor-pointer"
+          />
+          <label htmlFor="rememberMe" className="text-xs text-stay-text-secondary select-none cursor-pointer">
+            Ghi nhớ trạng thái đăng nhập
+          </label>
+        </div>
+
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
           className="w-full py-2.5 bg-stay-primary hover:bg-stay-primary-hover active:scale-[0.99] text-white text-xs font-semibold rounded-lg shadow-md shadow-stay-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
             <>
               <span>Đăng Nhập</span>
@@ -155,6 +173,8 @@ export const LoginPage: React.FC = () => {
             <p className="font-semibold text-emerald-600 dark:text-emerald-400 truncate">Chủ trọ</p>
             <p className="text-[10px] text-stay-text-muted">landlord / 123456</p>
           </button>
+
+          {/* Tenant */}
           <button
             type="button"
             onClick={() => fillQuickAccount('tenant', '123456')}
@@ -175,3 +195,4 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+

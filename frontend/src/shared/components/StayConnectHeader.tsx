@@ -4,33 +4,17 @@ import { Dropdown, Drawer } from 'antd';
 import type { MenuProps } from 'antd';
 import { StayConnectLogo } from './StayConnectLogo';
 import {
-  User,
-  ShieldCheck,
-  Building2,
-  ShieldAlert,
-  LogOut,
-  PlusCircle,
-  Menu,
-  Home,
-  Users,
   Compass,
-  Receipt,
-  Wrench,
+  Users,
+  LayoutDashboard,
+  Menu,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { NotificationDropdown } from './ui/NotificationDropdown';
-import { Button } from './ui/Button';
 
-interface StayConnectHeaderProps {
-  onPostListingClick?: () => void;
-  onLoginClick?: () => void;
-}
-
-export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
-  onPostListingClick,
-  onLoginClick,
-}) => {
+export const StayConnectHeader: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,130 +22,43 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
 
   const role = user?.role;
 
-  // 1. Dynamic Navigation Links based on User Role
-  const getNavLinks = () => {
-    const commonLinks = [
-      { label: 'Tìm phòng trọ', path: '/', icon: Compass },
-      { label: 'Ở ghép', path: '/roommates', icon: Users },
-    ];
-
-    if (role === 'ROLE_TENANT') {
-      return [
-        ...commonLinks,
-        { label: 'Phòng của tôi', path: '/tenant/my-room', icon: Home },
-        { label: 'Hóa đơn', path: '/tenant/bills', icon: Receipt },
-        { label: 'Khiếu nại', path: '/tenant/complaints', icon: Wrench },
-      ];
-    }
-
-    if (role === 'ROLE_LANDLORD') {
-      return [
-        ...commonLinks,
-        { label: 'Kênh chủ trọ', path: '/landlord', icon: Building2 },
-        { label: 'Quản lý phòng', path: '/landlord/rooms', icon: Home },
-        { label: 'Hóa đơn', path: '/landlord/bills', icon: Receipt },
-      ];
-    }
-
-    if (role === 'ROLE_ADMIN') {
-      return [
-        ...commonLinks,
-        { label: 'Quản trị hệ thống', path: '/admin', icon: ShieldAlert },
-        { label: 'Người dùng', path: '/admin/users', icon: Users },
-      ];
-    }
-
-    // Guest / Unauthenticated
-    return [
-      ...commonLinks,
-      { label: 'Kênh chủ trọ', path: '/landlord', icon: Building2 },
-    ];
+  const getAdminPath = () => {
+    if (!isAuthenticated) return '/login';
+    if (role === 'ROLE_ADMIN') return '/admin';
+    if (role === 'ROLE_LANDLORD') return '/landlord';
+    if (role === 'ROLE_TENANT') return '/tenant';
+    return '/landlord';
   };
 
-  const navLinks = getNavLinks();
+  const isRoomActive = location.pathname === '/rooms' || location.pathname === '/';
+  const isRoommateActive = location.pathname.startsWith('/roommates');
+  const isAdminActive =
+    location.pathname.startsWith('/landlord') ||
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/tenant');
 
-  // 2. Dynamic Primary Action Button
-  const handlePrimaryAction = () => {
-    if (onPostListingClick) {
-      onPostListingClick();
-      return;
-    }
-
-    if (role === 'ROLE_TENANT') {
-      navigate('/tenant/create-post');
-    } else if (role === 'ROLE_LANDLORD') {
-      navigate('/landlord/rooms');
-    } else if (role === 'ROLE_ADMIN') {
-      navigate('/admin');
-    } else {
-      navigate('/roommates/create');
-    }
+  const handleAdminNavigate = () => {
+    navigate(getAdminPath());
   };
 
-  const getPrimaryActionConfig = () => {
-    if (role === 'ROLE_TENANT') {
-      return {
-        label: 'Đăng tin tìm bạn',
-        icon: <PlusCircle className="w-4 h-4" />,
-      };
-    }
-    if (role === 'ROLE_LANDLORD') {
-      return {
-        label: 'Quản lý phòng trọ',
-        icon: <Building2 className="w-4 h-4" />,
-      };
-    }
-    if (role === 'ROLE_ADMIN') {
-      return {
-        label: 'Bảng quản trị',
-        icon: <ShieldAlert className="w-4 h-4" />,
-      };
-    }
-    return {
-      label: 'Đăng tin',
-      icon: <PlusCircle className="w-4 h-4" />,
-    };
-  };
-
-  const actionConfig = getPrimaryActionConfig();
-
-  // Role Badge Styling
-  const getRoleBadge = () => {
-    switch (role) {
-      case 'ROLE_ADMIN':
-        return (
-          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-500/10 text-purple-600 border border-purple-500/20">
-            Quản trị viên
-          </span>
-        );
-      case 'ROLE_LANDLORD':
-        return (
-          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
-            Chủ trọ
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded-md bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
-            Người thuê
-          </span>
-        );
-    }
-  };
-
-  // 3. Dynamic User Menu Items based on Role
-  const getUserMenuItems = (): MenuProps['items'] => [
+  const userMenuItems: MenuProps['items'] = [
     {
       key: 'user-info',
       label: (
-        <div className="px-1 py-1.5 min-w-[200px]">
-          <p className="font-bold text-sm text-stay-text line-clamp-1">
+        <div className="px-1 py-1 min-w-[160px]">
+          <p className="font-semibold text-xs text-stay-text truncate">
             {user?.fullName || user?.username || 'Người dùng'}
           </p>
-          <p className="text-xs text-stay-text-secondary truncate">
-            {user?.email || 'user@stayconnect.vn'}
+          <p className="text-[11px] text-stay-text-secondary truncate">
+            {user?.email || ''}
           </p>
-          {getRoleBadge()}
+          <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-stay-primary-subtle text-stay-primary">
+            {role === 'ROLE_ADMIN'
+              ? 'Quản trị viên'
+              : role === 'ROLE_LANDLORD'
+              ? 'Chủ trọ'
+              : 'Người thuê'}
+          </span>
         </div>
       ),
       disabled: true,
@@ -169,81 +66,13 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
     { type: 'divider' },
     {
       key: 'profile',
-      icon: <User className="w-4 h-4 text-stay-text-secondary" />,
+      icon: <User className="w-3.5 h-3.5 text-stay-text-secondary" />,
       label: <Link to="/profile">Hồ sơ cá nhân</Link>,
     },
-    {
-      key: 'verified',
-      icon: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
-      label: <Link to="/verify">Xác thực danh tính</Link>,
-    },
-    { type: 'divider' },
-
-    // Role-specific sections
-    ...(role === 'ROLE_TENANT'
-      ? [
-          {
-            key: 'my-room',
-            icon: <Home className="w-4 h-4 text-stay-primary" />,
-            label: <Link to="/tenant/my-room">Phòng & hợp đồng của tôi</Link>,
-          },
-          {
-            key: 'my-bills',
-            icon: <Receipt className="w-4 h-4 text-blue-500" />,
-            label: <Link to="/tenant/bills">Quản lý hóa đơn & VietQR</Link>,
-          },
-          {
-            key: 'my-complaints',
-            icon: <Wrench className="w-4 h-4 text-amber-500" />,
-            label: <Link to="/tenant/complaints">Khiếu nại & Báo hỏng sự cố</Link>,
-          },
-          {
-            key: 'my-posts',
-            icon: <Users className="w-4 h-4 text-indigo-500" />,
-            label: <Link to="/tenant/posts">Bài đăng ở ghép của tôi</Link>,
-          },
-        ]
-      : []),
-
-    ...(role === 'ROLE_LANDLORD'
-      ? [
-          {
-            key: 'landlord-portal',
-            icon: <Building2 className="w-4 h-4 text-amber-500" />,
-            label: <Link to="/landlord">Kênh quản trị chủ trọ</Link>,
-          },
-          {
-            key: 'landlord-rooms',
-            icon: <Home className="w-4 h-4 text-blue-500" />,
-            label: <Link to="/landlord/rooms">Quản lý tòa nhà & phòng</Link>,
-          },
-          {
-            key: 'landlord-bills',
-            icon: <Receipt className="w-4 h-4 text-emerald-500" />,
-            label: <Link to="/landlord/bills">Hóa đơn & Thu tiền trọ</Link>,
-          },
-        ]
-      : []),
-
-    ...(role === 'ROLE_ADMIN'
-      ? [
-          {
-            key: 'admin-portal',
-            icon: <ShieldAlert className="w-4 h-4 text-purple-500" />,
-            label: <Link to="/admin">Trang quản trị hệ thống</Link>,
-          },
-          {
-            key: 'admin-users',
-            icon: <Users className="w-4 h-4 text-blue-500" />,
-            label: <Link to="/admin/users">Quản lý người dùng</Link>,
-          },
-        ]
-      : []),
-
     { type: 'divider' },
     {
       key: 'logout',
-      icon: <LogOut className="w-4 h-4 text-red-500" />,
+      icon: <LogOut className="w-3.5 h-3.5 text-rose-500" />,
       danger: true,
       label: 'Đăng xuất',
       onClick: () => logout(),
@@ -251,198 +80,187 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-stay-card-bg/95 backdrop-blur-md border-b border-stay-border transition-all">
+    <header className="sticky top-0 z-40 w-full bg-stay-card-bg/95 backdrop-blur-md border-b border-stay-border transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Left: Brand Logo & Navigation */}
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2 select-none shrink-0">
+        {/* Left: Brand Logo */}
+        <div className="flex items-center gap-6 lg:gap-8">
+          <Link to="/rooms" className="flex items-center select-none shrink-0">
             <StayConnectLogo size="md" />
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Center Navigation - Exactly 3 Items: Tìm phòng, Bài đăng ở ghép, Trang quản trị */}
           <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((item) => {
-              const Icon = item.icon;
-              const isActive =
-                item.path === '/'
-                  ? location.pathname === '/'
-                  : location.pathname.startsWith(item.path);
+            {/* 1. Nút Tìm phòng */}
+            <Link
+              to="/rooms"
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${
+                isRoomActive
+                  ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
+                  : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+              }`}
+            >
+              <Compass className="w-4 h-4 shrink-0" />
+              <span>Tìm phòng</span>
+            </Link>
 
-              return (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
-                    isActive
-                      ? 'text-stay-primary bg-stay-primary-subtle font-semibold shadow-2xs'
-                      : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+            {/* 2. Nút Bài đăng ở ghép */}
+            <Link
+              to="/roommates"
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${
+                isRoommateActive
+                  ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
+                  : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+              }`}
+            >
+              <Users className="w-4 h-4 shrink-0" />
+              <span>Bài đăng ở ghép</span>
+            </Link>
+
+            {/* 3. Nút Trang quản trị */}
+            <button
+              type="button"
+              onClick={handleAdminNavigate}
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors cursor-pointer ${
+                isAdminActive
+                  ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
+                  : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4 shrink-0" />
+              <span>Trang quản trị</span>
+            </button>
           </nav>
         </div>
 
-        {/* Right: Actions */}
-        <div className="hidden sm:flex items-center gap-2.5">
-          {/* 1-Click Theme Switcher */}
+        {/* Right: Theme Switcher & Simple Auth Info */}
+        <div className="hidden sm:flex items-center gap-3">
           <ThemeSwitcher />
 
-          {/* Role-specific CTA Button */}
-          <Button
-            variant="primary"
-            size="sm"
-            icon={actionConfig.icon}
-            onClick={handlePrimaryAction}
-            className="font-semibold shadow-xs"
-          >
-            {actionConfig.label}
-          </Button>
-
-          {/* Notification Dropdown */}
-          <NotificationDropdown
-            viewAllLink={role === 'ROLE_LANDLORD' ? '/landlord/complaints' : '/tenant/my-room'}
-            viewAllText="Xem tất cả thông báo"
-          />
-
-          {/* Auth State Button / Profile Dropdown */}
           {isAuthenticated && user ? (
-            <Dropdown menu={{ items: getUserMenuItems() }} trigger={['click']} placement="bottomRight">
-              <div className="flex items-center gap-2 cursor-pointer p-1 pl-2 rounded-xl border border-stay-border hover:bg-stay-bg-app transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-stay-primary text-white flex items-center justify-center font-bold text-xs">
+            <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
+              <div className="flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded-xl border border-stay-border hover:bg-stay-bg-app transition-colors">
+                <div className="w-7 h-7 rounded-lg bg-stay-primary text-white flex items-center justify-center font-bold text-xs select-none">
                   {(user.fullName || user.username || 'U').charAt(0).toUpperCase()}
                 </div>
-                <div className="text-left hidden lg:block leading-tight pr-1">
-                  <p className="text-xs font-semibold text-stay-text line-clamp-1 max-w-[130px]">
-                    {user.fullName || user.username}
-                  </p>
-                  <p className="text-[10px] text-stay-primary font-bold">
-                    {role === 'ROLE_ADMIN'
-                      ? 'Quản trị viên'
-                      : role === 'ROLE_LANDLORD'
-                      ? 'Chủ trọ'
-                      : 'Người thuê'}
-                  </p>
-                </div>
+                <span className="text-xs font-semibold text-stay-text max-w-[120px] truncate">
+                  {user.fullName || user.username}
+                </span>
               </div>
             </Dropdown>
           ) : (
-            <Link to="/login" onClick={onLoginClick}>
-              <Button variant="outline" size="sm" className="font-medium">
-                Đăng nhập
-              </Button>
+            <Link
+              to="/login"
+              className="px-4 py-2 text-sm font-semibold rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white transition-colors shadow-xs"
+            >
+              Đăng nhập
             </Link>
           )}
         </div>
 
-        {/* Mobile menu drawer toggle button */}
+        {/* Mobile menu toggle */}
         <div className="flex sm:hidden items-center gap-2">
           <ThemeSwitcher compact />
-          <NotificationDropdown
-            viewAllLink={role === 'ROLE_LANDLORD' ? '/landlord/complaints' : '/tenant/my-room'}
-            viewAllText="Xem thông báo"
-          />
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-xl text-stay-text hover:bg-stay-bg-app transition-colors"
+            className="p-2 rounded-xl text-stay-text hover:bg-stay-bg-app transition-colors cursor-pointer"
+            aria-label="Mở menu"
           >
             <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Tối giản) */}
       <Drawer
         title={<StayConnectLogo size="sm" />}
         placement="right"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={290}
+        width={260}
         styles={{
           body: { backgroundColor: 'var(--stay-card-bg)', color: 'var(--stay-text)' },
-          header: { backgroundColor: 'var(--stay-card-bg)', color: 'var(--stay-text)', borderBottom: '1px solid var(--stay-border)' },
+          header: {
+            backgroundColor: 'var(--stay-card-bg)',
+            color: 'var(--stay-text)',
+            borderBottom: '1px solid var(--stay-border)',
+          },
         }}
       >
         <div className="space-y-4">
           {isAuthenticated && user && (
             <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
-              <p className="font-bold text-sm text-stay-text">{user.fullName || user.username}</p>
-              <p className="text-xs text-stay-text-secondary truncate">{user.email}</p>
-              {getRoleBadge()}
+              <p className="font-semibold text-xs text-stay-text truncate">
+                {user.fullName || user.username}
+              </p>
+              <p className="text-[11px] text-stay-text-secondary truncate">{user.email}</p>
             </div>
           )}
 
           <div className="space-y-1">
-            {navLinks.map((item) => {
-              const Icon = item.icon;
-              const isActive =
-                item.path === '/'
-                  ? location.pathname === '/'
-                  : location.pathname.startsWith(item.path);
+            <Link
+              to="/rooms"
+              onClick={() => setDrawerOpen(false)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                isRoomActive
+                  ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                  : 'text-stay-text hover:bg-stay-bg-app'
+              }`}
+            >
+              <Compass className="w-4 h-4 shrink-0" />
+              <span>Tìm phòng</span>
+            </Link>
 
-              return (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  onClick={() => setDrawerOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
-                      : 'text-stay-text hover:bg-stay-bg-app'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
+            <Link
+              to="/roommates"
+              onClick={() => setDrawerOpen(false)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                isRoommateActive
+                  ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                  : 'text-stay-text hover:bg-stay-bg-app'
+              }`}
+            >
+              <Users className="w-4 h-4 shrink-0" />
+              <span>Bài đăng ở ghép</span>
+            </Link>
 
-          {/* Quick Primary Action */}
-          <div className="pt-2">
             <button
               type="button"
               onClick={() => {
                 setDrawerOpen(false);
-                handlePrimaryAction();
+                handleAdminNavigate();
               }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-stay-primary text-white hover:bg-stay-primary-hover shadow-xs transition-colors cursor-pointer"
+              className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer ${
+                isAdminActive
+                  ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                  : 'text-stay-text hover:bg-stay-bg-app'
+              }`}
             >
-              {actionConfig.icon}
-              <span>{actionConfig.label}</span>
+              <LayoutDashboard className="w-4 h-4 shrink-0" />
+              <span>Trang quản trị</span>
             </button>
           </div>
 
           <div className="pt-4 border-t border-stay-border">
             {isAuthenticated ? (
-              <Button
-                variant="outline"
-                size="md"
-                className="w-full text-red-500 border-red-200 hover:bg-red-50"
+              <button
+                type="button"
                 onClick={() => {
                   setDrawerOpen(false);
                   logout();
                 }}
+                className="w-full py-2 px-3 rounded-xl text-xs font-semibold text-rose-500 border border-stay-border hover:bg-stay-bg-app transition-colors cursor-pointer"
               >
                 Đăng xuất
-              </Button>
+              </button>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <Link to="/login" onClick={() => setDrawerOpen(false)}>
-                  <Button variant="primary" size="md" className="w-full">
-                    Đăng nhập
-                  </Button>
-                </Link>
-                <Link to="/register" onClick={() => setDrawerOpen(false)}>
-                  <Button variant="outline" size="md" className="w-full">
-                    Đăng ký
-                  </Button>
-                </Link>
-              </div>
+              <Link
+                to="/login"
+                onClick={() => setDrawerOpen(false)}
+                className="block text-center w-full py-2 px-3 rounded-xl text-xs font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors"
+              >
+                Đăng nhập
+              </Link>
             )}
           </div>
         </div>

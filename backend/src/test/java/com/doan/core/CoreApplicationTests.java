@@ -18,8 +18,12 @@ import com.doan.core.business.dto.request.LoginRequest;
 import com.doan.core.business.dto.request.RefreshTokenRequest;
 import com.doan.core.business.dto.response.AuthResponse;
 import com.doan.core.business.entity.User;
+import com.doan.core.business.repository.RefreshTokenRepository;
 import com.doan.core.business.repository.UserRepository;
 import com.doan.core.business.service.*;
+import com.doan.core.business.service.task.RefreshTokenCleanupTask;
+import com.doan.core.common.exception.BaseException;
+import com.doan.core.common.exception.ErrorCode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,6 +43,12 @@ public class CoreApplicationTests {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private RefreshTokenCleanupTask refreshTokenCleanupTask;
 
     @Autowired
     private LandlordBuildingService buildingService;
@@ -87,6 +97,58 @@ public class CoreApplicationTests {
         Assertions.assertThrows(Exception.class, () -> {
             authService.refreshToken(new RefreshTokenRequest(refreshed.getRefreshToken()));
         });
+    }
+
+
+    @Test
+    @DisplayName("Kiểm tra chống Brute-force: Khóa tài khoản sau 5 lần nhập sai mật khẩu")
+    void testBruteForceProtectionAndAccountLock() {
+        String testUser = "tenant3";
+
+        // Reset trước khi test nếu có
+        userRepository.findByUsername(testUser).ifPresent(u -> {
+            u.setFailedLoginAttempts(0);
+            u.setLockedUntil(null);
+            u.setLockedReason(null);
+            userRepository.save(u);
+        });
+
+        LoginRequest wrongLogin = new LoginRequest();
+        wrongLogin.setUsername(testUser);
+        wrongLogin.setPassword("wrong-password");
+
+        // 4 lần đầu nhập sai: ném INVALID_CREDENTIALS
+        for (int i = 1; i <= 4; i++) {
+            BaseException ex = Assertions.assertThrows(BaseException.class, () -> authService.login(wrongLogin));
+            Assertions.assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
+        }
+
+        // Lần thứ 5 nhập sai: ném ACCOUNT_TEMPORARILY_LOCKED và khóa tài khoản
+        BaseException lockedEx = Assertions.assertThrows(BaseException.class, () -> authService.login(wrongLogin));
+        Assertions.assertEquals(ErrorCode.ACCOUNT_TEMPORARILY_LOCKED, lockedEx.getErrorCode());
+
+        // Lần thứ 6 dù nhập đúng mật khẩu vẫn bị chặn do đang trong thời gian khóa
+        LoginRequest correctLogin = new LoginRequest();
+        correctLogin.setUsername(testUser);
+        correctLogin.setPassword("123456");
+        BaseException stillLocked = Assertions.assertThrows(BaseException.class, () -> authService.login(correctLogin));
+        Assertions.assertEquals(ErrorCode.ACCOUNT_TEMPORARILY_LOCKED, stillLocked.getErrorCode());
+
+        // Mở khóa lại để không ảnh hưởng dữ liệu khác
+        userRepository.findByUsername(testUser).ifPresent(u -> {
+            u.setFailedLoginAttempts(0);
+            u.setLockedUntil(null);
+            u.setLockedReason(null);
+            userRepository.save(u);
+        });
+    }
+
+    @Test
+    @DisplayName("Kiểm tra tác vụ định kỳ dọn dẹp Refresh Token hết hạn")
+    void testScheduledTokenCleanup() {
+        Assertions.assertDoesNotThrow(() -> {
+            refreshTokenCleanupTask.cleanupExpiredTokens();
+        }, "Tác vụ dọn dẹp refresh token định kỳ phải thực thi thành công không lỗi");
     }
 
     @Test

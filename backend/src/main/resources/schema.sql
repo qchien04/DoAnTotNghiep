@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS users (
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     locked_reason VARCHAR(255),
     locked_until TIMESTAMP WITH TIME ZONE,
+    failed_login_attempts INT NOT NULL DEFAULT 0,
     avatar_url VARCHAR(500),
     date_of_birth DATE,
     gender VARCHAR(10),
