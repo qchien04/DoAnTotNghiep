@@ -42,7 +42,7 @@ public enum ErrorCode {
     OTP_RATE_LIMITED("AUTH_016", "Vui lòng chờ ít nhất 60 giây trước khi yêu cầu gửi lại mã OTP",
             HttpStatus.TOO_MANY_REQUESTS),
     OTP_MAX_ATTEMPTS("AUTH_017", "Bạn đã nhập sai mã OTP quá 5 lần. Vui lòng yêu cầu mã mới", HttpStatus.BAD_REQUEST),
-
+    ACCOUNT_TEMPORARILY_LOCKED("AUTH_018", "Tài khoản đã bị khóa", HttpStatus.BAD_REQUEST),
     // Lỗi Nghiệp Vụ - Tòa nhà (Building)
     BUILDING_NOT_FOUND("BLD_001", "Không tìm thấy thông tin tòa nhà", HttpStatus.NOT_FOUND),
     BUILDING_CODE_EXISTS("BLD_002", "Mã tòa nhà đã tồn tại", HttpStatus.CONFLICT),
