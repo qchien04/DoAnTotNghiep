@@ -34,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final com.doan.core.business.service.OtpService otpService;
 
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
@@ -51,6 +52,14 @@ public class AuthServiceImpl implements AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BaseException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        // Tự động giải phóng khóa tài khoản nếu đã quá hạn locked_until
+        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null && user.getLockedUntil().isBefore(Instant.now())) {
+            user.setStatus("ACTIVE");
+            user.setLockedUntil(null);
+            user.setLockedReason(null);
+            userRepository.save(user);
         }
 
         if (!Boolean.TRUE.equals(user.getEnabled()) || "LOCKED".equalsIgnoreCase(user.getStatus())) {
@@ -88,6 +97,9 @@ public class AuthServiceImpl implements AuthService {
             throw new BaseException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
+        // Xác thực mã OTP gửi về Email trước khi tạo tài khoản
+        otpService.verifyRegistrationOtp(request.getEmail(), request.getOtpCode());
+
         Role assignRole = request.getRole() != null ? request.getRole() : Role.ROLE_TENANT;
         // Không cho phép đăng ký trực tiếp role ADMIN qua public endpoint
         if (assignRole == Role.ROLE_ADMIN) {
@@ -115,8 +127,23 @@ public class AuthServiceImpl implements AuthService {
         log.info("Xử lý làm mới Access Token bằng Refresh Token");
 
         String token = request.getRefreshToken();
-        RefreshToken refreshToken = refreshTokenRepository.findByTokenAndRevokedFalse(token)
+        if (token == null || token.isBlank()) {
+            throw new BaseException(ErrorCode.BAD_REQUEST);
+        }
+
+        // Tìm token trong CSDL (kể cả còn hiệu lực hay đã bị revoked)
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token.trim())
                 .orElseThrow(() -> new BaseException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
+
+        User user = refreshToken.getUser();
+
+        // 🚨 TOKEN REUSE DETECTION (Phát hiện tấn công phát lại token đã thu hồi)
+        if (Boolean.TRUE.equals(refreshToken.getRevoked())) {
+            log.warn("🚨 PHÁT HIỆN TẤN CÔNG PHÁT LẠI TOKEN (Token Reuse) đối với User ID: {} (Username: {})", user.getId(), user.getUsername());
+            // Lập tức thu hồi tất cả Refresh Token của người dùng này để bảo vệ tài khoản
+            refreshTokenRepository.revokeAllByUserId(user.getId());
+            throw new BaseException(ErrorCode.TOKEN_REUSE_DETECTED);
+        }
 
         if (refreshToken.isExpired()) {
             refreshToken.setRevoked(true);
@@ -124,7 +151,14 @@ public class AuthServiceImpl implements AuthService {
             throw new BaseException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
-        User user = refreshToken.getUser();
+        // Tự động giải phóng khóa tài khoản nếu đã quá hạn locked_until
+        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null && user.getLockedUntil().isBefore(Instant.now())) {
+            user.setStatus("ACTIVE");
+            user.setLockedUntil(null);
+            user.setLockedReason(null);
+            userRepository.save(user);
+        }
+
         if (!Boolean.TRUE.equals(user.getEnabled()) || "LOCKED".equalsIgnoreCase(user.getStatus())) {
             throw new BaseException(ErrorCode.USER_DISABLED);
         }
@@ -158,6 +192,59 @@ public class AuthServiceImpl implements AuthService {
                 refreshTokenRepository.save(rt);
             });
         }
+    }
+
+    @Override
+    @Transactional
+    public void logoutAll(Long userId) {
+        if (userId != null) {
+            log.info("Thu hồi toàn bộ Refresh Token trên mọi thiết bị cho User ID: {}", userId);
+            refreshTokenRepository.revokeAllByUserId(userId);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, com.doan.core.business.dto.request.ChangePasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BaseException(ErrorCode.PASSWORD_CONFIRM_NOT_MATCH);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new BaseException(ErrorCode.INVALID_OLD_PASSWORD);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Thu hồi toàn bộ Refresh Token cũ để ép đăng nhập lại trên các phiên khác
+        refreshTokenRepository.revokeAllByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(com.doan.core.business.dto.request.ResetPasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BaseException(ErrorCode.PASSWORD_CONFIRM_NOT_MATCH);
+        }
+
+        // 1. Xác thực mã OTP trong RAM
+        otpService.verifyForgotPasswordOtp(request.getEmail(), request.getOtpCode());
+
+        // 2. Tìm tài khoản theo email
+        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. Đổi mật khẩu
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // 4. Thu hồi toàn bộ Refresh Token cũ để bảo vệ tài khoản
+        refreshTokenRepository.revokeAllByUserId(user.getId());
+        log.info("Đặt lại mật khẩu thành công cho email: {} (User ID: {})", user.getEmail(), user.getId());
     }
 
     @Override

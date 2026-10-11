@@ -30,10 +30,24 @@ export interface RegisterPayload {
   email: string;
   phone?: string;
   role?: Role;
+  otpCode: string;
 }
 
 export interface RefreshTokenPayload {
   refreshToken: string;
+}
+
+export interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export interface AuthResponse {

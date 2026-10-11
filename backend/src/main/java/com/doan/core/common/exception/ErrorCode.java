@@ -28,6 +28,14 @@ public enum ErrorCode {
     TOKEN_INVALID("AUTH_007", "Token xác thực không hợp lệ hoặc đã bị chỉnh sửa", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_EXPIRED("AUTH_008", "Refresh token đã hết hạn, vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_NOT_FOUND("AUTH_009", "Refresh token không tồn tại hoặc đã bị thu hồi", HttpStatus.UNAUTHORIZED),
+    TOKEN_REUSE_DETECTED("AUTH_010", "Phát hiện hành vi sử dụng lại token đã thu hồi. Toàn bộ phiên đăng nhập đã bị vô hiệu hóa vì lý do an toàn", HttpStatus.UNAUTHORIZED),
+    INVALID_OLD_PASSWORD("AUTH_011", "Mật khẩu cũ không chính xác", HttpStatus.BAD_REQUEST),
+    PASSWORD_CONFIRM_NOT_MATCH("AUTH_012", "Mật khẩu xác nhận không khớp với mật khẩu mới", HttpStatus.BAD_REQUEST),
+    OTP_REQUIRED("AUTH_013", "Vui lòng nhập mã xác thực OTP gửi qua email", HttpStatus.BAD_REQUEST),
+    INVALID_OTP("AUTH_014", "Mã xác thực OTP không chính xác", HttpStatus.BAD_REQUEST),
+    OTP_EXPIRED("AUTH_015", "Mã xác thực OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới", HttpStatus.BAD_REQUEST),
+    OTP_RATE_LIMITED("AUTH_016", "Vui lòng chờ ít nhất 60 giây trước khi yêu cầu gửi lại mã OTP", HttpStatus.TOO_MANY_REQUESTS),
+    OTP_MAX_ATTEMPTS("AUTH_017", "Bạn đã nhập sai mã OTP quá 5 lần. Vui lòng yêu cầu mã mới", HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Tòa nhà (Building)
     BUILDING_NOT_FOUND("BLD_001", "Không tìm thấy thông tin tòa nhà", HttpStatus.NOT_FOUND),

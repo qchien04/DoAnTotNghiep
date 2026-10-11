@@ -461,3 +461,4 @@ CREATE INDEX IF NOT EXISTS idx_rma_status ON roommate_applications (status);
 CREATE INDEX IF NOT EXISTS idx_rala_app_id ON roommate_application_lifestyle_answers (application_id);
 CREATE INDEX IF NOT EXISTS idx_rpla_post_id ON roommate_post_lifestyle_answers (post_id);
 CREATE INDEX IF NOT EXISTS idx_ula_user_id ON user_lifestyle_answers (user_id);
+

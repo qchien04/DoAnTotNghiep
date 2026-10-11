@@ -13,6 +13,9 @@ import {
   RefreshCw,
   Check,
   Palette,
+  Lock,
+  AlertCircle,
+  LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useLifestyle } from '@/shared/hooks/tenant/useLifestyle';
@@ -21,7 +24,7 @@ import { message, Tabs, Spin, Tag, Tooltip, Progress } from 'antd';
 import { LifestyleQuestionResponse } from '@/shared/types/tenant';
 
 export const ProfilePage: React.FC = () => {
-  const { user, updateProfile, isLoading: isUpdatingUser } = useAuthStore();
+  const { user, updateProfile, changePassword, logoutAll, isLoading: isUpdatingUser } = useAuthStore();
   const {
     questions,
     isLoadingQuestions,
@@ -46,6 +49,58 @@ export const ProfilePage: React.FC = () => {
   // Tab 2: Lifestyle survey answers state (questionId -> optionId[])
   // Hỗ trợ cả câu hỏi SINGLE (1 option) và câu hỏi MULTI (nhiều options)
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
+
+  // Password Change state
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Vui lòng điền đầy đủ các thông tin mật khẩu');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError('Mật khẩu mới phải có tối thiểu 6 ký tự');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Mật khẩu xác nhận không khớp với mật khẩu mới');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    const success = await changePassword({ oldPassword, newPassword, confirmPassword });
+    setIsChangingPassword(false);
+    if (success) {
+      setPasswordSuccess('Đổi mật khẩu thành công! Các phiên đăng nhập trên thiết bị khác đã được thu hồi an toàn.');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      message.success('Đổi mật khẩu thành công!');
+    } else {
+      setPasswordError('Mật khẩu cũ không chính xác');
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    if (window.confirm('Bạn có chắc chắn muốn đăng xuất tài khoản khỏi tất cả các thiết bị?')) {
+      setIsLoggingOutAll(true);
+      await logoutAll();
+      setIsLoggingOutAll(false);
+      window.location.replace('/login');
+    }
+  };
 
   // Sync user info when store user changes
   useEffect(() => {
@@ -742,6 +797,104 @@ export const ProfilePage: React.FC = () => {
                           {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'Mặc định hệ thống'}
                         </div>
                       </div>
+                    </div>
+
+                    {/* Đổi Mật Khẩu Card */}
+                    <div className="p-6 rounded-2xl border border-stay-border bg-stay-card-bg shadow-xs space-y-5">
+                      <div className="flex items-center justify-between pb-3 border-b border-stay-border">
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-5 h-5 text-stay-primary" />
+                          <h4 className="text-base font-bold text-stay-text">Đổi Mật Khẩu Bảo Mật</h4>
+                        </div>
+                        <span className="text-xs text-stay-text-muted">Cập nhật mật khẩu định kỳ</span>
+                      </div>
+
+                      {passwordError && (
+                        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>{passwordError}</span>
+                        </div>
+                      )}
+
+                      {passwordSuccess && (
+                        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                          <span>{passwordSuccess}</span>
+                        </div>
+                      )}
+
+                      <form onSubmit={handleChangePassword} className="space-y-4 max-w-lg">
+                        <div>
+                          <label className="block text-xs font-semibold text-stay-text mb-1">
+                            Mật khẩu hiện tại
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            value={oldPassword}
+                            onChange={(e) => {
+                              setPasswordError('');
+                              setOldPassword(e.target.value);
+                            }}
+                            placeholder="Nhập mật khẩu đang dùng"
+                            className="w-full px-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-stay-text mb-1">
+                            Mật khẩu mới
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            value={newPassword}
+                            onChange={(e) => {
+                              setPasswordError('');
+                              setNewPassword(e.target.value);
+                            }}
+                            placeholder="Tối thiểu 6 ký tự"
+                            className="w-full px-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-stay-text mb-1">
+                            Xác nhận mật khẩu mới
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            value={confirmPassword}
+                            onChange={(e) => {
+                              setPasswordError('');
+                              setConfirmPassword(e.target.value);
+                            }}
+                            placeholder="Nhập lại mật khẩu mới"
+                            className="w-full px-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary"
+                          />
+                        </div>
+
+                        <div className="pt-2 flex flex-wrap items-center gap-3">
+                          <button
+                            type="submit"
+                            disabled={isChangingPassword}
+                            className="px-4 py-2 bg-stay-primary hover:bg-stay-primary-hover text-white text-xs font-semibold rounded-lg shadow-xs transition disabled:opacity-50 cursor-pointer"
+                          >
+                            {isChangingPassword ? 'Đang cập nhật...' : 'Cập Nhật Mật Khẩu'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleLogoutAll}
+                            disabled={isLoggingOutAll}
+                            className="px-3 py-2 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1.5"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Đăng xuất tất cả thiết bị
+                          </button>
+                        </div>
+                      </form>
                     </div>
                   </div>
                 ),

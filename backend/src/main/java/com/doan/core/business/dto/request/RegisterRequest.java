@@ -35,4 +35,9 @@ public class RegisterRequest {
 
     @Schema(description = "Vai trò tài khoản (ROLE_LANDLORD hoặc ROLE_TENANT, mặc định là ROLE_TENANT)", example = "ROLE_LANDLORD")
     private Role role;
+
+    @NotBlank(message = "Mã xác thực OTP không được để trống")
+    @Size(min = 6, max = 6, message = "Mã OTP gồm đúng 6 chữ số")
+    @Schema(description = "Mã xác thực OTP đã gửi qua email", example = "123456")
+    private String otpCode;
 }

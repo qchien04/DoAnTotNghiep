@@ -7,6 +7,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage';
 import { UserListPage } from '@/features/user/pages/UserListPage';
 import { ProfilePage } from '@/features/user/pages/ProfilePage';
 import { ComponentShowcase } from '@/features/showcase/pages/ComponentShowcase';
@@ -60,40 +61,47 @@ export const AppRoutes: React.FC = () => {
       </Route>
 
       {/* 2. Tenant Management Layout (Sidebar UI) */}
-      <Route path="/tenant" element={<TenantLayout />}>
-        <Route index element={<Navigate to="/tenant/my-room" replace />} />
-        <Route path="my-room" element={<MyRoomPage />} />
-        <Route path="bills" element={<TenantBillsPage />} />
-        <Route path="my-bills" element={<Navigate to="/tenant/bills" replace />} />
-        <Route path="complaints" element={<MyComplaintsPage />} />
-        <Route path="posts" element={<MyRoommatePostsPage />} />
-        <Route path="create-post" element={<CreateRoommatePostPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['ROLE_TENANT', 'ROLE_ADMIN']} />}>
+        <Route path="/tenant" element={<TenantLayout />}>
+          <Route index element={<Navigate to="/tenant/my-room" replace />} />
+          <Route path="my-room" element={<MyRoomPage />} />
+          <Route path="bills" element={<TenantBillsPage />} />
+          <Route path="my-bills" element={<Navigate to="/tenant/bills" replace />} />
+          <Route path="complaints" element={<MyComplaintsPage />} />
+          <Route path="posts" element={<MyRoommatePostsPage />} />
+          <Route path="create-post" element={<CreateRoommatePostPage />} />
+        </Route>
       </Route>
 
-      {/* 2. Landlord Management Layout (UC 01 - 29) */}
-      <Route path="/landlord" element={<LandlordLayout />}>
-        <Route index element={<LandlordDashboardPage />} />
-        <Route path="buildings" element={<BuildingListPage />} />
-        <Route path="rooms" element={<RoomListPage />} />
-        <Route path="services" element={<ServiceConfigPage />} />
-        <Route path="tenants" element={<TenantListPage />} />
-        <Route path="contracts" element={<ContractListPage />} />
-        <Route path="bills" element={<BillListPage />} />
-        <Route path="complaints" element={<ComplaintListPage />} />
+      {/* 3. Landlord Management Layout (UC 01 - 29) */}
+      <Route element={<ProtectedRoute allowedRoles={['ROLE_LANDLORD', 'ROLE_ADMIN']} />}>
+        <Route path="/landlord" element={<LandlordLayout />}>
+          <Route index element={<LandlordDashboardPage />} />
+          <Route path="buildings" element={<BuildingListPage />} />
+          <Route path="rooms" element={<RoomListPage />} />
+          <Route path="services" element={<ServiceConfigPage />} />
+          <Route path="tenants" element={<TenantListPage />} />
+          <Route path="contracts" element={<ContractListPage />} />
+          <Route path="bills" element={<BillListPage />} />
+          <Route path="complaints" element={<ComplaintListPage />} />
+        </Route>
       </Route>
 
-      {/* 3. Admin Portal Layout (UC 47 - 57) */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboardPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
-        <Route path="master-data" element={<AdminMasterDataPage />} />
-        <Route path="reports" element={<AdminReportsPage />} />
+      {/* 4. Admin Portal Layout (UC 47 - 57) */}
+      <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="master-data" element={<AdminMasterDataPage />} />
+          <Route path="reports" element={<AdminReportsPage />} />
+        </Route>
       </Route>
 
       {/* 4. Auth Layout */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
 
       {/* Catch-all */}

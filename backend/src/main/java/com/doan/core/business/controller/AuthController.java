@@ -24,6 +24,28 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final com.doan.core.business.service.OtpService otpService;
+
+    @PostMapping("/otp/send-register")
+    @Operation(summary = "Gửi mã OTP xác thực email đăng ký", description = "Gửi mã OTP 6 số đến email đăng ký tài khoản")
+    public ResponseEntity<ResponseData<Void>> sendRegisterOtp(@Valid @RequestBody com.doan.core.business.dto.request.SendOtpRequest request) {
+        otpService.sendRegistrationOtp(request.getEmail());
+        return ResponseEntity.ok(ResponseData.success("Mã xác thực OTP đã được gửi đến email của bạn", null));
+    }
+
+    @PostMapping("/forgot-password/send-otp")
+    @Operation(summary = "Gửi mã OTP đặt lại mật khẩu", description = "Gửi mã OTP 6 số đến email để khôi phục mật khẩu tài khoản")
+    public ResponseEntity<ResponseData<Void>> sendForgotPasswordOtp(@Valid @RequestBody com.doan.core.business.dto.request.SendOtpRequest request) {
+        otpService.sendForgotPasswordOtp(request.getEmail());
+        return ResponseEntity.ok(ResponseData.success("Mã xác thực đặt lại mật khẩu đã được gửi đến email của bạn", null));
+    }
+
+    @PostMapping("/forgot-password/reset")
+    @Operation(summary = "Đặt lại mật khẩu bằng mã OTP", description = "Xác nhận mã OTP và cập nhật mật khẩu mới cho tài khoản")
+    public ResponseEntity<ResponseData<Void>> resetPassword(@Valid @RequestBody com.doan.core.business.dto.request.ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ResponseData.success("Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới", null));
+    }
 
     @PostMapping("/login")
     @Operation(summary = "Đăng nhập hệ thống", description = "Trả về JWT Access Token và Refresh Token cho người dùng")
@@ -33,7 +55,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Đăng ký tài khoản mới", description = "Tạo tài khoản mới với vai trò ROLE_TENANT hoặc ROLE_LANDLORD")
+    @Operation(summary = "Đăng ký tài khoản mới kèm xác thực OTP", description = "Tạo tài khoản mới với vai trò ROLE_TENANT hoặc ROLE_LANDLORD sau khi xác thực OTP email")
     public ResponseEntity<ResponseData<UserDto>> register(@Valid @RequestBody RegisterRequest request) {
         UserDto createdUser = authService.register(request);
         return ResponseEntity.ok(ResponseData.success("Đăng ký tài khoản thành công", createdUser));
@@ -53,6 +75,29 @@ public class AuthController {
             authService.logout(request.getRefreshToken());
         }
         return ResponseEntity.ok(ResponseData.success("Đăng xuất thành công", null));
+    }
+
+    @PostMapping("/logout-all")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Đăng xuất khỏi tất cả thiết bị", description = "Thu hồi toàn bộ Refresh Token của tài khoản hiện tại")
+    public ResponseEntity<ResponseData<Void>> logoutAll(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        if (userPrincipal != null) {
+            authService.logoutAll(userPrincipal.getId());
+        }
+        return ResponseEntity.ok(ResponseData.success("Đã đăng xuất khỏi toàn bộ thiết bị", null));
+    }
+
+    @PostMapping("/change-password")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Đổi mật khẩu tài khoản", description = "Đổi mật khẩu và thu hồi các phiên đăng nhập khác")
+    public ResponseEntity<ResponseData<Void>> changePassword(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid @RequestBody com.doan.core.business.dto.request.ChangePasswordRequest request) {
+        if (userPrincipal == null) {
+            throw new com.doan.core.common.exception.BaseException(com.doan.core.common.exception.ErrorCode.UNAUTHORIZED);
+        }
+        authService.changePassword(userPrincipal.getId(), request);
+        return ResponseEntity.ok(ResponseData.success("Đổi mật khẩu thành công", null));
     }
 
     @GetMapping("/me")

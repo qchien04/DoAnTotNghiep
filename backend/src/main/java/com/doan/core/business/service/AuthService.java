@@ -17,5 +17,11 @@ public interface AuthService {
 
     void logout(String refreshToken);
 
+    void logoutAll(Long userId);
+
+    void changePassword(Long userId, com.doan.core.business.dto.request.ChangePasswordRequest request);
+
+    void resetPassword(com.doan.core.business.dto.request.ResetPasswordRequest request);
+
     UserDto getMe(UserPrincipal userPrincipal);
 }

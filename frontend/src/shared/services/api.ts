@@ -7,6 +7,7 @@ import {
   setRefreshToken,
   setStoredUser,
   clearAuth,
+  broadcastAuthChange,
 } from '@/shared/utils/token';
 import { ResponseData } from '@/shared/types/api';
 import { AuthResponse } from '@/shared/types/auth';
@@ -122,6 +123,13 @@ apiClient.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           }
 
+          broadcastAuthChange({
+            type: 'REFRESH',
+            token: accessToken,
+            refreshToken: newRefreshToken,
+            user,
+          });
+
           processQueue(null, accessToken);
           return apiClient(originalRequest);
         } else {
@@ -130,6 +138,7 @@ apiClient.interceptors.response.use(
       } catch (refreshErr) {
         processQueue(refreshErr, null);
         clearAuth();
+        broadcastAuthChange({ type: 'LOGOUT' });
         if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
           window.location.replace('/login');
         }

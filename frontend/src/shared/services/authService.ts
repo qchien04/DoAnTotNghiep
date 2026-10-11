@@ -8,6 +8,11 @@ export const authService = {
     return res.data;
   },
 
+  sendRegisterOtp: async (email: string): Promise<ResponseData<void>> => {
+    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/otp/send-register', { email });
+    return res.data;
+  },
+
   register: async (payload: RegisterPayload): Promise<ResponseData<User>> => {
     const res = await apiClient.post<ResponseData<User>>('/api/v1/auth/register', payload);
     return res.data;
@@ -20,6 +25,35 @@ export const authService = {
 
   logout: async (refreshToken?: string | null): Promise<ResponseData<string>> => {
     const res = await apiClient.post<ResponseData<string>>('/api/v1/auth/logout', { refreshToken });
+    return res.data;
+  },
+
+  logoutAll: async (): Promise<ResponseData<void>> => {
+    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/logout-all');
+    return res.data;
+  },
+
+  changePassword: async (data: {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<ResponseData<void>> => {
+    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/change-password', data);
+    return res.data;
+  },
+
+  sendForgotPasswordOtp: async (email: string): Promise<ResponseData<void>> => {
+    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/forgot-password/send-otp', { email });
+    return res.data;
+  },
+
+  resetPassword: async (data: {
+    email: string;
+    otpCode: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<ResponseData<void>> => {
+    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/forgot-password/reset', data);
     return res.data;
   },
 
