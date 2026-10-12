@@ -141,14 +141,13 @@ export const TenantBillsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stay-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stay-border">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stay-text flex items-center gap-2">
-            <Receipt className="w-6 h-6 text-stay-primary" />
-            Quản Lý Hóa Đơn & Thanh Toán
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">
+            Quản lý hóa đơn & thanh toán
           </h1>
           <p className="text-xs text-stay-text-secondary mt-0.5">
-            Tra cứu hóa đơn tiền phòng, điện nước hàng tháng, xem lại các hóa đơn trước đó và thanh toán nhanh chóng qua VietQR.
+            Theo dõi cước phí hàng tháng và thanh toán tiền phòng qua VietQR
           </p>
         </div>
       </div>

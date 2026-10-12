@@ -194,11 +194,14 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         zoomControl: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; OpenStreetMap contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b'],
+          attribution: '&copy; OpenStreetMap contributors, Tiles courtesy of Humanitarian OpenStreetMap Team &bull; Chủ quyền Việt Nam',
+        }
+      ).addTo(map);
 
       const marker = L.marker(initialPos, {
         icon: pinIcon,

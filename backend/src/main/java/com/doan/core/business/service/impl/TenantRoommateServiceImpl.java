@@ -487,8 +487,16 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
 
     private RoommatePostResponse mapToPostResponse(RoommatePost p) {
         List<String> images = new ArrayList<>();
-        if (p.getRoom() != null && p.getRoom().getImages() != null) {
-            images = p.getRoom().getImages().stream().map(RoomImage::getImageUrl).collect(Collectors.toList());
+        if (p.getRoom() != null) {
+            if (p.getRoom().getCoverImageUrl() != null && !p.getRoom().getCoverImageUrl().isBlank()) {
+                images.add(p.getRoom().getCoverImageUrl());
+            }
+            if (p.getRoom().getImages() != null) {
+                p.getRoom().getImages().stream()
+                        .map(RoomImage::getImageUrl)
+                        .filter(url -> !images.contains(url))
+                        .forEach(images::add);
+            }
         }
 
         List<RoommatePostLifestyleAnswer> postAnswers = postLifestyleAnswerRepository.findByPostIdWithDetails(p.getId());

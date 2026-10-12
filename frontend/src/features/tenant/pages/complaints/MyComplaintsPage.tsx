@@ -65,13 +65,13 @@ export const MyComplaintsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stay-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stay-border">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stay-text">
-            Khiếu Nại & Báo Hỏng Sự Cố
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">
+            Khiếu nại & báo hỏng thiết bị
           </h1>
           <p className="text-xs text-stay-text-secondary mt-0.5">
-            Gửi yêu cầu sửa chữa điện lạnh, điện nước, an ninh phòng trọ và theo dõi tiến độ xử lý từ chủ nhà.
+            Gửi yêu cầu sửa chữa thiết bị phòng trọ và theo dõi lịch hẹn thợ
           </p>
         </div>
 

@@ -40,6 +40,7 @@ public class RoomResponse {
     private String ward;
     private String addressDetail;
     private String fullAddress;
+    private String coverImageUrl;
     private List<String> imageUrls;
     private BigDecimal latitude;
     private BigDecimal longitude;
@@ -52,6 +53,14 @@ public class RoomResponse {
         List<String> images = room.getImages() != null
                 ? room.getImages().stream().map(RoomImage::getImageUrl).collect(Collectors.toList())
                 : List.of();
+
+        String cover = room.getCoverImageUrl();
+        if ((cover == null || cover.isBlank()) && !images.isEmpty()) {
+            cover = images.get(0);
+        }
+        if (images.isEmpty() && cover != null && !cover.isBlank()) {
+            images = List.of(cover);
+        }
 
         List<String> amenityList = (room.getAmenities() != null && !room.getAmenities().isBlank())
                 ? java.util.Arrays.stream(room.getAmenities().split(","))
@@ -107,6 +116,7 @@ public class RoomResponse {
                 .services(serviceResponses)
                 .description(room.getDescription())
                 .status(room.getStatus())
+                .coverImageUrl(cover)
                 .imageUrls(images)
                 .latitude(lat)
                 .longitude(lng)

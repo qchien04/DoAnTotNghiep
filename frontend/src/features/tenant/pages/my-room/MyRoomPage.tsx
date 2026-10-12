@@ -92,21 +92,20 @@ export const MyRoomPage: React.FC = () => {
   return (
     <div className="space-y-6">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stay-border">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stay-border">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-stay-text flex items-center gap-2">
-              <Home className="w-6 h-6 text-stay-primary" />
-              Quản Lý Phòng & Hợp Đồng Thuê
+            <h1 className="text-xl font-semibold text-stay-text tracking-tight">
+              Phòng & Hợp đồng của tôi
             </h1>
             <p className="text-xs text-stay-text-secondary mt-0.5">
-              Theo dõi thông tin phòng đang ở, tiện nghi, danh sách bạn cùng phòng và lịch sử các hợp đồng thuê trước đó.
+              Thông tin phòng đang ở, hợp đồng thuê và các khoản phí dịch vụ
             </p>
           </div>
 
           {/* Quick Actions if linked */}
           {showLinked && (
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <Link to="/roommates/create">
+            <div className="flex items-center gap-2">
+              <Link to="/tenant/posts?create=true">
                 <Button
                   variant="primary"
                   size="sm"

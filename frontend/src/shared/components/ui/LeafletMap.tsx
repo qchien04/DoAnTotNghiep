@@ -77,15 +77,19 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
         scrollWheelZoom: true,
       });
 
-      // Sử dụng tile layer CartoDB Voyager (dữ liệu OpenStreetMap chuẩn):
-      // - Giao diện hiện đại, đường nét sắc nét, màu sắc hài hòa
+      // Sử dụng tile layer OpenStreetMap Humanitarian (HOT) qua CDN ổn định:
+      // - Giao diện chi tiết, sắc nét, màu sắc hài hòa, không watermark
       // - Tuyệt đối không có đường lưỡi bò phi pháp
-      // - Tốc độ tải cực nhanh qua CDN toàn cầu của Carto
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      // - Tốc độ tải nhanh, không bị chặn 403 trên localhost
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b'],
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles courtesy of <a href="https://www.hotosm.org/">Humanitarian OpenStreetMap Team</a> &bull; Chủ quyền Việt Nam',
+        }
+      ).addTo(map);
 
       // Layer khẳng định chủ quyền Quần đảo Hoàng Sa & Quần đảo Trường Sa (Việt Nam)
       const islandsGroup = L.layerGroup().addTo(map);

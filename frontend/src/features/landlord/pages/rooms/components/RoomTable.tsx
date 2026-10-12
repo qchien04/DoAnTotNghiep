@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Globe, EyeOff } from 'lucide-react';
+import { Edit2, Trash2, Globe, EyeOff, Image as ImageIcon } from 'lucide-react';
 import { Table, Button, Popconfirm, Tag } from '@/shared/components';
 import { Room, RoomStatus } from '@/shared/types/landlord';
 
@@ -73,16 +73,33 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       key: 'name',
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
+        const coverImg = item.coverImageUrl || (item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : null);
         return (
-          <div>
-            <p className="font-medium text-stay-text">{item.name || '---'}</p>
-            {item.buildingName ? (
-              <p className="text-xs text-stay-text-muted">{item.buildingName}</p>
+          <div className="flex items-center gap-3">
+            {coverImg ? (
+              <img
+                src={coverImg}
+                alt={item.name}
+                className="w-11 h-11 rounded-lg object-cover border border-stay-border shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
             ) : (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                🏠 {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Nhà trọ độc lập')}
-              </p>
+              <div className="w-11 h-11 rounded-lg bg-stay-bg-app border border-stay-border flex items-center justify-center shrink-0 text-stay-text-muted">
+                <ImageIcon className="w-4 h-4" />
+              </div>
             )}
+            <div className="min-w-0">
+              <p className="font-medium text-stay-text truncate">{item.name || '---'}</p>
+              {item.buildingName ? (
+                <p className="text-xs text-stay-text-muted truncate">{item.buildingName}</p>
+              ) : (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                  🏠 {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Nhà trọ độc lập')}
+                </p>
+              )}
+            </div>
           </div>
         );
       },

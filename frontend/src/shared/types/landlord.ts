@@ -75,6 +75,7 @@ export interface Room {
   province?: string;
   ward?: string;
   addressDetail?: string;
+  coverImageUrl?: string;
   imageUrls?: string[];
   latitude?: number;
   longitude?: number;
@@ -99,6 +100,7 @@ export interface CreateRoomDto {
   province?: string;
   ward?: string;
   addressDetail?: string;
+  coverImageUrl?: string;
   imageUrls?: string[];
   latitude?: number;
   longitude?: number;

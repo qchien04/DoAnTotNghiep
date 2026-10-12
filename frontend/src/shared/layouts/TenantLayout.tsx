@@ -5,7 +5,6 @@ import {
   Receipt,
   Wrench,
   Users,
-  PlusCircle,
   Compass,
   LogOut,
   User,
@@ -50,11 +49,6 @@ export const TenantLayout: React.FC = () => {
       label: <Link to="/tenant/posts">Bài đăng ở ghép</Link>,
     },
     {
-      key: '/tenant/create-post',
-      icon: <PlusCircle className="w-4 h-4 shrink-0" />,
-      label: <Link to="/tenant/create-post">Đăng tin tìm bạn</Link>,
-    },
-    {
       key: '/roommates',
       icon: <Compass className="w-4 h-4 shrink-0" />,
       label: <Link to="/roommates">Khám phá ở ghép</Link>,
@@ -71,24 +65,7 @@ export const TenantLayout: React.FC = () => {
         location.pathname.startsWith(item.key)
     )?.key as string || '/tenant/my-room';
 
-  // Section title mapping
-  const getSectionTitle = () => {
-    if (location.pathname.includes('/bills')) {
-      return { title: 'Quản lý Hóa đơn & Tiền phòng', desc: 'Lịch sử cước phí, hóa đơn các tháng và thanh toán VietQR' };
-    }
-    if (location.pathname.includes('/complaints')) {
-      return { title: 'Khiếu nại & Báo hỏng sự cố', desc: 'Báo sự cố thiết bị phòng trọ và theo dõi lịch hẹn thợ' };
-    }
-    if (location.pathname.includes('/create-post') || location.pathname.includes('/roommates/create')) {
-      return { title: 'Đăng bài tìm người ở cùng', desc: 'Tùy chọn phòng đang ở hoặc phòng mới để ghép phòng' };
-    }
-    if (location.pathname.includes('/posts') || location.pathname.includes('/roommates/my-posts')) {
-      return { title: 'Quản lý bài đăng của tôi', desc: 'Theo dõi tiến độ ghép nhóm và duyệt thành viên' };
-    }
-    return { title: 'Phòng & Hợp đồng của tôi', desc: 'Thông tin phòng đang thuê và lịch sử các hợp đồng trước đó' };
-  };
 
-  const pageInfo = getSectionTitle();
 
   const userMenuItems = [
     {
@@ -192,27 +169,13 @@ export const TenantLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Topbar */}
         <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-4 sm:px-6 flex items-center justify-between transition-colors">
-          <div className="flex flex-col justify-center">
-            <h1 className="text-sm sm:text-base font-bold text-stay-text leading-tight">
-              {pageInfo.title}
+          <div className="flex items-center gap-2">
+            <h1 className="text-base font-semibold text-stay-text">
+              Không gian người thuê
             </h1>
-            <p className="text-[11px] text-stay-text-secondary hidden sm:block">
-              {pageInfo.desc}
-            </p>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Quick Action: Đăng tin */}
-            <Link to="/tenant/create-post" className="hidden sm:inline-flex">
-              <button
-                type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors shadow-xs cursor-pointer"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Đăng tin tìm bạn</span>
-              </button>
-            </Link>
-
             <ThemeSwitcher />
 
             <NotificationDropdown

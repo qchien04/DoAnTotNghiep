@@ -1,49 +1,81 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useMyRoommatePosts, useApplications } from '@/shared/hooks';
-import { Button, Modal, Skeleton } from '@/shared/components';
-import { Plus, Users } from 'lucide-react';
-import { message } from 'antd';
-import { RoommatePostStatus, RoommateApplication } from '@/shared/types/tenant';
+import { Skeleton } from '@/shared/components';
+import {
+  Table,
+  Button,
+  Input,
+  Select,
+  Tag,
+  Dropdown,
+  Modal,
+  message,
+  Empty,
+  Space,
+} from 'antd';
+import {
+  Plus,
+  Search,
+  Users,
+  MapPin,
+  ExternalLink,
+  MoreHorizontal,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
+import { RoommatePost, RoommatePostStatus, RoommateApplication } from '@/shared/types/tenant';
 import { formatCurrency } from '@/shared/utils';
-import { PostHeaderCard } from './components/PostHeaderCard';
-import { ApplicantTable } from './components/ApplicantTable';
+import { ApplicantDrawer } from './components/ApplicantDrawer';
 import { ReviewApplicantModal } from './components/ReviewApplicantModal';
 import { RejectApplicantModal } from './components/RejectApplicantModal';
-import { GroupCompletedModal } from './components/GroupCompletedModal';
+import { CreatePostModal } from './components/CreatePostModal';
 
 export const MyRoommatePostsPage: React.FC = () => {
-  const { posts, isLoading, lockGroup } = useMyRoommatePosts();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { posts, isLoading, lockGroup, closePost, refetch } = useMyRoommatePosts();
+
+  // Filters
   const [activeTab, setActiveTab] = useState<RoommatePostStatus | 'ALL'>('ALL');
+  const [postTypeFilter, setPostTypeFilter] = useState<'ALL' | 'HAS_ROOM' | 'SEARCHING_ROOM'>('ALL');
+  const [searchKeyword, setSearchKeyword] = useState('');
 
-  // Selected post for group applicant review (UC15)
-  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  // Create Modal State
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  const filteredPosts = posts.filter((p) => {
-    if (activeTab === 'ALL') return true;
-    return p.status === activeTab;
-  });
+  // Auto open create modal if ?create=true
+  useEffect(() => {
+    if (searchParams.get('create') === 'true') {
+      setCreateModalOpen(true);
+      searchParams.delete('create');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
-  const selectedPost =
-    filteredPosts.find((p) => String(p.id) === String(selectedPostId)) ||
-    filteredPosts[0] ||
-    posts[0] ||
-    null;
+  // Drawer xem đơn ứng tuyển
+  const [selectedPost, setSelectedPost] = useState<RoommatePost | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const { applications, approveApplication, rejectApplication } = useApplications(
-    selectedPost?.id ? String(selectedPost.id) : 'post_1'
-  );
+  const {
+    applications,
+    approveApplication,
+    rejectApplication,
+    refetch: refetchApps,
+    isLoading: isAppsLoading,
+  } = useApplications(selectedPost?.id ? String(selectedPost.id) : '');
 
-  // Review modal state (UC15)
+  // Review modal state
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<RoommateApplication | null>(null);
 
   // Reject reason modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectReason, setRejectReason] = useState('Thói quen sinh hoạt chưa thực sự phù hợp với nhóm');
+  const [rejectReason, setRejectReason] = useState('Thói quen sinh hoạt chưa phù hợp với nhóm');
 
-  // Group completion dialog
-  const [completedSuccessModalOpen, setCompletedSuccessModalOpen] = useState(false);
+  const handleOpenApplications = (post: RoommatePost) => {
+    setSelectedPost(post);
+    setDrawerOpen(true);
+  };
 
   const handleOpenReview = (app: RoommateApplication) => {
     setSelectedApplicant(app);
@@ -54,17 +86,18 @@ export const MyRoommatePostsPage: React.FC = () => {
     if (!selectedApplicant) return;
     Modal.confirm({
       title: 'Xác nhận chấp thuận thành viên vào nhóm?',
-      content: `Bạn có chắc chắn chấp thuận ứng viên ${selectedApplicant.applicantName} vào nhóm ở ghép?`,
-      okText: 'Xác nhận',
+      content: `Chấp thuận ${selectedApplicant.applicantName} tham gia nhóm ở ghép này?`,
+      okText: 'Chấp thuận',
       cancelText: 'Hủy',
       onOk: async () => {
         try {
           await approveApplication(selectedApplicant.id);
-          message.success(`Đã chấp thuận ${selectedApplicant.applicantName} vào nhóm thành công!`);
+          message.success(`Đã chấp thuận ${selectedApplicant.applicantName} vào nhóm!`);
           setReviewModalOpen(false);
-          setCompletedSuccessModalOpen(true);
+          refetchApps?.();
+          refetch?.();
         } catch (err: any) {
-          message.error(err.message || 'Lỗi duyệt thành viên');
+          message.error(err?.message || 'Lỗi duyệt thành viên');
         }
       },
     });
@@ -74,73 +107,276 @@ export const MyRoommatePostsPage: React.FC = () => {
     if (!selectedApplicant) return;
     try {
       await rejectApplication({ applicationId: selectedApplicant.id, reason: rejectReason });
-      message.success(`Đã từ chối đơn xin gia nhập của ${selectedApplicant.applicantName}.`);
+      message.success(`Đã từ chối đơn của ${selectedApplicant.applicantName}.`);
       setRejectModalOpen(false);
       setReviewModalOpen(false);
+      refetchApps?.();
     } catch (err: any) {
-      message.error(err.message || 'Lỗi từ chối đơn');
+      message.error(err?.message || 'Lỗi từ chối đơn');
     }
   };
 
-  const handleFinishGroup = async () => {
-    if (!selectedPost) return;
-    try {
-      await lockGroup(selectedPost.id);
-      message.success('Nhóm đã chuyển sang trạng thái Hoàn thành! Đã đóng nhận đơn mới.');
-      setCompletedSuccessModalOpen(false);
-    } catch (err: any) {
-      message.error(err.message || 'Lỗi hoàn thành nhóm');
-    }
+  const handleFinishGroup = async (post: RoommatePost) => {
+    Modal.confirm({
+      title: 'Xác nhận chốt nhóm ghép phòng?',
+      content: `Bài đăng "${post.title}" sẽ chuyển sang trạng thái Hoàn thành và đóng nhận đơn mới.`,
+      okText: 'Chốt nhóm',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await lockGroup(post.id);
+          message.success('Đã chốt nhóm thành công!');
+          if (selectedPost && String(selectedPost.id) === String(post.id)) {
+            setSelectedPost({ ...selectedPost, status: 'COMPLETED' });
+          }
+          refetch?.();
+        } catch (err: any) {
+          message.error(err?.message || 'Lỗi chốt nhóm');
+        }
+      },
+    });
   };
+
+  const handleClosePost = async (id: string) => {
+    Modal.confirm({
+      title: 'Xác nhận đóng bài đăng tìm bạn?',
+      content: 'Bài đăng sẽ ngừng hiển thị công khai và không nhận thêm đơn mới.',
+      okText: 'Đóng bài',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await closePost(id);
+          message.success('Đã đóng bài đăng thành công.');
+          if (selectedPost && String(selectedPost.id) === String(id)) {
+            setSelectedPost({ ...selectedPost, status: 'CLOSED' });
+          }
+          refetch?.();
+        } catch (err: any) {
+          message.error(err?.message || 'Không thể đóng bài đăng');
+        }
+      },
+    });
+  };
+
+  // Filtered posts
+  const filteredPosts = useMemo(() => {
+    return posts.filter((p) => {
+      if (activeTab !== 'ALL' && p.status !== activeTab) return false;
+      if (postTypeFilter !== 'ALL' && p.postType !== postTypeFilter) return false;
+      if (searchKeyword.trim()) {
+        const kw = searchKeyword.toLowerCase();
+        const matchTitle = (p.title || '').toLowerCase().includes(kw);
+        const matchArea = (p.areaName || p.district || p.roomInfo?.address || '').toLowerCase().includes(kw);
+        const matchCode = (p.code || '').toLowerCase().includes(kw);
+        if (!matchTitle && !matchArea && !matchCode) return false;
+      }
+      return true;
+    });
+  }, [posts, activeTab, postTypeFilter, searchKeyword]);
+
+  const openCount = posts.filter((p) => p.status === 'OPEN').length;
+  const completedCount = posts.filter((p) => p.status === 'COMPLETED').length;
+  const closedCount = posts.filter((p) => p.status === 'CLOSED').length;
+
+  const columns = [
+    {
+      title: 'Mã tin',
+      dataIndex: 'code',
+      key: 'code',
+      width: 90,
+      render: (_: any, r: RoommatePost) => (
+        <span className="font-mono text-xs font-semibold text-stay-text">
+          {r.code || `#BG${r.id}`}
+        </span>
+      ),
+    },
+    {
+      title: 'Tiêu đề bài đăng',
+      key: 'title',
+      render: (_: any, r: RoommatePost) => (
+        <div className="space-y-1 max-w-md">
+          <Link
+            to={`/roommates/${r.id}`}
+            target="_blank"
+            className="text-xs sm:text-sm font-semibold text-stay-text hover:text-stay-primary transition-colors line-clamp-1 inline-flex items-center gap-1 group"
+          >
+            <span>{r.title}</span>
+            <ExternalLink className="w-3 h-3 text-stay-text-muted group-hover:text-stay-primary shrink-0" />
+          </Link>
+          <div className="flex items-center gap-1 text-[11px] text-stay-text-secondary">
+            <MapPin className="w-3 h-3 text-stay-text-muted shrink-0" />
+            <span className="truncate">{r.areaName || r.district || r.roomInfo?.address}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Loại tin',
+      dataIndex: 'postType',
+      key: 'postType',
+      width: 120,
+      render: (type: string) => {
+        const isHasRoom = type === 'HAS_ROOM';
+        return (
+          <span className="text-xs text-stay-text">
+            {isHasRoom ? 'Đã có phòng' : 'Tìm cùng thuê'}
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Giá share',
+      dataIndex: 'sharePrice',
+      key: 'sharePrice',
+      width: 130,
+      align: 'right' as const,
+      render: (price: number) => (
+        <span className="text-xs font-semibold text-stay-text">
+          {formatCurrency(price)}
+        </span>
+      ),
+    },
+    {
+      title: 'Tiến độ',
+      key: 'progress',
+      width: 110,
+      align: 'center' as const,
+      render: (_: any, r: RoommatePost) => (
+        <span className="text-xs text-stay-text">
+          {r.currentRoommates} / {r.neededRoommates + r.currentRoommates} người
+        </span>
+      ),
+    },
+    {
+      title: 'Đơn ứng tuyển',
+      key: 'applications',
+      width: 140,
+      align: 'center' as const,
+      render: (_: any, r: RoommatePost) => {
+        const count = r.pendingApplicantsCount ?? 1;
+        return (
+          <Button
+            size="small"
+            onClick={() => handleOpenApplications(r)}
+            className="text-xs rounded border-stay-border hover:border-stay-primary hover:text-stay-primary text-stay-text"
+          >
+            <Users className="w-3 h-3 inline mr-1" />
+            Xem đơn ({count})
+          </Button>
+        );
+      },
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      align: 'center' as const,
+      render: (st: RoommatePostStatus) => {
+        if (st === 'OPEN') return <Tag color="green">Đang tìm</Tag>;
+        if (st === 'COMPLETED') return <Tag color="blue">Đã chốt</Tag>;
+        return <Tag>Đã đóng</Tag>;
+      },
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      width: 120,
+      align: 'right' as const,
+      render: (_: any, r: RoommatePost) => (
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleOpenApplications(r)}
+            className="p-0 text-xs text-stay-primary"
+          >
+            Chi tiết
+          </Button>
+
+          {r.status === 'OPEN' && (
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'finish',
+                    icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />,
+                    label: 'Chốt nhóm (Đủ người)',
+                    onClick: () => handleFinishGroup(r),
+                  },
+                  {
+                    key: 'close',
+                    icon: <XCircle className="w-3.5 h-3.5 text-rose-500" />,
+                    danger: true,
+                    label: 'Đóng bài đăng',
+                    onClick: () => handleClosePost(String(r.id)),
+                  },
+                ],
+              }}
+              trigger={['click']}
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<MoreHorizontal className="w-4 h-4 text-stay-text-secondary" />}
+              />
+            </Dropdown>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <Skeleton active paragraph={{ rows: 8 }} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stay-border">
+    <div className="space-y-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stay-border">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stay-text flex items-center gap-2">
-            <Users className="w-6 h-6 text-stay-primary" />
-            Quản Lý Bài Đăng Tìm Người Ở Ghép
+          <h1 className="text-xl font-semibold text-stay-text tracking-tight">
+            Bài đăng ở ghép của tôi
           </h1>
           <p className="text-xs text-stay-text-secondary mt-0.5">
-            Theo dõi tiến độ ghép phòng, đối chiếu tiêu chí lối sống và phê duyệt ứng viên vào nhóm.
+            Quản lý các tin tìm bạn cùng phòng và tiếp nhận đơn xin gia nhập nhóm
           </p>
         </div>
-        <Link to="/tenant/create-post">
-          <Button
-            variant="primary"
-            size="md"
-            icon={<Plus className="w-4 h-4" />}
-          >
-            Đăng tin mới
-          </Button>
-        </Link>
+
+        <Button
+          type="primary"
+          icon={<Plus className="w-4 h-4" />}
+          onClick={() => setCreateModalOpen(true)}
+          className="bg-stay-primary hover:bg-stay-primary-hover text-white rounded-lg h-9 text-xs sm:text-sm font-medium"
+        >
+          Đăng tin tìm bạn
+        </Button>
       </div>
 
-        {/* Tabs Filter */}
-        <div className="flex gap-4 border-b border-stay-border overflow-x-auto no-scrollbar">
+      {/* Filter Bar */}
+      <div className="bg-stay-card-bg border border-stay-border rounded-xl p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-2xs">
+        {/* Status Tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           {[
-            { key: 'ALL', label: `Tất cả bài đăng (${posts.length})` },
-            { key: 'OPEN', label: `Đang tìm bạn (${posts.filter((p) => p.status === 'OPEN').length})` },
-            { key: 'COMPLETED', label: `Đã chốt nhóm (${posts.filter((p) => p.status === 'COMPLETED').length})` },
-            { key: 'CLOSED', label: `Đã đóng (${posts.filter((p) => p.status === 'CLOSED').length})` },
+            { key: 'ALL', label: `Tất cả (${posts.length})` },
+            { key: 'OPEN', label: `Đang tìm bạn (${openCount})` },
+            { key: 'COMPLETED', label: `Đã chốt (${completedCount})` },
+            { key: 'CLOSED', label: `Đã đóng (${closedCount})` },
           ].map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key as any)}
-              className={`pb-3 text-xs font-semibold cursor-pointer whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === tab.key
-                  ? 'text-stay-primary border-b-2 border-stay-primary font-bold'
-                  : 'text-stay-text-secondary hover:text-stay-text'
+                  ? 'bg-stay-primary text-white font-semibold'
+                  : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
               }`}
             >
               {tab.label}
@@ -148,117 +384,109 @@ export const MyRoommatePostsPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Post Selection List */}
+        {/* Search & Type Filters */}
+        <div className="flex items-center gap-2">
+          <Select
+            value={postTypeFilter}
+            onChange={(val) => setPostTypeFilter(val)}
+            className="w-36 text-xs"
+            size="middle"
+            options={[
+              { value: 'ALL', label: 'Tất cả loại tin' },
+              { value: 'HAS_ROOM', label: 'Đã có phòng' },
+              { value: 'SEARCHING_ROOM', label: 'Tìm cùng thuê' },
+            ]}
+          />
+
+          <Input
+            prefix={<Search className="w-3.5 h-3.5 text-stay-text-muted" />}
+            placeholder="Tìm theo tiêu đề, địa chỉ..."
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            allowClear
+            className="w-56 text-xs"
+            size="middle"
+          />
+        </div>
+      </div>
+
+      {/* Main Table */}
+      <div className="bg-stay-card-bg border border-stay-border rounded-xl overflow-hidden shadow-2xs">
         {filteredPosts.length === 0 ? (
-          <div className="bg-white border border-stay-border rounded-2xl p-10 text-center space-y-3 shadow-2xs">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
-              <Users className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-semibold text-stay-text">Bạn chưa có bài đăng nào ở mục này</p>
-            <p className="text-xs text-stay-text-secondary max-w-sm mx-auto">
-              Hãy tạo bài đăng tìm bạn ở cùng cho phòng đang ở hoặc phòng mới để kết nối các bạn có lối sống tương đồng.
-            </p>
-            <div className="pt-2">
-              <Link to="/roommates/create">
-                <Button variant="primary" size="md" icon={<Plus className="w-4 h-4" />}>
-                  Đăng tin ngay
-                </Button>
-              </Link>
-            </div>
+          <div className="py-16 text-center">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span className="text-xs text-stay-text-secondary">
+                  Không tìm thấy bài đăng nào phù hợp
+                </span>
+              }
+            >
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => setCreateModalOpen(true)}
+                className="bg-stay-primary hover:bg-stay-primary-hover text-white text-xs"
+              >
+                Tạo bài đăng ngay
+              </Button>
+            </Empty>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Quick Post Switcher if multiple posts */}
-            {filteredPosts.length > 1 && (
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-                  Chọn bài đăng cần xem chi tiết & duyệt đơn ({filteredPosts.length})
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {filteredPosts.map((p) => {
-                    const isSelected = String(p.id) === String(selectedPost?.id);
-                    return (
-                      <div
-                        key={p.id}
-                        onClick={() => setSelectedPostId(String(p.id))}
-                        className={`p-3.5 rounded-xl border cursor-pointer transition-all duration-150 ${
-                          isSelected
-                            ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/40 shadow-xs'
-                            : 'border-stay-border hover:border-slate-300 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs font-bold text-stay-text">{p.code || `BG${p.id}`}</span>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                              p.status === 'OPEN'
-                                ? 'bg-emerald-50 text-emerald-700'
-                                : p.status === 'COMPLETED'
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {p.status === 'OPEN' ? 'Đang tìm' : p.status === 'COMPLETED' ? 'Đã chốt' : 'Đã đóng'}
-                          </span>
-                        </div>
-                        <p className="text-xs font-semibold text-stay-text line-clamp-1 mt-1">{p.title}</p>
-                        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
-                          <span className="font-bold text-stay-primary">{formatCurrency(p.sharePrice)}/người</span>
-                          <span>Cần {p.neededRoommates} bạn</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Post Header Card */}
-            {selectedPost && <PostHeaderCard post={selectedPost} />}
-
-            {/* Applicant Table */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-                  Danh sách đơn xin gia nhập ({applications.length})
-                </label>
-                {selectedPost?.status === 'OPEN' && (
-                  <span className="text-xs text-slate-500">
-                    Ứng viên được đối chiếu độ tương thích dựa trên khảo sát lối sống
-                  </span>
-                )}
-              </div>
-
-              <ApplicantTable
-                applications={applications}
-                onOpenReview={handleOpenReview}
-              />
-            </div>
-          </div>
+          <Table<RoommatePost>
+            columns={columns}
+            dataSource={filteredPosts}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              size: 'small',
+            }}
+            size="middle"
+            scroll={{ x: 900 }}
+          />
         )}
-
-        {/* Modals */}
-        <ReviewApplicantModal
-          open={reviewModalOpen}
-          onCancel={() => setReviewModalOpen(false)}
-          applicant={selectedApplicant}
-          onApprove={handleApprove}
-          onOpenReject={() => setRejectModalOpen(true)}
-        />
-
-        <RejectApplicantModal
-          open={rejectModalOpen}
-          onCancel={() => setRejectModalOpen(false)}
-          reason={rejectReason}
-          onReasonChange={setRejectReason}
-          onConfirm={handleReject}
-        />
-
-        <GroupCompletedModal
-          open={completedSuccessModalOpen}
-          onCancel={() => setCompletedSuccessModalOpen(false)}
-          onFinishGroup={handleFinishGroup}
-        />
       </div>
+
+      {/* Drawer xem đơn ứng tuyển */}
+      <ApplicantDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        post={selectedPost}
+        applications={applications}
+        isLoading={isAppsLoading}
+        onOpenReview={handleOpenReview}
+        onFinishGroup={() => selectedPost && handleFinishGroup(selectedPost)}
+        onClosePost={() => selectedPost && handleClosePost(String(selectedPost.id))}
+      />
+
+      {/* Modal đăng tin */}
+      <CreatePostModal
+        open={createModalOpen}
+        onCancel={() => setCreateModalOpen(false)}
+        onSuccess={() => {
+          setCreateModalOpen(false);
+          refetch?.();
+        }}
+      />
+
+      {/* Modals duyệt & từ chối đơn */}
+      <ReviewApplicantModal
+        open={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        applicant={selectedApplicant}
+        onApprove={handleApprove}
+        onOpenReject={() => setRejectModalOpen(true)}
+      />
+
+      <RejectApplicantModal
+        open={rejectModalOpen}
+        onCancel={() => setRejectModalOpen(false)}
+        reason={rejectReason}
+        onReasonChange={setRejectReason}
+        onConfirm={handleReject}
+      />
+    </div>
   );
 };

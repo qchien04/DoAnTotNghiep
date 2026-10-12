@@ -74,6 +74,9 @@ public class Room extends BaseEntity {
     @Builder.Default
     private String status = "AVAILABLE"; // AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED
 
+    @Column(name = "cover_image_url", length = 500)
+    private String coverImageUrl;
+
     @Column(name = "latitude", precision = 10, scale = 8)
     private BigDecimal latitude;
 

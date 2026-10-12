@@ -51,36 +51,42 @@ const normalizeBuilding = (b: any): Building => ({
   createdAt: b.createdAt,
 });
 
-const normalizeRoom = (r: any): Room => ({
-  id: r.id,
-  buildingId: r.buildingId ?? null,
-  buildingName: r.buildingName,
-  name: r.name,
-  floor: r.floor ?? 1,
-  area: Number(r.area ?? 0),
-  listedPrice: Number(r.listedPrice ?? 0),
-  standardDeposit: Number(r.standardDeposit ?? 0),
-  maxCapacity: Number(r.maxCapacity ?? 1),
-  currentOccupancy: Number(r.currentOccupancy ?? 0),
-  furnishingLevel: r.furnishingLevel || 'BASIC',
-  amenities: Array.isArray(r.amenities)
-    ? r.amenities
-    : typeof r.amenities === 'string' && r.amenities.trim()
-    ? r.amenities.split(',').map((s: string) => s.trim())
-    : [],
-  serviceIds: Array.isArray(r.serviceIds) ? r.serviceIds.map(Number) : [],
-  services: r.services || [],
-  description: r.description || '',
-  status: r.status || 'AVAILABLE',
-  province: r.province,
-  ward: r.ward,
-  addressDetail: r.addressDetail,
-  imageUrls: Array.isArray(r.imageUrls) ? r.imageUrls : [],
-  latitude: r.latitude !== undefined && r.latitude !== null ? Number(r.latitude) : undefined,
-  longitude: r.longitude !== undefined && r.longitude !== null ? Number(r.longitude) : undefined,
-  isPublic: r.isPublic !== undefined ? Boolean(r.isPublic) : true,
-  createdAt: r.createdAt,
-});
+const normalizeRoom = (r: any): Room => {
+  const images = Array.isArray(r.imageUrls) ? r.imageUrls : [];
+  const cover = r.coverImageUrl || (images.length > 0 ? images[0] : undefined);
+
+  return {
+    id: r.id,
+    buildingId: r.buildingId ?? null,
+    buildingName: r.buildingName,
+    name: r.name,
+    floor: r.floor ?? 1,
+    area: Number(r.area ?? 0),
+    listedPrice: Number(r.listedPrice ?? 0),
+    standardDeposit: Number(r.standardDeposit ?? 0),
+    maxCapacity: Number(r.maxCapacity ?? 1),
+    currentOccupancy: Number(r.currentOccupancy ?? 0),
+    furnishingLevel: r.furnishingLevel || 'BASIC',
+    amenities: Array.isArray(r.amenities)
+      ? r.amenities
+      : typeof r.amenities === 'string' && r.amenities.trim()
+      ? r.amenities.split(',').map((s: string) => s.trim())
+      : [],
+    serviceIds: Array.isArray(r.serviceIds) ? r.serviceIds.map(Number) : [],
+    services: r.services || [],
+    description: r.description || '',
+    status: r.status || 'AVAILABLE',
+    province: r.province,
+    ward: r.ward,
+    addressDetail: r.addressDetail,
+    coverImageUrl: cover,
+    imageUrls: images.length > 0 ? images : (cover ? [cover] : []),
+    latitude: r.latitude !== undefined && r.latitude !== null ? Number(r.latitude) : undefined,
+    longitude: r.longitude !== undefined && r.longitude !== null ? Number(r.longitude) : undefined,
+    isPublic: r.isPublic !== undefined ? Boolean(r.isPublic) : true,
+    createdAt: r.createdAt,
+  };
+};
 
 const calculateMonthsBetween = (startDate?: string, endDate?: string): number => {
   if (!startDate || !endDate) return 12;
@@ -350,6 +356,7 @@ export const landlordService = {
       province: dto.province,
       ward: dto.ward,
       addressDetail: dto.addressDetail,
+      coverImageUrl: dto.coverImageUrl || (dto.imageUrls && dto.imageUrls.length > 0 ? dto.imageUrls[0] : undefined),
       imageUrls: dto.imageUrls || [],
       latitude: dto.latitude !== undefined && dto.latitude !== null ? Number(dto.latitude) : undefined,
       longitude: dto.longitude !== undefined && dto.longitude !== null ? Number(dto.longitude) : undefined,
@@ -381,6 +388,7 @@ export const landlordService = {
       province: dto.province,
       ward: dto.ward,
       addressDetail: dto.addressDetail,
+      coverImageUrl: dto.coverImageUrl || (dto.imageUrls && dto.imageUrls.length > 0 ? dto.imageUrls[0] : undefined),
       imageUrls: dto.imageUrls,
       latitude: dto.latitude !== undefined && dto.latitude !== null ? Number(dto.latitude) : undefined,
       longitude: dto.longitude !== undefined && dto.longitude !== null ? Number(dto.longitude) : undefined,

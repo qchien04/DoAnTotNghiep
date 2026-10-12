@@ -2,8 +2,6 @@ import apiClient from './api';
 import { ResponseData, PageResponse } from '@/shared/types/api';
 import {
   RoommatePost,
-  CreatePostWithRoomDto,
-  CreatePostWithoutRoomDto,
   UpdateRoommatePostDto,
   PostSearchParams,
   RoommateApplication,
@@ -18,6 +16,53 @@ import {
   RateComplaintDto,
 } from '@/shared/types/tenant';
 import { Bill, Complaint } from '@/shared/types/landlord';
+
+export const normalizeRoommatePost = (raw: any): RoommatePost => {
+  if (!raw) return raw;
+  const id = String(raw.id || '');
+  const code = raw.code || `BG${id.padStart(2, '0')}`;
+  const images: string[] = raw.roomInfo?.images || raw.roomImages || [];
+
+  return {
+    id,
+    code,
+    title: raw.title || 'Bài đăng ở ghép',
+    authorId: String(raw.authorId || ''),
+    authorName: raw.authorName || 'Người dùng',
+    authorAvatar: raw.authorAvatar,
+    postType: raw.postType || 'HAS_ROOM',
+    areaName: raw.areaName || raw.district || '',
+    ward: raw.ward || '',
+    district: raw.district || '',
+    city: raw.city || 'Hà Nội',
+    sharePrice: Number(raw.sharePrice) || 0,
+    totalRoomPrice: raw.totalRoomPrice ? Number(raw.totalRoomPrice) : undefined,
+    neededRoommates: raw.neededRoommates ?? 1,
+    currentRoommates: raw.currentRoommates ?? 1,
+    description: raw.description || '',
+    matchPercentage: raw.matchPercentage,
+    status: raw.status || 'OPEN',
+    createdAt: raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updatedAt || raw.createdAt || new Date().toISOString(),
+    roomInfo: {
+      roomId: raw.roomId ? String(raw.roomId) : undefined,
+      roomName: raw.roomName,
+      address: raw.areaName || '',
+      amenities: raw.roomInfo?.amenities || [],
+      images: Array.isArray(images) ? images : [],
+    },
+    lifestyle: raw.lifestyle || {
+      genderPreference: raw.genderPreference || 'ANY',
+      sleepTime: raw.sleepTime || 'BEFORE_24H',
+      smoking: raw.isNoSmoking !== undefined ? !raw.isNoSmoking : false,
+      petFriendly: Boolean(raw.isPetFriendly),
+      cookingFrequency: raw.cookingFrequency || 'SOMETIMES',
+      cleanlinessLevel: raw.cleanlinessLevel || 'VERY_CLEAN',
+      personality: 'BALANCED',
+      guestsAllowed: raw.guestAllowed || 'WEEKENDS_ONLY',
+    },
+  };
+};
 
 export const tenantService = {
   // 0. Khảo sát lối sống & Vector Profile
@@ -38,28 +83,91 @@ export const tenantService = {
 
   // 1. Bài đăng ở ghép (UC 30 - 35, 40)
   searchPosts: async (params?: PostSearchParams): Promise<ResponseData<PageResponse<RoommatePost>>> => {
-    const res = await apiClient.get<ResponseData<PageResponse<RoommatePost>>>('/api/v1/tenant/posts/search', { params });
-    return res.data;
+    const res = await apiClient.get<any>('/api/v1/tenant/posts/search', { params });
+    const rawData = res.data?.data;
+    const rawList = Array.isArray(rawData)
+      ? rawData
+      : Array.isArray(rawData?.items)
+      ? rawData.items
+      : Array.isArray(rawData?.content)
+      ? rawData.content
+      : [];
+
+    const items = rawList.map(normalizeRoommatePost);
+    return {
+      ...res.data,
+      data: {
+        items,
+        page: rawData?.page ?? rawData?.number ?? 0,
+        size: rawData?.size ?? 10,
+        totalElements: rawData?.totalElements ?? items.length,
+        totalPages: rawData?.totalPages ?? 1,
+        last: rawData?.last ?? true,
+      },
+    };
   },
 
   getMyPosts: async (): Promise<ResponseData<RoommatePost[]>> => {
-    const res = await apiClient.get<ResponseData<RoommatePost[]>>('/api/v1/tenant/posts/my-posts');
-    return res.data;
+    const res = await apiClient.get<any>('/api/v1/tenant/posts/my-posts');
+    const rawList = Array.isArray(res.data?.data) ? res.data.data : [];
+    return {
+      ...res.data,
+      data: rawList.map(normalizeRoommatePost),
+    };
   },
 
   getPostById: async (id: string): Promise<ResponseData<RoommatePost>> => {
-    const res = await apiClient.get<ResponseData<RoommatePost>>(`/api/v1/tenant/posts/${id}`);
-    return res.data;
+    const res = await apiClient.get<any>(`/api/v1/tenant/posts/${id}`);
+    return {
+      ...res.data,
+      data: normalizeRoommatePost(res.data?.data),
+    };
   },
 
-  createPostWithRoom: async (dto: CreatePostWithRoomDto): Promise<ResponseData<RoommatePost>> => {
-    const res = await apiClient.post<ResponseData<RoommatePost>>('/api/v1/tenant/posts/existing-room', dto);
-    return res.data;
+  createPostWithRoom: async (dto: any): Promise<ResponseData<RoommatePost>> => {
+    const payload = {
+      ...dto,
+      postType: 'HAS_ROOM',
+      sharePrice: dto.sharePrice,
+      totalRoomPrice: dto.totalRoomPrice || (dto.sharePrice ? dto.sharePrice * 2 : 3800000),
+      neededRoommates: dto.neededRoommates || 1,
+      genderPreference: dto.genderPreference || dto.lifestyle?.genderPreference || 'ANY',
+      sleepTime: dto.sleepTime || dto.lifestyle?.sleepTime || 'BEFORE_24H',
+      isNoSmoking: dto.isNoSmoking !== undefined ? dto.isNoSmoking : (dto.lifestyle?.smoking !== undefined ? !dto.lifestyle.smoking : true),
+      isPetFriendly: dto.isPetFriendly !== undefined ? dto.isPetFriendly : Boolean(dto.lifestyle?.petFriendly),
+      cookingFrequency: dto.cookingFrequency || dto.lifestyle?.cookingFrequency || 'DAILY',
+      cleanlinessLevel: dto.cleanlinessLevel || dto.lifestyle?.cleanlinessLevel || 'VERY_CLEAN',
+      guestAllowed: dto.guestAllowed || dto.lifestyle?.guestsAllowed || 'WEEKENDS_ONLY',
+    };
+    const res = await apiClient.post<any>('/api/v1/tenant/posts/existing-room', payload);
+    return {
+      ...res.data,
+      data: normalizeRoommatePost(res.data?.data),
+    };
   },
 
-  createPostWithoutRoom: async (dto: CreatePostWithoutRoomDto): Promise<ResponseData<RoommatePost>> => {
-    const res = await apiClient.post<ResponseData<RoommatePost>>('/api/v1/tenant/posts/virtual-room', dto);
-    return res.data;
+  createPostWithoutRoom: async (dto: any): Promise<ResponseData<RoommatePost>> => {
+    const payload = {
+      ...dto,
+      postType: 'SEARCHING_ROOM',
+      sharePrice: dto.sharePrice || dto.budgetMax || 2000000,
+      roomAddress: dto.roomAddress || dto.centerAddress || 'Khu vực Hà Nội',
+      district: dto.district || 'Cầu Giấy',
+      city: dto.city || 'Hà Nội',
+      neededRoommates: dto.neededRoommates || 1,
+      genderPreference: dto.genderPreference || dto.lifestyle?.genderPreference || 'ANY',
+      sleepTime: dto.sleepTime || dto.lifestyle?.sleepTime || 'BEFORE_24H',
+      isNoSmoking: dto.isNoSmoking !== undefined ? dto.isNoSmoking : (dto.lifestyle?.smoking !== undefined ? !dto.lifestyle.smoking : true),
+      isPetFriendly: dto.isPetFriendly !== undefined ? dto.isPetFriendly : Boolean(dto.lifestyle?.petFriendly),
+      cookingFrequency: dto.cookingFrequency || dto.lifestyle?.cookingFrequency || 'DAILY',
+      cleanlinessLevel: dto.cleanlinessLevel || dto.lifestyle?.cleanlinessLevel || 'VERY_CLEAN',
+      guestAllowed: dto.guestAllowed || dto.lifestyle?.guestsAllowed || 'WEEKENDS_ONLY',
+    };
+    const res = await apiClient.post<any>('/api/v1/tenant/posts/virtual-room', payload);
+    return {
+      ...res.data,
+      data: normalizeRoommatePost(res.data?.data),
+    };
   },
 
   updatePost: async (id: string, dto: UpdateRoommatePostDto): Promise<ResponseData<RoommatePost>> => {

@@ -83,7 +83,13 @@ public enum ErrorCode {
     INVALID_METER_READING("INV_004", "Chỉ số mới không được nhỏ hơn chỉ số cũ", HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Khiếu nại (Complaint)
-    COMPLAINT_NOT_FOUND("CMP_001", "Không tìm thấy thông tin khiếu nại báo hỏng", HttpStatus.NOT_FOUND);
+    COMPLAINT_NOT_FOUND("CMP_001", "Không tìm thấy thông tin khiếu nại báo hỏng", HttpStatus.NOT_FOUND),
+
+    // Lỗi Tệp & Upload (File)
+    FILE_EMPTY("FILE_001", "Tệp tải lên không được để trống", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE("FILE_002", "Kích thước tệp vượt quá giới hạn cho phép (tối đa 15MB)", HttpStatus.BAD_REQUEST),
+    FILE_TYPE_INVALID("FILE_003", "Định dạng tệp không được hỗ trợ. Chỉ chấp nhận ảnh (JPG, PNG, WEBP, GIF)", HttpStatus.BAD_REQUEST),
+    FILE_UPLOAD_FAILED("FILE_004", "Không thể lưu tệp lên hệ thống, vui lòng thử lại sau", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

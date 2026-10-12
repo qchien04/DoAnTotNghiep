@@ -71,6 +71,9 @@ public class RoomRequest {
     @Schema(description = "Trạng thái phòng (AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED)", example = "AVAILABLE")
     private String status;
 
+    @Schema(description = "URL ảnh đại diện chính của phòng trọ", example = "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800")
+    private String coverImageUrl;
+
     @Schema(description = "Danh sách đường dẫn ảnh phòng")
     private List<String> imageUrls;
 

@@ -7,6 +7,12 @@ spring:
   application:
     name: graduation-project-core
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 50MB
+
   datasource:
     url: jdbc:postgresql://localhost:5432/rental_room_management
     driverClassName: org.postgresql.Driver
@@ -50,6 +56,8 @@ springdoc:
 
 # Cấu hình thông tin Đồ Án Tốt Nghiệp
 app:
+  upload:
+    dir: "./uploads"
   info:
     title: "Hệ Thống Quản Lý Nhà Trọ - Đồ Án Tốt Nghiệp"
     version: "1.0.0"

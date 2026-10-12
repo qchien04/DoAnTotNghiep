@@ -213,21 +213,21 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
                   }));
 
                   return (
-                    <tr key={q.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={q.id} className="hover:bg-stay-bg-app transition-colors">
                       <td className="p-3">
                         <div className="font-semibold text-stay-text">{q.label}</div>
                         <div className="flex items-center gap-1.5 mt-1">
                           {isMulti ? (
-                            <span className="text-[10px] text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded font-medium">
+                            <span className="text-[10px] text-stay-primary bg-stay-primary-subtle border border-stay-primary/20 px-1.5 py-0.5 rounded font-medium">
                               Chọn nhiều
                             </span>
                           ) : (
-                            <span className="text-[10px] text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded font-medium">
+                            <span className="text-[10px] text-stay-text-secondary bg-stay-bg-app border border-stay-border px-1.5 py-0.5 rounded font-medium">
                               Chọn 1
                             </span>
                           )}
                           {q.isHard && (
-                            <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-medium">
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded font-medium">
                               Quan trọng
                             </span>
                           )}

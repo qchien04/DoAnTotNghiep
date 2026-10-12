@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     amenities TEXT,
     description TEXT,
     status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
+    cover_image_url VARCHAR(500),
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
     is_public BOOLEAN NOT NULL DEFAULT TRUE,
@@ -292,6 +293,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     related_entity_id BIGINT,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

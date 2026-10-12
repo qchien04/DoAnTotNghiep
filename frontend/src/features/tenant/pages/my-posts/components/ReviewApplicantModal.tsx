@@ -27,8 +27,8 @@ export const ReviewApplicantModal: React.FC<ReviewApplicantModalProps> = ({
       footer={null}
       width={840}
       title={
-        <span className="text-base font-bold text-stay-text">
-          Đối chiếu lối sống • {applicant.applicantName || `#${applicant.id}`}
+        <span className="text-base font-semibold text-stay-text">
+          Hồ sơ ứng viên • {applicant.applicantName || `#${applicant.id}`}
         </span>
       }
     >
@@ -47,7 +47,7 @@ export const ReviewApplicantModal: React.FC<ReviewApplicantModalProps> = ({
             <div className="text-left sm:text-right">
               <span className="text-[11px] text-stay-text-muted block">Độ tương thích:</span>
               <span className="text-base font-bold text-emerald-600">
-                {applicant.compatibilityScore}% (Rất hợp)
+                {applicant.compatibilityScore}%
               </span>
             </div>
           </div>

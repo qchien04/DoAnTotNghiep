@@ -25,6 +25,8 @@ public final class SecurityConstants {
         "/api/v1/tenant/posts/search",
         "/api/v1/tenant/posts/{id:[0-9]+}",
         "/api/v1/tenant/posts/*",
+        "/api/v1/files/**",
+        "/uploads/**",
         "/v3/api-docs/**",
         "/swagger-ui/**",
         "/swagger-ui.html",

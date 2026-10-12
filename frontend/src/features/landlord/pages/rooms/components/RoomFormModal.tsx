@@ -11,13 +11,25 @@ import {
   message,
 } from '@/shared/components';
 import { Tooltip, Spin } from 'antd';
-import { HelpCircle, MapPin, Navigation } from 'lucide-react';
+import {
+  HelpCircle,
+  MapPin,
+  Navigation,
+  Upload,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Star,
+  Link as LinkIcon,
+  Sparkles,
+} from 'lucide-react';
 import { Building, CreateRoomDto, Room, UtilityService } from '@/shared/types/landlord';
 import {
   formatServicePriceWithUnit,
   getBillingMethodInfo,
 } from '@/shared/utils/serviceUtils';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import { fileService } from '@/shared/services/fileService';
 
 // Fix default leaflet marker icon issue in Webpack/Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -57,6 +69,29 @@ const pinIcon = L.divIcon({
   popupAnchor: [0, -36],
 });
 
+const PRESET_ROOM_IMAGES = [
+  {
+    title: 'Phòng Studio ban công',
+    url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1000&auto=format&fit=crop&q=80',
+  },
+  {
+    title: 'Phòng ngủ hiện đại',
+    url: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1000&auto=format&fit=crop&q=80',
+  },
+  {
+    title: 'Không gian mở đón nắng',
+    url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1000&auto=format&fit=crop&q=80',
+  },
+  {
+    title: 'Khu bếp & bàn ăn',
+    url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1000&auto=format&fit=crop&q=80',
+  },
+  {
+    title: 'Phòng khách & sofa',
+    url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&auto=format&fit=crop&q=80',
+  },
+];
+
 interface RoomFormModalProps {
   open: boolean;
   editingRoom: Room | null;
@@ -77,6 +112,12 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   onSubmit,
 }) => {
   const [form] = Form.useForm();
+
+  // Room Images State
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [inputUrl, setInputUrl] = useState('');
+  const [isProcessingFiles, setIsProcessingFiles] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Location & Map State
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number }>({
@@ -134,6 +175,10 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         const effectiveCoords = { lat: effectiveLat, lng: effectiveLng };
 
         setCurrentCoords(effectiveCoords);
+        const initialImages = editingRoom.imageUrls && editingRoom.imageUrls.length > 0
+          ? editingRoom.imageUrls
+          : (editingRoom.coverImageUrl ? [editingRoom.coverImageUrl] : []);
+        setImageUrls(initialImages);
 
         const parsedAmenities = Array.isArray(editingRoom.amenities)
           ? editingRoom.amenities
@@ -171,6 +216,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         }
       } else {
         form.resetFields();
+        setImageUrls([]);
         const initialBld = buildings.length > 0 ? buildings[0] : null;
         const initialLat = initialBld?.latitude ? Number(initialBld.latitude) : 21.0285;
         const initialLng = initialBld?.longitude ? Number(initialBld.longitude) : 105.8048;
@@ -234,11 +280,14 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         zoomControl: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; OpenStreetMap contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b'],
+          attribution: '&copy; OpenStreetMap contributors, Tiles courtesy of Humanitarian OpenStreetMap Team &bull; Chủ quyền Việt Nam',
+        }
+      ).addTo(map);
 
       const marker = L.marker(initialPos, {
         icon: pinIcon,
@@ -347,9 +396,96 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     );
   };
 
+  // Handlers for room images
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileList = Array.from(files);
+    const validFiles: File[] = [];
+
+    for (const file of fileList) {
+      if (!file.type.startsWith('image/')) {
+        message.warning(`Tệp ${file.name} không phải là hình ảnh.`);
+        continue;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        message.warning(`Tệp ${file.name} vượt quá 15MB.`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    setIsProcessingFiles(true);
+    try {
+      const uploadedUrls = await fileService.uploadMultipleImages(validFiles, 'rooms');
+      if (uploadedUrls && uploadedUrls.length > 0) {
+        setImageUrls((prev) => [...prev, ...uploadedUrls]);
+        message.success(`Đã tải lên ${uploadedUrls.length} ảnh phòng thành công.`);
+      }
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Tải ảnh lên máy chủ thất bại.');
+    } finally {
+      setIsProcessingFiles(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleAddInputUrl = () => {
+    const trimmed = inputUrl.trim();
+    if (!trimmed) {
+      message.warning('Vui lòng nhập đường dẫn URL hình ảnh.');
+      return;
+    }
+    if (trimmed.startsWith('data:image/')) {
+      message.error('Không chấp nhận ảnh Base64. Vui lòng bấm "Tải ảnh từ máy tính" hoặc dán đường dẫn URL trực tiếp.');
+      return;
+    }
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('/uploads/')) {
+      message.warning('URL hình ảnh phải bắt đầu bằng http:// hoặc https://');
+      return;
+    }
+    setImageUrls((prev) => [...prev, trimmed]);
+    setInputUrl('');
+    message.success('Đã thêm liên kết hình ảnh.');
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImageUrls((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    message.info('Đã xóa ảnh.');
+  };
+
+  const handleSetCoverImage = (indexToCover: number) => {
+    if (indexToCover === 0) return;
+    setImageUrls((prev) => {
+      const copy = [...prev];
+      const [item] = copy.splice(indexToCover, 1);
+      return [item, ...copy];
+    });
+    message.success('Đã chọn làm ảnh đại diện chính.');
+  };
+
+  const handleAddPresetImage = (url: string) => {
+    if (imageUrls.includes(url)) {
+      message.info('Ảnh này đã có trong danh sách.');
+      return;
+    }
+    setImageUrls((prev) => [...prev, url]);
+    message.success('Đã thêm ảnh mẫu.');
+  };
+
   const handleOk = async () => {
     const values = await form.validateFields();
-    await onSubmit(values as CreateRoomDto);
+    const coverImageUrl = imageUrls.length > 0 ? imageUrls[0] : undefined;
+    await onSubmit({
+      ...values,
+      coverImageUrl,
+      imageUrls,
+    } as CreateRoomDto);
   };
 
   return (
@@ -710,6 +846,173 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 </div>
               </Form.Item>
             </div>
+          </div>
+        </div>
+
+        {/* SECTION 4: HÌNH ẢNH PHÒNG TRỌ THỰC TẾ */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-stay-text flex items-center gap-2">
+              <span>4. Album hình ảnh phòng trọ thực tế</span>
+              <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-stay-card-bg border border-stay-border text-stay-text-secondary">
+                {imageUrls.length} ảnh
+              </span>
+            </h3>
+            {imageUrls.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setImageUrls([])}
+                className="text-xs text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                Xóa tất cả ảnh
+              </button>
+            )}
+          </div>
+
+          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+            {/* Thanh công cụ: Tải file từ máy tính & Nhập URL ảnh */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
+              <Button
+                type="primary"
+                icon={<Upload className="w-4 h-4" />}
+                onClick={() => fileInputRef.current?.click()}
+                loading={isProcessingFiles}
+                className="h-10 px-4 font-medium flex items-center gap-2 shrink-0 bg-stay-primary hover:bg-stay-primary-hover text-white"
+              >
+                Tải ảnh từ máy tính
+              </Button>
+
+              <div className="flex-1 flex gap-2">
+                <Input
+                  placeholder="Hoặc dán URL hình ảnh (https://...)..."
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  onPressEnter={handleAddInputUrl}
+                  className="h-10 text-xs"
+                  prefix={<LinkIcon className="w-3.5 h-3.5 text-stay-text-muted" />}
+                  allowClear
+                />
+                <Button
+                  onClick={handleAddInputUrl}
+                  className="h-10 text-xs font-medium shrink-0 border-stay-border text-stay-text hover:text-stay-primary"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Thêm link
+                </Button>
+              </div>
+            </div>
+
+            {/* Ảnh mẫu nội thất gợi ý nhanh */}
+            <div>
+              <div className="text-xs text-stay-text-muted mb-2 flex items-center gap-1.5 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Hoặc chọn nhanh ảnh mẫu phòng thực tế:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {PRESET_ROOM_IMAGES.map((preset, index) => {
+                  const isAdded = imageUrls.includes(preset.url);
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      disabled={isAdded}
+                      onClick={() => handleAddPresetImage(preset.url)}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isAdded
+                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 opacity-60 cursor-not-allowed'
+                          : 'border-stay-border bg-stay-card-bg text-stay-text-secondary hover:text-stay-primary hover:border-stay-primary'
+                      }`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-stay-primary" />
+                      <span>+ {preset.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Danh sách ảnh hoặc Trạng thái trống */}
+            {imageUrls.length === 0 ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-stay-border rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-stay-primary/50 transition-colors cursor-pointer bg-stay-card-bg/40"
+              >
+                <div className="w-12 h-12 rounded-full bg-stay-bg-app flex items-center justify-center text-stay-text-muted mb-2 border border-stay-border">
+                  <ImageIcon className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-medium text-stay-text mb-1">
+                  Chưa có hình ảnh nào cho phòng trọ này
+                </p>
+                <p className="text-[11px] text-stay-text-muted max-w-sm">
+                  Nhấp vào đây để chọn tệp từ máy tính, dán URL ảnh trực tiếp hoặc chọn ảnh mẫu phía trên
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-1">
+                {imageUrls.map((url, idx) => {
+                  const isCover = idx === 0;
+                  return (
+                    <div
+                      key={idx}
+                      className="group relative aspect-4/3 rounded-xl overflow-hidden border border-stay-border bg-stay-card-bg shadow-xs"
+                    >
+                      <img
+                        src={url}
+                        alt={`Ảnh phòng ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&auto=format&fit=crop&q=80';
+                        }}
+                      />
+
+                      {/* Huy hiệu ảnh bìa */}
+                      {isCover && (
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs backdrop-blur-xs">
+                          <Star className="w-3 h-3 fill-current" />
+                          <span>Ảnh đại diện</span>
+                        </div>
+                      )}
+
+                      {/* Các nút thao tác khi hover */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 backdrop-blur-2xs">
+                        {!isCover && (
+                          <button
+                            type="button"
+                            title="Đặt làm ảnh đại diện"
+                            onClick={() => handleSetCoverImage(idx)}
+                            className="p-1.5 rounded-lg bg-stay-card-bg text-stay-text hover:scale-110 transition-all shadow-sm cursor-pointer"
+                          >
+                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          title="Xóa ảnh"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="p-1.5 rounded-lg bg-rose-500/90 hover:bg-rose-600 text-white hover:scale-110 transition-all shadow-sm cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Đánh số thứ tự ảnh */}
+                      <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono">
+                        #{idx + 1}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </Form>

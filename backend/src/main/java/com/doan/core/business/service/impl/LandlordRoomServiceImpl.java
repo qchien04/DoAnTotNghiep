@@ -117,6 +117,11 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
+        String cover = request.getCoverImageUrl();
+        if ((cover == null || cover.isBlank()) && request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            cover = request.getImageUrls().get(0);
+        }
+
         Room room = Room.builder()
                 .building(building)
                 .landlord(landlord)
@@ -135,6 +140,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .services(services)
                 .description(request.getDescription())
                 .status("AVAILABLE")
+                .coverImageUrl(cover)
                 .latitude(lat)
                 .longitude(lng)
                 .isPublic(request.getIsPublic() == null || Boolean.TRUE.equals(request.getIsPublic()))
@@ -239,6 +245,14 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
 
         if (request.getIsPublic() != null) {
             room.setIsPublic(request.getIsPublic());
+        }
+
+        String updatedCover = request.getCoverImageUrl();
+        if ((updatedCover == null || updatedCover.isBlank()) && request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            updatedCover = request.getImageUrls().get(0);
+        }
+        if (updatedCover != null) {
+            room.setCoverImageUrl(updatedCover);
         }
 
         if (request.getImageUrls() != null) {
