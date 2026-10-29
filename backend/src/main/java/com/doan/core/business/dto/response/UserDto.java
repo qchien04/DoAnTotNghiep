@@ -1,7 +1,11 @@
 package com.doan.core.business.dto.response;
 
+import com.doan.core.business.enums.Gender;
+import com.doan.core.business.enums.GenderPreference;
 import com.doan.core.business.entity.Role;
 import com.doan.core.business.entity.User;
+import com.doan.core.business.enums.UserStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +25,6 @@ public class UserDto {
     @Schema(description = "ID người dùng", example = "1")
     private Long id;
 
-
     @Schema(description = "Tên đăng nhập", example = "landlord")
     private String username;
 
@@ -40,8 +43,23 @@ public class UserDto {
     @Schema(description = "Ngày sinh")
     private LocalDate dateOfBirth;
 
-    @Schema(description = "Giới tính", example = "Nam")
-    private String gender;
+    @Schema(description = "Giới tính", example = "MALE")
+    private Gender gender;
+
+    @Schema(description = "Tiêu chí giới tính mong muốn", example = "ANY")
+    private GenderPreference genderPreference;
+
+    @Schema(description = "Có hút thuốc lá không", example = "false")
+    private Boolean smokes;
+
+    @Schema(description = "Có từ chối người hút thuốc không", example = "false")
+    private Boolean rejectsSmokers;
+
+    @Schema(description = "Có nuôi thú cưng không", example = "false")
+    private Boolean hasPet;
+
+    @Schema(description = "Có từ chối thú cưng không", example = "false")
+    private Boolean rejectsPets;
 
     @Schema(description = "Giới thiệu bản thân")
     private String bio;
@@ -50,7 +68,7 @@ public class UserDto {
     private Role role;
 
     @Schema(description = "Trạng thái người dùng", example = "ACTIVE")
-    private String status;
+    private UserStatus status;
 
     @Schema(description = "Trạng thái kích hoạt", example = "true")
     private Boolean enabled;
@@ -62,7 +80,8 @@ public class UserDto {
     private LocalDateTime createdAt;
 
     public static UserDto fromEntity(User user) {
-        if (user == null) return null;
+        if (user == null)
+            return null;
         return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -72,6 +91,11 @@ public class UserDto {
                 .avatarUrl(user.getAvatarUrl())
                 .dateOfBirth(user.getDateOfBirth())
                 .gender(user.getGender())
+                .genderPreference(user.getGenderPreference())
+                .smokes(user.getSmokes())
+                .rejectsSmokers(user.getRejectsSmokers())
+                .hasPet(user.getHasPet())
+                .rejectsPets(user.getRejectsPets())
                 .bio(user.getBio())
                 .lifestyleVector(user.getLifestyleVector())
                 .role(user.getRole())

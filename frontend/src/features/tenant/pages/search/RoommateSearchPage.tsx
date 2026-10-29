@@ -32,7 +32,7 @@ const SAMPLE_POSTS: RoommatePost[] = [
     currentRoommates: 1,
     description: 'Phòng rộng rãi sạch sẽ, có gác xép, điều hòa, máy giặt, tủ lạnh riêng. Tiêu chuẩn ở gọn gàng văn minh, giữ yên tĩnh sau 23h.',
     lifestyle: {
-      genderPreference: 'MALE',
+      genderPreference: 'MALE_ONLY',
       sleepTime: 'AROUND_23H_24H',
       smoking: false,
       petFriendly: false,
@@ -68,7 +68,7 @@ const SAMPLE_POSTS: RoommatePost[] = [
     currentRoommates: 1,
     description: 'Chung cư mini mới xây, thang máy quẹt thẻ, bảo vệ 24/7. Tìm 1 bạn nữ ngoan ngoãn chia sẻ tiền phòng, giữ vệ sinh chung.',
     lifestyle: {
-      genderPreference: 'FEMALE',
+      genderPreference: 'FEMALE_ONLY',
       sleepTime: 'BEFORE_23H',
       smoking: false,
       petFriendly: false,
@@ -104,7 +104,7 @@ const SAMPLE_POSTS: RoommatePost[] = [
     currentRoommates: 2,
     description: 'Đang tìm nhà nguyên căn 3 phòng ngủ quanh khu vực ĐH Bách Khoa - Xây Dựng để chia tiền cho rẻ, giờ giấc tự do.',
     lifestyle: {
-      genderPreference: 'MALE',
+      genderPreference: 'MALE_ONLY',
       sleepTime: 'AROUND_23H_24H',
       smoking: false,
       petFriendly: true,
@@ -140,7 +140,7 @@ const SAMPLE_POSTS: RoommatePost[] = [
     currentRoommates: 2,
     description: 'Phòng rộng 35m2 có gác lửng, ban công lộng gió, nấu ăn riêng thoải mái. Ưu tiên bạn nữ ngoan ngoãn, giữ vệ sinh chung.',
     lifestyle: {
-      genderPreference: 'FEMALE',
+      genderPreference: 'FEMALE_ONLY',
       sleepTime: 'BEFORE_23H',
       smoking: false,
       petFriendly: false,
@@ -212,7 +212,7 @@ const SAMPLE_POSTS: RoommatePost[] = [
     currentRoommates: 1,
     description: 'Studio cao cấp đầy đủ tiện nghi, thang máy, bảo vệ 24/7. Thích hợp bạn đi làm khu văn phòng Duy Tân.',
     lifestyle: {
-      genderPreference: 'MALE',
+      genderPreference: 'MALE_ONLY',
       sleepTime: 'AROUND_23H_24H',
       smoking: false,
       petFriendly: false,
@@ -258,8 +258,8 @@ const TYPE_OPTIONS = [
 
 const GENDER_OPTIONS = [
   { value: 'ALL', label: 'Giới tính: Mọi đối tượng' },
-  { value: 'MALE', label: 'Ưu tiên Nam' },
-  { value: 'FEMALE', label: 'Ưu tiên Nữ' },
+  { value: 'MALE_ONLY', label: 'Ưu tiên Nam' },
+  { value: 'FEMALE_ONLY', label: 'Ưu tiên Nữ' },
 ];
 
 export const RoommateSearchPage: React.FC = () => {
@@ -271,7 +271,8 @@ export const RoommateSearchPage: React.FC = () => {
   const [selectedGender, setSelectedGender] = useState('ALL');
 
   // Lấy dữ liệu bài đăng từ backend
-  const { posts: apiPosts } = useRoommatePosts();
+  const { pageInfo } = useRoommatePosts();
+  const apiPosts = pageInfo?.items ?? [];
 
   // Kết hợp bài đăng thực tế và danh sách bài mẫu
   const allPosts = useMemo(() => {
@@ -314,7 +315,8 @@ export const RoommateSearchPage: React.FC = () => {
       // Giới tính
       if (selectedGender !== 'ALL') {
         const pref = post.lifestyle?.genderPreference;
-        if (pref && pref !== 'ANY' && pref !== selectedGender) return false;
+        if (selectedGender === 'MALE_ONLY' && pref !== 'MALE_ONLY' && pref !== 'ANY') return false;
+        if (selectedGender === 'FEMALE_ONLY' && pref !== 'FEMALE_ONLY' && pref !== 'ANY') return false;
       }
 
       return true;
@@ -471,10 +473,11 @@ export const RoommateSearchPage: React.FC = () => {
                 post.roomInfo?.images?.[0] ||
                 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&auto=format&fit=crop&q=80';
               const isHasRoom = post.postType === 'HAS_ROOM';
+              const pref = post.lifestyle?.genderPreference;
               const genderText =
-                post.lifestyle?.genderPreference === 'MALE'
+                pref === 'MALE_ONLY'
                   ? 'Nam'
-                  : post.lifestyle?.genderPreference === 'FEMALE'
+                  : pref === 'FEMALE_ONLY'
                   ? 'Nữ'
                   : 'Nam / Nữ';
 
@@ -560,7 +563,7 @@ export const RoommateSearchPage: React.FC = () => {
 
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] bg-stay-bg-app border border-stay-border text-stay-text-secondary">
                           <CigaretteOff className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                          <span>Không hút thuốc</span>
+                          <span>{post.lifestyle?.smoking ? 'Có hút thuốc' : 'Không hút thuốc'}</span>
                         </span>
 
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] bg-stay-bg-app border border-stay-border text-stay-text-secondary">

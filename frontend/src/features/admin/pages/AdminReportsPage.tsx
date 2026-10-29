@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useReports } from '@/shared/hooks';
+import { useReports, useEnforceReportAction } from '@/shared/hooks';
 import {
-  Card,
-  Button,
   Table,
   Input,
   Select,
@@ -15,11 +13,12 @@ import {
   CheckCircle,
   Gavel,
 } from 'lucide-react';
-import { message } from 'antd';
+import { message, Tooltip } from 'antd';
 import { DisputeReport, EnforceReportDto, DisputeReportStatus, DisputeReportType } from '@/shared/types/admin';
 
 export const AdminReportsPage: React.FC = () => {
-  const { reports, isLoading, enforceReportAction, isEnforcing } = useReports();
+  const { reports, isLoading } = useReports();
+  const { enforceReportAction, isEnforcing } = useEnforceReportAction();
 
   // Enforce Modal State (UC 56)
   const [enforceModalOpen, setEnforceModalOpen] = useState(false);
@@ -57,13 +56,6 @@ export const AdminReportsPage: React.FC = () => {
   };
 
   const columns = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: DisputeReport) => <span className="font-bold text-stay-primary">#{r.id}</span>,
-    },
     {
       title: 'Người báo cáo',
       dataIndex: 'reporterName',
@@ -124,29 +116,35 @@ export const AdminReportsPage: React.FC = () => {
     {
       title: 'Thao tác',
       key: 'action',
+      width: 90,
+      fixed: 'right' as const,
       render: (_: any, r: DisputeReport) => (
         r.status === 'PENDING' || r.status === 'MEDIATING' ? (
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Gavel className="w-3.5 h-3.5" />}
-            onClick={() => handleOpenEnforce(r)}
-            className="shadow-xs font-semibold"
-          >
-            Xử lý kỷ luật
-          </Button>
+          <div className="flex items-center justify-start">
+            <Tooltip title="Xử lý kỷ luật & chế tài">
+              <button
+                type="button"
+                className="stay-action-btn stay-action-btn-view"
+                onClick={() => handleOpenEnforce(r)}
+              >
+                <Gavel className="w-4 h-4" />
+              </button>
+            </Tooltip>
+          </div>
         ) : (
           <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
-            <CheckCircle className="w-3.5 h-3.5 text-stay-secondary" /> Đã hoàn tất
+            <CheckCircle className="w-3.5 h-3.5 text-stay-secondary" /> Đã xong
           </span>
         )
       ),
     },
   ];
 
+
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-h-0 space-y-4">
       {/* Header */}
+
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Badge variant="primary">Kiểm Duyệt & Kỷ Luật Sàn</Badge>
@@ -160,18 +158,15 @@ export const AdminReportsPage: React.FC = () => {
       </div>
 
       {/* Reports Table */}
-      <Card>
-        <div className="p-6">
-          <Table
-            dataSource={reports}
-            columns={columns}
-            rowKey="id"
-            loading={isLoading}
-            pagination={{ pageSize: 10 }}
-            className="overflow-x-auto"
-          />
-        </div>
-      </Card>
+      <Table
+        dataSource={reports}
+        columns={columns}
+        rowKey="id"
+        loading={isLoading}
+        scroll={{ x: 'max-content' }}
+        className="overflow-x-auto"
+      />
+
 
       {/* Enforce Modal */}
       <Modal

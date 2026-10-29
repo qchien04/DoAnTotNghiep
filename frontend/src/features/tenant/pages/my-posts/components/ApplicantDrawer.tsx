@@ -3,7 +3,7 @@ import { Drawer, Table, Button, Tag, Space, Empty } from 'antd';
 import { Link } from 'react-router-dom';
 import { ExternalLink, CheckCircle, XCircle, MapPin, Users } from 'lucide-react';
 import { RoommatePost, RoommateApplication } from '@/shared/types/tenant';
-import { formatCurrency } from '@/shared/utils';
+import { formatCurrency, getRoommateApplicationStatusLabel } from '@/shared/utils';
 
 interface ApplicantDrawerProps {
   open: boolean;
@@ -91,6 +91,33 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       ),
     },
     {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 110,
+      render: (st: string) => {
+        if (st === 'APPROVED') {
+          return (
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              {getRoommateApplicationStatusLabel(st)}
+            </span>
+          );
+        }
+        if (st === 'REJECTED') {
+          return (
+            <span className="text-xs font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+              {getRoommateApplicationStatusLabel(st)}
+            </span>
+          );
+        }
+        return (
+          <span className="text-xs font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+            {getRoommateApplicationStatusLabel(st)}
+          </span>
+        );
+      },
+    },
+    {
       title: 'Thao tác',
       key: 'action',
       width: 110,
@@ -102,7 +129,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
           onClick={() => onOpenReview(r)}
           className="bg-stay-primary hover:bg-stay-primary-hover text-white rounded text-xs"
         >
-          Duyệt đơn
+          {r.status === 'APPROVED' ? 'Đã duyệt' : 'Duyệt đơn'}
         </Button>
       ),
     },

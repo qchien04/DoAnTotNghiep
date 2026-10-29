@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { useBills, useRooms, useContracts } from '@/shared/hooks';
-import { Plus } from 'lucide-react';
-import { Button, message } from '@/shared/components';
+import {
+  useBills,
+  useCreateBill,
+  usePublishBill,
+  useCancelBill,
+  useConfirmPayment,
+  useRooms,
+  useContracts,
+} from '@/shared/hooks';
+import { message } from '@/shared/components';
 import { Bill, CreateBillDto, BillStatus, ConfirmPaymentDto } from '@/shared/types/landlord';
 import { BillFilter } from './components/BillFilter';
 import { BillTable } from './components/BillTable';
@@ -11,22 +18,26 @@ import { ConfirmPaymentModal } from './components/ConfirmPaymentModal';
 import { CancelBillModal } from './components/CancelBillModal';
 
 export const BillListPage: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [billingMonth, setBillingMonth] = useState<string>('10/2026');
   const [statusFilter, setStatusFilter] = useState<BillStatus | 'ALL'>('ALL');
 
-  const {
-    bills,
-    isLoading,
-    createBill,
-    isCreating,
-    publishBill,
-    cancelBill,
-    confirmPayment,
-    isConfirming,
-  } = useBills({ billingPeriod: billingMonth, status: statusFilter });
+  const { pageInfo: billsPageInfo, isLoading } = useBills({
+    page,
+    size,
+    billingPeriod: billingMonth,
+    status: statusFilter,
+  });
+  const { createBill, isCreating } = useCreateBill();
+  const { publishBill } = usePublishBill();
+  const { cancelBill } = useCancelBill();
+  const { confirmPayment, isConfirming } = useConfirmPayment();
 
-  const { rooms } = useRooms();
-  const { contracts } = useContracts();
+  const { pageInfo: roomsPageInfo } = useRooms();
+  const rooms = roomsPageInfo?.items ?? [];
+  const { pageInfo: contractsPageInfo } = useContracts();
+  const contracts = contractsPageInfo?.items ?? [];
 
   // Create Bill Modal (UC 23)
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -100,34 +111,31 @@ export const BillListPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Hóa đơn</h1>
-        </div>
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={() => setCreateModalOpen(true)}
-          className="bg-stay-primary hover:bg-stay-primary-hover"
-        >
-          Lập hóa đơn
-        </Button>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
       {/* Filter Bar */}
+
       <BillFilter
         billingMonth={billingMonth}
-        onBillingMonthChange={setBillingMonth}
+        onBillingMonthChange={(m) => {
+          setBillingMonth(m);
+          setPage(0);
+        }}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={(s) => {
+          setStatusFilter(s);
+          setPage(0);
+        }}
+        onOpenCreate={() => setCreateModalOpen(true)}
       />
 
       {/* Bills Table */}
       <BillTable
-        bills={bills}
+        pageInfo={billsPageInfo}
         isLoading={isLoading}
+        onPageChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
         onOpenDetail={handleOpenDetail}
         onOpenPayment={handleOpenPayment}
         onOpenCancel={handleOpenCancel}

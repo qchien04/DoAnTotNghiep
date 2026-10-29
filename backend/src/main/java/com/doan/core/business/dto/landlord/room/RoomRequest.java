@@ -10,6 +10,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.doan.core.business.enums.RoomStatus;
+
 @Data
 @Schema(description = "Yêu cầu tạo mới hoặc cập nhật phòng trọ")
 public class RoomRequest {
@@ -69,7 +71,7 @@ public class RoomRequest {
     private String description;
 
     @Schema(description = "Trạng thái phòng (AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED)", example = "AVAILABLE")
-    private String status;
+    private RoomStatus status;
 
     @Schema(description = "URL ảnh đại diện chính của phòng trọ", example = "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800")
     private String coverImageUrl;

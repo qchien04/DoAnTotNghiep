@@ -1,5 +1,6 @@
 package com.doan.core.business.service.impl;
 
+import com.doan.core.business.dto.request.UpdateProfileRequest;
 import com.doan.core.business.dto.response.UserDto;
 import com.doan.core.business.entity.User;
 import com.doan.core.business.repository.UserRepository;
@@ -39,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto updateProfile(Long userId, com.doan.core.business.dto.request.UpdateProfileRequest request) {
+    public UserDto updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
@@ -54,6 +55,21 @@ public class UserServiceImpl implements UserService {
         }
         if (request.getGender() != null) {
             user.setGender(request.getGender());
+        }
+        if (request.getGenderPreference() != null) {
+            user.setGenderPreference(request.getGenderPreference());
+        }
+        if (request.getSmokes() != null) {
+            user.setSmokes(request.getSmokes());
+        }
+        if (request.getRejectsSmokers() != null) {
+            user.setRejectsSmokers(request.getRejectsSmokers());
+        }
+        if (request.getHasPet() != null) {
+            user.setHasPet(request.getHasPet());
+        }
+        if (request.getRejectsPets() != null) {
+            user.setRejectsPets(request.getRejectsPets());
         }
         if (request.getBio() != null) {
             user.setBio(request.getBio());

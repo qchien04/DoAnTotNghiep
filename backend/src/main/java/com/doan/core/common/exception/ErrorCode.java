@@ -45,12 +45,12 @@ public enum ErrorCode {
     ACCOUNT_TEMPORARILY_LOCKED("AUTH_018", "Tài khoản đã bị khóa", HttpStatus.BAD_REQUEST),
     // Lỗi Nghiệp Vụ - Tòa nhà (Building)
     BUILDING_NOT_FOUND("BLD_001", "Không tìm thấy thông tin tòa nhà", HttpStatus.NOT_FOUND),
-    BUILDING_CODE_EXISTS("BLD_002", "Mã tòa nhà đã tồn tại", HttpStatus.CONFLICT),
+    BUILDING_CODE_EXISTS("BLD_002", "Tên tòa nhà đã tồn tại", HttpStatus.CONFLICT),
     BUILDING_HAS_ACTIVE_ROOMS("BLD_003", "Không thể xóa tòa nhà đang có phòng hoặc khách thuê", HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Phòng trọ (Room)
     ROOM_NOT_FOUND("ROOM_001", "Không tìm thấy thông tin phòng trọ", HttpStatus.NOT_FOUND),
-    ROOM_CODE_EXISTS("ROOM_002", "Mã phòng đã tồn tại trong tòa nhà này", HttpStatus.CONFLICT),
+    ROOM_CODE_EXISTS("ROOM_002", "Tên phòng đã tồn tại trong tòa nhà này", HttpStatus.CONFLICT),
     ROOM_NOT_AVAILABLE("ROOM_003", "Phòng này hiện không ở trạng thái còn trống", HttpStatus.BAD_REQUEST),
     ROOM_HAS_ACTIVE_CONTRACT("ROOM_004", "Phòng hiện đang có hợp đồng hiệu lực, không thể thao tác",
             HttpStatus.BAD_REQUEST),

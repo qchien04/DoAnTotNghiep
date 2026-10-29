@@ -1,20 +1,26 @@
 import React from 'react';
-import { Edit2, Trash2, Globe, EyeOff, Image as ImageIcon } from 'lucide-react';
-import { Table, Button, Popconfirm, Tag } from '@/shared/components';
+import { Eye, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Table, Popconfirm, Tag } from '@/shared/components';
+import { Tooltip } from 'antd';
 import { Room, RoomStatus } from '@/shared/types/landlord';
+import { PageResponse } from '@/shared/types/api';
 
 interface RoomTableProps {
-  rooms: Room[];
+  pageInfo?: PageResponse<Room>;
   isLoading: boolean;
   isDeleting: boolean;
+  onPageChange?: (page: number, size: number) => void;
+  onView: (room: Room) => void;
   onEdit: (room: Room) => void;
   onDelete: (id: string | number) => void;
 }
 
 export const RoomTable: React.FC<RoomTableProps> = ({
-  rooms,
+  pageInfo,
   isLoading,
   isDeleting,
+  onPageChange,
+  onView,
   onEdit,
   onDelete,
 }) => {
@@ -22,55 +28,53 @@ export const RoomTable: React.FC<RoomTableProps> = ({
     switch (st) {
       case 'AVAILABLE':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Còn trống
           </span>
         );
       case 'OCCUPIED':
-      case 'RENTED':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
+          <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
             Đang thuê
           </span>
         );
       case 'UNDER_MAINTENANCE':
-      case 'MAINTENANCE':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+          <span className="inline-flex items-center gap-1.5  text-amber-600 dark:text-amber-400 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             Đang sửa chữa
           </span>
         );
       case 'STOPPED':
-      case 'DISABLED':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted font-medium">
+          <span className="inline-flex items-center gap-1.5  text-stay-text-muted font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
             Ngừng sử dụng
           </span>
         );
       default:
-        return <span className="text-xs text-stay-text-muted">{st}</span>;
+        return <span className=" text-stay-text-muted">{st}</span>;
     }
   };
 
   const columns = [
     {
-      title: 'ID',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: Room) => {
-        const item = r || (_ as Room) || {};
-        return (
-          <span className="font-mono text-xs font-semibold text-stay-text">#{item.id}</span>
-        );
-      },
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
+      ),
     },
     {
       title: 'Tên phòng',
       key: 'name',
+      minWidth: 220,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         const coverImg = item.coverImageUrl || (item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : null);
@@ -80,22 +84,31 @@ export const RoomTable: React.FC<RoomTableProps> = ({
               <img
                 src={coverImg}
                 alt={item.name}
-                className="w-11 h-11 rounded-lg object-cover border border-stay-border shrink-0"
+                className="w-11 h-11 rounded-[6px] object-cover border border-stay-border shrink-0 cursor-pointer"
+                onClick={() => onView(item)}
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
             ) : (
-              <div className="w-11 h-11 rounded-lg bg-stay-bg-app border border-stay-border flex items-center justify-center shrink-0 text-stay-text-muted">
+              <div
+                onClick={() => onView(item)}
+                className="w-11 h-11 rounded-[6px] bg-stay-bg-app border border-stay-border flex items-center justify-center shrink-0 text-stay-text-muted cursor-pointer"
+              >
                 <ImageIcon className="w-4 h-4" />
               </div>
             )}
             <div className="min-w-0">
-              <p className="font-medium text-stay-text truncate">{item.name || '---'}</p>
+              <p
+                onClick={() => onView(item)}
+                className="font-medium text-[14px] text-stay-text truncate cursor-pointer hover:text-stay-primary hover:underline"
+              >
+                {item.name || '—'}
+              </p>
               {item.buildingName ? (
-                <p className="text-xs text-stay-text-muted truncate">{item.buildingName}</p>
+                <p className="text-[12px] text-stay-text-muted truncate">{item.buildingName}</p>
               ) : (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                <p className="text-[12px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
                   🏠 {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Nhà trọ độc lập')}
                 </p>
               )}
@@ -108,28 +121,32 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       title: 'Tầng',
       key: 'floor',
       width: 80,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
-        return `Tầng ${item.floor ?? 1}`;
+        return <span className="text-[14px] text-stay-text">Tầng {item.floor ?? 1}</span>;
       },
     },
     {
       title: 'Diện tích',
       key: 'area',
       width: 100,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
-        return `${item.area ?? 0} m²`;
+        return <span className="text-[14px] text-stay-text">{item.area ?? 0} m²</span>;
       },
     },
     {
       title: 'Giá thuê',
       key: 'listedPrice',
+      width: 150,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         const p = Number(item.listedPrice ?? 0);
         return (
-          <span className="font-medium text-stay-text">
+          <span className="font-semibold text-[14px] text-stay-text">
             {p.toLocaleString()} đ/tháng
           </span>
         );
@@ -139,11 +156,12 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       title: 'Sức chứa',
       key: 'maxCapacity',
       width: 100,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         const cap = item.maxCapacity ?? 1;
         return (
-          <span className="text-xs text-stay-text-secondary">
+          <span className="text-[14px] text-stay-text">
             {cap} người
           </span>
         );
@@ -154,23 +172,23 @@ export const RoomTable: React.FC<RoomTableProps> = ({
       dataIndex: 'status',
       key: 'status',
       width: 120,
+      ellipsis: { showTitle: true },
       render: (val: RoomStatus) => renderStatusTag(val),
     },
     {
       title: 'Hiển thị',
       key: 'isPublic',
-      width: 120,
+      width: 130,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         const isPub = item.isPublic !== false;
         return isPub ? (
-          <Tag color="success" className="rounded-full px-2.5 py-0.5 text-[11px] inline-flex items-center gap-1">
-            <Globe className="w-3 h-3 text-emerald-500" />
+          <Tag color="success">
             <span>Công khai</span>
           </Tag>
         ) : (
-          <Tag color="default" className="rounded-full px-2.5 py-0.5 text-[11px] inline-flex items-center gap-1">
-            <EyeOff className="w-3 h-3 text-gray-400" />
+          <Tag color="default">
             <span>Nội bộ</span>
           </Tag>
         );
@@ -179,36 +197,50 @@ export const RoomTable: React.FC<RoomTableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      width: 90,
-      align: 'right' as const,
+      width: 120,
+      fixed: 'right' as const,
       render: (_: any, r: Room) => {
         const item = r || (_ as Room) || {};
         return (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              size="small"
-              type="text"
-              icon={<Edit2 className="w-3.5 h-3.5 text-stay-text-secondary hover:text-stay-text" />}
-              onClick={() => onEdit(item)}
-              title="Sửa phòng"
-            />
-            <Popconfirm
-              title="Xác nhận xóa phòng?"
-              description={`Bạn có chắc muốn xóa phòng "${item.name}"?`}
-              onConfirm={() => onDelete(item.id)}
-              okText="Xóa"
-              cancelText="Hủy"
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                size="small"
-                type="text"
-                danger
-                icon={<Trash2 className="w-3.5 h-3.5" />}
-                loading={isDeleting}
-                title="Xóa phòng"
-              />
-            </Popconfirm>
+          <div className="flex items-center justify-start gap-1.5">
+            <Tooltip title="Xem chi tiết">
+              <button
+                type="button"
+                className="stay-action-btn stay-action-btn-view"
+                onClick={() => onView(item)}
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </Tooltip>
+
+            <Tooltip title="Chỉnh sửa">
+              <button
+                type="button"
+                className="stay-action-btn stay-action-btn-edit"
+                onClick={() => onEdit(item)}
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            </Tooltip>
+
+            <Tooltip title="Xóa">
+              <Popconfirm
+                title="Xác nhận xóa phòng?"
+                description={`Bạn có chắc muốn xóa phòng "${item.name}"?`}
+                onConfirm={() => onDelete(item.id)}
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+              >
+                <button
+                  type="button"
+                  className="stay-action-btn stay-action-btn-delete"
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </Popconfirm>
+            </Tooltip>
           </div>
         );
       },
@@ -216,15 +248,22 @@ export const RoomTable: React.FC<RoomTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
-      <Table
-        dataSource={rooms}
-        columns={columns}
-        rowKey="id"
-        loading={isLoading}
-        pagination={{ pageSize: 10 }}
-        className="overflow-x-auto"
-      />
-    </div>
+    <Table
+      dataSource={pageInfo?.items ?? []}
+      columns={columns}
+      rowKey="id"
+      loading={isLoading}
+      pagination={{
+        current: (pageInfo?.page ?? 0) + 1,
+        pageSize: pageInfo?.size ?? 10,
+        total: pageInfo?.totalElements ?? 0,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50'],
+        showTotal: (total) => `Tổng ${total} phòng`,
+        onChange: (page, pageSize) => onPageChange?.(page - 1, pageSize),
+      }}
+      scroll={{ x: 'max-content' }}
+      className="overflow-x-auto"
+    />
   );
 };

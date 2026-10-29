@@ -3,7 +3,7 @@
  */
 
 export interface LifestyleSurvey {
-  genderPreference: 'MALE' | 'FEMALE' | 'ANY';
+  genderPreference: 'MALE_ONLY' | 'FEMALE_ONLY' | 'ANY';
   sleepTime: 'BEFORE_23H' | 'AROUND_23H_24H' | 'AFTER_24H';
   smoking: boolean;
   petFriendly: boolean;
@@ -99,7 +99,7 @@ export interface PostSearchParams {
   postType?: RoommatePostType | 'ALL';
   minPrice?: number;
   maxPrice?: number;
-  gender?: 'MALE' | 'FEMALE' | 'ANY';
+  gender?: 'MALE_ONLY' | 'FEMALE_ONLY' | 'ANY';
   sleepTime?: string;
   noSmoking?: boolean;
   petFriendly?: boolean;
@@ -238,9 +238,16 @@ export interface MyRoomDetails {
     endDate: string;
     monthlyRent: number;
     depositAmount: number;
-    initialElectricity: number;
-    initialWater: number;
-    services: { name: string; price: number; unit: string }[];
+    services: {
+      id?: number | string;
+      name: string;
+      serviceName?: string;
+      price: number;
+      appliedUnitPrice?: number;
+      unit: string;
+      billingMethod?: string;
+      lastIndex?: number;
+    }[];
   };
 }
 
@@ -287,7 +294,7 @@ export interface VietQRPaymentData {
 
 // 5. Báo hỏng sự cố của Người thuê (UC 45 - 46)
 export interface CreateTenantComplaintDto {
-  type: 'COOLING' | 'PLUMBING' | 'ELECTRICITY' | 'SECURITY' | 'OTHER';
+  type: 'AIR_CONDITIONER' | 'ELECTRICITY' | 'WATER' | 'SECURITY' | 'OTHER' | string;
   title: string;
   content: string;
   urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';

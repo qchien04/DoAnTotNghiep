@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Select } from '@/shared/components';
 import { Tooltip } from 'antd';
-import { useLifestyle } from '@/shared/hooks';
+import { useLifestyleQuestions, useUserLifestyleProfile } from '@/shared/hooks';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Sparkles, RotateCcw, HelpCircle } from 'lucide-react';
 
@@ -29,7 +29,8 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
   loading,
 }) => {
   const { user } = useAuthStore();
-  const { questions, profile } = useLifestyle();
+  const { questions } = useLifestyleQuestions();
+  const { profile } = useUserLifestyleProfile();
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');

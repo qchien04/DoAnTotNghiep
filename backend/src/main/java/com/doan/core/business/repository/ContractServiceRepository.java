@@ -9,7 +9,5 @@ import java.util.List;
 @Repository
 public interface ContractServiceRepository extends JpaRepository<ContractService, Long> {
 
-    List<ContractService> findByContractId(Long contractId);
-
-    void deleteByContractId(Long contractId);
+    boolean existsByServiceId(Long serviceId);
 }

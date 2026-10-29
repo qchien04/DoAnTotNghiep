@@ -49,7 +49,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
         layout="vertical"
         className="space-y-4 pt-2 text-xs"
         initialValues={{
-          type: 'COOLING',
+          type: 'AIR_CONDITIONER',
           urgency: 'HIGH',
           title: 'Điều hòa chảy nước và không mát',
           content: 'Điều hòa bật 16 độ nhưng chỉ có gió thoang thoảng, nước chảy rỉ xuống sàn gỗ từ đêm qua.',
@@ -69,11 +69,11 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
             >
               <Select
                 options={[
-                  { label: 'Điện lạnh (Điều hòa, Tủ lạnh)', value: 'COOLING' },
-                  { label: 'Điện nước (Bình nóng lạnh, Đèn, Vòi nước)', value: 'PLUMBING' },
-                  { label: 'Cơ sở vật chất (Cửa, Khóa, Tường)', value: 'OTHER' },
-                  { label: 'An ninh trật tự / Tiếng ồn', value: 'SECURITY' },
-                  { label: 'Sai lệch số điện nước trên hóa đơn', value: 'BILL' },
+                  { label: 'Điều hòa & Điện lạnh', value: 'AIR_CONDITIONER' },
+                  { label: 'Điện sinh hoạt (Đèn, quạt, ổ cắm)', value: 'ELECTRICITY' },
+                  { label: 'Nước sinh hoạt (Vòi sen, đường ống, bình nóng lạnh)', value: 'WATER' },
+                  { label: 'An ninh trật tự & Khóa cửa', value: 'SECURITY' },
+                  { label: 'Cơ sở vật chất khác', value: 'OTHER' },
                 ]}
               />
             </Form.Item>
@@ -86,8 +86,10 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
             >
               <Select
                 options={[
-                  { label: 'Khẩn cấp (Xử lý trong ngày)', value: 'HIGH' },
-                  { label: 'Bình thường (1-2 ngày)', value: 'MEDIUM' },
+                  { label: 'Khẩn cấp (Xử lý ngay trong ngày)', value: 'URGENT' },
+                  { label: 'Cao (Xử lý trong vòng 24h)', value: 'HIGH' },
+                  { label: 'Bình thường (1 - 2 ngày)', value: 'MEDIUM' },
+                  { label: 'Thấp (Sửa chữa định kỳ)', value: 'LOW' },
                 ]}
               />
             </Form.Item>

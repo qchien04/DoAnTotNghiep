@@ -4,8 +4,6 @@ DROP TABLE IF EXISTS roommate_applications CASCADE;
 DROP TABLE IF EXISTS roommate_post_lifestyle_answers CASCADE;
 DROP TABLE IF EXISTS roommate_posts CASCADE;
 DROP TABLE IF EXISTS user_lifestyle_answers CASCADE;
-DROP TABLE IF EXISTS lifestyle_options CASCADE;
-DROP TABLE IF EXISTS lifestyle_questions CASCADE;
 DROP TABLE IF EXISTS complaints CASCADE;
 DROP TABLE IF EXISTS invoice_items CASCADE;
 DROP TABLE IF EXISTS invoices CASCADE;
@@ -36,14 +34,19 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(20) UNIQUE,
-    role VARCHAR(30) NOT NULL DEFAULT 'ROLE_TENANT',
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    role VARCHAR(30) NOT NULL DEFAULT 'ROLE_TENANT' CHECK (role IN ('ROLE_ADMIN', 'ROLE_LANDLORD', 'ROLE_TENANT', 'ROLE_USER')),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'LOCKED', 'INACTIVE')),
     locked_reason VARCHAR(255),
     locked_until TIMESTAMP WITH TIME ZONE,
     failed_login_attempts INT NOT NULL DEFAULT 0,
     avatar_url VARCHAR(500),
     date_of_birth DATE,
-    gender VARCHAR(10),
+    gender VARCHAR(20) CHECK (gender IS NULL OR gender IN ('MALE', 'FEMALE', 'OTHER')),
+    gender_preference VARCHAR(20) DEFAULT 'ANY' CHECK (gender_preference IS NULL OR gender_preference IN ('ANY', 'MALE_ONLY', 'FEMALE_ONLY')),
+    smokes BOOLEAN DEFAULT FALSE,
+    rejects_smokers BOOLEAN DEFAULT FALSE,
+    has_pet BOOLEAN DEFAULT FALSE,
+    rejects_pets BOOLEAN DEFAULT FALSE,
     bio TEXT,
     lifestyle_vector VARCHAR(255),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
@@ -98,7 +101,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     furnishing_level VARCHAR(50) DEFAULT 'BASIC',
     amenities TEXT,
     description TEXT,
-    status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
+    status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE' CHECK (status IN ('AVAILABLE', 'OCCUPIED', 'UNDER_MAINTENANCE', 'STOPPED')),
     cover_image_url VARCHAR(500),
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
@@ -129,7 +132,7 @@ CREATE TABLE IF NOT EXISTS services (
     category VARCHAR(50) NOT NULL,
     unit VARCHAR(30) NOT NULL,
     unit_price BIGINT NOT NULL,
-    billing_method VARCHAR(50) NOT NULL,
+    billing_method VARCHAR(50) NOT NULL CHECK (billing_method IN ('METER_INDEX', 'FIXED_PER_ROOM', 'FIXED_PER_PERSON', 'FIXED_PER_UNIT')),
     scope VARCHAR(50) DEFAULT 'ALL',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -155,14 +158,14 @@ CREATE TABLE IF NOT EXISTS tenants (
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     id_card_number VARCHAR(20) NOT NULL,
-    gender VARCHAR(10),
+    gender VARCHAR(20) CHECK (gender IS NULL OR gender IN ('MALE', 'FEMALE', 'OTHER')),
     date_of_birth DATE,
     hometown VARCHAR(150),
     id_card_photo_front VARCHAR(500),
     id_card_photo_back VARCHAR(500),
     is_representative BOOLEAN NOT NULL DEFAULT FALSE,
-    link_status VARCHAR(30) NOT NULL DEFAULT 'NOT_LINKED',
-    status VARCHAR(30) NOT NULL DEFAULT 'STAYING',
+    link_status VARCHAR(30) NOT NULL DEFAULT 'NOT_LINKED' CHECK (link_status IN ('NOT_LINKED', 'PENDING', 'LINKED', 'REJECTED', 'UNLINKED')),
+    status VARCHAR(30) NOT NULL DEFAULT 'STAYING' CHECK (status IN ('STAYING', 'LEFT')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_tenants_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE SET NULL,
@@ -181,7 +184,7 @@ CREATE TABLE IF NOT EXISTS contracts (
     deposit_amount BIGINT NOT NULL,
     payment_cycle_day INT NOT NULL DEFAULT 5,
     deposit_refund_amount BIGINT,
-    status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+    status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'EXPIRING_SOON', 'TERMINATED')),
     pdf_file_url VARCHAR(500),
     terms_and_conditions TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -199,7 +202,7 @@ CREATE TABLE IF NOT EXISTS contract_services (
     service_name VARCHAR(100) NOT NULL,
     unit VARCHAR(30) NOT NULL,
     applied_unit_price BIGINT NOT NULL,
-    billing_method VARCHAR(50) NOT NULL,
+    billing_method VARCHAR(50) NOT NULL CHECK (billing_method IN ('METER_INDEX', 'FIXED_PER_ROOM', 'FIXED_PER_PERSON', 'FIXED_PER_UNIT')),
     last_index INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_contract_services_contract FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE CASCADE,
@@ -213,7 +216,7 @@ CREATE TABLE IF NOT EXISTS tenant_link_invitations (
     user_id BIGINT NOT NULL,
     contract_id BIGINT,
     invited_by BIGINT NOT NULL,
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED', 'EXPIRED')),
     reject_reason VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     responded_at TIMESTAMP WITH TIME ZONE,
@@ -234,7 +237,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     other_amount BIGINT NOT NULL DEFAULT 0,
     total_amount BIGINT NOT NULL,
     paid_amount BIGINT NOT NULL DEFAULT 0,
-    status VARCHAR(30) NOT NULL DEFAULT 'UNPAID',
+    status VARCHAR(30) NOT NULL DEFAULT 'UNPAID' CHECK (status IN ('DRAFT', 'UNPAID', 'PARTIALLY_PAID', 'PAID', 'OVERDUE', 'CANCELLED')),
     payment_method VARCHAR(30),
     paid_at TIMESTAMP WITH TIME ZONE,
     cancel_reason VARCHAR(255),
@@ -249,7 +252,7 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     id BIGSERIAL PRIMARY KEY,
     invoice_id BIGINT NOT NULL,
     contract_service_id BIGINT,
-    item_type VARCHAR(20) NOT NULL DEFAULT 'SERVICE',
+    item_type VARCHAR(20) NOT NULL DEFAULT 'SERVICE' CHECK (item_type IN ('ROOM_RENT', 'SERVICE', 'SURCHARGE', 'DISCOUNT')),
     item_name VARCHAR(100) NOT NULL,
     previous_index INT,
     current_index INT,
@@ -268,10 +271,10 @@ CREATE TABLE IF NOT EXISTS complaints (
     tenant_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
-    incident_type VARCHAR(50) NOT NULL,
-    severity VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
+    incident_type VARCHAR(50) NOT NULL CHECK (incident_type IN ('ELECTRICITY', 'WATER', 'AIR_CONDITIONER', 'SECURITY', 'OTHER')),
+    severity VARCHAR(20) NOT NULL DEFAULT 'MEDIUM' CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT')),
     images TEXT,
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PROCESSING', 'RESOLVED', 'REJECTED')),
     resolution_note TEXT,
     resolved_at TIMESTAMP WITH TIME ZONE,
     rating INT,
@@ -288,7 +291,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     user_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
-    notification_type VARCHAR(50) NOT NULL,
+    notification_type VARCHAR(50) NOT NULL CHECK (notification_type IN ('INVOICE', 'CONTRACT', 'COMPLAINT', 'ROOMMATE', 'ROOM_LINK', 'SYSTEM')),
     related_entity_type VARCHAR(50),
     related_entity_id BIGINT,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
@@ -300,56 +303,17 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 -- =============================================================================
 -- Module tìm kiếm ghép trọ
+-- (Câu hỏi & Lựa chọn lối sống 15 chiều được chuẩn hóa cố định trong code BE: LifestyleConstants)
 -- =============================================================================
 
--- 1. Câu hỏi lối sống (cấu hình)
-CREATE TABLE IF NOT EXISTS lifestyle_questions (
-    id BIGSERIAL PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE,
-    label VARCHAR(255) NOT NULL,
-    category VARCHAR(30),
-    q_type VARCHAR(10) NOT NULL DEFAULT 'SINGLE',
-    is_hard BOOLEAN NOT NULL DEFAULT FALSE,
-    weight NUMERIC(4, 2) NOT NULL DEFAULT 1,
-    sort_order INT NOT NULL DEFAULT 0,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 2. Lựa chọn của câu hỏi
-CREATE TABLE IF NOT EXISTS lifestyle_options (
-    id BIGSERIAL PRIMARY KEY,
-    question_id BIGINT NOT NULL,
-    label VARCHAR(150) NOT NULL,
-    value NUMERIC(4, 3) NOT NULL,
-    sort_order INT NOT NULL DEFAULT 0,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    CONSTRAINT fk_lifestyle_options_question FOREIGN KEY (question_id) REFERENCES lifestyle_questions (id) ON DELETE CASCADE,
-    CONSTRAINT uq_lifestyle_options_id_question UNIQUE (id, question_id),
-    CONSTRAINT chk_lifestyle_options_value CHECK (value >= 0 AND value <= 1)
-);
-
--- 3. Câu trả lời gốc của người dùng (điền sẵn khi đăng tin)
--- Câu SINGLE: 1 dòng. Câu MULTI: mỗi lựa chọn 1 dòng.
-CREATE TABLE IF NOT EXISTS user_lifestyle_answers (
-    user_id BIGINT NOT NULL,
-    question_id BIGINT NOT NULL,
-    option_id BIGINT NOT NULL,
-    answered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, question_id, option_id),
-    CONSTRAINT fk_ula_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_ula_option FOREIGN KEY (option_id, question_id) REFERENCES lifestyle_options (id, question_id) ON DELETE CASCADE
-);
-
-
+-- 1. Tin đăng tìm bạn ở ghép (Roommate Posts)
 CREATE TABLE IF NOT EXISTS roommate_posts (
     id BIGSERIAL PRIMARY KEY,
     author_id BIGINT NOT NULL,
     room_id BIGINT,
-    contract_id BIGINT,
     title VARCHAR(250) NOT NULL,
     description TEXT,
-    post_type VARCHAR(30) NOT NULL,
+    post_type VARCHAR(30) NOT NULL CHECK (post_type IN ('HAS_ROOM', 'SEARCHING_ROOM')),
     area_name VARCHAR(250),
     district VARCHAR(100),
     city VARCHAR(100) DEFAULT 'Hà Nội',
@@ -360,49 +324,30 @@ CREATE TABLE IF NOT EXISTS roommate_posts (
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     radius_km DOUBLE PRECISION,
-    gender_preference VARCHAR(20) DEFAULT 'ANY',
-    sleep_time VARCHAR(50) DEFAULT 'BEFORE_24H',
+    gender_preference VARCHAR(20) DEFAULT 'ANY' CHECK (gender_preference IS NULL OR gender_preference IN ('ANY', 'MALE_ONLY', 'FEMALE_ONLY')),
     is_no_smoking BOOLEAN DEFAULT TRUE,
     is_pet_friendly BOOLEAN DEFAULT FALSE,
-    cooking_frequency VARCHAR(50) DEFAULT 'DAILY',
-    cleanliness_level VARCHAR(50) DEFAULT 'VERY_CLEAN',
-    guest_allowed VARCHAR(50) DEFAULT 'WEEKENDS_ONLY',
     lifestyle_vector VARCHAR(255),
-    status VARCHAR(30) NOT NULL DEFAULT 'OPEN',
+    status VARCHAR(30) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'COMPLETED', 'CLOSED')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_roommate_posts_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_roommate_posts_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE SET NULL
 );
 
-
--- 5. Lối sống khai riêng cho tin (điền sẵn từ hồ sơ, được chỉnh; đăng xong tách khỏi hồ sơ)
-CREATE TABLE IF NOT EXISTS roommate_post_lifestyle_answers (
-    post_id BIGINT NOT NULL,
-    question_id BIGINT NOT NULL,
-    option_id BIGINT NOT NULL,
-    from_profile BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (post_id, question_id, option_id),
-    CONSTRAINT fk_rpla_post FOREIGN KEY (post_id) REFERENCES roommate_posts (id) ON DELETE CASCADE,
-    CONSTRAINT fk_rpla_option FOREIGN KEY (option_id, question_id) REFERENCES lifestyle_options (id, question_id) ON DELETE CASCADE
-);
-
--- 6. Đơn xin gia nhập nhóm ở ghép (UC 14, UC 15)
+-- 4. Đơn xin gia nhập nhóm ở ghép (Roommate Applications)
 CREATE TABLE IF NOT EXISTS roommate_applications (
     id BIGSERIAL PRIMARY KEY,
     post_id BIGINT NOT NULL,
     applicant_id BIGINT NOT NULL,
     intro_message TEXT,
-    gender VARCHAR(20),
-    sleep_time VARCHAR(50),
+    gender VARCHAR(20) CHECK (gender IS NULL OR gender IN ('MALE', 'FEMALE', 'OTHER')),
     is_smoking BOOLEAN DEFAULT FALSE,
     is_pet BOOLEAN DEFAULT FALSE,
-    cooking_habit VARCHAR(50),
-    guest_habit VARCHAR(50),
     lifestyle_vector VARCHAR(255),
     compatibility_score INT DEFAULT 0,
     is_customized BOOLEAN NOT NULL DEFAULT FALSE,
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
     reject_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -411,18 +356,7 @@ CREATE TABLE IF NOT EXISTS roommate_applications (
     CONSTRAINT uq_rma_post_applicant UNIQUE (post_id, applicant_id)
 );
 
--- 7. Câu trả lời lối sống của đơn ứng tuyển (Clone từ user_lifestyle_answers, có thể tinh chỉnh)
-CREATE TABLE IF NOT EXISTS roommate_application_lifestyle_answers (
-    application_id BIGINT NOT NULL,
-    question_id BIGINT NOT NULL,
-    option_id BIGINT NOT NULL,
-    from_profile BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (application_id, question_id, option_id),
-    CONSTRAINT fk_rala_app FOREIGN KEY (application_id) REFERENCES roommate_applications (id) ON DELETE CASCADE,
-    CONSTRAINT fk_rala_option FOREIGN KEY (option_id, question_id) REFERENCES lifestyle_options (id, question_id) ON DELETE CASCADE
-);
-
--- 18. Hệ thống chỉ mục (Performance Indexes cho khóa ngoại và lọc tìm kiếm)
+-- 5. Hệ thống chỉ mục (Performance Indexes cho khóa ngoại và lọc tìm kiếm)
 CREATE INDEX IF NOT EXISTS idx_buildings_landlord_id ON buildings (landlord_id);
 CREATE INDEX IF NOT EXISTS idx_rooms_building_id ON rooms (building_id);
 CREATE INDEX IF NOT EXISTS idx_rooms_landlord_id ON rooms (landlord_id);
@@ -461,7 +395,4 @@ CREATE INDEX IF NOT EXISTS idx_roommate_posts_status ON roommate_posts (status);
 CREATE INDEX IF NOT EXISTS idx_rma_post_id ON roommate_applications (post_id);
 CREATE INDEX IF NOT EXISTS idx_rma_applicant_id ON roommate_applications (applicant_id);
 CREATE INDEX IF NOT EXISTS idx_rma_status ON roommate_applications (status);
-CREATE INDEX IF NOT EXISTS idx_rala_app_id ON roommate_application_lifestyle_answers (application_id);
-CREATE INDEX IF NOT EXISTS idx_rpla_post_id ON roommate_post_lifestyle_answers (post_id);
-CREATE INDEX IF NOT EXISTS idx_ula_user_id ON user_lifestyle_answers (user_id);
 

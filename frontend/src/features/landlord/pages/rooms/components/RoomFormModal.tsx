@@ -17,11 +17,8 @@ import {
   Navigation,
   Upload,
   Image as ImageIcon,
-  Plus,
   Trash2,
   Star,
-  Link as LinkIcon,
-  Sparkles,
 } from 'lucide-react';
 import { Building, CreateRoomDto, Room, UtilityService } from '@/shared/types/landlord';
 import {
@@ -69,29 +66,6 @@ const pinIcon = L.divIcon({
   popupAnchor: [0, -36],
 });
 
-const PRESET_ROOM_IMAGES = [
-  {
-    title: 'Phòng Studio ban công',
-    url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1000&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Phòng ngủ hiện đại',
-    url: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1000&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Không gian mở đón nắng',
-    url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1000&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Khu bếp & bàn ăn',
-    url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1000&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Phòng khách & sofa',
-    url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&auto=format&fit=crop&q=80',
-  },
-];
-
 interface RoomFormModalProps {
   open: boolean;
   editingRoom: Room | null;
@@ -115,7 +89,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
   // Room Images State
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [inputUrl, setInputUrl] = useState('');
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -435,25 +408,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     }
   };
 
-  const handleAddInputUrl = () => {
-    const trimmed = inputUrl.trim();
-    if (!trimmed) {
-      message.warning('Vui lòng nhập đường dẫn URL hình ảnh.');
-      return;
-    }
-    if (trimmed.startsWith('data:image/')) {
-      message.error('Không chấp nhận ảnh Base64. Vui lòng bấm "Tải ảnh từ máy tính" hoặc dán đường dẫn URL trực tiếp.');
-      return;
-    }
-    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('/uploads/')) {
-      message.warning('URL hình ảnh phải bắt đầu bằng http:// hoặc https://');
-      return;
-    }
-    setImageUrls((prev) => [...prev, trimmed]);
-    setInputUrl('');
-    message.success('Đã thêm liên kết hình ảnh.');
-  };
-
   const handleRemoveImage = (indexToRemove: number) => {
     setImageUrls((prev) => prev.filter((_, idx) => idx !== indexToRemove));
     message.info('Đã xóa ảnh.');
@@ -467,15 +421,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
       return [item, ...copy];
     });
     message.success('Đã chọn làm ảnh đại diện chính.');
-  };
-
-  const handleAddPresetImage = (url: string) => {
-    if (imageUrls.includes(url)) {
-      message.info('Ảnh này đã có trong danh sách.');
-      return;
-    }
-    setImageUrls((prev) => [...prev, url]);
-    message.success('Đã thêm ảnh mẫu.');
   };
 
   const handleOk = async () => {
@@ -724,9 +669,9 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   className="w-full h-10"
                   options={[
                     { label: 'Còn trống (AVAILABLE)', value: 'AVAILABLE' },
-                    { label: 'Đang thuê (RENTED)', value: 'RENTED' },
-                    { label: 'Đang sửa chữa (MAINTENANCE)', value: 'MAINTENANCE' },
-                    { label: 'Ngừng sử dụng (DISABLED)', value: 'DISABLED' },
+                    { label: 'Đang thuê (OCCUPIED)', value: 'OCCUPIED' },
+                    { label: 'Đang bảo trì (UNDER_MAINTENANCE)', value: 'UNDER_MAINTENANCE' },
+                    { label: 'Ngừng sử dụng (STOPPED)', value: 'STOPPED' },
                   ]}
                 />
               </Form.Item>
@@ -890,59 +835,11 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               >
                 Tải ảnh từ máy tính
               </Button>
-
-              <div className="flex-1 flex gap-2">
-                <Input
-                  placeholder="Hoặc dán URL hình ảnh (https://...)..."
-                  value={inputUrl}
-                  onChange={(e) => setInputUrl(e.target.value)}
-                  onPressEnter={handleAddInputUrl}
-                  className="h-10 text-xs"
-                  prefix={<LinkIcon className="w-3.5 h-3.5 text-stay-text-muted" />}
-                  allowClear
-                />
-                <Button
-                  onClick={handleAddInputUrl}
-                  className="h-10 text-xs font-medium shrink-0 border-stay-border text-stay-text hover:text-stay-primary"
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Thêm link
-                </Button>
-              </div>
-            </div>
-
-            {/* Ảnh mẫu nội thất gợi ý nhanh */}
-            <div>
-              <div className="text-xs text-stay-text-muted mb-2 flex items-center gap-1.5 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Hoặc chọn nhanh ảnh mẫu phòng thực tế:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_ROOM_IMAGES.map((preset, index) => {
-                  const isAdded = imageUrls.includes(preset.url);
-                  return (
-                    <button
-                      key={index}
-                      type="button"
-                      disabled={isAdded}
-                      onClick={() => handleAddPresetImage(preset.url)}
-                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isAdded
-                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 opacity-60 cursor-not-allowed'
-                          : 'border-stay-border bg-stay-card-bg text-stay-text-secondary hover:text-stay-primary hover:border-stay-primary'
-                      }`}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-stay-primary" />
-                      <span>+ {preset.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
             </div>
 
             {/* Danh sách ảnh hoặc Trạng thái trống */}
             {imageUrls.length === 0 ? (
               <div
-                onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-stay-border rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-stay-primary/50 transition-colors cursor-pointer bg-stay-card-bg/40"
               >
                 <div className="w-12 h-12 rounded-full bg-stay-bg-app flex items-center justify-center text-stay-text-muted mb-2 border border-stay-border">
@@ -950,9 +847,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 </div>
                 <p className="text-xs font-medium text-stay-text mb-1">
                   Chưa có hình ảnh nào cho phòng trọ này
-                </p>
-                <p className="text-[11px] text-stay-text-muted max-w-sm">
-                  Nhấp vào đây để chọn tệp từ máy tính, dán URL ảnh trực tiếp hoặc chọn ảnh mẫu phía trên
                 </p>
               </div>
             ) : (

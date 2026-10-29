@@ -2,6 +2,19 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout, AuthLayout, LandlordLayout, AdminLayout, TenantLayout } from '@/shared/layouts';
 import { ProtectedRoute } from './ProtectedRoute';
+import { useAuthStore } from '@/stores/useAuthStore';
+
+// Component điều hướng Profile thông minh vào Dashboard tương ứng theo quyền
+const ProfileRedirect: React.FC = () => {
+  const { user } = useAuthStore();
+  if (user?.role === 'ROLE_LANDLORD') {
+    return <Navigate to="/landlord/profile" replace />;
+  }
+  if (user?.role === 'ROLE_ADMIN') {
+    return <Navigate to="/admin/profile" replace />;
+  }
+  return <Navigate to="/tenant/profile" replace />;
+};
 
 // Home & Room & Showcase & Auth
 import { RoomSearchPage } from '@/features/room/pages/RoomSearchPage';
@@ -60,7 +73,7 @@ export const AppRoutes: React.FC = () => {
 
         {/* Protected Feature Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfileRedirect />} />
           <Route path="/users" element={<UserListPage />} />
         </Route>
       </Route>
@@ -75,6 +88,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="complaints" element={<MyComplaintsPage />} />
           <Route path="posts" element={<MyRoommatePostsPage />} />
           <Route path="create-post" element={<CreateRoommatePostPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
@@ -89,6 +103,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="contracts" element={<ContractListPage />} />
           <Route path="bills" element={<BillListPage />} />
           <Route path="complaints" element={<ComplaintListPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
@@ -99,6 +114,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="master-data" element={<AdminMasterDataPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

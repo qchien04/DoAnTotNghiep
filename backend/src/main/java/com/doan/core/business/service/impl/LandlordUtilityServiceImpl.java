@@ -4,6 +4,7 @@ import com.doan.core.business.dto.landlord.service.UtilityServiceRequest;
 import com.doan.core.business.dto.landlord.service.UtilityServiceResponse;
 import com.doan.core.business.entity.User;
 import com.doan.core.business.entity.UtilityService;
+import com.doan.core.business.repository.ContractServiceRepository;
 import com.doan.core.business.repository.UserRepository;
 import com.doan.core.business.repository.UtilityServiceRepository;
 import com.doan.core.business.service.LandlordUtilityService;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class LandlordUtilityServiceImpl implements LandlordUtilityService {
 
     private final UtilityServiceRepository utilityServiceRepository;
+    private final ContractServiceRepository contractServiceRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -50,6 +52,8 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
     public UtilityServiceResponse createService(Long landlordId, UtilityServiceRequest request) {
         log.info("Tạo mới dịch vụ: {} cho chủ trọ: {}", request.getName(), landlordId);
 
+        validateServiceRequest(request);
+
         if (utilityServiceRepository.existsByLandlordIdAndName(landlordId, request.getName().trim())) {
             throw new BaseException(ErrorCode.SERVICE_ALREADY_EXISTS);
         }
@@ -60,10 +64,10 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
         UtilityService service = UtilityService.builder()
                 .landlord(landlord)
                 .name(request.getName().trim())
-                .category(request.getCategory().trim())
-                .unit(request.getUnit().trim())
+                .category(request.getCategory() != null ? request.getCategory().trim() : "OTHER")
+                .unit(request.getUnit() != null ? request.getUnit().trim() : "Lần")
                 .unitPrice(request.getUnitPrice())
-                .billingMethod(request.getBillingMethod().trim())
+                .billingMethod(request.getBillingMethod())
                 .scope(request.getScope() != null ? request.getScope().trim() : "ALL")
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
@@ -77,6 +81,8 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
     public UtilityServiceResponse updateService(Long landlordId, Long serviceId, UtilityServiceRequest request) {
         log.info("Cập nhật dịch vụ id: {} của chủ trọ: {}", serviceId, landlordId);
 
+        validateServiceRequest(request);
+
         UtilityService service = utilityServiceRepository.findByIdAndLandlordId(serviceId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.SERVICE_NOT_FOUND));
 
@@ -85,10 +91,10 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
         }
 
         service.setName(request.getName().trim());
-        service.setCategory(request.getCategory().trim());
-        service.setUnit(request.getUnit().trim());
+        if (request.getCategory() != null) service.setCategory(request.getCategory().trim());
+        if (request.getUnit() != null) service.setUnit(request.getUnit().trim());
         service.setUnitPrice(request.getUnitPrice());
-        service.setBillingMethod(request.getBillingMethod().trim());
+        service.setBillingMethod(request.getBillingMethod());
         if (request.getScope() != null) {
             service.setScope(request.getScope().trim());
         }
@@ -108,7 +114,22 @@ public class LandlordUtilityServiceImpl implements LandlordUtilityService {
         UtilityService service = utilityServiceRepository.findByIdAndLandlordId(serviceId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.SERVICE_NOT_FOUND));
 
-        // Soft-delete hoặc xóa thực tế nếu chưa bị ràng buộc
+        if (contractServiceRepository.existsByServiceId(serviceId)) {
+            throw new BaseException(ErrorCode.SERVICE_IN_USE);
+        }
+
         utilityServiceRepository.delete(service);
+    }
+
+    private void validateServiceRequest(UtilityServiceRequest request) {
+        if (request.getName() == null || request.getName().trim().isBlank()) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Tên dịch vụ không được để trống");
+        }
+        if (request.getUnitPrice() == null || request.getUnitPrice() < 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Đơn giá dịch vụ không được là số âm");
+        }
+        if (request.getBillingMethod() == null) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Phương thức tính tiền không được để trống");
+        }
     }
 }

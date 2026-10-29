@@ -1,6 +1,6 @@
 import React from 'react';
-import { Search } from 'lucide-react';
-import { Input, Select } from '@/shared/components';
+import { Search, RotateCcw, Plus } from 'lucide-react';
+import { Input, Select, Button } from '@/shared/components';
 import { Building, RoomStatus } from '@/shared/types/landlord';
 
 interface RoomFilterProps {
@@ -11,6 +11,8 @@ interface RoomFilterProps {
   status: RoomStatus | 'ALL';
   onStatusChange: (val: RoomStatus | 'ALL') => void;
   buildings: Building[];
+  onReset?: () => void;
+  onOpenCreate?: () => void;
 }
 
 export const RoomFilter: React.FC<RoomFilterProps> = ({
@@ -21,16 +23,28 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
   status,
   onStatusChange,
   buildings,
+  onReset,
+  onOpenCreate,
 }) => {
+  const handleReset = () => {
+    if (onReset) {
+      onReset();
+    } else {
+      onKeywordChange('');
+      onBuildingIdChange(undefined);
+      onStatusChange('ALL');
+    }
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="bg-stay-card-bg p-3.5 sm:p-4 rounded-[8px] border border-[#D7D7DB] dark:border-slate-700 shadow-none flex flex-wrap items-center gap-3">
       <Input
-        placeholder="Tìm theo tên phòng..."
-        prefix={<Search className="w-4 h-4 text-stay-text-muted" />}
+        placeholder="Tìm theo tên phòng hoặc mã phòng..."
+        prefix={<Search className="w-4 h-4 text-[#8C8C8C]" />}
         value={keyword}
         onChange={(e) => onKeywordChange(e.target.value)}
         allowClear
-        className="w-full sm:w-64"
+        className="w-full sm:w-[320px] h-[40px] rounded-[8px]"
       />
 
       <Select
@@ -38,7 +52,7 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
         value={buildingId}
         onChange={onBuildingIdChange}
         allowClear
-        className="w-full sm:w-52"
+        className="w-full sm:w-[200px] h-[40px] rounded-[8px]"
         options={buildings.map((b: any) => ({
           label: b.name,
           value: b.id,
@@ -48,7 +62,7 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
       <Select
         value={status}
         onChange={onStatusChange}
-        className="w-full sm:w-44"
+        className="w-full sm:w-[190px] h-[40px] rounded-[8px]"
         options={[
           { label: 'Tất cả trạng thái', value: 'ALL' },
           { label: 'Còn trống', value: 'AVAILABLE' },
@@ -57,6 +71,27 @@ export const RoomFilter: React.FC<RoomFilterProps> = ({
           { label: 'Ngừng sử dụng', value: 'STOPPED' },
         ]}
       />
+
+      <Button
+        icon={<RotateCcw className="w-4 h-4 text-stay-text-secondary" />}
+        onClick={handleReset}
+        className="h-[40px] rounded-[8px] border-[#D7D7DB] dark:border-slate-700 text-stay-text hover:text-stay-primary font-medium"
+      >
+        Đặt lại
+      </Button>
+
+      {onOpenCreate && (
+        <div className="ml-auto">
+          <Button
+            type="primary"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={onOpenCreate}
+            className="h-[40px] rounded-[8px] bg-stay-primary hover:bg-stay-primary-hover text-white font-medium"
+          >
+            Thêm phòng
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

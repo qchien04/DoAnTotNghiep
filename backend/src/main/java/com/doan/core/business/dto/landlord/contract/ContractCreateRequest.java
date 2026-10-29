@@ -8,6 +8,8 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.doan.core.business.enums.BillingMethod;
+
 @Data
 @Schema(description = "Yêu cầu tạo hợp đồng thuê phòng mới")
 public class ContractCreateRequest {
@@ -46,10 +48,7 @@ public class ContractCreateRequest {
     @Schema(description = "Các điều khoản thỏa thuận")
     private String termsAndConditions;
 
-    @Schema(description = "Danh sách ID dịch vụ áp dụng trong hợp đồng (Điện, nước, internet...)", example = "[1, 2, 3]")
-    private List<Long> serviceIds;
-
-    @Schema(description = "Danh sách dịch vụ áp dụng trong hợp đồng (tùy chọn nếu không dùng serviceIds)")
+    @Schema(description = "Danh sách chi tiết dịch vụ áp dụng trong hợp đồng (kèm đơn giá thỏa thuận và chỉ số ban đầu)")
     private List<ContractServiceItemRequest> services;
 
     @Data
@@ -58,7 +57,7 @@ public class ContractCreateRequest {
         private String serviceName;
         private String unit;
         private Long appliedUnitPrice;
-        private String billingMethod;
+        private BillingMethod billingMethod;
         @Schema(description = "Chỉ số bàn giao ban đầu cho dịch vụ tính theo đồng hồ (kWh, m3)", example = "0")
         private Integer initialIndex = 0;
     }

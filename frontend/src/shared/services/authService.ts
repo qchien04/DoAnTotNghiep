@@ -121,6 +121,11 @@ export const authService = {
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
+    genderPreference?: string;
+    smokes?: boolean;
+    rejectsSmokers?: boolean;
+    hasPet?: boolean;
+    rejectsPets?: boolean;
     bio?: string;
     avatarUrl?: string;
   }): Promise<ResponseData<User>> => {

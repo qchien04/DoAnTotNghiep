@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import { tenantService } from '@/shared/services/tenantService';
 import { tenantKeys } from '../queryKeys';
 import {
@@ -9,79 +10,42 @@ import {
 } from '@/shared/types/tenant';
 
 export const useRoommatePosts = (searchParams?: PostSearchParams) => {
-  const queryClient = useQueryClient();
-
   const searchQuery = useQuery({
     queryKey: tenantKeys.postSearch(searchParams),
     queryFn: () => tenantService.searchPosts(searchParams),
     select: (res) => res.data,
   });
 
-  const myPostsQuery = useQuery({
-    queryKey: tenantKeys.myPosts(),
-    queryFn: () => tenantService.getMyPosts(),
-    select: (res) => res.data,
-  });
-
-  const createWithRoomMutation = useMutation({
-    mutationFn: (dto: CreatePostWithRoomDto) => tenantService.createPostWithRoom(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
-    },
-  });
-
-  const createWithoutRoomMutation = useMutation({
-    mutationFn: (dto: CreatePostWithoutRoomDto) => tenantService.createPostWithoutRoom(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateRoommatePostDto }) =>
-      tenantService.updatePost(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
-    },
-  });
-
-  const closeMutation = useMutation({
-    mutationFn: (id: string) => tenantService.closePost(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
-    },
-  });
-
-  const completeMutation = useMutation({
-    mutationFn: (id: string) => tenantService.completePost(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
-    },
-  });
-
   return {
-    posts: searchQuery.data?.items ?? [],
     pageInfo: searchQuery.data,
     isLoading: searchQuery.isLoading,
     isError: searchQuery.isError,
     error: searchQuery.error,
-    refetchSearch: searchQuery.refetch,
+    refetch: searchQuery.refetch,
+  };
+};
 
-    myPosts: myPostsQuery.data ?? [],
-    isLoadingMyPosts: myPostsQuery.isLoading,
-    refetchMyPosts: myPostsQuery.refetch,
+export const useMyRoommatePosts = (params?: {
+  keyword?: string;
+  status?: string;
+  postType?: string;
+  sortBy?: string;
+  sortDirection?: string;
+  page?: number;
+  size?: number;
+}) => {
+  const myPostsQuery = useQuery({
+    queryKey: [...tenantKeys.myPosts(), params],
+    queryFn: () => tenantService.getMyPosts(params),
+    select: (res) => res.data,
+  });
 
-    // Mutations
-    createPostWithRoom: createWithRoomMutation.mutateAsync,
-    isCreatingWithRoom: createWithRoomMutation.isPending,
-    createPostWithoutRoom: createWithoutRoomMutation.mutateAsync,
-    isCreatingWithoutRoom: createWithoutRoomMutation.isPending,
-    updatePost: updateMutation.mutateAsync,
-    isUpdating: updateMutation.isPending,
-    closePost: closeMutation.mutateAsync,
-    isClosing: closeMutation.isPending,
-    completePost: completeMutation.mutateAsync,
-    isCompleting: completeMutation.isPending,
+  return {
+    pageInfo: myPostsQuery.data,
+    isLoading: myPostsQuery.isLoading,
+    isError: myPostsQuery.isError,
+    error: myPostsQuery.error,
+    refetch: myPostsQuery.refetch,
   };
 };
 
@@ -102,41 +66,103 @@ export const useRoommatePostDetail = (id?: string) => {
   };
 };
 
-export const useMyRoommatePosts = () => {
+export const useCreatePostWithRoom = () => {
   const queryClient = useQueryClient();
 
-  const myPostsQuery = useQuery({
-    queryKey: tenantKeys.myPosts(),
-    queryFn: () => tenantService.getMyPosts(),
-    select: (res) => res.data,
-  });
-
-  const closeMutation = useMutation({
-    mutationFn: (id: string) => tenantService.closePost(id),
+  const mutation = useMutation({
+    mutationFn: (dto: CreatePostWithRoomDto) => tenantService.createPostWithRoom(dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
     },
-  });
-
-  const lockMutation = useMutation({
-    mutationFn: (id: string) => tenantService.completePost(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
-      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể tạo bài đăng có phòng');
     },
   });
 
   return {
-    posts: myPostsQuery.data ?? [],
-    isLoading: myPostsQuery.isLoading,
-    isError: myPostsQuery.isError,
-    error: myPostsQuery.error,
-    refetch: myPostsQuery.refetch,
+    createPostWithRoom: mutation.mutateAsync,
+    isCreatingWithRoom: mutation.isPending,
+  };
+};
 
-    closePost: closeMutation.mutateAsync,
-    isClosing: closeMutation.isPending,
-    lockGroup: lockMutation.mutateAsync,
-    isLocking: lockMutation.isPending,
+export const useCreatePostWithoutRoom = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (dto: CreatePostWithoutRoomDto) => tenantService.createPostWithoutRoom(dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể tạo bài đăng tìm phòng');
+    },
+  });
+
+  return {
+    createPostWithoutRoom: mutation.mutateAsync,
+    isCreatingWithoutRoom: mutation.isPending,
+  };
+};
+
+export const useUpdateRoommatePost = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateRoommatePostDto }) =>
+      tenantService.updatePost(id, dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật bài đăng');
+    },
+  });
+
+  return {
+    updatePost: mutation.mutateAsync,
+    isUpdating: mutation.isPending,
+  };
+};
+
+export const useCloseRoommatePost = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => tenantService.closePost(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể đóng bài đăng');
+    },
+  });
+
+  return {
+    closePost: mutation.mutateAsync,
+    isClosing: mutation.isPending,
+  };
+};
+
+export const useCompleteRoommatePost = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => tenantService.completePost(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể hoàn tất / chốt bài đăng');
+    },
+  });
+
+  return {
+    completePost: mutation.mutateAsync,
+    isCompleting: mutation.isPending,
   };
 };

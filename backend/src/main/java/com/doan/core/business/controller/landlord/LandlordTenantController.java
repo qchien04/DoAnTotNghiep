@@ -4,6 +4,7 @@ import com.doan.core.business.dto.landlord.tenant.TenantLinkInviteRequest;
 import com.doan.core.business.dto.landlord.tenant.TenantRequest;
 import com.doan.core.business.dto.landlord.tenant.TenantResponse;
 import com.doan.core.business.service.LandlordTenantService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,8 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/landlord/tenants")
@@ -30,14 +29,19 @@ public class LandlordTenantController {
 
     @GetMapping
     @Operation(summary = "UC 13: Xem danh sách khách đang thuê phòng", description = "Lấy danh sách khách thuê tại các phòng, lọc theo tòa/phòng và tìm kiếm theo họ tên/SĐT/CCCD")
-    public ResponseEntity<ResponseData<List<TenantResponse>>> getTenants(
+    public ResponseEntity<ResponseData<PageResponse<TenantResponse>>> getTenants(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long buildingId,
             @RequestParam(required = false) Long roomId,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
         String query = (keyword != null && !keyword.isBlank()) ? keyword : search;
-        List<TenantResponse> tenants = tenantService.searchTenants(principal.getId(), buildingId, roomId, query);
+        PageResponse<TenantResponse> tenants = tenantService.searchTenants(principal.getId(), buildingId, roomId, query,
+                page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(tenants));
     }
 

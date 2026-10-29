@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import { adminService } from '@/shared/services/adminService';
 import { adminKeys } from '../queryKeys';
 import {
@@ -7,34 +8,10 @@ import {
 } from '@/shared/types/admin';
 
 export const useMasterData = () => {
-  const queryClient = useQueryClient();
-
   const criteriaQuery = useQuery({
     queryKey: adminKeys.masterData(),
     queryFn: () => adminService.getMasterData(),
     select: (res) => res.data,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (dto: CreateLifestyleCriterionDto) => adminService.createCriterion(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateLifestyleCriterionDto }) =>
-      adminService.updateCriterion(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => adminService.deleteCriterion(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
-    },
   });
 
   return {
@@ -43,11 +20,63 @@ export const useMasterData = () => {
     isError: criteriaQuery.isError,
     error: criteriaQuery.error,
     refetch: criteriaQuery.refetch,
-    createCriterion: createMutation.mutateAsync,
-    isCreating: createMutation.isPending,
-    updateCriterion: updateMutation.mutateAsync,
-    isUpdating: updateMutation.isPending,
-    deleteCriterion: deleteMutation.mutateAsync,
-    isDeleting: deleteMutation.isPending,
+  };
+};
+
+export const useCreateCriterion = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (dto: CreateLifestyleCriterionDto) => adminService.createCriterion(dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể tạo tiêu chí lối sống');
+    },
+  });
+
+  return {
+    createCriterion: mutation.mutateAsync,
+    isCreating: mutation.isPending,
+  };
+};
+
+export const useUpdateCriterion = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateLifestyleCriterionDto }) =>
+      adminService.updateCriterion(id, dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật tiêu chí lối sống');
+    },
+  });
+
+  return {
+    updateCriterion: mutation.mutateAsync,
+    isUpdating: mutation.isPending,
+  };
+};
+
+export const useDeleteCriterion = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => adminService.deleteCriterion(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || err?.message || 'Không thể xóa tiêu chí lối sống');
+    },
+  });
+
+  return {
+    deleteCriterion: mutation.mutateAsync,
+    isDeleting: mutation.isPending,
   };
 };

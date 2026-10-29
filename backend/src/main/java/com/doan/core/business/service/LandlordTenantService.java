@@ -3,12 +3,12 @@ package com.doan.core.business.service;
 import com.doan.core.business.dto.landlord.tenant.TenantLinkInviteRequest;
 import com.doan.core.business.dto.landlord.tenant.TenantRequest;
 import com.doan.core.business.dto.landlord.tenant.TenantResponse;
-
-import java.util.List;
+import com.doan.core.common.data.PageResponse;
 
 public interface LandlordTenantService {
 
-    List<TenantResponse> searchTenants(Long landlordId, Long buildingId, Long roomId, String keyword);
+    PageResponse<TenantResponse> searchTenants(Long landlordId, Long buildingId, Long roomId, String keyword, int page,
+            int size, String sortBy, String sortDirection);
 
     TenantResponse getTenantById(Long landlordId, Long tenantId);
 

@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.tenant;
 
+import com.doan.core.business.enums.InvitationStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -32,7 +33,7 @@ public class TenantRoomResponse {
         private BigDecimal monthlyRent;
         private String roleInRoom; // REPRESENTATIVE, MEMBER
         private String inviteDate;
-        private String status;     // PENDING, ACCEPTED, REJECTED
+        private InvitationStatus status;     // PENDING, ACCEPTED, REJECTED
     }
 
     @Data

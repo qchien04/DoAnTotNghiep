@@ -1,5 +1,8 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.Gender;
+import com.doan.core.business.enums.TenantLinkStatus;
+import com.doan.core.business.enums.TenantStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,8 +42,9 @@ public class Tenant extends BaseEntity {
     @Column(name = "id_card_number", nullable = false, length = 20)
     private String idCardNumber;
 
-    @Column(name = "gender", length = 10)
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 20)
+    private Gender gender;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
@@ -58,11 +62,13 @@ public class Tenant extends BaseEntity {
     @Builder.Default
     private Boolean isRepresentative = false;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "link_status", nullable = false, length = 30)
     @Builder.Default
-    private String linkStatus = "NOT_LINKED"; // NOT_LINKED, PENDING, LINKED
+    private TenantLinkStatus linkStatus = TenantLinkStatus.NOT_LINKED; // NOT_LINKED, PENDING, LINKED
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "STAYING"; // STAYING, LEFT
+    private TenantStatus status = TenantStatus.STAYING; // STAYING, LEFT
 }

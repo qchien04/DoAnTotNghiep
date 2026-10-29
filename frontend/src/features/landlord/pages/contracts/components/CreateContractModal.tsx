@@ -171,6 +171,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
       });
 
       values.services = serviceItems;
+      delete values.serviceIds;
       delete values.meterReadings;
 
       await onSubmit(values as CreateContractDto);
@@ -392,20 +393,20 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {meterServices.map((srv: any) => {
                     const sUnit = resolveServiceUnit(srv);
-                    const isElec = (srv.category || '').toUpperCase() === 'ELECTRICITY' || (srv.serviceName || srv.name || '').toLowerCase().includes('điện');
+                    const sName = srv.serviceName || srv.name || 'Dịch vụ';
                     return (
                       <Form.Item
                         key={srv.id}
                         label={
                           <span className="text-stay-text font-medium text-xs">
-                            Chỉ số ban đầu: <strong>{srv.serviceName || srv.name}</strong>
+                            Chỉ số ban đầu: <strong>{sName}</strong>
                           </span>
                         }
                         name={['meterReadings', String(srv.id)]}
                         rules={[
                           {
                             required: true,
-                            message: `Nhập chỉ số ban đầu của ${srv.serviceName || srv.name} (${sUnit}) `,
+                            message: `Nhập chỉ số ban đầu của ${sName} (${sUnit})`,
                           },
                         ]}
                         className="mb-0"
@@ -413,7 +414,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
                         <InputNumber
                           min={0}
                           className="w-full h-10 font-mono font-medium"
-                          placeholder={`Nhập chỉ số ${isElec ? 'điện' : 'nước'} bàn giao (ví dụ: 0)...`}
+                          placeholder={`Nhập chỉ số ban đầu (${sUnit})...`}
                         />
                       </Form.Item>
                     );

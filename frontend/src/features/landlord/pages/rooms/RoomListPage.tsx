@@ -1,33 +1,47 @@
 import React, { useState } from 'react';
-import { useRooms, useBuildings, useServices } from '@/shared/hooks';
-import { Plus } from 'lucide-react';
-import { Button, message } from '@/shared/components';
+import {
+  useRooms,
+  useCreateRoom,
+  useUpdateRoom,
+  useDeleteRoom,
+  useBuildings,
+  useServices,
+} from '@/shared/hooks';
+import { message } from '@/shared/components';
 import { Room, CreateRoomDto, RoomStatus } from '@/shared/types/landlord';
 import { RoomFilter } from './components/RoomFilter';
 import { RoomTable } from './components/RoomTable';
 import { RoomFormModal } from './components/RoomFormModal';
+import { RoomDetailModal } from './components/RoomDetailModal';
 
 export const RoomListPage: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [keyword, setKeyword] = useState('');
   const [buildingId, setBuildingId] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<RoomStatus | 'ALL'>('ALL');
 
-  const { buildings } = useBuildings();
+  const { pageInfo: buildingsPageInfo } = useBuildings();
+  const buildings = buildingsPageInfo?.items ?? [];
   const { services } = useServices();
-  const {
-    rooms,
-    isLoading,
-    createRoom,
-    isCreating,
-    updateRoom,
-    isUpdating,
-    deleteRoom,
-    isDeleting,
-  } = useRooms({ keyword, buildingId, status });
+  const { pageInfo: roomsPageInfo, isLoading } = useRooms({
+    page,
+    size,
+    keyword,
+    buildingId,
+    status,
+  });
+  const { createRoom, isCreating } = useCreateRoom();
+  const { updateRoom, isUpdating } = useUpdateRoom();
+  const { deleteRoom, isDeleting } = useDeleteRoom();
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+
+  // Detail Modal State
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingRoom, setViewingRoom] = useState<Room | null>(null);
 
   const handleOpenCreate = () => {
     setEditingRoom(null);
@@ -37,6 +51,11 @@ export const RoomListPage: React.FC = () => {
   const handleOpenEdit = (room: Room) => {
     setEditingRoom(room);
     setIsModalOpen(true);
+  };
+
+  const handleOpenView = (room: Room) => {
+    setViewingRoom(room);
+    setDetailModalOpen(true);
   };
 
   const handleSubmit = async (values: CreateRoomDto) => {
@@ -61,34 +80,39 @@ export const RoomListPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-stay-text tracking-tight">Phòng trọ</h1>
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreate}
-        >
-          Thêm phòng
-        </Button>
-      </div>
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
+      {/* Filter with integrated CTA */}
 
-      {/* Filter */}
       <RoomFilter
         keyword={keyword}
         buildingId={buildingId}
         status={status}
         buildings={buildings}
-        onKeywordChange={setKeyword}
-        onBuildingIdChange={setBuildingId}
-        onStatusChange={setStatus}
+        onKeywordChange={(k) => {
+          setKeyword(k);
+          setPage(0);
+        }}
+        onBuildingIdChange={(b) => {
+          setBuildingId(b);
+          setPage(0);
+        }}
+        onStatusChange={(s) => {
+          setStatus(s);
+          setPage(0);
+        }}
+        onOpenCreate={handleOpenCreate}
       />
 
       {/* Table */}
       <RoomTable
-        rooms={rooms}
+        pageInfo={roomsPageInfo}
         isLoading={isLoading}
         isDeleting={isDeleting}
+        onPageChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
+        onView={handleOpenView}
         onEdit={handleOpenEdit}
         onDelete={handleDelete}
       />
@@ -102,6 +126,14 @@ export const RoomListPage: React.FC = () => {
         confirmLoading={isCreating || isUpdating}
         onCancel={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
+      />
+
+      {/* Detail Modal */}
+      <RoomDetailModal
+        open={detailModalOpen}
+        room={viewingRoom}
+        onCancel={() => setDetailModalOpen(false)}
+        onEdit={handleOpenEdit}
       />
     </div>
   );

@@ -2,19 +2,26 @@ package com.doan.core.business.service.impl;
 
 import com.doan.core.business.dto.landlord.contract.*;
 import com.doan.core.business.entity.*;
+import com.doan.core.business.enums.BillingMethod;
+import com.doan.core.business.enums.ContractStatus;
+import com.doan.core.business.enums.RoomStatus;
+import com.doan.core.business.enums.TenantStatus;
 import com.doan.core.business.repository.*;
 import com.doan.core.business.service.LandlordContractService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.exception.BaseException;
 import com.doan.core.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -27,22 +34,43 @@ public class LandlordContractServiceImpl implements LandlordContractService {
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final UtilityServiceRepository utilityServiceRepository;
-    private final InvoiceRepository invoiceRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<ContractResponse> getContracts(Long landlordId, Long buildingId, String status) {
-        log.info("Lấy danh sách hợp đồng cho chủ trọ id: {}, tòa: {}, trạng thái: {}", landlordId, buildingId, status);
-        List<Contract> contracts = contractRepository.filterContracts(landlordId, buildingId, status);
+    public PageResponse<ContractResponse> getContracts(Long landlordId, Long buildingId, ContractStatus status, String keyword,
+                                                       int page, int size, String sortBy, String sortDirection) {
+        String kw = (keyword != null && !keyword.trim().isBlank()) ? keyword.trim() : null;
 
-        return contracts.stream()
-                .map(ContractResponse::fromEntity)
-                .collect(Collectors.toList());
+        Direction direction = "asc".equalsIgnoreCase(sortDirection)
+                ? Direction.ASC
+                : Direction.DESC;
+        String sortProperty = switch (sortBy != null ? sortBy.toLowerCase() : "id") {
+            case "startdate" -> "startDate";
+            case "enddate" -> "endDate";
+            case "rentprice" -> "rentPrice";
+            case "depositamount" -> "depositAmount";
+            case "status" -> "status";
+            default -> "id";
+        };
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(direction, sortProperty);
+
+        int pageNumber = Math.max(0, page);
+        int pageSize = size > 0 ? size : 10;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        log.info("Lấy danh sách hợp đồng cho chủ trọ id: {}, tòa: {}, trạng thái: {}, keyword: {}, pageable: {}",
+                landlordId, buildingId, status, kw, pageable);
+        Page<Contract> contracts = contractRepository.filterContracts(landlordId, buildingId, status, kw, pageable);
+
+        Page<ContractResponse> dtoPage = contracts.map(ContractResponse::fromEntity);
+        return PageResponse.from(dtoPage);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ContractResponse getContractById(Long landlordId, Long contractId) {
+        log.info("Lấy chi tiết hợp đồng id: {} cho chủ trọ: {}", contractId, landlordId);
+
         Contract contract = contractRepository.findByIdAndLandlordId(contractId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.CONTRACT_NOT_FOUND));
 
@@ -52,10 +80,21 @@ public class LandlordContractServiceImpl implements LandlordContractService {
     @Override
     @Transactional
     public ContractResponse createContract(Long landlordId, ContractCreateRequest request) {
-        log.info("Tạo hợp đồng thuê phòng: {} cho chủ trọ: {}", request.getRoomId(), landlordId);
+        log.info("Tạo hợp đồng mới cho chủ trọ: {}, phòng: {}, khách đại diện: {}",
+                landlordId, request.getRoomId(), request.getRepresentativeTenantId());
+
+        if (request.getRentPrice() == null || request.getRentPrice() <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Giá thuê phòng phải lớn hơn 0");
+        }
+        if (request.getDepositAmount() == null || request.getDepositAmount() < 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Tiền cọc phòng không được là số âm");
+        }
+        if (request.getStartDate() == null) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Ngày bắt đầu hợp đồng không được để trống");
+        }
 
         LocalDate endDate = request.getEndDate();
-        if (endDate == null && request.getStartDate() != null) {
+        if (endDate == null) {
             int months = (request.getDurationMonths() != null && request.getDurationMonths() > 0)
                     ? request.getDurationMonths()
                     : 12;
@@ -69,7 +108,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         Room room = roomRepository.findByIdAndBuildingLandlordId(request.getRoomId(), landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
 
-        if (!"AVAILABLE".equalsIgnoreCase(room.getStatus())) {
+        if (room.getStatus() != RoomStatus.AVAILABLE) {
             throw new BaseException(ErrorCode.ROOM_NOT_AVAILABLE);
         }
 
@@ -78,14 +117,6 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
         User landlord = userRepository.findById(landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
-
-        // Kiểm tra danh sách dịch vụ áp dụng: ưu tiên request.getServiceIds(), nếu không có thì kế thừa từ room.getServices()
-        List<UtilityService> usList = new ArrayList<>();
-        if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
-            usList = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
-        } else if (room.getServices() != null && !room.getServices().isEmpty()) {
-            usList = new ArrayList<>(room.getServices());
-        }
 
         Contract contract = Contract.builder()
                 .room(room)
@@ -97,12 +128,13 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                 .depositAmount(request.getDepositAmount())
                 .paymentCycleDay(request.getPaymentCycleDay() != null ? request.getPaymentCycleDay() : 5)
                 .termsAndConditions(request.getTermsAndConditions())
-                .status("ACTIVE")
+                .status(ContractStatus.ACTIVE)
                 .build();
 
         Contract savedContract = contractRepository.save(contract);
 
-        // Lưu danh sách dịch vụ áp dụng trong hợp đồng (từ serviceIds hoặc services)
+        // Lưu danh sách dịch vụ áp dụng trong hợp đồng (CHỈ ÁP DỤNG DỊCH VỤ CHỦ TRỌ CHỈ
+        // ĐỊNH TRONG REQUEST, KHÔNG TỰ Ý LẤY TỪ PHÒNG)
         List<ContractService> csList = new ArrayList<>();
         if (request.getServices() != null && !request.getServices().isEmpty()) {
             for (ContractCreateRequest.ContractServiceItemRequest item : request.getServices()) {
@@ -110,31 +142,37 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                         ? utilityServiceRepository.findById(item.getServiceId()).orElse(null)
                         : null;
 
+                BillingMethod method;
+                if (item.getBillingMethod() != null) {
+                    method = item.getBillingMethod();
+                } else if (us != null && us.getBillingMethod() != null) {
+                    method = us.getBillingMethod();
+                } else {
+                    method = BillingMethod.FIXED_PER_ROOM;
+                }
+
                 int initIndex = item.getInitialIndex() != null ? item.getInitialIndex() : 0;
-                String method = item.getBillingMethod() != null ? item.getBillingMethod() : (us != null ? us.getBillingMethod() : "FIXED_PER_ROOM");
+                if (method == BillingMethod.METER_INDEX && initIndex < 0) {
+                    throw new BaseException(ErrorCode.BAD_REQUEST, "Chỉ số ban đầu không được là số âm");
+                }
+
+                long price = item.getAppliedUnitPrice() != null ? item.getAppliedUnitPrice()
+                        : (us != null ? us.getUnitPrice() : 0L);
+                if (price < 0) {
+                    throw new BaseException(ErrorCode.BAD_REQUEST, "Đơn giá dịch vụ không được là số âm");
+                }
 
                 ContractService cs = ContractService.builder()
                         .contract(savedContract)
                         .service(us)
-                        .serviceName(item.getServiceName() != null ? item.getServiceName() : (us != null ? us.getName() : "Dịch vụ"))
-                        .unit(item.getUnit() != null ? item.getUnit() : (us != null ? us.getUnit() : "Lần"))
-                        .appliedUnitPrice(item.getAppliedUnitPrice() != null ? item.getAppliedUnitPrice() : (us != null ? us.getUnitPrice() : 0L))
+                        .serviceName(item.getServiceName() != null ? item.getServiceName().trim()
+                                : (us != null ? us.getName() : "Dịch vụ"))
+                        .unit(item.getUnit() != null ? item.getUnit().trim() : (us != null ? us.getUnit() : "Lần"))
+                        .appliedUnitPrice(price)
                         .billingMethod(method)
                         .lastIndex(initIndex)
                         .build();
                 csList.add(cs);
-            }
-        } else if (!usList.isEmpty()) {
-            for (UtilityService us : usList) {
-                csList.add(ContractService.builder()
-                        .contract(savedContract)
-                        .service(us)
-                        .serviceName(us.getName())
-                        .unit(us.getUnit())
-                        .appliedUnitPrice(us.getUnitPrice())
-                        .billingMethod(us.getBillingMethod())
-                        .lastIndex(0)
-                        .build());
             }
         }
         if (!csList.isEmpty()) {
@@ -143,7 +181,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         }
 
         // Cập nhật trạng thái phòng thành ĐANG THUÊ (OCCUPIED)
-        room.setStatus("OCCUPIED");
+        room.setStatus(RoomStatus.OCCUPIED);
         roomRepository.save(room);
 
         // Cập nhật khách đại diện
@@ -162,7 +200,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         Contract contract = contractRepository.findByIdAndLandlordId(contractId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.CONTRACT_NOT_FOUND));
 
-        if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+        if (contract.getStatus() == ContractStatus.TERMINATED) {
             throw new BaseException(ErrorCode.CONTRACT_ALREADY_TERMINATED);
         }
 
@@ -174,6 +212,9 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         }
 
         if (request.getRentPrice() != null) {
+            if (request.getRentPrice() <= 0) {
+                throw new BaseException(ErrorCode.BAD_REQUEST, "Giá thuê phòng phải lớn hơn 0");
+            }
             contract.setRentPrice(request.getRentPrice());
         }
 
@@ -191,77 +232,96 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
     @Override
     @Transactional
-    public CheckoutCalculationResponse terminateContract(Long landlordId, Long contractId, ContractTerminateRequest request) {
+    public CheckoutCalculationResponse terminateContract(Long landlordId, Long contractId,
+            ContractTerminateRequest request) {
         log.info("Thanh lý hợp đồng id: {} của chủ trọ: {}", contractId, landlordId);
 
         Contract contract = contractRepository.findByIdAndLandlordId(contractId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.CONTRACT_NOT_FOUND));
 
-        if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+        if (contract.getStatus() == ContractStatus.TERMINATED) {
             throw new BaseException(ErrorCode.CONTRACT_ALREADY_TERMINATED);
         }
 
-        // Tính tiêu thụ điện và nước từ chỉ số chốt gần nhất của contract_services hoặc kỳ hóa đơn trước
-        int startElectric = 0;
-        int startWater = 0;
-        long electricUnitPrice = 3800L;
-        long waterUnitPrice = 30000L;
+        // Quyết toán tài chính khi trả phòng căn cứ theo billingMethod của từng dịch vụ
+        // trong hợp đồng
+        long totalUtilityCost = 0L;
+        List<CheckoutCalculationResponse.ServiceSettlementItem> settlements = new ArrayList<>();
 
-        if (contract.getContractServices() != null) {
-            for (ContractService cs : contract.getContractServices()) {
-                String nameLower = cs.getServiceName().toLowerCase();
-                if ("ELECTRICITY".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("điện")) {
-                    startElectric = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
-                    electricUnitPrice = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 3800L;
-                } else if ("WATER".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("nước")) {
-                    startWater = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
-                    waterUnitPrice = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 30000L;
+        Map<Long, Integer> readingMap = new HashMap<>();
+        if (request.getMeterReadings() != null) {
+            for (ContractTerminateRequest.MeterReadingItem item : request.getMeterReadings()) {
+                if (item.getContractServiceId() != null && item.getFinalIndex() != null) {
+                    readingMap.put(item.getContractServiceId(), item.getFinalIndex());
                 }
             }
         }
 
-        int endElectric = request.getFinalElectricIndex() != null ? request.getFinalElectricIndex() : startElectric;
-        int electricConsumed = Math.max(0, endElectric - startElectric);
-
-        int endWater = request.getFinalWaterIndex() != null ? request.getFinalWaterIndex() : startWater;
-        int waterConsumed = Math.max(0, endWater - startWater);
-
-        long electricAmount = electricConsumed * electricUnitPrice;
-        long waterAmount = waterConsumed * waterUnitPrice;
-        long totalUtilityCost = electricAmount + waterAmount;
-
-        long initialDeposit = contract.getDepositAmount() != null ? contract.getDepositAmount() : 0L;
-        long damageCost = request.getDamageCost() != null ? request.getDamageCost() : 0L;
-
-        long netRefund = initialDeposit - totalUtilityCost - damageCost;
-
-        // Cập nhật hợp đồng và chỉ số cuối của contract services
         if (contract.getContractServices() != null) {
             for (ContractService cs : contract.getContractServices()) {
-                String nameLower = cs.getServiceName().toLowerCase();
-                if ("ELECTRICITY".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("điện")) {
-                    cs.setLastIndex(endElectric);
-                } else if ("WATER".equalsIgnoreCase(cs.getServiceName()) || nameLower.contains("nước")) {
-                    cs.setLastIndex(endWater);
+                BillingMethod method = cs.getBillingMethod() != null ? cs.getBillingMethod()
+                        : BillingMethod.FIXED_PER_ROOM;
+
+                // Chỉ dịch vụ có billingMethod = METER_INDEX mới tính toán theo chỉ số công tơ
+                if (method == BillingMethod.METER_INDEX) {
+                    if (!readingMap.containsKey(cs.getId())) {
+                        throw new BaseException(ErrorCode.BAD_REQUEST,
+                                "Vui lòng nhập chỉ số công tơ chốt ngày trả phòng cho dịch vụ: " + cs.getServiceName());
+                    }
+
+                    int startIdx = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
+                    int endIdx = readingMap.get(cs.getId());
+
+                    if (endIdx < startIdx) {
+                        throw new BaseException(ErrorCode.INVALID_METER_READING,
+                                "Chỉ số chốt ngày trả phòng (" + endIdx + ") không được nhỏ hơn chỉ số trước đó ("
+                                        + startIdx + ") cho dịch vụ: " + cs.getServiceName());
+                    }
+
+                    int consumed = endIdx - startIdx;
+                    long unitPrice = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 0L;
+                    long amount = (long) consumed * unitPrice;
+                    totalUtilityCost += amount;
+                    cs.setLastIndex(endIdx);
+
+                    settlements.add(CheckoutCalculationResponse.ServiceSettlementItem.builder()
+                            .contractServiceId(cs.getId())
+                            .serviceName(cs.getServiceName())
+                            .unit(cs.getUnit())
+                            .startIndex(startIdx)
+                            .endIndex(endIdx)
+                            .consumed(consumed)
+                            .unitPrice(unitPrice)
+                            .amount(amount)
+                            .build());
                 }
             }
             contractServiceRepository.saveAll(contract.getContractServices());
         }
 
+        long initialDeposit = contract.getDepositAmount() != null ? contract.getDepositAmount() : 0L;
+        long damageCost = request.getDamageCost() != null ? request.getDamageCost() : 0L;
+        if (damageCost < 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Chi phí bồi thường hư hỏng không được là số âm");
+        }
+
+        long netRefund = initialDeposit - totalUtilityCost - damageCost;
+
         contract.setDepositRefundAmount(netRefund);
-        contract.setStatus("TERMINATED");
+        contract.setStatus(ContractStatus.TERMINATED);
         contractRepository.save(contract);
 
-        // Chuyển phòng về trạng thái AVAILABLE, xóa occupancy và cập nhật khách thuê thành LEFT
+        // Chuyển phòng về trạng thái AVAILABLE, xóa occupancy và cập nhật khách thuê
+        // thành LEFT
         Room room = contract.getRoom();
         if (room != null) {
-            room.setStatus("AVAILABLE");
+            room.setStatus(RoomStatus.AVAILABLE);
             room.setCurrentOccupancy(0);
             roomRepository.save(room);
 
             List<Tenant> stayingTenants = tenantRepository.findByRoomId(room.getId());
             for (Tenant t : stayingTenants) {
-                t.setStatus("LEFT");
+                t.setStatus(TenantStatus.LEFT);
                 t.setRoom(null);
             }
             tenantRepository.saveAll(stayingTenants);
@@ -269,11 +329,8 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
         return CheckoutCalculationResponse.builder()
                 .initialDeposit(initialDeposit)
-                .electricConsumed(electricConsumed)
-                .electricAmount(electricAmount)
-                .waterConsumed(waterConsumed)
-                .waterAmount(waterAmount)
                 .totalUtilityCost(totalUtilityCost)
+                .settlements(settlements)
                 .damageCost(damageCost)
                 .damageNote(request.getDamageNote())
                 .netRefundAmount(netRefund)

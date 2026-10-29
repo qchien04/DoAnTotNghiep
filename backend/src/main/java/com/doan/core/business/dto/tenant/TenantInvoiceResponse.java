@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.doan.core.business.enums.InvoiceStatus;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,19 +19,14 @@ public class TenantInvoiceResponse {
     private String roomName;
     private String buildingName;
 
-    private Integer electricityUsage;
-    private Integer waterUsage;
-
     private BigDecimal roomRent;
-    private BigDecimal electricityAmount;
-    private BigDecimal waterAmount;
     private BigDecimal serviceAmount;
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;
     private BigDecimal remainingAmount;
 
     private LocalDate dueDate;
-    private String status; // PENDING, PAID, OVERDUE
+    private InvoiceStatus status;
 
     private List<InvoiceItemDto> items;
 

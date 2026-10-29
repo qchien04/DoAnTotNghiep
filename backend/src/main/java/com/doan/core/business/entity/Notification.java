@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,8 +28,9 @@ public class Notification extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false, length = 50)
-    private String notificationType; // INVOICE, CONTRACT, COMPLAINT, ROOMMATE, SYSTEM
+    private NotificationType notificationType; // INVOICE, CONTRACT, COMPLAINT, ROOMMATE, SYSTEM
 
     @Column(name = "related_entity_type", length = 50)
     private String relatedEntityType;

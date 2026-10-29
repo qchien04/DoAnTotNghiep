@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -70,9 +71,10 @@ public class Room extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "AVAILABLE"; // AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED
+    private RoomStatus status = RoomStatus.AVAILABLE; // AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED
 
     @Column(name = "cover_image_url", length = 500)
     private String coverImageUrl;

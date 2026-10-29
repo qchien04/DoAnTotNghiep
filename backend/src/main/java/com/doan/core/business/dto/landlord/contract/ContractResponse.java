@@ -1,7 +1,9 @@
 package com.doan.core.business.dto.landlord.contract;
 
+import com.doan.core.business.dto.landlord.tenant.TenantResponse;
+import com.doan.core.business.enums.BillingMethod;
 import com.doan.core.business.entity.Contract;
-import com.doan.core.business.entity.ContractService;
+import com.doan.core.business.enums.ContractStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,11 +39,11 @@ public class ContractResponse {
     private String tenantName;
     private String tenantPhone;
     private Long depositRefundAmount;
-    private String status;
+    private ContractStatus status;
     private String pdfFileUrl;
     private String termsAndConditions;
     private List<ContractServiceResponse> services;
-    private List<com.doan.core.business.dto.landlord.tenant.TenantResponse> tenants;
+    private List<TenantResponse> tenants;
     private LocalDateTime createdAt;
 
     @Data
@@ -54,46 +56,55 @@ public class ContractResponse {
         private String serviceName;
         private String unit;
         private Long appliedUnitPrice;
-        private String billingMethod;
+        private BillingMethod billingMethod;
         private Integer lastIndex;
     }
 
     public static ContractResponse fromEntity(Contract contract) {
-        if (contract == null) return null;
+        if (contract == null)
+            return null;
 
         List<ContractServiceResponse> sList = contract.getContractServices() != null
                 ? contract.getContractServices().stream().map(cs -> ContractServiceResponse.builder()
-                .id(cs.getId())
-                .serviceId(cs.getService() != null ? cs.getService().getId() : null)
-                .serviceName(cs.getServiceName())
-                .unit(cs.getUnit())
-                .appliedUnitPrice(cs.getAppliedUnitPrice())
-                .billingMethod(cs.getBillingMethod())
-                .lastIndex(cs.getLastIndex())
-                .build()).collect(Collectors.toList())
+                        .id(cs.getId())
+                        .serviceId(cs.getService() != null ? cs.getService().getId() : null)
+                        .serviceName(cs.getServiceName())
+                        .unit(cs.getUnit())
+                        .appliedUnitPrice(cs.getAppliedUnitPrice())
+                        .billingMethod(cs.getBillingMethod())
+                        .lastIndex(cs.getLastIndex())
+                        .build()).collect(Collectors.toList())
                 : List.of();
 
-        List<com.doan.core.business.dto.landlord.tenant.TenantResponse> tenantList = contract.getTenants() != null
-                ? contract.getTenants().stream().map(com.doan.core.business.dto.landlord.tenant.TenantResponse::fromEntity).collect(Collectors.toList())
+        List<TenantResponse> tenantList = contract.getTenants() != null
+                ? contract.getTenants().stream()
+                        .map(TenantResponse::fromEntity)
+                        .collect(Collectors.toList())
                 : List.of();
 
         int months = 12;
         if (contract.getStartDate() != null && contract.getEndDate() != null) {
             java.time.Period p = java.time.Period.between(contract.getStartDate(), contract.getEndDate().plusDays(1));
             months = p.getYears() * 12 + p.getMonths();
-            if (months <= 0) months = 1;
+            if (months <= 0)
+                months = 1;
         }
 
         String rName = contract.getRoom() != null ? contract.getRoom().getName() : null;
-        String tName = contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getFullName() : null;
-        String tPhone = contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getPhone() : null;
+        String tName = contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getFullName()
+                : null;
+        String tPhone = contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getPhone()
+                : null;
 
         return ContractResponse.builder()
                 .id(contract.getId())
                 .roomId(contract.getRoom() != null ? contract.getRoom().getId() : null)
                 .roomName(rName)
-                .buildingName(contract.getRoom() != null && contract.getRoom().getBuilding() != null ? contract.getRoom().getBuilding().getName() : null)
-                .representativeTenantId(contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getId() : null)
+                .buildingName(contract.getRoom() != null && contract.getRoom().getBuilding() != null
+                        ? contract.getRoom().getBuilding().getName()
+                        : null)
+                .representativeTenantId(
+                        contract.getRepresentativeTenant() != null ? contract.getRepresentativeTenant().getId() : null)
                 .representativeTenantName(tName)
                 .tenantName(tName)
                 .representativeTenantPhone(tPhone)

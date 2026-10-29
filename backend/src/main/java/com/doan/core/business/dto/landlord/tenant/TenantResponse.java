@@ -1,6 +1,11 @@
 package com.doan.core.business.dto.landlord.tenant;
 
+import com.doan.core.business.enums.Gender;
 import com.doan.core.business.entity.Tenant;
+import com.doan.core.business.enums.TenantLinkStatus;
+import com.doan.core.business.enums.TenantRoleInRoom;
+import com.doan.core.business.enums.TenantStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,21 +32,22 @@ public class TenantResponse {
     private String fullName;
     private String phone;
     private String idCardNumber;
-    private String gender;
+    private Gender gender;
     private LocalDate dateOfBirth;
     private String hometown;
     private String idCardPhotoFront;
     private String idCardPhotoBack;
     private Boolean isRepresentative;
-    private String roleInRoom;
+    private TenantRoleInRoom roleInRoom;
     private String identityCard;
     private String birthDate;
-    private String linkStatus;
-    private String status;
+    private TenantLinkStatus linkStatus;
+    private TenantStatus status;
     private LocalDateTime createdAt;
 
     public static TenantResponse fromEntity(Tenant tenant) {
-        if (tenant == null) return null;
+        if (tenant == null)
+            return null;
 
         String rName = tenant.getRoom() != null ? tenant.getRoom().getName() : null;
         String bName = (tenant.getRoom() != null && tenant.getRoom().getBuilding() != null)
@@ -72,7 +78,7 @@ public class TenantResponse {
                 .idCardPhotoFront(tenant.getIdCardPhotoFront())
                 .idCardPhotoBack(tenant.getIdCardPhotoBack())
                 .isRepresentative(isRep)
-                .roleInRoom(isRep ? "REPRESENTATIVE" : "MEMBER")
+                .roleInRoom(isRep ? TenantRoleInRoom.REPRESENTATIVE : TenantRoleInRoom.MEMBER)
                 .linkStatus(tenant.getLinkStatus())
                 .status(tenant.getStatus())
                 .createdAt(tenant.getCreatedAt())

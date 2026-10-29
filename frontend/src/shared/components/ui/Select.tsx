@@ -59,7 +59,7 @@ export function Select<ValueType = any, OptionType extends Record<string, any> =
       className={`${label || error || helperText ? 'space-y-1.5' : ''} ${effectiveWrapperWidth}`.trim()}
     >
       {label && (
-        <label htmlFor={selectId} className="block text-xs font-semibold text-stay-text">
+        <label htmlFor={selectId} className="block text-[13.5px] font-semibold text-stay-text">
           {label}
           {props.required && <span className="text-red-500 ml-1">*</span>}
         </label>

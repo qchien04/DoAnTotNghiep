@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { useMasterData } from '@/shared/hooks';
 import {
-  Card,
+  useMasterData,
+  useCreateCriterion,
+  useUpdateCriterion,
+  useDeleteCriterion,
+} from '@/shared/hooks';
+import {
   Button,
   Table,
   Input,
@@ -9,7 +13,6 @@ import {
   Modal,
   Form,
   Tag,
-  Badge,
   Alert,
   message,
   Popconfirm,
@@ -23,19 +26,24 @@ import {
   Sparkles,
   Percent,
   HelpCircle,
+  Eye,
 } from 'lucide-react';
 import { LifestyleCriterion, CreateLifestyleCriterionDto, UpdateLifestyleCriterionDto } from '@/shared/types/admin';
 
 export const AdminMasterDataPage: React.FC = () => {
-  const {
-    criteria,
-    isLoading,
-    createCriterion,
-    isCreating,
-    updateCriterion,
-    isUpdating,
-    deleteCriterion,
-  } = useMasterData();
+  const { criteria, isLoading } = useMasterData();
+  const { createCriterion, isCreating } = useCreateCriterion();
+  const { updateCriterion, isUpdating } = useUpdateCriterion();
+  const { deleteCriterion } = useDeleteCriterion();
+
+  // Detail Modal State
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingCriterion, setViewingCriterion] = useState<LifestyleCriterion | null>(null);
+
+  const handleOpenDetail = (crit: LifestyleCriterion) => {
+    setViewingCriterion(crit);
+    setDetailModalOpen(true);
+  };
 
   // Create / Edit Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -45,6 +53,7 @@ export const AdminMasterDataPage: React.FC = () => {
   const totalWeight = criteria.reduce((sum, c) => sum + (c.status === 'ACTIVE' ? c.algorithmWeight : 0), 0);
 
   const handleOpenCreate = () => {
+
     setEditingCriterion(null);
     form.resetFields();
     form.setFieldsValue({
@@ -114,20 +123,15 @@ export const AdminMasterDataPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: LifestyleCriterion) => <span className="font-bold text-stay-primary">#{r.id}</span>,
-    },
-    {
       title: 'Tên tiêu chí',
       dataIndex: 'name',
       key: 'name',
+      width: 280,
+      ellipsis: { showTitle: true },
       render: (val: string, r: LifestyleCriterion) => (
         <div>
-          <p className="font-semibold text-stay-text">{val}</p>
-          <p className="text-[11px] text-slate-400">Các lựa chọn: {r.options?.join(', ')}</p>
+          <p className="font-semibold text-stay-text truncate">{val}</p>
+          <p className="text-[11px] text-slate-400 truncate">Các lựa chọn: {r.options?.join(', ')}</p>
         </div>
       ),
     },
@@ -135,6 +139,8 @@ export const AdminMasterDataPage: React.FC = () => {
       title: 'Nhóm',
       dataIndex: 'category',
       key: 'category',
+      width: 180,
+      ellipsis: { showTitle: true },
       render: (cat: string) => {
         const map: Record<string, string> = {
           HABIT: 'Thói quen sinh hoạt',
@@ -149,6 +155,7 @@ export const AdminMasterDataPage: React.FC = () => {
       title: 'Trọng số thuật toán',
       dataIndex: 'algorithmWeight',
       key: 'algorithmWeight',
+      width: 160,
       render: (val: number) => (
         <div className="flex items-center gap-1.5 font-bold text-stay-primary">
           <Percent className="w-3.5 h-3.5" />
@@ -160,6 +167,7 @@ export const AdminMasterDataPage: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
+      width: 130,
       render: (st: string) => (
         st === 'ACTIVE' ? <Tag status="available">Đang áp dụng</Tag> : <Tag status="rented">Tạm dừng</Tag>
       ),
@@ -167,90 +175,167 @@ export const AdminMasterDataPage: React.FC = () => {
     {
       title: 'Thao tác',
       key: 'action',
+      width: 120,
+      fixed: 'right' as const,
       render: (_: any, r: LifestyleCriterion) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Edit2 className="w-3 h-3" />}
-            onClick={() => handleOpenEdit(r)}
-          >
-            Sửa
-          </Button>
-          <Popconfirm
-            title="Xóa tiêu chí này?"
-            description="Thuật toán matching sẽ loại bỏ trọng số của tiêu chí này."
-            onConfirm={() => handleDelete(r.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Trash2 className="w-3 h-3 text-red-500" />}
-              className="text-red-600 hover:bg-red-50"
+        <div className="flex items-center justify-start gap-1.5">
+          <Tooltip title="Xem chi tiết tiêu chí">
+            <button
+              type="button"
+              className="stay-action-btn stay-action-btn-view"
+              onClick={() => handleOpenDetail(r)}
             >
-              Xóa
-            </Button>
-          </Popconfirm>
+              <Eye className="w-4 h-4" />
+            </button>
+          </Tooltip>
+
+          <Tooltip title="Chỉnh sửa tiêu chí">
+            <button
+              type="button"
+              className="stay-action-btn stay-action-btn-edit"
+              onClick={() => handleOpenEdit(r)}
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          </Tooltip>
+
+          <Tooltip title="Xóa tiêu chí">
+            <Popconfirm
+              title="Xóa tiêu chí này?"
+              description="Thuật toán matching sẽ loại bỏ trọng số của tiêu chí này."
+              onConfirm={() => handleDelete(r.id)}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true }}
+            >
+              <button
+                type="button"
+                className="stay-action-btn stay-action-btn-delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </Popconfirm>
+          </Tooltip>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="primary">Thuật toán ghép đôi</Badge>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stay-text tracking-tight">
-            Quản Trị Master Data & Tiêu Chí Lối Sống
-          </h1>
-          <p className="text-sm text-stay-text-secondary mt-0.5">
-            Cấu hình trọng số thuật toán ghép đôi và danh mục tiện ích toàn sàn.
-          </p>
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
+      {/* Top Action Toolbar */}
+
+      <div className="p-4 rounded-xl bg-stay-card-bg border border-[#D7D7DB] dark:border-slate-700 shadow-none flex flex-wrap items-center justify-between gap-3">
+        <div className="flex-1 min-w-[280px]">
+          <Alert
+            type={totalWeight === 100 ? 'success' : 'warning'}
+            message={
+              <div className="flex items-center justify-between">
+                <span>
+                  Tổng trọng số các tiêu chí đang áp dụng: <strong>{totalWeight}%</strong> {totalWeight === 100 ? '(Đã chuẩn hóa 100%)' : '(Lưu ý: Cần cân bằng về 100%)'}
+                </span>
+                <Sparkles className="w-4 h-4 text-stay-primary ml-2 flex-shrink-0" />
+              </div>
+            }
+            className="border-0 m-0 py-1.5"
+          />
         </div>
 
         <Button
           variant="primary"
           icon={<Plus className="w-4 h-4" />}
           onClick={handleOpenCreate}
-          className="shadow-md shadow-stay-primary/20 font-semibold"
+          className="ml-auto bg-stay-primary hover:bg-stay-primary-hover h-[40px] px-4 font-medium"
         >
           Thêm Tiêu Chí Mới
         </Button>
       </div>
 
-      {/* Algorithm Weight Summary Alert */}
-      <Alert
-        type={totalWeight === 100 ? 'success' : 'warning'}
-        message={
-          <div className="flex items-center justify-between">
-            <span>
-              Tổng trọng số các tiêu chí đang áp dụng: <strong>{totalWeight}%</strong> {totalWeight === 100 ? '(Đã chuẩn hóa 100%)' : '(Lưu ý: Nên cân bằng tổng trọng số về 100%)'}
-            </span>
-            <Sparkles className="w-4 h-4 text-stay-primary" />
-          </div>
-        }
+      {/* Criteria Table */}
+      <Table
+        dataSource={criteria}
+        columns={columns}
+        rowKey="id"
+        loading={isLoading}
+        scroll={{ x: 'max-content' }}
+        className="overflow-x-auto"
       />
 
-      {/* Criteria Table */}
-      <Card>
-        <div className="p-6">
-          <Table
-            dataSource={criteria}
-            columns={columns}
-            rowKey="id"
-            loading={isLoading}
-            pagination={false}
-            className="overflow-x-auto"
-          />
-        </div>
-      </Card>
+
+      {/* Detail Criterion Modal */}
+      <Modal
+        open={detailModalOpen}
+        onCancel={() => setDetailModalOpen(false)}
+        footer={null}
+        width={560}
+        title={
+          <div className="flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-stay-primary" />
+            <span className="text-base font-semibold text-stay-text">Chi tiết tiêu chí thuật toán</span>
+            <span className="ml-2 text-xs font-mono font-normal text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border">
+              #{viewingCriterion?.id}
+            </span>
+          </div>
+        }
+        centered
+        destroyOnClose
+      >
+        {viewingCriterion && (
+          <div className="py-3 space-y-4">
+            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex items-start justify-between">
+              <div>
+                <h3 className="text-base font-bold text-stay-text">{viewingCriterion.name}</h3>
+                <span className="text-xs font-mono text-stay-primary mt-1 inline-block">
+                  Mã: {viewingCriterion.code}
+                </span>
+              </div>
+              <div>
+                {viewingCriterion.status === 'ACTIVE' ? (
+                  <Tag status="available">Đang áp dụng</Tag>
+                ) : (
+                  <Tag status="rented">Tạm dừng</Tag>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+                <span className="text-xs text-stay-text-muted block mb-1">Nhóm tiêu chí</span>
+                <span className="text-sm font-semibold text-stay-text">
+                  {viewingCriterion.category === 'HABIT'
+                    ? 'Thói quen sinh hoạt'
+                    : viewingCriterion.category === 'TIME'
+                    ? 'Giờ giấc sinh học'
+                    : viewingCriterion.category === 'SHARED_LIVING'
+                    ? 'Ý thức chung'
+                    : 'Không gian riêng'}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+                <span className="text-xs text-stay-text-muted block mb-1">Trọng số thuật toán</span>
+                <span className="text-base font-bold text-stay-primary flex items-center gap-1">
+                  <Percent className="w-4 h-4" />
+                  {viewingCriterion.algorithmWeight}%
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border col-span-2">
+                <span className="text-xs text-stay-text-muted block mb-1.5">Các tùy chọn câu trả lời</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {viewingCriterion.options?.map((opt, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-1 rounded bg-stay-card-bg border border-stay-border text-xs text-stay-text font-medium"
+                    >
+                      {opt}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
 
       {/* Create / Edit Modal */}
       <Modal

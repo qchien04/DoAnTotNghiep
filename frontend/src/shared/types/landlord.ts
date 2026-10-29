@@ -3,6 +3,8 @@
  * Tuyệt đối không chứa các trường alias legacy hoặc các trường mã không tồn tại trong DB.
  */
 
+import { PagingParams } from '@/shared/types/api';
+
 // =========================================================================
 // 1. Tòa nhà / Khu trọ (UC 01 - 04)
 // =========================================================================
@@ -34,26 +36,17 @@ export interface CreateBuildingDto {
   longitude?: number;
 }
 
-export interface UpdateBuildingDto extends Partial<CreateBuildingDto> {}
+export interface UpdateBuildingDto extends Partial<CreateBuildingDto> { }
 
-export interface BuildingFilterParams {
+export interface BuildingFilterParams extends PagingParams {
   keyword?: string;
   floors?: number;
-  page?: number;
-  size?: number;
 }
 
 // =========================================================================
 // 2. Phòng trọ (UC 05 - 08)
 // =========================================================================
-export type RoomStatus =
-  | 'AVAILABLE'
-  | 'OCCUPIED'
-  | 'UNDER_MAINTENANCE'
-  | 'STOPPED'
-  | 'RENTED'
-  | 'MAINTENANCE'
-  | 'DISABLED';
+export type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'STOPPED';
 
 export interface Room {
   id: number | string;
@@ -106,15 +99,13 @@ export interface CreateRoomDto {
   longitude?: number;
 }
 
-export interface UpdateRoomDto extends Partial<CreateRoomDto> {}
+export interface UpdateRoomDto extends Partial<CreateRoomDto> { }
 
-export interface RoomFilterParams {
+export interface RoomFilterParams extends PagingParams {
   buildingId?: number | string;
   floor?: number;
   status?: RoomStatus | 'ALL';
   keyword?: string;
-  page?: number;
-  size?: number;
 }
 
 // =========================================================================
@@ -129,13 +120,19 @@ export type ServiceCategory =
   | 'ELEVATOR'
   | 'OTHER';
 
+export type BillingMethod =
+  | 'METER_INDEX'
+  | 'FIXED_PER_ROOM'
+  | 'FIXED_PER_PERSON'
+  | 'FIXED_PER_UNIT';
+
 export interface UtilityService {
   id: number | string;
   name: string;
   category: ServiceCategory | string;
   unit: string;
   unitPrice: number;
-  billingMethod: string;
+  billingMethod: BillingMethod;
   scope?: string;
   isActive: boolean;
   createdAt?: string;
@@ -146,12 +143,12 @@ export interface CreateServiceDto {
   category: string;
   unit: string;
   unitPrice: number;
-  billingMethod: string;
+  billingMethod: BillingMethod;
   scope?: string;
   isActive?: boolean;
 }
 
-export interface UpdateServiceDto extends Partial<CreateServiceDto> {}
+export interface UpdateServiceDto extends Partial<CreateServiceDto> { }
 
 // =========================================================================
 // 4. Khách thuê (UC 13 - 17)
@@ -194,15 +191,13 @@ export interface CreateTenantDto {
   isRepresentative?: boolean;
 }
 
-export interface UpdateTenantDto extends Partial<CreateTenantDto> {}
+export interface UpdateTenantDto extends Partial<CreateTenantDto> { }
 
-export interface TenantFilterParams {
+export interface TenantFilterParams extends PagingParams {
   keyword?: string;
   buildingId?: number | string;
   roomId?: number | string;
   linkStatus?: TenantLinkStatus | 'ALL';
-  page?: number;
-  size?: number;
 }
 
 // =========================================================================
@@ -254,7 +249,6 @@ export interface CreateContractDto {
   depositAmount: number;
   paymentCycleDay?: number;
   termsAndConditions?: string;
-  serviceIds?: (number | string)[];
   services?: {
     serviceId?: number | string;
     serviceName: string;
@@ -273,30 +267,36 @@ export interface UpdateContractDto {
 }
 
 export interface TerminateContractDto {
-  finalElectricIndex?: number;
-  finalWaterIndex?: number;
+  meterReadings?: {
+    contractServiceId: number;
+    finalIndex: number;
+  }[];
   damageCost?: number;
   damageNote?: string;
 }
 
 export interface TerminateContractResult {
   initialDeposit: number;
-  electricConsumed?: number;
-  electricAmount?: number;
-  waterConsumed?: number;
-  waterAmount?: number;
   totalUtilityCost?: number;
+  settlements?: {
+    contractServiceId: number;
+    serviceName: string;
+    unit: string;
+    startIndex: number;
+    endIndex: number;
+    consumed: number;
+    unitPrice: number;
+    amount: number;
+  }[];
   damageCost?: number;
   damageNote?: string;
   netRefundAmount?: number;
 }
 
-export interface ContractFilterParams {
+export interface ContractFilterParams extends PagingParams {
   buildingId?: number | string;
   status?: ContractStatus | 'ALL';
   keyword?: string;
-  page?: number;
-  size?: number;
 }
 
 // =========================================================================
@@ -308,9 +308,7 @@ export type BillStatus =
   | 'PARTIALLY_PAID'
   | 'PAID'
   | 'OVERDUE'
-  | 'CANCELLED'
-  | 'PENDING'
-  | 'PARTIAL';
+  | 'CANCELLED';
 
 export type InvoiceItemType = 'ROOM_RENT' | 'SERVICE' | 'SURCHARGE' | 'DISCOUNT';
 
@@ -387,12 +385,11 @@ export interface ConfirmPaymentDto {
   paymentNote?: string;
 }
 
-export interface BillFilterParams {
+export interface BillFilterParams extends PagingParams {
   billingPeriod?: string;
   buildingId?: number | string;
   status?: BillStatus | 'ALL';
-  page?: number;
-  size?: number;
+  keyword?: string;
 }
 
 // =========================================================================
@@ -403,8 +400,7 @@ export type ComplaintStatus =
   | 'PENDING'
   | 'PROCESSING'
   | 'RESOLVED'
-  | 'REJECTED'
-  | 'NEW';
+  | 'REJECTED';
 
 export interface Complaint {
   id: number | string;
@@ -432,12 +428,11 @@ export interface UpdateComplaintProgressDto {
   resolutionNote: string;
 }
 
-export interface ComplaintFilterParams {
+export interface ComplaintFilterParams extends PagingParams {
   status?: ComplaintStatus | 'ALL';
   buildingId?: number | string;
   type?: string | 'ALL';
-  page?: number;
-  size?: number;
+  keyword?: string;
 }
 
 // =========================================================================

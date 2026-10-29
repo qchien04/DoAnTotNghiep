@@ -1,9 +1,13 @@
 package com.doan.core.business.controller.tenant;
 
+import com.doan.core.business.dto.tenant.TenantContractHistoryResponse;
 import com.doan.core.business.dto.tenant.TenantInvoiceResponse;
 import com.doan.core.business.dto.tenant.TenantRoomResponse;
 import com.doan.core.business.dto.tenant.VietQRPaymentResponse;
+import com.doan.core.business.enums.ContractStatus;
+import com.doan.core.business.enums.InvoiceStatus;
 import com.doan.core.business.service.TenantRoomService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tenant")
@@ -35,11 +37,18 @@ public class TenantRoomController {
         return ResponseEntity.ok(ResponseData.success(response));
     }
 
-    @GetMapping({"/my-contracts", "/contracts"})
-    @Operation(summary = "Xem lịch sử hợp đồng thuê phòng của tôi", description = "Lấy danh sách các hợp đồng hiện tại và hợp đồng trước đó")
-    public ResponseEntity<ResponseData<List<com.doan.core.business.dto.tenant.TenantContractHistoryResponse>>> getMyContracts(
-            @AuthenticationPrincipal UserPrincipal principal) {
-        List<com.doan.core.business.dto.tenant.TenantContractHistoryResponse> list = tenantRoomService.getMyContracts(principal.getId());
+    @GetMapping({ "/my-contracts", "/contracts" })
+    @Operation(summary = "Xem lịch sử hợp đồng thuê phòng của tôi", description = "Lấy danh sách các hợp đồng hiện tại và hợp đồng trước đó kèm tìm kiếm và sắp xếp")
+    public ResponseEntity<ResponseData<PageResponse<TenantContractHistoryResponse>>> getMyContracts(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) ContractStatus status,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
+        PageResponse<TenantContractHistoryResponse> list = tenantRoomService
+                .getMyContracts(principal.getId(), keyword, status, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(list));
     }
 
@@ -62,15 +71,23 @@ public class TenantRoomController {
         return ResponseEntity.ok(ResponseData.success("Đã từ chối lời mời liên kết phòng!", null));
     }
 
-    @GetMapping({"/my-invoices", "/my-bills"})
-    @Operation(summary = "UC 17: Xem danh sách hóa đơn tiền phòng", description = "Lịch sử hóa đơn điện nước hàng tháng và trạng thái thanh toán")
-    public ResponseEntity<ResponseData<List<TenantInvoiceResponse>>> getMyInvoices(
-            @AuthenticationPrincipal UserPrincipal principal) {
-        List<TenantInvoiceResponse> list = tenantRoomService.getMyInvoices(principal.getId());
+    @GetMapping({ "/my-invoices", "/my-bills" })
+    @Operation(summary = "UC 17: Xem danh sách hóa đơn tiền phòng", description = "Lịch sử hóa đơn điện nước hàng tháng và trạng thái thanh toán kèm tìm kiếm và sắp xếp")
+    public ResponseEntity<ResponseData<PageResponse<TenantInvoiceResponse>>> getMyInvoices(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) String billingPeriod,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
+        PageResponse<TenantInvoiceResponse> list = tenantRoomService.getMyInvoices(principal.getId(), keyword, status,
+                billingPeriod, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(list));
     }
 
-    @GetMapping({"/my-invoices/{id}/qr-payment", "/my-bills/{id}/qr-payment"})
+    @GetMapping({ "/my-invoices/{id}/qr-payment", "/my-bills/{id}/qr-payment" })
     @Operation(summary = "UC 17: Lấy dữ liệu VietQR thanh toán", description = "Tạo mã QR thanh toán ngân hàng tự động kèm số tiền và cú pháp chuyển khoản")
     public ResponseEntity<ResponseData<VietQRPaymentResponse>> getVietQRInfo(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -79,12 +96,13 @@ public class TenantRoomController {
         return ResponseEntity.ok(ResponseData.success(response));
     }
 
-    @PostMapping({"/my-invoices/{id}/confirm-paid", "/my-bills/{id}/pay-completed"})
+    @PostMapping({ "/my-invoices/{id}/confirm-paid", "/my-bills/{id}/pay-completed" })
     @Operation(summary = "UC 17: Xác nhận đã chuyển khoản", description = "Gửi thông báo nhắc chủ nhà kiểm tra tài khoản và gạch nợ")
     public ResponseEntity<ResponseData<Void>> confirmTransferred(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long id) {
         tenantRoomService.confirmTransferred(principal.getId(), id);
-        return ResponseEntity.ok(ResponseData.success("Đã ghi nhận thông báo chuyển khoản, đang chờ chủ trọ duyệt!", null));
+        return ResponseEntity
+                .ok(ResponseData.success("Đã ghi nhận thông báo chuyển khoản, đang chờ chủ trọ duyệt!", null));
     }
 }

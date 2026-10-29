@@ -1,12 +1,15 @@
 import React from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
-import { Table, Button, Popconfirm } from '@/shared/components';
+import { Eye, Edit2, Trash2 } from 'lucide-react';
+import { Tooltip } from 'antd';
+import { Table, Popconfirm } from '@/shared/components';
 import { UtilityService } from '@/shared/types/landlord';
+import { getBillingMethodShortLabel } from '@/shared/utils';
 
 interface ServiceTableProps {
   services: UtilityService[];
   isLoading: boolean;
   isDeleting: boolean;
+  onView: (service: UtilityService) => void;
   onEdit: (service: UtilityService) => void;
   onDelete: (id: string | number) => void;
 }
@@ -15,10 +18,10 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
   services,
   isLoading,
   isDeleting,
+  onView,
   onEdit,
   onDelete,
 }) => {
-
   const renderCategoryLabel = (cat: string) => {
     switch (cat) {
       case 'ELECTRICITY':
@@ -40,32 +43,37 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
 
   const columns = [
     {
-      title: 'ID',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: UtilityService) => {
-        return <span className="font-mono text-xs text-stay-text-secondary">#{r.id}</span>;
-      },
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
+      ),
     },
     {
       title: 'Tên dịch vụ',
       dataIndex: 'name',
       key: 'name',
+      width: 170,
+      ellipsis: { showTitle: true },
       render: (val: string, r: UtilityService) => (
         <div>
-          <span className="font-medium text-stay-text text-sm block">{val}</span>
-          <span className="text-xs text-stay-text-muted">
+          <span className="font-medium text-stay-text text-[14px] block truncate">{val}</span>
+          <span className="text-[12px] text-stay-text-muted block truncate">
             {renderCategoryLabel(r.category as string)}
           </span>
         </div>
       ),
     },
     {
-      title: 'Đơn vị',
+      title: 'Đơn vị tính',
       dataIndex: 'unit',
       key: 'unit',
       width: 120,
-      render: (val: string) => <span className="text-sm text-stay-text">{val || '---'}</span>,
+      ellipsis: { showTitle: true },
+      render: (val: string) => <span className="text-[14px] text-stay-text">{val || '—'}</span>,
     },
     {
       title: 'Đơn giá',
@@ -73,94 +81,105 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
       width: 140,
       render: (_: any, r: UtilityService) => {
         const p = Number(r.unitPrice ?? 0);
-        return <span className="font-medium text-sm text-stay-text">{p.toLocaleString()} đ</span>;
+        return <span className="font-semibold text-[14px] text-stay-text">{p.toLocaleString()} đ</span>;
       },
     },
     {
       title: 'Hình thức tính',
       key: 'billingMethod',
-      width: 150,
+      width: 160,
+      ellipsis: { showTitle: true },
       render: (_: any, r: UtilityService) => {
-        const method = r.billingMethod;
-        let label = 'Cố định';
-        if (method === 'METER_INDEX') label = 'Theo công tơ';
-        else if (method === 'FIXED_PER_PERSON') label = 'Theo người';
-        else if (method === 'FIXED_PER_ROOM') label = 'Theo phòng';
-        return <span className="text-xs text-stay-text-secondary">{label}</span>;
+        return <span className="text-[14px] text-stay-text-secondary">{getBillingMethodShortLabel(r.billingMethod)}</span>;
       },
     },
     {
       title: 'Phạm vi',
       key: 'scope',
       width: 110,
+      ellipsis: { showTitle: true },
       render: (_: any, r: UtilityService) => (
-        <span className="text-xs text-stay-text-muted">{r.scope || 'Tất cả'}</span>
+        <span className="text-stay-text-muted">{r.scope || 'Tất cả'}</span>
       ),
     },
     {
       title: 'Trạng thái',
       key: 'isActive',
       width: 130,
+      ellipsis: { showTitle: true },
       render: (_: any, r: UtilityService) => {
         const active = Boolean(r.isActive);
         return active ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
             Đang áp dụng
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
             Tạm ngừng
           </span>
         );
       },
     },
     {
-      title: 'Tùy chọn',
+      title: 'Thao tác',
       key: 'actions',
-      width: 90,
+      width: 120,
+      fixed: 'right' as const,
       render: (_: any, r: UtilityService) => (
-        <div className="flex items-center gap-1">
-          <Button
-            size="small"
-            type="text"
-            icon={<Edit2 className="w-3.5 h-3.5 text-stay-text" />}
-            onClick={() => onEdit(r)}
-            title="Chỉnh sửa đơn giá"
-          />
-          <Popconfirm
-            title="Xóa dịch vụ tiện ích này?"
-            description="Lưu ý: Các phòng đang sử dụng dịch vụ này có thể bị ảnh hưởng khi tính tiền."
-            onConfirm={() => onDelete(r.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              size="small"
-              type="text"
-              danger
-              icon={<Trash2 className="w-3.5 h-3.5" />}
-              loading={isDeleting}
-              title="Xóa dịch vụ"
-            />
-          </Popconfirm>
+        <div className="flex items-center justify-start gap-1.5">
+          <Tooltip title="Xem chi tiết">
+            <button
+              type="button"
+              className="stay-action-btn stay-action-btn-view"
+              onClick={() => onView(r)}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </Tooltip>
+
+          <Tooltip title="Chỉnh sửa đơn giá">
+            <button
+              type="button"
+              className="stay-action-btn stay-action-btn-edit"
+              onClick={() => onEdit(r)}
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          </Tooltip>
+
+          <Tooltip title="Xóa dịch vụ">
+            <Popconfirm
+              title="Xóa dịch vụ tiện ích này?"
+              description="Lưu ý: Các phòng đang sử dụng dịch vụ này có thể bị ảnh hưởng khi tính tiền."
+              onConfirm={() => onDelete(r.id)}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true }}
+            >
+              <button
+                type="button"
+                className="stay-action-btn stay-action-btn-delete"
+                disabled={isDeleting}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </Popconfirm>
+          </Tooltip>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs overflow-hidden">
-      <Table
-        dataSource={services}
-        columns={columns}
-        rowKey="id"
-        loading={isLoading}
-        pagination={false}
-        className="overflow-x-auto"
-      />
-    </div>
+    <Table
+      dataSource={services}
+      columns={columns}
+      rowKey="id"
+      loading={isLoading}
+      scroll={{ x: 'max-content' }}
+      className="overflow-x-auto"
+    />
   );
 };
+
+

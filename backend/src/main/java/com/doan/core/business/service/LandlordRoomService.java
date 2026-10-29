@@ -2,12 +2,13 @@ package com.doan.core.business.service;
 
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
-
-import java.util.List;
+import com.doan.core.business.enums.RoomStatus;
+import com.doan.core.common.data.PageResponse;
 
 public interface LandlordRoomService {
 
-    List<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, String status);
+    PageResponse<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, RoomStatus status, String keyword,
+            int page, int size, String sortBy, String sortDirection);
 
     RoomResponse getRoomById(Long landlordId, Long roomId);
 

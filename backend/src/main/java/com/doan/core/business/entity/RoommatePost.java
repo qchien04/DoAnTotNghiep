@@ -1,5 +1,8 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.GenderPreference;
+import com.doan.core.business.enums.RoommatePostStatus;
+import com.doan.core.business.enums.RoommatePostType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,8 +31,9 @@ public class RoommatePost extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "post_type", nullable = false, length = 30)
-    private String postType; // HAS_ROOM, SEARCHING_ROOM
+    private RoommatePostType postType; // HAS_ROOM, SEARCHING_ROOM
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
@@ -69,14 +73,10 @@ public class RoommatePost extends BaseEntity {
     @Column(name = "radius_km")
     private Double radiusKm;
 
-    // Tiêu chí lối sống (UC11, UC12, UC13)
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender_preference", length = 20)
     @Builder.Default
-    private String genderPreference = "ANY"; // MALE, FEMALE, ANY
-
-    @Column(name = "sleep_time", length = 50)
-    @Builder.Default
-    private String sleepTime = "BEFORE_24H"; // BEFORE_23H, BEFORE_24H, AFTER_24H
+    private GenderPreference genderPreference = GenderPreference.ANY;
 
     @Column(name = "is_no_smoking")
     @Builder.Default
@@ -86,22 +86,11 @@ public class RoommatePost extends BaseEntity {
     @Builder.Default
     private Boolean isPetFriendly = false;
 
-    @Column(name = "cooking_frequency", length = 50)
-    @Builder.Default
-    private String cookingFrequency = "DAILY"; // DAILY, SOMETIMES, RARELY
-
-    @Column(name = "cleanliness_level", length = 50)
-    @Builder.Default
-    private String cleanlinessLevel = "VERY_CLEAN";
-
-    @Column(name = "guest_allowed", length = 50)
-    @Builder.Default
-    private String guestAllowed = "WEEKENDS_ONLY";
-
     @Column(name = "lifestyle_vector", length = 255)
     private String lifestyleVector;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "OPEN"; // OPEN, COMPLETED, CLOSED
+    private RoommatePostStatus status = RoommatePostStatus.OPEN; // OPEN, COMPLETED, CLOSED
 }

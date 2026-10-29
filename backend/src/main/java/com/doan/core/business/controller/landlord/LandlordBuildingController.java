@@ -3,6 +3,7 @@ package com.doan.core.business.controller.landlord;
 import com.doan.core.business.dto.landlord.building.BuildingRequest;
 import com.doan.core.business.dto.landlord.building.BuildingResponse;
 import com.doan.core.business.service.LandlordBuildingService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/landlord/buildings")
@@ -29,12 +28,17 @@ public class LandlordBuildingController {
 
     @GetMapping
     @Operation(summary = "UC 01: Xem danh sách tòa nhà / khu trọ", description = "Lấy danh sách các tòa nhà kèm số lượng phòng trống/đang ở và tìm kiếm")
-    public ResponseEntity<ResponseData<List<BuildingResponse>>> getBuildings(
+    public ResponseEntity<ResponseData<PageResponse<BuildingResponse>>> getBuildings(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
         String query = (keyword != null && !keyword.isBlank()) ? keyword : search;
-        List<BuildingResponse> buildings = buildingService.getBuildings(principal.getId(), query);
+        PageResponse<BuildingResponse> buildings = buildingService.getBuildings(principal.getId(), query, page, size,
+                sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(buildings));
     }
 

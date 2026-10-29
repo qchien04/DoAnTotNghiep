@@ -2,12 +2,13 @@ package com.doan.core.business.service;
 
 import com.doan.core.business.dto.landlord.complaint.ComplaintHandleRequest;
 import com.doan.core.business.dto.landlord.complaint.ComplaintResponse;
-
-import java.util.List;
+import com.doan.core.business.enums.ComplaintStatus;
+import com.doan.core.common.data.PageResponse;
 
 public interface LandlordComplaintService {
 
-    List<ComplaintResponse> getComplaints(Long landlordId, Long buildingId, String status);
+    PageResponse<ComplaintResponse> getComplaints(Long landlordId, Long buildingId, ComplaintStatus status,
+            String keyword, int page, int size, String sortBy, String sortDirection);
 
     ComplaintResponse getComplaintById(Long landlordId, Long complaintId);
 

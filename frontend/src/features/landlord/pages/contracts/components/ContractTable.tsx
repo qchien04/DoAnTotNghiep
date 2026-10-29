@@ -1,67 +1,76 @@
 import React from 'react';
-import { Table, Button } from '@/shared/components';
+import { Eye, FileText } from 'lucide-react';
+import { Table } from '@/shared/components';
+import { Tooltip } from 'antd';
 import { RentalContract, ContractStatus } from '@/shared/types/landlord';
+import { PageResponse } from '@/shared/types/api';
 
 interface ContractTableProps {
-  contracts: RentalContract[];
+  pageInfo?: PageResponse<RentalContract>;
   isLoading: boolean;
+  onPageChange?: (page: number, size: number) => void;
+  onOpenDetail: (contract: RentalContract) => void;
   onOpenTerminate: (contract: RentalContract) => void;
 }
 
 export const ContractTable: React.FC<ContractTableProps> = ({
-  contracts,
+  pageInfo,
   isLoading,
+  onPageChange,
+  onOpenDetail,
   onOpenTerminate,
 }) => {
   const renderStatus = (st: ContractStatus) => {
     switch (st) {
       case 'ACTIVE':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
             Đang hiệu lực
           </span>
         );
       case 'EXPIRING_SOON':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
             Sắp hết hạn
           </span>
         );
       case 'TERMINATED':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
             Đã thanh lý
           </span>
         );
       default:
-        return <span className="text-xs text-stay-text-muted">{st}</span>;
+        return <span className="text-stay-text-muted">{st}</span>;
     }
   };
 
   const columns = [
     {
-      title: 'ID',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: RentalContract) => (
-        <span className="font-mono text-xs font-semibold text-stay-text">
-          #{r.id}
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
         </span>
       ),
     },
     {
       title: 'Phòng',
       key: 'roomName',
+      width: 140,
+      ellipsis: { showTitle: true },
       render: (_: any, r: RentalContract) => (
         <div>
-          <span className="font-medium text-xs text-stay-text block">
-            {r.roomName || '---'}
+          <span
+            onClick={() => onOpenDetail(r)}
+            className="font-medium text-[14px] text-stay-text block cursor-pointer hover:text-stay-primary hover:underline"
+          >
+            {r.roomName || '—'}
           </span>
           {r.buildingName && (
-            <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
+            <span className="text-[12px] text-stay-text-muted block">{r.buildingName}</span>
           )}
         </div>
       ),
@@ -69,13 +78,15 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     {
       title: 'Khách đại diện',
       key: 'representativeTenantName',
+      width: 180,
+      ellipsis: { showTitle: true },
       render: (_: any, r: RentalContract) => (
         <div>
-          <p className="font-medium text-sm text-stay-text">
-            {r.representativeTenantName || '---'}
+          <p className="font-medium text-[14px] text-stay-text">
+            {r.representativeTenantName || '—'}
           </p>
           {r.representativeTenantPhone && (
-            <p className="text-xs text-stay-text-secondary">
+            <p className="text-[12px] text-stay-text-secondary">
               {r.representativeTenantPhone}
             </p>
           )}
@@ -85,8 +96,10 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     {
       title: 'Thời hạn thuê',
       key: 'period',
+      width: 170,
+      ellipsis: { showTitle: true },
       render: (_: any, r: RentalContract) => (
-        <div className="font-mono text-xs text-stay-text">
+        <div className="text-[14px] text-stay-text">
           {r.startDate} → {r.endDate}
         </div>
       ),
@@ -94,10 +107,12 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     {
       title: 'Tiền thuê',
       key: 'rentPrice',
+      width: 140,
+      ellipsis: { showTitle: true },
       render: (_: any, r: RentalContract) => {
         const val = r.rentPrice ?? 0;
         return (
-          <span className="font-medium text-stay-text">
+          <span className="font-medium text-[14px] text-stay-text">
             {Number(val).toLocaleString()} đ/tháng
           </span>
         );
@@ -107,36 +122,47 @@ export const ContractTable: React.FC<ContractTableProps> = ({
       title: 'Tiền cọc',
       dataIndex: 'depositAmount',
       key: 'depositAmount',
+      width: 120,
+      ellipsis: { showTitle: true },
       render: (val: number) => (
-        <span className="text-xs text-stay-text">{(val ?? 0).toLocaleString()} đ</span>
+        <span className="text-[14px] text-stay-text">{(val ?? 0).toLocaleString()} đ</span>
       ),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
+      width: 130,
+      ellipsis: { showTitle: true },
       render: (val: ContractStatus) => renderStatus(val),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 100,
-      align: 'right' as const,
+      width: 90,
+      fixed: 'right' as const,
       render: (_: any, r: RentalContract) => (
-        <div className="flex items-center justify-end gap-1">
-          {r.status === 'ACTIVE' && (
-            <Button
-              size="small"
-              type="text"
-              danger
-              onClick={() => onOpenTerminate(r)}
-              className="text-xs"
+        <div className="flex items-center justify-start gap-1.5">
+          <Tooltip title="Xem chi tiết">
+            <button
+              type="button"
+              className="stay-action-btn stay-action-btn-view"
+              onClick={() => onOpenDetail(r)}
             >
-              Thanh lý
-            </Button>
-          )}
-          {r.status === 'TERMINATED' && (
-            <span className="text-xs text-stay-text-muted">Đã tất toán</span>
+              <Eye className="w-4 h-4" />
+            </button>
+          </Tooltip>
+
+          {r.status === 'ACTIVE' && (
+            <Tooltip title="Thanh lý hợp đồng">
+              <button
+                type="button"
+                className="stay-action-btn stay-action-btn-delete"
+                onClick={() => onOpenTerminate(r)}
+              >
+                <FileText className="w-4 h-4" />
+              </button>
+            </Tooltip>
           )}
         </div>
       ),
@@ -144,15 +170,22 @@ export const ContractTable: React.FC<ContractTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
-      <Table
-        dataSource={contracts}
-        columns={columns}
-        rowKey="id"
-        loading={isLoading}
-        pagination={{ pageSize: 10 }}
-        className="overflow-x-auto"
-      />
-    </div>
+    <Table
+      dataSource={pageInfo?.items ?? []}
+      columns={columns}
+      rowKey="id"
+      loading={isLoading}
+      pagination={{
+        current: (pageInfo?.page ?? 0) + 1,
+        pageSize: pageInfo?.size ?? 10,
+        total: pageInfo?.totalElements ?? 0,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50'],
+        showTotal: (total) => `Tổng ${total} hợp đồng`,
+        onChange: (page, pageSize) => onPageChange?.(page - 1, pageSize),
+      }}
+      scroll={{ x: 'max-content' }}
+      className="overflow-x-auto"
+    />
   );
 };

@@ -1,7 +1,9 @@
 package com.doan.core.business.controller.landlord;
 
 import com.doan.core.business.dto.landlord.contract.*;
+import com.doan.core.business.enums.ContractStatus;
 import com.doan.core.business.service.LandlordContractService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,8 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/landlord/contracts")
 @RequiredArgsConstructor
@@ -27,12 +27,18 @@ public class LandlordContractController {
     private final LandlordContractService contractService;
 
     @GetMapping
-    @Operation(summary = "UC 18: Xem danh sách hợp đồng thuê phòng", description = "Lấy danh sách hợp đồng, lọc theo tòa nhà hoặc trạng thái (ACTIVE, EXPIRING_SOON, TERMINATED)")
-    public ResponseEntity<ResponseData<List<ContractResponse>>> getContracts(
+    @Operation(summary = "UC 18: Xem danh sách hợp đồng thuê phòng", description = "Lấy danh sách hợp đồng, lọc theo từ khóa, tòa nhà, trạng thái (ACTIVE, EXPIRING_SOON, TERMINATED) và sắp xếp")
+    public ResponseEntity<ResponseData<PageResponse<ContractResponse>>> getContracts(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long buildingId,
-            @RequestParam(required = false) String status) {
-        List<ContractResponse> contracts = contractService.getContracts(principal.getId(), buildingId, status);
+            @RequestParam(required = false) ContractStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
+        PageResponse<ContractResponse> contracts = contractService.getContracts(principal.getId(), buildingId, status,
+                keyword, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(contracts));
     }
 
@@ -71,6 +77,7 @@ public class LandlordContractController {
             @PathVariable Long id,
             @Valid @RequestBody ContractTerminateRequest request) {
         CheckoutCalculationResponse calculation = contractService.terminateContract(principal.getId(), id, request);
-        return ResponseEntity.ok(ResponseData.success("Thanh lý hợp đồng và nghiệm thu trả phòng thành công!", calculation));
+        return ResponseEntity
+                .ok(ResponseData.success("Thanh lý hợp đồng và nghiệm thu trả phòng thành công!", calculation));
     }
 }

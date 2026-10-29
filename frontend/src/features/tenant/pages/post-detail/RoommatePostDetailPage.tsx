@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useRoommatePostDetail, useApplications } from '@/shared/hooks';
+import { useRoommatePostDetail, useApplyToGroup } from '@/shared/hooks';
 import { Skeleton } from '@/shared/components';
 import {
   ArrowLeft,
@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   ShieldAlert,
   Home,
-  Check,
 } from 'lucide-react';
 import { message } from 'antd';
 import { PostHero } from './components/PostHero';
@@ -25,7 +24,7 @@ export const RoommatePostDetailPage: React.FC = () => {
   const { post, isLoading } = useRoommatePostDetail(id);
 
   // Hook nộp đơn tham gia nhóm
-  const { applyToGroup, isApplying } = useApplications(id);
+  const { applyToGroup, isApplying } = useApplyToGroup();
 
   // Trạng thái modal
   const [applyModalOpen, setApplyModalOpen] = useState(false);
@@ -135,7 +134,6 @@ export const RoommatePostDetailPage: React.FC = () => {
                       key={idx}
                       className="p-2.5 rounded-lg bg-stay-bg-app border border-stay-border text-xs text-stay-text flex items-center gap-2"
                     >
-                      <Check className="w-3.5 h-3.5 text-stay-primary shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}

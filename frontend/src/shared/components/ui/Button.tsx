@@ -47,35 +47,52 @@ export const Button: React.FC<ButtonProps> & {
     large: 'text-base px-6 py-2.5 rounded-xl gap-2.5 font-semibold h-auto',
   };
 
-  const resolvedVariant = (
-    type && ['primary', 'bright-blue', 'secondary', 'outline', 'ghost', 'danger'].includes(type as string)
-      ? type
-      : variant
-  ) as ButtonVariant;
+  const isTextType = type === 'text' || type === 'link';
+
+  const resolvedVariant = isTextType
+    ? 'ghost'
+    : (
+        type && ['primary', 'bright-blue', 'secondary', 'outline', 'ghost', 'danger'].includes(type as string)
+          ? (type as ButtonVariant)
+          : variant
+      );
+
+  const antType = isTextType
+    ? 'text'
+    : (
+        resolvedVariant === 'primary' || resolvedVariant === 'bright-blue' || resolvedVariant === 'secondary' || resolvedVariant === 'danger'
+          ? 'primary'
+          : resolvedVariant === 'ghost'
+          ? 'text'
+          : (type as AntButtonProps['type']) || 'default'
+      );
 
   const variantClasses: Record<ButtonVariant, string> = {
     primary:
-      'bg-stay-primary hover:!bg-stay-primary-hover text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      '!bg-stay-primary hover:!bg-stay-primary-hover !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
     'bright-blue':
-      'bg-blue-500 hover:!bg-stay-primary text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      '!bg-blue-600 hover:!bg-blue-700 !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
     secondary:
-      'bg-stay-secondary hover:!bg-stay-secondary-hover text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      '!bg-stay-secondary hover:!bg-stay-secondary-hover !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
     danger:
-      'bg-red-600 hover:!bg-red-700 text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      '!bg-red-600 hover:!bg-red-700 !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
     outline:
       'bg-stay-card-bg hover:!bg-stay-bg-app text-stay-text border border-stay-border shadow-2xs active:scale-[0.99] transition-all',
     ghost:
-      'bg-transparent hover:!bg-stay-bg-app text-stay-text border-none shadow-none active:scale-[0.99] transition-all',
+      'bg-transparent text-stay-text border-none shadow-none active:scale-[0.99] transition-all',
   };
+
+  const finalVariantClass = isTextType ? '' : variantClasses[resolvedVariant];
 
   return (
     <AntButton
+      type={antType}
       loading={isButtonLoading}
       block={fullWidth}
       icon={leadingIcon}
       className={`inline-flex items-center justify-center cursor-pointer transition-all ${
         sizeMap[size] || sizeMap.md
-      } ${variantClasses[resolvedVariant]} ${className}`}
+      } ${finalVariantClass} ${className}`}
       {...props}
     >
       {children}

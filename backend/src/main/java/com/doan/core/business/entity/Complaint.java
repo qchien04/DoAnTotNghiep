@@ -1,5 +1,8 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.ComplaintIncidentType;
+import com.doan.core.business.enums.ComplaintSeverity;
+import com.doan.core.business.enums.ComplaintStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,19 +35,23 @@ public class Complaint extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "incident_type", nullable = false, length = 50)
-    private String incidentType; // ELECTRICITY, WATER, AIR_CONDITIONER, SECURITY, OTHER
+    @Builder.Default
+    private ComplaintIncidentType incidentType = ComplaintIncidentType.OTHER;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "severity", nullable = false, length = 20)
     @Builder.Default
-    private String severity = "MEDIUM"; // LOW, MEDIUM, HIGH, URGENT
+    private ComplaintSeverity severity = ComplaintSeverity.MEDIUM;
 
     @Column(name = "images", columnDefinition = "TEXT")
     private String images;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "PENDING"; // PENDING, PROCESSING, RESOLVED, REJECTED
+    private ComplaintStatus status = ComplaintStatus.PENDING; // PENDING, PROCESSING, RESOLVED, REJECTED
 
     @Column(name = "resolution_note", columnDefinition = "TEXT")
     private String resolutionNote;

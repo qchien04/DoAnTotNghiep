@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.doan.core.business.enums.BillingMethod;
+import com.doan.core.business.enums.InvoiceItemType;
+
 @Data
 @Schema(description = "Yêu cầu lập hóa đơn tiền phòng & ghi nhận các khoản mục chi phí")
 public class MeterReadingInvoiceRequest {
@@ -46,9 +49,9 @@ public class MeterReadingInvoiceRequest {
     @AllArgsConstructor
     public static class InvoiceItemRequest {
         private Long contractServiceId;
-        private String itemType; // ROOM_RENT, SERVICE, SURCHARGE, DISCOUNT
+        private InvoiceItemType itemType; // ROOM_RENT, SERVICE, SURCHARGE, DISCOUNT
         private String itemName;
-        private String billingMethod;
+        private BillingMethod billingMethod;
         private Integer previousIndex;
         private Integer currentIndex;
         private BigDecimal quantity;

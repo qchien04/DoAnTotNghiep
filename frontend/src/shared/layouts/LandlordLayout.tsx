@@ -9,8 +9,8 @@ import {
   FileSignature,
   DollarSign,
   AlertTriangle,
-  Home,
   LogOut,
+  User,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
@@ -62,6 +62,11 @@ export const LandlordLayout: React.FC = () => {
       icon: <AlertTriangle className="w-4 h-4 shrink-0" />,
       label: <Link to="/landlord/complaints">Khiếu nại & Báo hỏng</Link>,
     },
+    {
+      key: '/landlord/profile',
+      icon: <User className="w-4 h-4 shrink-0" />,
+      label: <Link to="/landlord/profile">Hồ sơ cá nhân</Link>,
+    },
   ];
 
   const currentKey = landlordMenuItems.find(
@@ -84,17 +89,25 @@ export const LandlordLayout: React.FC = () => {
     },
     { type: 'divider' as const },
     {
-      key: 'home',
-      icon: <Home className="w-4 h-4" />,
-      label: <Link to="/">Về trang chủ sàn</Link>,
-    },
-    {
       key: 'logout',
       icon: <LogOut className="w-4 h-4 text-red-500" />,
       label: <span className="text-red-500 font-medium">Đăng xuất</span>,
       onClick: () => logout(),
     },
   ];
+
+  const getPageTitle = (path: string) => {
+    if (path.startsWith('/landlord/buildings')) return 'Quản lý Tòa nhà';
+    if (path.startsWith('/landlord/rooms')) return 'Quản lý Phòng trọ';
+    if (path.startsWith('/landlord/services')) return 'Cấu hình Dịch vụ';
+    if (path.startsWith('/landlord/tenants')) return 'Quản lý Khách thuê';
+    if (path.startsWith('/landlord/contracts')) return 'Quản lý Hợp đồng';
+    if (path.startsWith('/landlord/bills')) return 'Hóa đơn & Thu tiền';
+    if (path.startsWith('/landlord/complaints')) return 'Khiếu nại & Báo hỏng';
+    if (path.startsWith('/landlord/profile')) return 'Hồ sơ cá nhân';
+    return 'Tổng quan';
+  };
+  const pageTitle = getPageTitle(location.pathname);
 
   return (
     <div className="h-screen flex overflow-hidden bg-stay-bg-app text-stay-text">
@@ -112,9 +125,6 @@ export const LandlordLayout: React.FC = () => {
           !collapsed ? (
             <Link to="/landlord" className="flex items-center gap-2">
               <StayConnectLogo size="sm" />
-              <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                PORTAL
-              </span>
             </Link>
           ) : (
             <div className="w-full flex justify-center">
@@ -122,24 +132,15 @@ export const LandlordLayout: React.FC = () => {
             </div>
           )
         }
-        footer={
-          <Link
-            to="/"
-            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-stay-text-secondary hover:text-stay-primary hover:bg-stay-bg-app rounded-lg transition-colors"
-          >
-            <Home className="w-4 h-4 shrink-0" />
-            {!collapsed && <span>Quay lại trang người thuê</span>}
-          </Link>
-        }
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Topbar */}
-        <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-6 flex items-center justify-between">
+        <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold text-stay-text">
-              Quản trị chủ trọ
+            <h1 className="text-base font-semibold text-stay-text tracking-tight">
+              {pageTitle}
             </h1>
           </div>
 
@@ -169,9 +170,10 @@ export const LandlordLayout: React.FC = () => {
         </header>
 
         {/* Page Outlet */}
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-5 py-4 w-full flex flex-col min-h-0">
           <Outlet />
         </main>
+
       </div>
     </div>
   );

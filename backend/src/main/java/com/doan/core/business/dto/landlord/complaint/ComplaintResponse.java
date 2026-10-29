@@ -1,6 +1,10 @@
 package com.doan.core.business.dto.landlord.complaint;
 
 import com.doan.core.business.entity.Complaint;
+import com.doan.core.business.enums.ComplaintIncidentType;
+import com.doan.core.business.enums.ComplaintSeverity;
+import com.doan.core.business.enums.ComplaintStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,10 +30,10 @@ public class ComplaintResponse {
     private String tenantPhone;
     private String title;
     private String content;
-    private String incidentType;
-    private String severity;
+    private ComplaintIncidentType incidentType;
+    private ComplaintSeverity severity;
     private String images;
-    private String status;
+    private ComplaintStatus status;
     private String resolutionNote;
     private Instant resolvedAt;
     private Integer rating;
@@ -37,11 +41,13 @@ public class ComplaintResponse {
     private LocalDateTime createdAt;
 
     public static ComplaintResponse fromEntity(Complaint complaint) {
-        if (complaint == null) return null;
+        if (complaint == null)
+            return null;
 
         String rName = complaint.getRoom() != null ? complaint.getRoom().getName() : null;
         String bName = (complaint.getRoom() != null && complaint.getRoom().getBuilding() != null)
-                ? complaint.getRoom().getBuilding().getName() : null;
+                ? complaint.getRoom().getBuilding().getName()
+                : null;
 
         String tName = complaint.getTenant() != null ? complaint.getTenant().getFullName() : null;
         String tPhone = complaint.getTenant() != null ? complaint.getTenant().getPhone() : null;

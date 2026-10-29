@@ -1,6 +1,7 @@
 import React from 'react';
 import { Table, Button } from '@/shared/components';
 import { RoommateApplication } from '@/shared/types/tenant';
+import { getRoommateApplicationStatusLabel } from '@/shared/utils';
 
 interface ApplicantTableProps {
   applications: RoommateApplication[];
@@ -13,11 +14,14 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
 }) => {
   const applicantColumns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: RoommateApplication) => <span className="font-semibold text-stay-text">#{r.id}</span>,
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
+      ),
     },
     {
       title: 'Họ và tên ứng viên',
@@ -25,9 +29,9 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       key: 'applicantName',
       render: (name: string, r: RoommateApplication) => (
         <div>
-          <span className="font-bold text-stay-text">{name}</span>
+          <span className="font-semibold text-stay-text text-[14px] block">{name}</span>
           {r.introMessage && (
-            <p className="text-xs text-stay-text-secondary line-clamp-1 italic">
+            <p className="text-[12px] text-stay-text-secondary line-clamp-1 italic">
               "{r.introMessage}"
             </p>
           )}
@@ -39,7 +43,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       key: 'origin',
       width: 170,
       render: (_: any, r: RoommateApplication) => (
-        <span className="text-xs text-stay-text">
+        <span className="text-[14px] text-stay-text">
           {r.birthYear || 2004} - {r.hometown || 'Hải Dương'}
         </span>
       ),
@@ -49,7 +53,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       dataIndex: 'occupationOrSchool',
       key: 'occupationOrSchool',
       width: 200,
-      render: (val: string) => <span className="text-xs text-stay-text">{val || 'Sinh viên'}</span>,
+      render: (val: string) => <span className="text-[14px] text-stay-text">{val || 'Sinh viên'}</span>,
     },
     {
       title: 'Điểm tương thích',
@@ -82,6 +86,33 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       ),
     },
     {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      render: (st: string) => {
+        if (st === 'APPROVED') {
+          return (
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              {getRoommateApplicationStatusLabel(st)}
+            </span>
+          );
+        }
+        if (st === 'REJECTED') {
+          return (
+            <span className="text-xs font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+              {getRoommateApplicationStatusLabel(st)}
+            </span>
+          );
+        }
+        return (
+          <span className="text-xs font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+            {getRoommateApplicationStatusLabel(st)}
+          </span>
+        );
+      },
+    },
+    {
       title: 'Thao tác',
       key: 'action',
       width: 160,
@@ -91,7 +122,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
           size="sm"
           onClick={() => onOpenReview(r)}
         >
-          Xem so sánh & Duyệt
+          {r.status === 'APPROVED' ? 'Xem chi tiết' : 'Xem so sánh & Duyệt'}
         </Button>
       ),
     },

@@ -1,6 +1,7 @@
 package com.doan.core.business.controller;
 
 import com.doan.core.business.dto.response.HomeStatsResponse;
+import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.service.UserService;
 import com.doan.core.common.data.ResponseData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,7 +57,7 @@ public class HomeController {
     @GetMapping("/rooms")
     @Operation(summary = "Lấy danh sách phòng trọ công khai cho trang chủ", description = "Chỉ trả về các phòng có isPublic = true và status = AVAILABLE")
     public ResponseEntity<ResponseData<java.util.List<com.doan.core.business.dto.landlord.room.RoomResponse>>> getPublicRooms() {
-        java.util.List<com.doan.core.business.dto.landlord.room.RoomResponse> list = roomRepository.findPublicRooms("AVAILABLE")
+        java.util.List<com.doan.core.business.dto.landlord.room.RoomResponse> list = roomRepository.findPublicRooms(RoomStatus.AVAILABLE)
                 .stream()
                 .map(com.doan.core.business.dto.landlord.room.RoomResponse::fromEntity)
                 .collect(java.util.stream.Collectors.toList());

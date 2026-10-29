@@ -6,6 +6,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.doan.core.business.enums.GenderPreference;
+import com.doan.core.business.enums.RoommatePostStatus;
+import com.doan.core.business.enums.RoommatePostType;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,7 +19,7 @@ public class RoommatePostResponse {
     private Long id;
     private String title;
     private String description;
-    private String postType;
+    private RoommatePostType postType;
 
     private Long authorId;
     private String authorName;
@@ -36,19 +40,15 @@ public class RoommatePostResponse {
     private Double longitude;
     private Double radiusKm;
 
-    private String genderPreference;
-    private String sleepTime;
+    private GenderPreference genderPreference;
     private Boolean isNoSmoking;
     private Boolean isPetFriendly;
-    private String cookingFrequency;
-    private String cleanlinessLevel;
-    private String guestAllowed;
 
     private String lifestyleVector;
     private java.util.List<UserLifestyleAnswerDto> lifestyleAnswers;
 
     private Integer matchPercentage;
-    private String status;
+    private RoommatePostStatus status;
     private List<String> roomImages;
     private LocalDateTime createdAt;
 }

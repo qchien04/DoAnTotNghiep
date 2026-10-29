@@ -29,6 +29,10 @@ yarn-error.log*
 pnpm-debug.log*
 
 Doc/pre_build/
+AI_Service/
+AI_Service/*
+AI-Room-Image/
+AI-Room-Image/*
 
 # ==========================================
 # Python

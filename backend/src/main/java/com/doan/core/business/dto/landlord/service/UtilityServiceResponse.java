@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.landlord.service;
 
+import com.doan.core.business.enums.BillingMethod;
 import com.doan.core.business.entity.UtilityService;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -21,13 +22,14 @@ public class UtilityServiceResponse {
     private String category;
     private String unit;
     private Long unitPrice;
-    private String billingMethod;
+    private BillingMethod billingMethod;
     private String scope;
     private Boolean isActive;
     private LocalDateTime createdAt;
 
     public static UtilityServiceResponse fromEntity(UtilityService service) {
-        if (service == null) return null;
+        if (service == null)
+            return null;
         return UtilityServiceResponse.builder()
                 .id(service.getId())
                 .name(service.getName())

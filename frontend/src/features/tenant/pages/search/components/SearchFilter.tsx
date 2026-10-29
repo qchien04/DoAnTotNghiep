@@ -62,7 +62,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         <button
           type="button"
           onClick={() => onSearchModeChange('ROOMMATE')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${
             searchMode === 'ROOMMATE'
               ? 'bg-stay-primary text-white'
               : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
@@ -73,7 +73,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         <button
           type="button"
           onClick={() => onSearchModeChange('WHOLE_ROOM')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${
             searchMode === 'WHOLE_ROOM'
               ? 'bg-stay-primary text-white'
               : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
@@ -86,7 +86,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       {/* Row 1: Keyword, District, Post Type, Price Range */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div>
-          <label className="text-xs font-semibold text-stay-text block mb-1.5">
+          <label className="text-[13.5px] font-semibold text-stay-text block mb-1.5">
             Khu vực / Tuyến đường / Trường ĐH
           </label>
           <Input
@@ -95,6 +95,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             value={keyword}
             onChange={(e) => onKeywordChange(e.target.value)}
             allowClear
+            className="h-[40px] rounded-[8px]"
           />
         </div>
 
@@ -255,23 +256,23 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
 
       {/* Action Footer */}
       <div className="flex items-center justify-between pt-2">
-        <span className="text-xs text-stay-text-secondary">
-          Tìm thấy <strong>{totalResults}</strong> bài đăng phù hợp
+        <span className="text-[14px] text-stay-text-secondary">
+          Tìm thấy <strong className="text-stay-text">{totalResults}</strong> bài đăng phù hợp
         </span>
 
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            size="sm"
-            icon={<RotateCcw className="w-3.5 h-3.5" />}
+            className="h-[40px] rounded-[8px] border-[#D7D7DB] dark:border-stay-border text-stay-text hover:text-stay-primary font-medium"
+            icon={<RotateCcw className="w-4 h-4 text-stay-text-secondary" />}
             onClick={onReset}
           >
             Đặt lại bộ lọc
           </Button>
           <Button
             variant="primary"
-            size="sm"
-            icon={<Check className="w-3.5 h-3.5" />}
+            className="h-[40px] rounded-[8px] font-medium"
+            icon={<Check className="w-4 h-4" />}
             onClick={onApply}
           >
             Áp dụng bộ lọc

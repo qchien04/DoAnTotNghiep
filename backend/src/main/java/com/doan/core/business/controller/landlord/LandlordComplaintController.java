@@ -2,7 +2,9 @@ package com.doan.core.business.controller.landlord;
 
 import com.doan.core.business.dto.landlord.complaint.ComplaintHandleRequest;
 import com.doan.core.business.dto.landlord.complaint.ComplaintResponse;
+import com.doan.core.business.enums.ComplaintStatus;
 import com.doan.core.business.service.LandlordComplaintService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,8 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/landlord/complaints")
 @RequiredArgsConstructor
@@ -28,12 +28,18 @@ public class LandlordComplaintController {
     private final LandlordComplaintService complaintService;
 
     @GetMapping
-    @Operation(summary = "UC 27: Xem danh sách khiếu nại của khách thuê", description = "Lấy danh sách các sự cố báo hỏng thiết bị, điện nước, an ninh kèm hình ảnh")
-    public ResponseEntity<ResponseData<List<ComplaintResponse>>> getComplaints(
+    @Operation(summary = "UC 27: Xem danh sách khiếu nại của khách thuê", description = "Lấy danh sách các sự cố báo hỏng thiết bị, điện nước, an ninh kèm hình ảnh, tìm kiếm và sắp xếp")
+    public ResponseEntity<ResponseData<PageResponse<ComplaintResponse>>> getComplaints(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long buildingId,
-            @RequestParam(required = false) String status) {
-        List<ComplaintResponse> complaints = complaintService.getComplaints(principal.getId(), buildingId, status);
+            @RequestParam(required = false) ComplaintStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
+        PageResponse<ComplaintResponse> complaints = complaintService.getComplaints(principal.getId(), buildingId,
+                status, keyword, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(complaints));
     }
 
@@ -46,7 +52,7 @@ public class LandlordComplaintController {
         return ResponseEntity.ok(ResponseData.success(complaint));
     }
 
-    @PutMapping({"/{id}/handle", "/{id}/progress"})
+    @PutMapping({ "/{id}/handle", "/{id}/progress" })
     @Operation(summary = "UC 28: Xử lý và cập nhật tiến độ khiếu nại", description = "Chuyển trạng thái (PROCESSING, RESOLVED, REJECTED) và gửi thông báo phản hồi cho khách thuê")
     public ResponseEntity<ResponseData<ComplaintResponse>> handleComplaint(
             @AuthenticationPrincipal UserPrincipal principal,

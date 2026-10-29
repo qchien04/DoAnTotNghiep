@@ -24,7 +24,7 @@ export const ComplaintProgressModal: React.FC<ComplaintProgressModalProps> = ({
     if (open && complaint) {
       form.resetFields();
       form.setFieldsValue({
-        status: complaint.status === 'NEW' ? 'PROCESSING' : complaint.status,
+        status: complaint.status === 'PENDING' ? 'PROCESSING' : complaint.status,
         resolutionNote: complaint.resolutionNote || 'Chủ nhà đã hẹn thợ kiểm tra và khắc phục.',
       });
     }

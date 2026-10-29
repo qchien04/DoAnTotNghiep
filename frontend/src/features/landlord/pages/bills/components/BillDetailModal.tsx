@@ -38,7 +38,6 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
             Đã thanh toán
           </Tag>
         );
-      case 'PENDING':
       case 'UNPAID':
         return (
           <Tag color="orange" icon={<Clock className="w-3 h-3 inline mr-1" />}>
@@ -85,7 +84,7 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
           </Button>
         ),
         bill &&
-          (bill.status === 'PENDING' || bill.status === 'UNPAID' || bill.status === 'OVERDUE') && (
+          (bill.status === 'UNPAID' || bill.status === 'PARTIALLY_PAID' || bill.status === 'OVERDUE') && (
             <Button
               key="pay"
               type="primary"

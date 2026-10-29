@@ -2,12 +2,12 @@ package com.doan.core.business.service;
 
 import com.doan.core.business.dto.landlord.building.BuildingRequest;
 import com.doan.core.business.dto.landlord.building.BuildingResponse;
-
-import java.util.List;
+import com.doan.core.common.data.PageResponse;
 
 public interface LandlordBuildingService {
 
-    List<BuildingResponse> getBuildings(Long landlordId, String keyword);
+    PageResponse<BuildingResponse> getBuildings(Long landlordId, String keyword, int page, int size, String sortBy,
+            String sortDirection);
 
     BuildingResponse getBuildingById(Long landlordId, Long buildingId);
 

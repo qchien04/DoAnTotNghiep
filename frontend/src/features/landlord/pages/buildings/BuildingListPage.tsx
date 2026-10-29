@@ -1,30 +1,40 @@
 import React, { useState } from 'react';
-import { useBuildings } from '@/shared/hooks';
-import { Plus } from 'lucide-react';
-import { Button, message } from '@/shared/components';
+import {
+  useBuildings,
+  useCreateBuilding,
+  useUpdateBuilding,
+  useDeleteBuilding,
+} from '@/shared/hooks';
+import { message } from '@/shared/components';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { BuildingFilter } from './components/BuildingFilter';
 import { BuildingTable } from './components/BuildingTable';
 import { BuildingFormModal } from './components/BuildingFormModal';
+import { BuildingDetailModal } from './components/BuildingDetailModal';
 
 export const BuildingListPage: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [keyword, setKeyword] = useState('');
   const [floorFilter, setFloorFilter] = useState<number | undefined>(undefined);
 
-  const {
-    buildings,
-    isLoading,
-    createBuilding,
-    isCreating,
-    updateBuilding,
-    isUpdating,
-    deleteBuilding,
-    isDeleting,
-  } = useBuildings({ keyword, floors: floorFilter });
+  const { pageInfo, isLoading } = useBuildings({
+    page,
+    size,
+    keyword,
+    floors: floorFilter,
+  });
+  const { createBuilding, isCreating } = useCreateBuilding();
+  const { updateBuilding, isUpdating } = useUpdateBuilding();
+  const { deleteBuilding, isDeleting } = useDeleteBuilding();
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBuilding, setEditingBuilding] = useState<Building | null>(null);
+
+  // Detail Modal State
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingBuilding, setViewingBuilding] = useState<Building | null>(null);
 
   const handleOpenCreate = () => {
     setEditingBuilding(null);
@@ -34,6 +44,11 @@ export const BuildingListPage: React.FC = () => {
   const handleOpenEdit = (bld: Building) => {
     setEditingBuilding(bld);
     setIsModalOpen(true);
+  };
+
+  const handleOpenView = (bld: Building) => {
+    setViewingBuilding(bld);
+    setDetailModalOpen(true);
   };
 
   const handleSubmit = async (dto: CreateBuildingDto) => {
@@ -63,31 +78,33 @@ export const BuildingListPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-stay-text tracking-tight">Tòa nhà</h1>
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreate}
-        >
-          Thêm tòa nhà
-        </Button>
-      </div>
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
+      {/* Filter Bar with integrated CTA */}
 
-      {/* Filter Bar */}
       <BuildingFilter
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(k) => {
+          setKeyword(k);
+          setPage(0);
+        }}
         floorFilter={floorFilter}
-        onFloorFilterChange={setFloorFilter}
+        onFloorFilterChange={(f) => {
+          setFloorFilter(f);
+          setPage(0);
+        }}
+        onOpenCreate={handleOpenCreate}
       />
 
       {/* Building Table */}
       <BuildingTable
-        buildings={buildings}
+        pageInfo={pageInfo}
         isLoading={isLoading}
         isDeleting={isDeleting}
+        onPageChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
+        onView={handleOpenView}
         onEdit={handleOpenEdit}
         onDelete={handleDelete}
       />
@@ -99,6 +116,14 @@ export const BuildingListPage: React.FC = () => {
         confirmLoading={isCreating || isUpdating}
         onCancel={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
+      />
+
+      {/* Detail Modal */}
+      <BuildingDetailModal
+        open={detailModalOpen}
+        building={viewingBuilding}
+        onCancel={() => setDetailModalOpen(false)}
+        onEdit={handleOpenEdit}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.tenant;
 
+import com.doan.core.business.enums.Gender;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -14,13 +15,10 @@ public class RoommateApplicationRequest {
 
     private String introMessage;
 
-    // Khảo sát lối sống của ứng viên (UC14)
-    private String gender;
-    private String sleepTime;
+    // Tiêu chí đối chiếu lọc cứng (Dealbreakers)
+    private Gender gender;
     private Boolean isSmoking;
     private Boolean isPet;
-    private String cookingHabit;
-    private String guestHabit;
 
     // Danh sách câu trả lời tinh chỉnh từ hồ sơ
     private java.util.List<SaveLifestyleAnswersRequest.AnswerItem> lifestyleAnswers;

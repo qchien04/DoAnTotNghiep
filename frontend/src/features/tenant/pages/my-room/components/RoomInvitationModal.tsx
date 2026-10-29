@@ -3,6 +3,7 @@ import { Modal, Button, Input } from '@/shared/components';
 import { Check } from 'lucide-react';
 
 import { RoomLinkInvitation } from '@/shared/types/tenant';
+import { getTenantRoleInRoomLabel } from '@/shared/utils';
 
 interface RoomInvitationModalProps {
   open: boolean;
@@ -31,7 +32,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
   const addressText = invitation?.address || `Phòng ${invitation?.roomName || '102'} - ${buildingName}`;
   const landlordInfo = `${invitation?.landlordName || 'Chủ trọ'}${invitation?.landlordPhone ? ` - SĐT: ${invitation.landlordPhone}` : ''}`;
   const priceText = invitation?.monthlyRent ? `${invitation.monthlyRent.toLocaleString()} VNĐ/tháng` : '3.800.000 VNĐ/tháng';
-  const roleText = invitation?.roleInRoom === 'REPRESENTATIVE' ? 'Khách đại diện' : 'Thành viên thuê cùng';
+  const roleText = getTenantRoleInRoomLabel(invitation?.roleInRoom);
 
   return (
     <Modal

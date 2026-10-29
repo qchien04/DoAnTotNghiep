@@ -34,7 +34,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
   const [roomRentPrice, setRoomRentPrice] = useState<number>(3800000);
   const [adjustments, setAdjustments] = useState<BillAdjustmentItem[]>([]);
 
-  // Lọc danh sách phòng: Ưu tiên các phòng đang có hợp đồng hoặc trạng thái RENTED
+  // Lọc danh sách phòng: Ưu tiên các phòng đang có hợp đồng hoặc trạng thái OCCUPIED
   const availableRoomsForBill = useMemo(() => {
     return rooms.map((r: any) => {
       const contract =
@@ -43,7 +43,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         ) || contracts.find((c: any) => Number(c.roomId) === Number(r.id));
 
       const tenantName = contract?.representativeTenantName || 'Chưa ký HĐ';
-      const isRented = r.status === 'RENTED' || !!contract;
+      const isRented = r.status === 'OCCUPIED' || !!contract;
       return {
         ...r,
         contract,

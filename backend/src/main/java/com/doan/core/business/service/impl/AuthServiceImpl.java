@@ -8,6 +8,7 @@ import com.doan.core.business.dto.response.UserDto;
 import com.doan.core.business.entity.RefreshToken;
 import com.doan.core.business.entity.Role;
 import com.doan.core.business.entity.User;
+import com.doan.core.business.enums.UserStatus;
 import com.doan.core.business.repository.RefreshTokenRepository;
 import com.doan.core.business.repository.UserRepository;
 import com.doan.core.business.service.AuthService;
@@ -51,20 +52,16 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new BaseException(ErrorCode.INVALID_CREDENTIALS));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BaseException(ErrorCode.INVALID_CREDENTIALS);
-        }
-
         // Tự động giải phóng khóa tài khoản nếu đã quá hạn locked_until
-        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null
+        if (user.getStatus() == UserStatus.LOCKED && user.getLockedUntil() != null
                 && user.getLockedUntil().isBefore(Instant.now())) {
-            user.setStatus("ACTIVE");
+            user.setStatus(UserStatus.ACTIVE);
             user.setLockedUntil(null);
             user.setLockedReason(null);
             userRepository.save(user);
         }
 
-        if (!Boolean.TRUE.equals(user.getEnabled()) || "LOCKED".equalsIgnoreCase(user.getStatus())) {
+        if (!Boolean.TRUE.equals(user.getEnabled()) || user.getStatus() == UserStatus.LOCKED) {
             throw new BaseException(ErrorCode.USER_DISABLED);
         }
 
@@ -134,9 +131,9 @@ public class AuthServiceImpl implements AuthService {
         otpService.verifyRegistrationOtp(request.getEmail(), request.getOtpCode());
 
         Role assignRole = request.getRole() != null ? request.getRole() : Role.ROLE_TENANT;
-        // Không cho phép đăng ký trực tiếp role ADMIN qua public endpoint
+        // Cấm tuyệt đối đăng ký trực tiếp role ADMIN qua public endpoint (Fail-close)
         if (assignRole == Role.ROLE_ADMIN) {
-            assignRole = Role.ROLE_TENANT;
+            throw new BaseException(ErrorCode.FORBIDDEN, "Không được phép đăng ký tài khoản Quản trị viên (ROLE_ADMIN)");
         }
 
         User newUser = User.builder()
@@ -146,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.getEmail().trim())
                 .phone(request.getPhone() != null ? request.getPhone().trim() : null)
                 .role(assignRole)
-                .status("ACTIVE")
+                .status(UserStatus.ACTIVE)
                 .enabled(true)
                 .failedLoginAttempts(0)
                 .build();
@@ -187,15 +184,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Tự động giải phóng khóa tài khoản nếu đã quá hạn locked_until
-        if ("LOCKED".equalsIgnoreCase(user.getStatus()) && user.getLockedUntil() != null
+        if (user.getStatus() == UserStatus.LOCKED && user.getLockedUntil() != null
                 && user.getLockedUntil().isBefore(Instant.now())) {
-            user.setStatus("ACTIVE");
+            user.setStatus(UserStatus.ACTIVE);
             user.setLockedUntil(null);
             user.setLockedReason(null);
             userRepository.save(user);
         }
 
-        if (!Boolean.TRUE.equals(user.getEnabled()) || "LOCKED".equalsIgnoreCase(user.getStatus())) {
+        if (!Boolean.TRUE.equals(user.getEnabled()) || user.getStatus() == UserStatus.LOCKED) {
             throw new BaseException(ErrorCode.USER_DISABLED);
         }
 

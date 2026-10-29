@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.ContractStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -50,9 +51,10 @@ public class Contract extends BaseEntity {
     @Column(name = "deposit_refund_amount")
     private Long depositRefundAmount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "ACTIVE"; // ACTIVE, EXPIRING_SOON, TERMINATED, CANCELLED
+    private ContractStatus status = ContractStatus.ACTIVE; // ACTIVE, EXPIRING_SOON, TERMINATED
 
     @Column(name = "pdf_file_url", length = 500)
     private String pdfFileUrl;

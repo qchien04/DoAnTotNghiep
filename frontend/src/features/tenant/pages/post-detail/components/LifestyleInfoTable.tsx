@@ -10,8 +10,8 @@ export const LifestyleInfoTable: React.FC<LifestyleInfoTableProps> = ({ post }) 
   const ls = post.lifestyle;
 
   const getGenderText = (val?: string) => {
-    if (val === 'MALE') return 'Nam';
-    if (val === 'FEMALE') return 'Nữ';
+    if (val === 'MALE' || val === 'MALE_ONLY') return 'Chỉ Nam';
+    if (val === 'FEMALE' || val === 'FEMALE_ONLY') return 'Chỉ Nữ';
     return 'Linh hoạt (Nam hoặc Nữ)';
   };
 

@@ -1,5 +1,8 @@
 package com.doan.core.business.dto.tenant;
 
+import com.doan.core.business.enums.ComplaintIncidentType;
+import com.doan.core.business.enums.ComplaintSeverity;
+import com.doan.core.business.enums.ComplaintStatus;
 import lombok.*;
 
 import java.time.Instant;
@@ -14,9 +17,9 @@ public class TenantComplaintResponse {
     private Long id;
     private String title;
     private String content;
-    private String type;
-    private String urgency;
-    private String status;
+    private ComplaintIncidentType type;
+    private ComplaintSeverity urgency;
+    private ComplaintStatus status;
     private String responseNote;
     private Integer rating;
     private String feedback;

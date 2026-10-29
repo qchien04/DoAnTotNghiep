@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
-  ShieldAlert,
   BarChart3,
   Users2,
   SlidersHorizontal,
   FileWarning,
-  Home,
   LogOut,
   Shield,
+  User,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
@@ -22,10 +21,12 @@ export const AdminLayout: React.FC = () => {
   const currentKey = location.pathname.startsWith('/admin/users')
     ? '/admin/users'
     : location.pathname.startsWith('/admin/master-data')
-    ? '/admin/master-data'
-    : location.pathname.startsWith('/admin/reports')
-    ? '/admin/reports'
-    : '/admin';
+      ? '/admin/master-data'
+      : location.pathname.startsWith('/admin/reports')
+        ? '/admin/reports'
+        : location.pathname.startsWith('/admin/profile')
+          ? '/admin/profile'
+          : '/admin';
 
   const adminMenuItems: MenuItemType[] = [
     {
@@ -48,28 +49,14 @@ export const AdminLayout: React.FC = () => {
       icon: <FileWarning className="w-4 h-4 shrink-0" />,
       label: <Link to="/admin/reports">Báo cáo & Vi phạm sàn</Link>,
     },
+    {
+      key: '/admin/profile',
+      icon: <User className="w-4 h-4 shrink-0" />,
+      label: <Link to="/admin/profile">Hồ sơ cá nhân</Link>,
+    },
   ];
 
   const userMenuItems = [
-    {
-      key: 'info',
-      label: (
-        <div className="py-1">
-          <p className="font-semibold text-sm text-stay-text">{user?.fullName || 'Quản Trị Viên'}</p>
-          <p className="text-xs text-slate-500">{user?.email || 'admin@trotot.vn'}</p>
-          <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-            Quản trị viên
-          </span>
-        </div>
-      ),
-      disabled: true,
-    },
-    { type: 'divider' as const },
-    {
-      key: 'home',
-      icon: <Home className="w-4 h-4" />,
-      label: <Link to="/">Về trang chủ sàn</Link>,
-    },
     {
       key: 'logout',
       icon: <LogOut className="w-4 h-4 text-red-500" />,
@@ -77,6 +64,15 @@ export const AdminLayout: React.FC = () => {
       onClick: () => logout(),
     },
   ];
+
+  const getPageTitle = (path: string) => {
+    if (path.startsWith('/admin/users')) return 'Quản lý Người dùng';
+    if (path.startsWith('/admin/master-data')) return 'Master Data Hệ thống';
+    if (path.startsWith('/admin/reports')) return 'Báo cáo & Vi phạm sàn';
+    if (path.startsWith('/admin/profile')) return 'Hồ sơ cá nhân';
+    return 'Dashboard Quản trị';
+  };
+  const pageTitle = getPageTitle(location.pathname);
 
   return (
     <div className="h-screen flex overflow-hidden bg-stay-bg-app text-stay-text">
@@ -94,9 +90,6 @@ export const AdminLayout: React.FC = () => {
           !collapsed ? (
             <Link to="/admin" className="flex items-center gap-2">
               <StayConnectLogo size="sm" />
-              <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-600 border border-purple-500/20">
-                ADMIN
-              </span>
             </Link>
           ) : (
             <div className="w-full flex justify-center">
@@ -104,26 +97,14 @@ export const AdminLayout: React.FC = () => {
             </div>
           )
         }
-        footer={
-          <Link
-            to="/"
-            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-stay-text-secondary hover:text-stay-primary hover:bg-stay-bg-app rounded-lg transition-colors"
-          >
-            <Home className="w-4 h-4 shrink-0" />
-            {!collapsed && <span>Quay lại trang người dùng</span>}
-          </Link>
-        }
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-        <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-6 flex items-center justify-between">
+        <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold text-stay-text">
-              Quản trị hệ thống
+            <h1 className="text-base font-semibold text-stay-text tracking-tight">
+              {pageTitle}
             </h1>
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 font-medium">
-              <ShieldAlert className="w-3 h-3" /> Quyền Quản Trị Tối Cao
-            </span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -151,9 +132,10 @@ export const AdminLayout: React.FC = () => {
           </div>
         </header>
 
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-5 py-4 w-full flex flex-col min-h-0">
           <Outlet />
         </main>
+
       </div>
     </div>
   );

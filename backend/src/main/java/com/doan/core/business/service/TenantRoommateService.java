@@ -4,7 +4,13 @@ import com.doan.core.business.dto.tenant.RoommateApplicationRequest;
 import com.doan.core.business.dto.tenant.RoommateApplicationResponse;
 import com.doan.core.business.dto.tenant.RoommatePostRequest;
 import com.doan.core.business.dto.tenant.RoommatePostResponse;
-import org.springframework.data.domain.Page;
+import com.doan.core.business.dto.tenant.SaveLifestyleAnswersRequest;
+import com.doan.core.business.dto.tenant.UserLifestyleProfileResponse;
+import com.doan.core.business.enums.GenderPreference;
+import com.doan.core.business.enums.RoommatePostStatus;
+import com.doan.core.business.enums.RoommatePostType;
+import com.doan.core.common.data.PageResponse;
+
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -16,20 +22,22 @@ public interface TenantRoommateService {
     List<com.doan.core.business.dto.tenant.LifestyleQuestionResponse> getLifestyleQuestions();
 
     // Hồ sơ lối sống gốc của người dùng
-    com.doan.core.business.dto.tenant.UserLifestyleProfileResponse getUserLifestyleProfile(Long userId);
+    UserLifestyleProfileResponse getUserLifestyleProfile(Long userId);
 
     // Lưu / Cập nhật hồ sơ lối sống gốc (và tự động sinh users.lifestyle_vector)
-    com.doan.core.business.dto.tenant.UserLifestyleProfileResponse saveUserLifestyleProfile(Long userId, com.doan.core.business.dto.tenant.SaveLifestyleAnswersRequest request);
+    UserLifestyleProfileResponse saveUserLifestyleProfile(Long userId,
+            SaveLifestyleAnswersRequest request);
 
-    // UC 11: Tìm kiếm bài đăng ở ghép kèm bộ lọc lối sống và tính độ khớp theo vector
-    Page<RoommatePostResponse> searchPosts(
+    // UC 11: Tìm kiếm bài đăng ở ghép kèm bộ lọc lối sống và tính độ khớp theo
+    // vector
+    PageResponse<RoommatePostResponse> searchPosts(
             Long currentUserId,
             String keyword,
             String district,
-            String postType,
+            RoommatePostType postType,
             BigDecimal minPrice,
             BigDecimal maxPrice,
-            String gender,
+            GenderPreference gender,
             Boolean noSmoking,
             String sleepTime,
             Pageable pageable);
@@ -37,8 +45,12 @@ public interface TenantRoommateService {
     // Chi tiết bài đăng
     RoommatePostResponse getPostById(Long id);
 
+    RoommatePostResponse getPostById(Long id, Long currentUserId);
+
     // Danh sách bài đăng của bản thân
-    List<RoommatePostResponse> getMyPosts(Long userId);
+    PageResponse<RoommatePostResponse> getMyPosts(Long userId, String keyword, RoommatePostStatus status,
+            RoommatePostType postType, int page,
+            int size, String sortBy, String sortDirection);
 
     // UC 12: Đăng bài tìm bạn ở ghép - Đã có phòng
     RoommatePostResponse createPostWithRoom(Long userId, RoommatePostRequest request);

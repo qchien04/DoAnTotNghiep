@@ -16,6 +16,7 @@ export interface TableProps<T> extends Omit<AntTableProps<T>, 'columns'> {
   className?: string;
   bordered?: boolean;
   striped?: boolean;
+  fillHeight?: boolean;
 }
 
 export function Table<T extends object>({
@@ -30,17 +31,60 @@ export function Table<T extends object>({
   className = '',
   bordered = false,
   striped = false,
+  fillHeight = true,
   rowClassName,
+  pagination,
+  scroll,
   ...props
 }: TableProps<T>) {
+  // Merge default pagination with size changer
+  let paginationConfig: any = false;
+  if (pagination !== false) {
+    const userPagination = typeof pagination === 'object' ? pagination : {};
+    paginationConfig = {
+      defaultPageSize: pageSize || 10,
+      showSizeChanger: true,
+      pageSizeOptions: ['10', '20', '50', '100'],
+      showTotal: (totalCount: number, range: [number, number]) => (
+        <span className="text-[13px] text-stay-text-secondary">
+          Hiển thị {range[0]} - {range[1]} trên <strong className="text-stay-text font-semibold">{totalCount}</strong> bản ghi
+        </span>
+      ),
+      locale: { items_per_page: '/ trang' },
+      ...(total !== undefined
+        ? {
+            current: currentPage,
+            pageSize: pageSize,
+            total: total,
+            onChange: onPageChange,
+          }
+        : {}),
+      ...userPagination,
+    };
+  }
+
+  // Setup scroll config: if fillHeight is true, enable vertical scroll
+  const scrollConfig = {
+    x: scroll?.x || 'max-content',
+    ...(fillHeight
+      ? { y: scroll?.y || '100%' }
+      : (scroll?.y ? { y: scroll.y } : {})),
+  };
+
   return (
-    <div className={`w-full overflow-hidden rounded-xl border border-stay-border bg-stay-card-bg shadow-xs ${className}`}>
+    <div
+      className={`w-full flex-1 flex flex-col min-h-0 overflow-hidden rounded-[8px] border border-[#D7D7DB] dark:border-slate-700 bg-stay-card-bg shadow-none ${
+        fillHeight ? 'stay-table-fill-height' : ''
+      } ${className}`}
+    >
       <AntTable<T>
         columns={columns}
         dataSource={dataSource}
         loading={loading}
         bordered={bordered}
         rowKey={(record: any) => record.id || record.key || JSON.stringify(record)}
+        scroll={scrollConfig}
+        pagination={paginationConfig}
         rowClassName={(record, index) => {
           let customClass = '';
           if (striped && index % 2 === 1) customClass = 'bg-stay-bg-app';
@@ -49,21 +93,12 @@ export function Table<T extends object>({
           }
           return `${customClass} ${rowClassName || ''}`.trim();
         }}
-        pagination={
-          total !== undefined
-            ? {
-                current: currentPage,
-                pageSize: pageSize,
-                total: total,
-                showSizeChanger: true,
-                showTotal: (totalCount) => `Tổng cộng: ${totalCount} bản ghi`,
-                onChange: onPageChange,
-                className: 'px-4 py-3',
-              }
-            : false
-        }
         locale={{
-          emptyText: <div className="py-10 text-slate-400 text-xs">{emptyText}</div>,
+          emptyText: (
+            <div className="py-16 flex flex-col items-center justify-center text-center text-slate-400 text-[14px] w-full">
+              {emptyText}
+            </div>
+          ),
         }}
         {...props}
       />
@@ -76,3 +111,4 @@ Table.ColumnGroup = AntTable.ColumnGroup;
 Table.Summary = AntTable.Summary;
 
 export default Table;
+

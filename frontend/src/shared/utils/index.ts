@@ -1,5 +1,6 @@
 export * from './serviceUtils';
 export * from './token';
+export * from './enumUtils';
 
 /**
  * Format currency amount to Vietnamese Dong string (e.g. "3.800.000 đ")

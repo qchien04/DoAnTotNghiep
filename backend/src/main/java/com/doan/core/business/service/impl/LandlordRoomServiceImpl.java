@@ -3,22 +3,29 @@ package com.doan.core.business.service.impl;
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
 import com.doan.core.business.entity.Building;
+import com.doan.core.business.enums.ContractStatus;
 import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.RoomImage;
+import com.doan.core.business.enums.RoomStatus;
+import com.doan.core.business.entity.UtilityService;
 import com.doan.core.business.repository.BuildingRepository;
 import com.doan.core.business.repository.ContractRepository;
 import com.doan.core.business.repository.RoomRepository;
 import com.doan.core.business.service.LandlordRoomService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.exception.BaseException;
 import com.doan.core.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,21 +40,33 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, String status) {
-        String normalizedStatus = status;
-        if ("RENTED".equalsIgnoreCase(status)) {
-            normalizedStatus = "OCCUPIED";
-        } else if ("MAINTENANCE".equalsIgnoreCase(status)) {
-            normalizedStatus = "UNDER_MAINTENANCE";
-        } else if ("DISABLED".equalsIgnoreCase(status)) {
-            normalizedStatus = "STOPPED";
-        }
-        log.info("Lấy danh sách phòng cho chủ trọ id: {}, tòa: {}, tầng: {}, trạng thái: {}", landlordId, buildingId, floor, normalizedStatus);
-        List<Room> rooms = roomRepository.filterRooms(landlordId, buildingId, floor, normalizedStatus);
+    public PageResponse<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, RoomStatus status,
+            String keyword, int page, int size, String sortBy, String sortDirection) {
+        String kw = (keyword != null && !keyword.trim().isBlank()) ? keyword.trim() : null;
 
-        return rooms.stream()
-                .map(RoomResponse::fromEntity)
-                .collect(Collectors.toList());
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        String sortProperty = switch (sortBy != null ? sortBy.toLowerCase() : "id") {
+            case "name" -> "name";
+            case "listedprice", "price" -> "listedPrice";
+            case "area" -> "area";
+            case "floor" -> "floor";
+            case "status" -> "status";
+            default -> "id";
+        };
+        Sort sort = Sort.by(direction, sortProperty);
+
+        int pageNumber = Math.max(0, page);
+        int pageSize = size > 0 ? size : 10;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        log.info("Lấy danh sách phòng cho chủ trọ id: {}, tòa: {}, tầng: {}, trạng thái: {}, keyword: {}, pageable: {}",
+                landlordId, buildingId, floor, status, kw, pageable);
+        Page<Room> rooms = roomRepository.filterRooms(landlordId, buildingId, floor, status, kw, pageable);
+
+        Page<RoomResponse> dtoPage = rooms.map(RoomResponse::fromEntity);
+        return PageResponse.from(dtoPage);
     }
 
     @Override
@@ -62,7 +81,24 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     @Override
     @Transactional
     public RoomResponse createRoom(Long landlordId, RoomRequest request) {
-        log.info("Tạo mới phòng trọ: {} tại tòa: {} cho chủ trọ: {}", request.getName(), request.getBuildingId(), landlordId);
+        log.info("Tạo mới phòng trọ: {} tại tòa: {} cho chủ trọ: {}", request.getName(), request.getBuildingId(),
+                landlordId);
+
+        if (request.getName() == null || request.getName().trim().isBlank()) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Tên phòng không được để trống");
+        }
+        if (request.getListedPrice() == null || request.getListedPrice() <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Giá thuê phòng phải lớn hơn 0");
+        }
+        if (request.getStandardDeposit() != null && request.getStandardDeposit() < 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Tiền cọc phòng không được là số âm");
+        }
+        if (request.getMaxCapacity() != null && request.getMaxCapacity() <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Sức chứa tối đa của phòng phải lớn hơn 0");
+        }
+        if (request.getArea() != null && request.getArea().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Diện tích phòng phải lớn hơn 0");
+        }
 
         Building building = null;
         String province = request.getProvince();
@@ -139,7 +175,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .amenities(amenitiesStr)
                 .services(services)
                 .description(request.getDescription())
-                .status("AVAILABLE")
+                .status(RoomStatus.AVAILABLE)
                 .coverImageUrl(cover)
                 .latitude(lat)
                 .longitude(lng)
@@ -167,6 +203,22 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     public RoomResponse updateRoom(Long landlordId, Long roomId, RoomRequest request) {
         log.info("Cập nhật phòng trọ id: {} của chủ trọ: {}", roomId, landlordId);
 
+        if (request.getName() == null || request.getName().trim().isBlank()) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Tên phòng không được để trống");
+        }
+        if (request.getListedPrice() != null && request.getListedPrice() <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Giá thuê phòng phải lớn hơn 0");
+        }
+        if (request.getStandardDeposit() != null && request.getStandardDeposit() < 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Tiền cọc phòng không được là số âm");
+        }
+        if (request.getMaxCapacity() != null && request.getMaxCapacity() <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Sức chứa tối đa của phòng phải lớn hơn 0");
+        }
+        if (request.getArea() != null && request.getArea().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new BaseException(ErrorCode.BAD_REQUEST, "Diện tích phòng phải lớn hơn 0");
+        }
+
         Room room = roomRepository.findByIdAndBuildingLandlordId(roomId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
 
@@ -175,18 +227,23 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             building = buildingRepository.findByIdAndLandlordId(request.getBuildingId(), landlordId)
                     .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
 
-            if (roomRepository.existsByBuildingIdAndNameAndIdNot(request.getBuildingId(), request.getName().trim(), roomId)) {
+            if (roomRepository.existsByBuildingIdAndNameAndIdNot(request.getBuildingId(), request.getName().trim(),
+                    roomId)) {
                 throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
             }
         } else {
-            if (roomRepository.existsByBuildingIsNullAndLandlordIdAndNameAndIdNot(landlordId, request.getName().trim(), roomId)) {
+            if (roomRepository.existsByBuildingIsNullAndLandlordIdAndNameAndIdNot(landlordId, request.getName().trim(),
+                    roomId)) {
                 throw new BaseException(ErrorCode.ROOM_CODE_EXISTS);
             }
         }
 
-        // Ngoại lệ: Phòng đang có hợp đồng hiệu lực thì không được chuyển sang trạng thái "AVAILABLE"
-        if ("AVAILABLE".equalsIgnoreCase(request.getStatus()) && !"AVAILABLE".equalsIgnoreCase(room.getStatus())) {
-            boolean hasActiveContract = contractRepository.existsByRoomIdAndStatus(roomId, "ACTIVE");
+        RoomStatus newStatus = request.getStatus();
+
+        // Ngoại lệ: Phòng đang có hợp đồng hiệu lực thì không được chuyển sang trạng
+        // thái "AVAILABLE"
+        if (newStatus == RoomStatus.AVAILABLE && room.getStatus() != RoomStatus.AVAILABLE) {
+            boolean hasActiveContract = contractRepository.existsByRoomIdAndStatus(roomId, ContractStatus.ACTIVE);
             if (hasActiveContract) {
                 throw new BaseException(ErrorCode.ROOM_HAS_ACTIVE_CONTRACT);
             }
@@ -224,12 +281,13 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             room.setAmenities(String.join(", ", request.getAmenities()));
         }
         if (request.getServiceIds() != null) {
-            List<com.doan.core.business.entity.UtilityService> updatedServices = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
+            List<UtilityService> updatedServices = utilityServiceRepository
+                    .findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
             room.setServices(updatedServices);
         }
         room.setDescription(request.getDescription());
-        if (request.getStatus() != null) {
-            room.setStatus(request.getStatus());
+        if (newStatus != null) {
+            room.setStatus(newStatus);
         }
         if (request.getLatitude() != null) {
             room.setLatitude(request.getLatitude());
@@ -248,7 +306,8 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         }
 
         String updatedCover = request.getCoverImageUrl();
-        if ((updatedCover == null || updatedCover.isBlank()) && request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+        if ((updatedCover == null || updatedCover.isBlank()) && request.getImageUrls() != null
+                && !request.getImageUrls().isEmpty()) {
             updatedCover = request.getImageUrls().get(0);
         }
         if (updatedCover != null) {
@@ -279,7 +338,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
 
         // Kiểm tra lịch sử hợp đồng
-        boolean hasContracts = contractRepository.existsByRoomIdAndStatus(roomId, "ACTIVE");
+        boolean hasContracts = contractRepository.existsByRoomIdAndStatus(roomId, ContractStatus.ACTIVE);
         if (hasContracts || !contractRepository.findByRoomId(roomId).isEmpty()) {
             throw new BaseException(ErrorCode.ROOM_HAS_HISTORY);
         }

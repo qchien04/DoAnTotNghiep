@@ -72,11 +72,21 @@ export const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ roomDetails 
         </div>
 
         <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-1">
-          <span className="font-semibold text-slate-500 block">Chỉ số bàn giao ban đầu:</span>
-          <p className="text-stay-text">
-            Điện: <strong className="text-amber-700">{contract?.initialElectricity || 125} kWh</strong> | Nước: <strong className="text-blue-700">{contract?.initialWater || 15} m³</strong>
-          </p>
-          <p className="text-slate-500">Tiền cọc: {contract?.depositAmount?.toLocaleString() || '3.800.000'} VNĐ</p>
+          <span className="font-semibold text-stay-text-secondary block">Dịch vụ công tơ ban đầu:</span>
+          {contract?.services && contract.services.filter((s) => s.billingMethod === 'METER_INDEX').length > 0 ? (
+            <p className="text-stay-text text-xs space-x-2">
+              {contract.services
+                .filter((s) => s.billingMethod === 'METER_INDEX')
+                .map((s, idx) => (
+                  <span key={s.id || idx} className="mr-2">
+                    {s.serviceName || s.name}: <strong className="text-stay-primary">{s.lastIndex ?? 0} {s.unit || ''}</strong>
+                  </span>
+                ))}
+            </p>
+          ) : (
+            <p className="text-stay-text-secondary text-xs italic">Không sử dụng dịch vụ công tơ</p>
+          )}
+          <p className="text-stay-text-secondary text-xs">Tiền cọc: {contract?.depositAmount?.toLocaleString() || '3.800.000'} VNĐ</p>
         </div>
       </div>
     </div>

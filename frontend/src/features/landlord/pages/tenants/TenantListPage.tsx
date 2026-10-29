@@ -1,32 +1,47 @@
 import React, { useState } from 'react';
-import { useTenants, useBuildings, useRooms } from '@/shared/hooks';
-import { Plus } from 'lucide-react';
-import { Button, message } from '@/shared/components';
+import {
+  useTenants,
+  useCreateTenant,
+  useUpdateTenant,
+  useDeleteTenant,
+  useInviteTenantLink,
+  useCancelTenantInvitation,
+  useBuildings,
+  useRooms,
+} from '@/shared/hooks';
+import { message } from '@/shared/components';
 import { Tenant, CreateTenantDto } from '@/shared/types/landlord';
 import { TenantFilter } from './components/TenantFilter';
 import { TenantTable } from './components/TenantTable';
 import { TenantFormModal } from './components/TenantFormModal';
 import { TenantInviteModal } from './components/TenantInviteModal';
+import { TenantDetailModal } from './components/TenantDetailModal';
 
 export const TenantListPage: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [keyword, setKeyword] = useState('');
   const [buildingId, setBuildingId] = useState<string | undefined>(undefined);
 
-  const { buildings } = useBuildings();
-  const { rooms } = useRooms({ buildingId });
-  const {
-    tenants,
-    isLoading,
-    createTenant,
-    isCreating,
-    updateTenant,
-    isUpdating,
-    deleteTenant,
-    isDeleting,
-    inviteTenantLink,
-    isInviting,
-    cancelInvitation,
-  } = useTenants({ keyword, buildingId });
+  const { pageInfo: buildingsPageInfo } = useBuildings();
+  const buildings = buildingsPageInfo?.items ?? [];
+  const { pageInfo: roomsPageInfo } = useRooms({ buildingId });
+  const rooms = roomsPageInfo?.items ?? [];
+  const { pageInfo: tenantsPageInfo, isLoading } = useTenants({
+    page,
+    size,
+    keyword,
+    buildingId,
+  });
+  const { createTenant, isCreating } = useCreateTenant();
+  const { updateTenant, isUpdating } = useUpdateTenant();
+  const { deleteTenant, isDeleting } = useDeleteTenant();
+  const { inviteTenantLink, isInviting } = useInviteTenantLink();
+  const { cancelInvitation } = useCancelTenantInvitation();
+
+  // Detail Modal State
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingTenant, setViewingTenant] = useState<Tenant | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +52,13 @@ export const TenantListPage: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [searchAccountKeyword, setSearchAccountKeyword] = useState('');
 
+  const handleOpenDetail = (tnt: Tenant) => {
+    setViewingTenant(tnt);
+    setDetailModalOpen(true);
+  };
+
   const handleOpenCreate = () => {
+
     setEditingTenant(null);
     setIsModalOpen(true);
   };
@@ -94,40 +115,45 @@ export const TenantListPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Khách thuê</h1>
-        </div>
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreate}
-          className="bg-stay-primary hover:bg-stay-primary-hover"
-        >
-          Thêm khách thuê
-        </Button>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
       {/* Filter */}
+
       <TenantFilter
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(k) => {
+          setKeyword(k);
+          setPage(0);
+        }}
         buildingId={buildingId}
-        onBuildingIdChange={setBuildingId}
+        onBuildingIdChange={(b) => {
+          setBuildingId(b);
+          setPage(0);
+        }}
         buildings={buildings}
+        onOpenCreate={handleOpenCreate}
       />
 
       {/* Table */}
       <TenantTable
-        tenants={tenants}
+        pageInfo={tenantsPageInfo}
         isLoading={isLoading}
         isDeleting={isDeleting}
+        onPageChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
+        onView={handleOpenDetail}
         onEdit={handleOpenEdit}
         onDelete={handleDelete}
         onInvite={handleOpenInvite}
         onCancelInvite={handleCancelInvite}
+      />
+
+      {/* Detail Modal */}
+      <TenantDetailModal
+        open={detailModalOpen}
+        tenant={viewingTenant}
+        onCancel={() => setDetailModalOpen(false)}
       />
 
       {/* Form Modal */}
@@ -152,4 +178,5 @@ export const TenantListPage: React.FC = () => {
       />
     </div>
   );
+
 };

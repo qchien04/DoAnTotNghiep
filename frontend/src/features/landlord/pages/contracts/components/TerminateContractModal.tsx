@@ -22,51 +22,57 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
   const [form] = Form.useForm();
   const [calculatedRefund, setCalculatedRefund] = useState<number | null>(null);
 
+  // Chỉ lấy các dịch vụ áp dụng công tơ (METER_INDEX) trong hợp đồng
+  const meterServices = (contract?.services || []).filter(
+    (s) => s.billingMethod === 'METER_INDEX'
+  );
+
   const calculateRefund = (
     ctr: RentalContract,
-    finalElec: number,
-    finalWater: number,
+    readings: Record<string, number>,
     damages: number
   ) => {
-    const elecService = ctr.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'));
-    const waterService = ctr.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'));
-    const initElec = elecService?.lastIndex ?? 0;
-    const initWater = waterService?.lastIndex ?? 0;
-    const elecPrice = Number(elecService?.appliedUnitPrice || 3800);
-    const waterPrice = Number(waterService?.appliedUnitPrice || 30000);
-    const elecDiff = Math.max(0, finalElec - initElec);
-    const waterDiff = Math.max(0, finalWater - initWater);
-    const utilityCost = elecDiff * elecPrice + waterDiff * waterPrice;
-    const refund = ctr.depositAmount - utilityCost - damages;
+    let totalUtilityCost = 0;
+    (ctr.services || []).forEach((s) => {
+      if (s.billingMethod === 'METER_INDEX') {
+        const sKey = String(s.id);
+        const finalVal = Number(readings?.[sKey] ?? s.lastIndex ?? 0);
+        const initVal = Number(s.lastIndex ?? 0);
+        const consumed = Math.max(0, finalVal - initVal);
+        const price = Number(s.appliedUnitPrice || 0);
+        totalUtilityCost += consumed * price;
+      }
+    });
+
+    const refund = (ctr.depositAmount || 0) - totalUtilityCost - damages;
     setCalculatedRefund(refund);
   };
 
   useEffect(() => {
     if (open && contract) {
       form.resetFields();
-      const elecService = contract.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'));
-      const waterService = contract.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'));
-      const initElec = elecService?.lastIndex ?? 0;
-      const initWater = waterService?.lastIndex ?? 0;
+      const initialMeterReadings: Record<string, number> = {};
+      (contract.services || []).forEach((s) => {
+        if (s.billingMethod === 'METER_INDEX') {
+          initialMeterReadings[String(s.id)] = s.lastIndex ?? 0;
+        }
+      });
 
       form.setFieldsValue({
-        finalElectricIndex: initElec,
-        finalWaterIndex: initWater,
+        meterReadings: initialMeterReadings,
         repairDoorFee: 0,
         cardFee: 0,
       });
 
-      calculateRefund(contract, initElec, initWater, 0);
+      calculateRefund(contract, initialMeterReadings, 0);
     }
   }, [open, contract]);
 
   const handleValuesChange = (_: any, allValues: any) => {
     if (!contract) return;
-    const elec = Number(allValues.finalElectricIndex || 0);
-    const water = Number(allValues.finalWaterIndex || 0);
     const damage =
       Number(allValues.repairDoorFee || 0) + Number(allValues.cardFee || 0);
-    calculateRefund(contract, elec, water, damage);
+    calculateRefund(contract, allValues.meterReadings || {}, damage);
   };
 
   const handleFinish = async () => {
@@ -74,9 +80,18 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
     try {
       const values = await form.validateFields();
       const damageTotal = (values.repairDoorFee || 0) + (values.cardFee || 0);
+
+      const readingsPayload = meterServices.map((s) => {
+        const sKey = String(s.id);
+        const finalVal = Number(values.meterReadings?.[sKey] ?? s.lastIndex ?? 0);
+        return {
+          contractServiceId: Number(s.id),
+          finalIndex: finalVal,
+        };
+      });
+
       await onSubmit(contract.id, {
-        finalElectricIndex: values.finalElectricIndex,
-        finalWaterIndex: values.finalWaterIndex,
+        meterReadings: readingsPayload,
         damageCost: damageTotal,
         damageNote: 'Sửa chữa hỏng hóc & Mất thẻ từ/chìa khóa',
       });
@@ -126,38 +141,44 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         {/* Khối chỉ số công tơ chốt */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-stay-text">
-            1. Chỉ số tiêu thụ điện nước chốt ngày bàn giao
+            1. Chỉ số tiêu thụ các dịch vụ tính theo công tơ (METER_INDEX)
           </h3>
           <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Form.Item
-                label={
-                  <span className="text-stay-text font-medium text-xs">
-                    Chỉ số điện chốt cuối (kWh) (Đầu kỳ:{' '}
-                    {contract?.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'))?.lastIndex ?? 0})
-                  </span>
-                }
-                name="finalElectricIndex"
-                className="mb-0"
-                rules={[{ required: true, message: 'Nhập chỉ số điện chốt cuối' }]}
-              >
-                <InputNumber min={0} className="w-full h-10 font-mono font-medium" />
-              </Form.Item>
-
-              <Form.Item
-                label={
-                  <span className="text-stay-text font-medium text-xs">
-                    Chỉ số nước chốt cuối (m³) (Đầu kỳ:{' '}
-                    {contract?.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'))?.lastIndex ?? 0})
-                  </span>
-                }
-                name="finalWaterIndex"
-                className="mb-0"
-                rules={[{ required: true, message: 'Nhập chỉ số nước chốt cuối' }]}
-              >
-                <InputNumber min={0} className="w-full h-10 font-mono font-medium" />
-              </Form.Item>
-            </div>
+            {meterServices.length === 0 ? (
+              <p className="text-stay-text-secondary text-xs italic">
+                Hợp đồng này không có dịch vụ nào tính theo công tơ (chỉ có dịch vụ cố định / theo đầu người).
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {meterServices.map((service) => {
+                  const sKey = String(service.id);
+                  const title = service.serviceName || 'Dịch vụ';
+                  return (
+                    <Form.Item
+                      key={sKey}
+                      label={
+                        <span className="text-stay-text font-medium text-xs">
+                          {title} (Đầu kỳ: {service.lastIndex ?? 0} {service.unit || ''})
+                        </span>
+                      }
+                      name={['meterReadings', sKey]}
+                      className="mb-0"
+                      rules={[
+                        {
+                          required: true,
+                          message: `Nhập chỉ số chốt cho ${title}`,
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={service.lastIndex ?? 0}
+                        className="w-full h-10 font-mono font-medium"
+                      />
+                    </Form.Item>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -207,7 +228,7 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
                 <span className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">
                   Số tiền hoàn trả khách thuê:
                 </span>
-                <Tooltip title="Số tiền hoàn trả = Tiền cọc gốc - Chi phí điện nước ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản">
+                <Tooltip title="Số tiền hoàn trả = Tiền cọc gốc - Chi phí dịch vụ công tơ ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản">
                   <HelpCircle className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 hover:opacity-80 cursor-pointer inline" />
                 </Tooltip>
               </div>

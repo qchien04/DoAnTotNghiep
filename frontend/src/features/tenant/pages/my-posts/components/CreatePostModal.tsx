@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, InputNumber, Select, message, Segmented } from 'antd';
-import { useRoommatePosts } from '@/shared/hooks';
+import { useCreatePostWithRoom, useCreatePostWithoutRoom } from '@/shared/hooks';
 import { Home, Search, Users } from 'lucide-react';
 
 interface CreatePostModalProps {
@@ -30,7 +30,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [form] = Form.useForm();
   const [postType, setPostType] = useState<'HAS_ROOM' | 'SEARCHING_ROOM'>('HAS_ROOM');
   const [submitting, setSubmitting] = useState(false);
-  const { createPostWithRoom, createPostWithoutRoom } = useRoommatePosts();
+  const { createPostWithRoom } = useCreatePostWithRoom();
+  const { createPostWithoutRoom } = useCreatePostWithoutRoom();
 
   const handlePostTypeChange = (val: 'HAS_ROOM' | 'SEARCHING_ROOM') => {
     setPostType(val);
@@ -279,7 +280,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               Tiêu chuẩn lối sống & Thói quen sinh hoạt
             </span>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
               <Form.Item
                 label={<span className="text-[11px] text-stay-text-secondary">Giới tính mong muốn</span>}
                 name="genderPreference"
@@ -289,8 +290,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   className="w-full text-xs"
                   options={[
                     { value: 'ANY', label: 'Linh hoạt Nam/Nữ' },
-                    { value: 'MALE', label: 'Ưu tiên Nam' },
-                    { value: 'FEMALE', label: 'Ưu tiên Nữ' },
+                    { value: 'MALE_ONLY', label: 'Ưu tiên Nam' },
+                    { value: 'FEMALE_ONLY', label: 'Ưu tiên Nữ' },
                   ]}
                 />
               </Form.Item>
@@ -320,6 +321,20 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   options={[
                     { value: 'NO', label: 'Không khói thuốc' },
                     { value: 'YES', label: 'Có hút thuốc' },
+                  ]}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={<span className="text-[11px] text-stay-text-secondary">Nuôi thú cưng</span>}
+                name="pet"
+                className="mb-0"
+              >
+                <Select
+                  className="w-full text-xs"
+                  options={[
+                    { value: 'NO', label: 'Không nuôi pet' },
+                    { value: 'YES', label: 'Thoải mái với pet' },
                   ]}
                 />
               </Form.Item>
