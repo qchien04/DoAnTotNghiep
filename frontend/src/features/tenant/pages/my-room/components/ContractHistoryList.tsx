@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { TenantContractHistory } from '@/shared/types/tenant';
 import { PageResponse } from '@/shared/types/api';
-import { Button, Table, Modal, Input } from '@/shared/components';
+import { Button, Table, Modal, Input, StatusBadge } from '@/shared/components';
 import { Tooltip, Select, message } from 'antd';
 import {
   FileText,
@@ -34,38 +34,9 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
 
   const getStatusBadge = (status: string, isCurrent: boolean) => {
     if (isCurrent) {
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-          Đang thuê
-        </span>
-      );
+      return <StatusBadge status="ACTIVE" label="Đang thuê" />;
     }
-    switch (status?.toUpperCase()) {
-      case 'ACTIVE':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-            Hiệu lực
-          </span>
-        );
-      case 'EXPIRED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-stay-text-muted bg-stay-bg-app border border-stay-border">
-            Hết hạn
-          </span>
-        );
-      case 'TERMINATED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20">
-            Đã thanh lý
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20">
-            {status || 'Đã kết thúc'}
-          </span>
-        );
-    }
+    return <StatusBadge status={status} />;
   };
 
   const filteredContracts = useMemo(() => {

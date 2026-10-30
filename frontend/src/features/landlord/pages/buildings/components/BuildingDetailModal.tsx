@@ -130,7 +130,7 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
             variant="outline"
             size="md"
             onClick={onCancel}
-            className="h-10 px-5 rounded-xl border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium"
+            className="h-9 px-4 rounded-lg border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium text-[14px]"
           >
             Đóng
           </Button>
@@ -143,7 +143,7 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
                 onCancel();
                 onEdit(building);
               }}
-              className="h-10 px-5 rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white font-semibold shadow-xs"
+              className="h-9 px-4 rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white font-medium text-[14px] shadow-xs"
             >
               Chỉnh sửa
             </Button>
@@ -153,30 +153,30 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
     >
       <div className="mt-4 space-y-4 text-[14px]">
         {/* 1. THÔNG TIN TÊN & SỐ TẦNG */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2">
-            <label className="font-semibold text-stay-text text-sm block mb-1">
-              Tên tòa nhà / Khu trọ
-            </label>
-            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-bg-app text-stay-text">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6">
+          <div className="flex items-center gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+              Tên tòa nhà / Khu:
+            </span>
+            <span className="text-stay-text text-[14px] font-semibold">
               {building.name}
-            </div>
+            </span>
           </div>
 
-          <div>
-            <label className="font-semibold text-stay-text text-sm block mb-1">
-              Số tầng
-            </label>
-            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-bg-app text-stay-text">
+          <div className="flex items-center gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+              Số tầng:
+            </span>
+            <span className="text-stay-text text-[14px] font-medium">
               {building.numFloors ?? 1} tầng
-            </div>
+            </span>
           </div>
         </div>
 
-        {/* 2. BẢN ĐỒ VỊ TRÍ & ĐỊA CHỈ (2 CỘT TỶ LỆ 6:4) */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+        {/* 2. BẢN ĐỒ VỊ TRÍ & ĐỊA CHỈ */}
+        <div className="space-y-3 pt-3.5 border-t border-stay-border-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-stay-text">
+            <span className="text-[13px] font-semibold text-stay-text-secondary block">
               Vị trí trên bản đồ & địa chỉ tòa nhà
             </span>
             {building.latitude && building.longitude && (
@@ -192,87 +192,90 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-            {/* CỘT 1 (TỶ LỆ ~60%): BẢN ĐỒ LEAFLET */}
+            {/* CỘT 1: BẢN ĐỒ LEAFLET */}
             <div className="lg:col-span-7">
               <div className="relative rounded-xl overflow-hidden border border-stay-border shadow-inner">
                 <div
                   ref={mapContainerRef}
-                  style={{ width: '100%', height: '260px' }}
+                  style={{ width: '100%', height: '240px' }}
                   className="z-0"
                 />
               </div>
             </div>
 
-            {/* CỘT 2 (TỶ LỆ ~40%): CÁC Ô HIỂN THỊ ĐỊA CHỈ */}
+            {/* CỘT 2: CÁC DÒNG ĐỊA CHỈ */}
             <div className="lg:col-span-5 space-y-2.5">
-              <div>
-                <label className="font-semibold text-stay-text block mb-1">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-stay-text-secondary text-[13px]">
                   Tỉnh / Thành phố
-                </label>
-                <div className="w-full h-9 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                </span>
+                <span className="text-stay-text text-[14px] font-medium">
                   {building.province || '—'}
-                </div>
+                </span>
               </div>
 
-              <div>
-                <label className="font-semibold text-stay-text block mb-1">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-stay-text-secondary text-[13px]">
                   Phường / Xã
-                </label>
-                <div className="w-full h-9 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                </span>
+                <span className="text-stay-text text-[14px] font-medium">
                   {building.ward || '—'}
-                </div>
+                </span>
               </div>
 
-              <div>
-                <label className="font-semibold text-stay-text block mb-1">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-stay-text-secondary text-[13px]">
                   Địa chỉ chi tiết
-                </label>
-                <div className="w-full p-2.5 min-h-[72px] rounded-lg border border-stay-border bg-stay-card-bg text-stay-text whitespace-pre-line">
+                </span>
+                <span className="text-stay-text text-[14px] font-medium leading-relaxed">
                   {building.addressDetail || '—'}
-                </div>
+                </span>
               </div>
             </div>
           </div>
         </div>
 
         {/* 3. THỐNG KÊ PHÒNG TRỌ */}
-        <div className="pt-4 border-t border-stay-border-subtle">
+        <div className="pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block mb-2">
+            Thống kê phòng trọ
+          </span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="font-semibold text-stay-text-secondary text-xs block mb-1">
-                Tổng số phòng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">
+                Tổng số phòng:
+              </span>
+              <span className="text-stay-text text-[14px] font-semibold">
                 {building.totalRooms ?? 0} phòng
-              </div>
+              </span>
             </div>
 
-            <div>
-              <label className="font-semibold text-stay-text-secondary text-xs block mb-1">
-                Đang cho thuê
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">
+                Đang cho thuê:
+              </span>
+              <span className="text-blue-600 dark:text-blue-400 text-[14px] font-semibold">
                 {building.occupiedRooms ?? 0} phòng
-              </div>
+              </span>
             </div>
 
-            <div>
-              <label className="font-semibold text-stay-text-secondary text-xs block mb-1">
-                Phòng còn trống
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">
+                Phòng còn trống:
+              </span>
+              <span className="text-emerald-600 dark:text-emerald-400 text-[14px] font-semibold">
                 {building.availableRooms ?? 0} phòng
-              </div>
+              </span>
             </div>
           </div>
         </div>
 
         {/* 4. QUY ĐỊNH CHUNG */}
-        <div className="pt-4 border-t border-stay-border-subtle">
-          <label className="font-semibold text-stay-text text-sm block mb-1">
+        <div className="pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block mb-1.5">
             Quy định chung của tòa nhà
-          </label>
-          <div className="p-3 min-h-[64px] rounded-lg border border-stay-border bg-stay-card-bg text-stay-text whitespace-pre-line leading-relaxed">
+          </span>
+          <div className="text-stay-text whitespace-pre-line leading-relaxed text-[14px]">
             {building.generalRules || 'Chưa thiết lập quy định chung.'}
           </div>
         </div>

@@ -8,7 +8,7 @@ import {
   useApproveApplication,
   useRejectApplication,
 } from '@/shared/hooks';
-import { Table } from '@/shared/components';
+import { Table, StatusBadge } from '@/shared/components';
 import {
   Button,
   Input,
@@ -262,11 +262,12 @@ export const MyRoommatePostsPage: React.FC = () => {
       key: 'status',
       width: 130,
       align: 'center' as const,
-      render: (st: RoommatePostStatus) => {
-        if (st === 'OPEN') return <span className="inline-flex items-center px-2 py-0.5 rounded  font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">Đang tìm</span>;
-        if (st === 'COMPLETED') return <span className="inline-flex items-center px-2 py-0.5 rounded  font-semibold text-stay-primary bg-stay-primary/10">Đã chốt</span>;
-        return <span className="inline-flex items-center px-2 py-0.5 rounded  font-medium text-stay-text-muted bg-stay-bg-app">Đã đóng</span>;
-      },
+      render: (st: RoommatePostStatus) => (
+        <StatusBadge
+          status={st}
+          label={st === 'OPEN' ? 'Đang tìm' : st === 'COMPLETED' ? 'Đã ghép' : 'Đã đóng'}
+        />
+      ),
     },
     {
       title: 'Thao tác',

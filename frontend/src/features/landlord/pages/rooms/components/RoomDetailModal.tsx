@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button } from '@/shared/components';
+import { Modal, Button, StatusBadge } from '@/shared/components';
 import { Room } from '@/shared/types/landlord';
 
 interface RoomDetailModalProps {
@@ -17,21 +17,6 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 }) => {
   if (!room) return null;
 
-  const renderStatus = () => {
-    switch (room.status) {
-      case 'AVAILABLE':
-        return 'Còn trống (Sẵn sàng cho thuê)';
-      case 'OCCUPIED':
-        return 'Đang có người thuê';
-      case 'UNDER_MAINTENANCE':
-        return 'Đang sửa chữa / bảo trì';
-      case 'STOPPED':
-        return 'Ngừng sử dụng';
-      default:
-        return room.status;
-    }
-  };
-
   const images = room.imageUrls && room.imageUrls.length > 0 ? room.imageUrls : room.coverImageUrl ? [room.coverImageUrl] : [];
   const rawAmenities = room.amenities as any;
   const amenityList: string[] = Array.isArray(rawAmenities)
@@ -45,7 +30,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       open={open}
       onCancel={onCancel}
       title={`Chi tiết phòng: ${room.name}`}
-      width={940}
+      width={860}
       centered
       destroyOnClose
       footer={
@@ -55,7 +40,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             variant="outline"
             size="md"
             onClick={onCancel}
-            className="h-10 px-5 rounded-xl border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium"
+            className="h-9 px-4 rounded-lg border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium text-[14px]"
           >
             Đóng
           </Button>
@@ -68,7 +53,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                 onCancel();
                 onEdit(room);
               }}
-              className="h-10 px-5 rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white font-semibold shadow-xs"
+              className="h-9 px-4 rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white font-medium text-[14px] shadow-xs"
             >
               Chỉnh sửa
             </Button>
@@ -79,10 +64,10 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       <div className="mt-4 space-y-4 text-[14px]">
         {/* Hình ảnh phòng */}
         {images.length > 0 && (
-          <div className="space-y-1">
-            <label className=" font-semibold text-stay-text-secondary block">
+          <div className="space-y-1.5">
+            <span className="text-[13px] font-semibold text-stay-text-secondary block">
               Hình ảnh phòng trọ ({images.length} ảnh)
-            </label>
+            </span>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {images.map((img, i) => (
                 <img
@@ -97,112 +82,103 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         )}
 
         {/* SECTION 1: TÒA NHÀ & VỊ TRÍ */}
-        {/* SECTION 1: TÒA NHÀ & VỊ TRÍ */}
-        <div className="space-y-3">
-          <div className="space-y-3">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Thuộc tòa nhà / Khu trọ
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {room.buildingName ? `Tòa nhà: ${room.buildingName}` : 'Phòng trọ độc lập (không thuộc tòa nhà nào)'}
-              </div>
-            </div>
+        <div className="space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-40 shrink-0">
+              Thuộc tòa nhà / Khu trọ:
+            </span>
+            <span className="text-stay-text text-[14px] font-medium">
+              {room.buildingName ? `Tòa nhà: ${room.buildingName}` : 'Phòng trọ độc lập (không thuộc tòa nhà nào)'}
+            </span>
+          </div>
 
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Địa chỉ chi tiết
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {room.addressDetail || '—'}
-              </div>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-40 shrink-0">
+              Địa chỉ chi tiết:
+            </span>
+            <span className="text-stay-text text-[14px]">
+              {room.addressDetail || '—'}
+            </span>
           </div>
         </div>
 
         {/* SECTION 2: THÔNG TIN CƠ BẢN & GIÁ THUÊ */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-          <div className="space-y-3">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Tên phòng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+        <div className="pt-3.5 border-t border-stay-border-subtle">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Tên phòng:
+              </span>
+              <span className="text-stay-text text-[14px] font-semibold">
                 {room.name}
-              </div>
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Tầng bố trí
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  Tầng {room.floor ?? 1}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Diện tích phòng
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {room.area ?? 0} m²
-                </div>
-              </div>
-
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Sức chứa tối đa
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {room.maxCapacity ?? 1} người
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Trạng thái:
+              </span>
+              <StatusBadge status={room.status} />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Giá thuê niêm yết
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {Number(room.listedPrice || 0).toLocaleString()} đ/tháng
-                </div>
-              </div>
-
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Tiền cọc tiêu chuẩn
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {Number(room.standardDeposit || 0).toLocaleString()} đ
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Tầng bố trí:
+              </span>
+              <span className="text-stay-text text-[14px]">
+                Tầng {room.floor ?? 1}
+              </span>
             </div>
 
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Trạng thái phòng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {renderStatus()}
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Diện tích:
+              </span>
+              <span className="text-stay-text text-[14px]">
+                {room.area ?? 0} m²
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Sức chứa tối đa:
+              </span>
+              <span className="text-stay-text text-[14px]">
+                {room.maxCapacity ?? 1} người
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Tiền cọc tiêu chuẩn:
+              </span>
+              <span className="text-stay-text text-[14px] font-semibold">
+                {Number(room.standardDeposit || 0).toLocaleString()} đ
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 sm:col-span-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Giá thuê niêm yết:
+              </span>
+              <span className="text-stay-primary text-[15px] font-bold">
+                {Number(room.listedPrice || 0).toLocaleString()} đ/tháng
+              </span>
             </div>
           </div>
         </div>
 
         {/* SECTION 3: TIỆN NGHI */}
         {amenityList.length > 0 && (
-          <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-            <h3 className="text-sm font-semibold text-stay-text">
+          <div className="space-y-2 pt-3.5 border-t border-stay-border-subtle">
+            <span className="text-[13px] font-semibold text-stay-text-secondary block">
               Tiện nghi phòng trọ
-            </h3>
+            </span>
             <div className="flex flex-wrap gap-2">
               {amenityList.map((item, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1.5 rounded-lg border border-stay-border text-stay-text font-medium text-sm"
+                  className="px-2.5 py-1 rounded-md border border-stay-border bg-stay-bg-app text-stay-text font-medium text-xs"
                 >
                   {item}
                 </span>
@@ -213,11 +189,11 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
         {/* SECTION 4: MÔ TẢ CHI TIẾT */}
         {room.description && (
-          <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-            <h3 className="text-sm font-semibold text-stay-text">
-              4. Mô tả chi tiết phòng
-            </h3>
-            <div className="text-stay-text whitespace-pre-line leading-relaxed text-sm">
+          <div className="space-y-1.5 pt-3.5 border-t border-stay-border-subtle">
+            <span className="text-[13px] font-semibold text-stay-text-secondary block">
+              Mô tả chi tiết phòng
+            </span>
+            <div className="text-stay-text whitespace-pre-line leading-relaxed text-[14px]">
               {room.description}
             </div>
           </div>

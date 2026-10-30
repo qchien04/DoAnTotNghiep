@@ -349,49 +349,49 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
 
         {/* THÔNG TIN HỢP ĐỒNG & KHÁCH THUÊ */}
         {isContractLoading ? (
-          <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border flex items-center justify-center gap-2 text-xs text-stay-text-secondary">
+          <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border flex items-center justify-center gap-2 text-[13px] text-stay-text-secondary">
             <Spin size="small" />
             <span>Đang tải chi tiết hợp đồng...</span>
           </div>
         ) : selectedContract ? (
-          <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border grid grid-cols-1 sm:grid-cols-4 gap-3 text-[14px]">
             <div>
-              <span className="text-stay-text-secondary block mb-0.5">Phòng & Khu trọ:</span>
-              <span className="font-semibold text-stay-text text-sm">
+              <span className="text-stay-text-secondary text-[13px] block mb-0.5">Phòng & Khu trọ:</span>
+              <span className="font-semibold text-stay-text text-[14px]">
                 {selectedContract.roomName || `Phòng ${selectedContract.roomId}`}
               </span>
               {selectedContract.buildingName && (
-                <span className="font-normal text-stay-text-secondary text-xs block">
+                <span className="font-normal text-stay-text-secondary text-[12px] block">
                   {selectedContract.buildingName}
                 </span>
               )}
             </div>
             <div>
-              <span className="text-stay-text-secondary block mb-0.5">Khách đại diện:</span>
-              <span className="font-semibold text-stay-text text-sm">
+              <span className="text-stay-text-secondary text-[13px] block mb-0.5">Khách đại diện:</span>
+              <span className="font-semibold text-stay-text text-[14px]">
                 {selectedContract.representativeTenantName || '—'}
               </span>
               {selectedContract.representativeTenantPhone && (
-                <span className="text-stay-text-secondary text-xs block">
+                <span className="text-stay-text-secondary text-[12px] block">
                   {selectedContract.representativeTenantPhone}
                 </span>
               )}
             </div>
             <div>
-              <span className="text-stay-text-secondary block mb-0.5">Thời hạn hợp đồng:</span>
-              <span className="text-stay-text  block">
+              <span className="text-stay-text-secondary text-[13px] block mb-0.5">Thời hạn hợp đồng:</span>
+              <span className="text-stay-text text-[14px] block">
                 {selectedContract.startDate} → {selectedContract.endDate}
               </span>
             </div>
             <div>
-              <span className="text-stay-text-secondary block mb-0.5">Tiền thuê phòng:</span>
-              <span className="text-base font-bold text-stay-primary">
+              <span className="text-stay-text-secondary text-[13px] block mb-0.5">Tiền thuê phòng:</span>
+              <span className="text-[15px] font-bold text-stay-primary">
                 {roomRentPrice.toLocaleString()} đ/tháng
               </span>
             </div>
           </div>
         ) : (
-          <div className="p-3.5 rounded-xl border border-dashed border-stay-border bg-stay-bg-app text-center text-xs text-stay-text-secondary">
+          <div className="p-3.5 rounded-xl border border-dashed border-stay-border bg-stay-bg-app text-center text-[13px] text-stay-text-secondary">
             Vui lòng chọn hợp đồng để nạp thông tin phòng và bảng dịch vụ.
           </div>
         )}
@@ -399,22 +399,22 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         {/* SECTION 2: BẢNG DỊCH VỤ THEO HỢP ĐỒNG */}
         <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
           <div className="flex items-center gap-1.5">
-            <h3 className="text-sm font-semibold text-stay-text">
+            <span className="text-[13px] font-semibold text-stay-text-secondary block">
               Dịch vụ hợp đồng ({dynamicServices.length})
-            </h3>
+            </span>
             <Tooltip title="Chỉ số điện/nước và phí dịch vụ cố định được tải từ hợp đồng thuê phòng">
               <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
             </Tooltip>
           </div>
 
           {dynamicServices.length === 0 ? (
-            <div className="p-3.5 rounded-xl border border-dashed border-stay-border bg-stay-card-bg text-center text-stay-text-secondary text-xs">
+            <div className="p-3.5 rounded-xl border border-dashed border-stay-border bg-stay-card-bg text-center text-stay-text-secondary text-[13px]">
               Hợp đồng này không đăng ký dịch vụ tiện ích bổ sung.
             </div>
           ) : (
             <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[11px] font-semibold uppercase tracking-wider">
+                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[13px] font-semibold">
                   <tr>
                     <th className="p-2.5 pl-3">Dịch vụ</th>
                     <th className="p-2.5 text-right w-28">Đơn giá</th>
@@ -554,7 +554,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
           ) : (
             <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[11px] font-semibold uppercase tracking-wider">
+                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[13px] font-semibold">
                   <tr>
                     <th className="p-2.5 pl-3 w-28 text-center">Loại</th>
                     <th className="p-2.5">Nguyên nhân / Nội dung</th>
@@ -664,32 +664,32 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
         </div>
 
         {/* SECTION 4: TỔNG KẾT CHI PHÍ */}
-        <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border space-y-2.5">
-          <div className="flex justify-between items-center text-xs text-stay-text-secondary">
+        <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border space-y-2 text-[14px]">
+          <div className="flex justify-between items-center text-stay-text-secondary">
             <span>Tiền thuê phòng:</span>
-            <span className="font-semibold text-stay-text text-sm">{roomRentPrice.toLocaleString()} đ</span>
+            <span className="font-semibold text-stay-text">{roomRentPrice.toLocaleString()} đ</span>
           </div>
           {servicesTotal > 0 && (
-            <div className="flex justify-between items-center text-xs text-stay-text-secondary">
+            <div className="flex justify-between items-center text-stay-text-secondary">
               <span>Tiền dịch vụ ({dynamicServices.length} khoản):</span>
-              <span className="font-semibold text-stay-text text-sm">{servicesTotal.toLocaleString()} đ</span>
+              <span className="font-semibold text-stay-text">{servicesTotal.toLocaleString()} đ</span>
             </div>
           )}
           {totalSurcharge > 0 && (
-            <div className="flex justify-between items-center text-xs text-stay-text-secondary">
+            <div className="flex justify-between items-center text-stay-text-secondary">
               <span>Phụ thu phát sinh:</span>
-              <span className="font-semibold text-stay-text text-sm">+{totalSurcharge.toLocaleString()} đ</span>
+              <span className="font-semibold text-stay-text">+{totalSurcharge.toLocaleString()} đ</span>
             </div>
           )}
           {totalDiscount > 0 && (
-            <div className="flex justify-between items-center text-xs text-stay-text-secondary">
+            <div className="flex justify-between items-center text-stay-text-secondary">
               <span>Giảm trừ:</span>
-              <span className="font-semibold text-stay-text text-sm">-{totalDiscount.toLocaleString()} đ</span>
+              <span className="font-semibold text-stay-text">-{totalDiscount.toLocaleString()} đ</span>
             </div>
           )}
           <div className="pt-2.5 border-t border-stay-border flex justify-between items-center">
-            <span className="font-bold text-stay-text text-sm">TỔNG TIỀN HÓA ĐƠN:</span>
-            <span className="text-xl font-bold text-stay-primary">
+            <span className="font-bold text-stay-text text-[14px]">TỔNG TIỀN HÓA ĐƠN:</span>
+            <span className="text-[16px] font-bold text-stay-primary">
               {grandTotal.toLocaleString()} VNĐ
             </span>
           </div>

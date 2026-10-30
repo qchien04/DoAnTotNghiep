@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, Send, DollarSign, XCircle } from 'lucide-react';
-import { Table } from '@/shared/components';
+import { Table, StatusBadge } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { InvoiceResponse, InvoiceStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
@@ -24,52 +24,7 @@ export const BillTable: React.FC<BillTableProps> = ({
   onOpenCancel,
   onPublish,
 }) => {
-  const renderStatus = (st: InvoiceStatus) => {
-    switch (st) {
-      case 'DRAFT':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-            Bản nháp
-          </span>
-        );
-      case 'PAID':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-medium bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-            Đã thanh toán
-          </span>
-        );
-      case 'PARTIALLY_PAID':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-blue-700 dark:text-blue-300 font-medium bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-            Thanh toán 1 phần
-          </span>
-        );
-      case 'UNPAID':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-            Chờ thanh toán
-          </span>
-        );
-      case 'OVERDUE':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-medium bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">
-            Quá hạn
-          </span>
-        );
-      case 'CANCELLED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-            Đã hủy
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-            {st}
-          </span>
-        );
-    }
-  };
+  const renderStatus = (st: InvoiceStatus) => <StatusBadge status={st} />;
 
   const columns = [
     {

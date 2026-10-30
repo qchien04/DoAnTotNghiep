@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye } from 'lucide-react';
 import { Tooltip } from 'antd';
-import { Table } from '@/shared/components';
+import { Table, StatusBadge } from '@/shared/components';
 import { Complaint, ComplaintStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
 import { getComplaintIncidentTypeLabel } from '@/shared/utils';
@@ -19,36 +19,9 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
   onPageChange,
   onOpenDetail,
 }) => {
-  const renderStatus = (st: ComplaintStatus) => {
-    switch (st) {
-      case 'PENDING':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
-            Chờ tiếp nhận
-          </span>
-        );
-      case 'PROCESSING':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-            Đang xử lý
-          </span>
-        );
-      case 'RESOLVED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-            Đã xử lý
-          </span>
-        );
-      case 'REJECTED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
-            Từ chối
-          </span>
-        );
-      default:
-        return <span className="text-stay-text-muted">{st}</span>;
-    }
-  };
+  const renderStatus = (st: ComplaintStatus) => (
+    <StatusBadge status={st} label={st === 'PENDING' ? 'Chờ tiếp nhận' : undefined} />
+  );
 
   const columns = [
     {

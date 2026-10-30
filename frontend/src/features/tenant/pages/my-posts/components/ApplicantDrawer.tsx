@@ -2,6 +2,7 @@ import React from 'react';
 import { Drawer, Table, Button, Tag, Space, Empty } from 'antd';
 import { Link } from 'react-router-dom';
 import { ExternalLink, CheckCircle, XCircle, MapPin, Users } from 'lucide-react';
+import { StatusBadge } from '@/shared/components';
 import { RoommatePost, RoommateApplication } from '@/shared/types/tenant';
 import { formatCurrency, getRoommateApplicationStatusLabel } from '@/shared/utils';
 
@@ -94,28 +95,13 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 110,
-      render: (st: string) => {
-        if (st === 'APPROVED') {
-          return (
-            <span className=" font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              {getRoommateApplicationStatusLabel(st)}
-            </span>
-          );
-        }
-        if (st === 'REJECTED') {
-          return (
-            <span className=" font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-              {getRoommateApplicationStatusLabel(st)}
-            </span>
-          );
-        }
-        return (
-          <span className=" font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-            {getRoommateApplicationStatusLabel(st)}
-          </span>
-        );
-      },
+      width: 120,
+      render: (st: string) => (
+        <StatusBadge
+          status={st}
+          label={getRoommateApplicationStatusLabel(st)}
+        />
+      ),
     },
     {
       title: 'Thao tác',

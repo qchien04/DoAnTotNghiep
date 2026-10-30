@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMyBills, useConfirmPaymentTransferred, useVietQRPayment } from '@/shared/hooks';
-import { Button, Table, Modal, Input } from '@/shared/components';
+import { Button, Table, Modal, Input, StatusBadge } from '@/shared/components';
 import { Tooltip, Select } from 'antd';
 import {
   QrCode,
@@ -69,36 +69,7 @@ export const TenantBillsPage: React.FC = () => {
     }
   };
 
-  const renderStatus = (st: InvoiceStatus | string) => {
-    switch (st) {
-      case 'PAID':
-        return (
-          <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[13px]">
-            Đã thanh toán
-          </span>
-        );
-      case 'UNPAID':
-        return (
-          <span className="text-amber-600 dark:text-amber-400 font-medium text-[13px]">
-            Chờ thanh toán
-          </span>
-        );
-      case 'OVERDUE':
-        return (
-          <span className="text-rose-600 dark:text-rose-400 font-medium text-[13px]">
-            Quá hạn
-          </span>
-        );
-      case 'CANCELLED':
-        return (
-          <span className="text-stay-text-muted text-[13px]">
-            Đã hủy
-          </span>
-        );
-      default:
-        return <span className="text-stay-text-muted text-[13px]">{st}</span>;
-    }
-  };
+  const renderStatus = (st: InvoiceStatus | string) => <StatusBadge status={st} />;
 
   const columns = [
     {

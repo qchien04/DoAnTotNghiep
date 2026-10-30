@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, Edit2, Trash2 } from 'lucide-react';
 import { Tooltip } from 'antd';
-import { Table, Popconfirm } from '@/shared/components';
+import { Table, Popconfirm, StatusBadge } from '@/shared/components';
 import { UtilityService } from '@/shared/types/landlord';
 import { getBillingMethodShortLabel } from '@/shared/utils';
 
@@ -105,20 +105,14 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
     {
       title: 'Trạng thái',
       key: 'isActive',
-      width: 130,
+      width: 140,
       ellipsis: { showTitle: true },
-      render: (_: any, r: UtilityService) => {
-        const active = Boolean(r.isActive);
-        return active ? (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-            Đang áp dụng
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
-            Tạm ngừng
-          </span>
-        );
-      },
+      render: (_: any, r: UtilityService) => (
+        <StatusBadge
+          status={r.isActive !== false ? 'ACTIVE' : 'STOPPED'}
+          label={r.isActive !== false ? 'Đang áp dụng' : 'Tạm ngừng'}
+        />
+      ),
     },
     {
       title: 'Thao tác',

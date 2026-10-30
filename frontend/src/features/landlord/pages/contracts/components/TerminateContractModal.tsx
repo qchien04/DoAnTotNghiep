@@ -117,30 +117,33 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         className="mt-4 space-y-4"
         onValuesChange={handleValuesChange}
       >
-        {/* Banner tóm tắt hợp đồng */}
-        <div className="flex items-center justify-between pb-1">
-          <div>
-            <span className="text-stay-text-secondary uppercase font-semibold text-xs">Hợp đồng:</span>
-            <p className="font-bold text-stay-text text-base">
-              {`HĐ #${contract?.id}`}
-            </p>
-            <span className="text-stay-text-secondary text-sm">
-              Phòng: <strong className="text-stay-text">{contract?.roomName}</strong> | Khách: <strong className="text-stay-text">{contract?.representativeTenantName}</strong>
-            </span>
-          </div>
-          <div className="text-right">
-            <span className="text-stay-text-secondary uppercase font-semibold text-xs">Tiền cọc ban đầu:</span>
-            <p className="font-bold text-stay-primary text-base">
-              {(contract?.depositAmount ?? 0).toLocaleString()} VNĐ
-            </p>
+        {/* Tóm tắt hợp đồng */}
+        <div className="space-y-2 pb-1 text-[14px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Hợp đồng:</span>
+              <span className="text-stay-text font-semibold text-[14px]">{`HĐ #${contract?.id}`}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Tiền cọc ban đầu:</span>
+              <span className="text-stay-text font-semibold text-[14px]">{(contract?.depositAmount ?? 0).toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Phòng thuê:</span>
+              <span className="text-stay-text font-medium text-[14px]">{contract?.roomName || '—'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Khách đại diện:</span>
+              <span className="text-stay-text font-medium text-[14px]">{contract?.representativeTenantName || '—'}</span>
+            </div>
           </div>
         </div>
 
         {/* Khối chỉ số công tơ chốt */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-          <h3 className="text-sm font-semibold text-stay-text">
+        <div className="space-y-3 pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block">
             1. Chỉ số tiêu thụ các dịch vụ tính theo công tơ (METER_INDEX)
-          </h3>
+          </span>
           {meterServices.length === 0 ? (
             <p className="text-stay-text-secondary italic text-sm">
               Hợp đồng này không có dịch vụ nào tính theo công tơ (chỉ có dịch vụ cố định / theo đầu người).
@@ -179,13 +182,13 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         </div>
 
         {/* Khối khấu trừ hư hại */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-          <h3 className="text-sm font-semibold text-stay-text">
+        <div className="space-y-3 pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block">
             2. Khấu trừ hư hại / bồi hoàn tài sản
-          </h3>
+          </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Form.Item
-              label={<span className="text-stay-text font-medium">Chi phí sửa chữa hỏng hóc (VNĐ)</span>}
+              label={<span className="text-stay-text font-medium text-[14px]">Chi phí sửa chữa hỏng hóc (VNĐ)</span>}
               name="repairDoorFee"
               className="mb-0"
             >
@@ -199,7 +202,7 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
             </Form.Item>
 
             <Form.Item
-              label={<span className="text-stay-text font-medium">Phí mất thẻ từ / chìa khóa (VNĐ)</span>}
+              label={<span className="text-stay-text font-medium text-[14px]">Phí mất thẻ từ / chìa khóa (VNĐ)</span>}
               name="cardFee"
               className="mb-0"
             >
@@ -216,16 +219,16 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
 
         {/* Card kết quả hoàn trả cọc */}
         {calculatedRefund !== null && (
-          <div className="pt-4 border-t border-stay-border-subtle flex items-center justify-between">
+          <div className="pt-3.5 border-t border-stay-border-subtle flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-stay-text text-sm">
+              <span className="font-semibold text-stay-text text-[14px]">
                 Số tiền hoàn trả khách thuê:
               </span>
               <Tooltip title="Số tiền hoàn trả = Tiền cọc gốc - Chi phí dịch vụ công tơ ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản">
                 <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
               </Tooltip>
             </div>
-            <span className="text-xl font-bold text-stay-primary">
+            <span className="text-[16px] font-bold text-stay-primary">
               {calculatedRefund.toLocaleString()} VNĐ
             </span>
           </div>

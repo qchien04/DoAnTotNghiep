@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal } from 'antd';
-import { Button } from '@/shared/components';
+import { Modal, Button, StatusBadge } from '@/shared/components';
 import { UtilityService } from '@/shared/types/landlord';
 import { getBillingMethodShortLabel } from '@/shared/utils';
 
@@ -45,7 +44,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
       open={open}
       onCancel={onCancel}
       title={`Chi tiết dịch vụ: ${service.name}`}
-      width={820}
+      width={720}
       centered
       destroyOnClose
       footer={
@@ -55,7 +54,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
             variant="outline"
             size="md"
             onClick={onCancel}
-            className="h-10 px-5 rounded-xl border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium"
+            className="h-9 px-4 rounded-lg border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium text-[14px]"
           >
             Đóng
           </Button>
@@ -68,7 +67,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                 onCancel();
                 onEdit(service);
               }}
-              className="h-10 px-5 rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white font-semibold shadow-xs"
+              className="h-9 px-4 rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white font-medium text-[14px] shadow-xs"
             >
               Chỉnh sửa
             </Button>
@@ -76,81 +75,78 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
         </div>
       }
     >
-      <div className="mt-4 space-y-4 text-[14px]">
+      <div className="mt-4 space-y-3.5 text-[14px]">
         {/* SECTION 1: ĐỊNH DANH & PHÂN LOẠI */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Tên dịch vụ
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {service.name}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6">
+          <div className="flex items-center gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+              Tên dịch vụ:
+            </span>
+            <span className="text-stay-text text-[14px] font-semibold">
+              {service.name}
+            </span>
+          </div>
 
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Phân loại dịch vụ
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {renderCategoryLabel(service.category as string)}
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+              Trạng thái:
+            </span>
+            <StatusBadge
+              status={service.isActive !== false ? 'ACTIVE' : 'STOPPED'}
+              label={service.isActive !== false ? 'Đang áp dụng' : 'Tạm dừng'}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+              Phân loại:
+            </span>
+            <span className="text-stay-text text-[14px]">
+              {renderCategoryLabel(service.category as string)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+              Phạm vi áp dụng:
+            </span>
+            <span className="text-stay-text text-[14px]">
+              {service.scope || 'Tất cả'}
+            </span>
           </div>
         </div>
 
         {/* SECTION 2: ĐƠN GIÁ & HÌNH THỨC THU */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Đơn vị tính
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+        <div className="pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block mb-2.5">
+            Đơn giá & Hình thức thu phí
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Đơn vị tính:
+              </span>
+              <span className="text-stay-text text-[14px]">
                 {service.unit || '—'}
-              </div>
+              </span>
             </div>
 
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Đơn giá (VNĐ)
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                {price.toLocaleString()} đ
-              </div>
-            </div>
-
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Hình thức thu phí
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Hình thức thu phí:
+              </span>
+              <span className="text-stay-text text-[14px] font-medium">
                 {getBillingMethodShortLabel(service.billingMethod)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 3: PHẠM VI & TRẠNG THÁI */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Phạm vi áp dụng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {service.scope || 'Tất cả'}
-              </div>
+              </span>
             </div>
 
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Trạng thái
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {service.isActive !== false ? 'Đang áp dụng' : 'Tạm dừng'}
-              </div>
+            <div className="flex items-center gap-2 sm:col-span-2">
+              <span className="text-stay-text-secondary text-[14px] w-36 shrink-0">
+                Đơn giá:
+              </span>
+              <span className="text-stay-primary text-[15px] font-bold">
+                {price.toLocaleString()} đ / {service.unit || 'lần'}
+              </span>
             </div>
           </div>
         </div>

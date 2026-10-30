@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, FileText } from 'lucide-react';
-import { Table } from '@/shared/components';
+import { Table, StatusBadge } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { RentalContract, ContractStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
@@ -20,24 +20,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
   onOpenDetail,
   onOpenTerminate,
 }) => {
-  const renderStatus = (st: ContractStatus) => {
-    switch (st) {
-      case 'ACTIVE':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-            Đang hiệu lực
-          </span>
-        );
-      case 'TERMINATED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
-            Đã thanh lý
-          </span>
-        );
-      default:
-        return <span className="text-stay-text-muted">{st}</span>;
-    }
-  };
+  const renderStatus = (st: ContractStatus) => <StatusBadge status={st} />;
 
   const columns = [
     {

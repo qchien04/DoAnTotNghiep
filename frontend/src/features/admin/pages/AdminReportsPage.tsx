@@ -8,6 +8,7 @@ import {
   Form,
   Tag,
   Badge,
+  StatusBadge,
 } from '@/shared/components';
 import {
   Gavel,
@@ -106,10 +107,10 @@ export const AdminReportsPage: React.FC = () => {
       key: 'status',
       width: 140,
       render: (st: DisputeReportStatus) => {
-        if (st === 'RESOLVED') return <Tag status="available">Đã xử lý</Tag>;
-        if (st === 'MEDIATING') return <Tag status="verified">Đang hòa giải</Tag>;
-        if (st === 'REJECTED') return <Tag status="rented">Đã bác bỏ</Tag>;
-        return <Tag status="pending">Chờ xác minh</Tag>;
+        if (st === 'RESOLVED') return <StatusBadge status="RESOLVED" label="Đã xử lý" />;
+        if (st === 'MEDIATING') return <StatusBadge status="PROCESSING" label="Đang hòa giải" />;
+        if (st === 'REJECTED') return <StatusBadge status="REJECTED" label="Đã bác bỏ" />;
+        return <StatusBadge status="PENDING" label="Chờ xác minh" />;
       },
     },
     {

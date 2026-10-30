@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
-import { Table, Popconfirm, Tag } from '@/shared/components';
+import { Table, Popconfirm, Tag, StatusBadge } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { Room, RoomStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
@@ -24,36 +24,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const renderStatusTag = (st: RoomStatus) => {
-    switch (st) {
-      case 'AVAILABLE':
-        return (
-          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-            Còn trống
-          </span>
-        );
-      case 'OCCUPIED':
-        return (
-          <span className="text-blue-600 dark:text-blue-400 font-medium">
-            Đang thuê
-          </span>
-        );
-      case 'UNDER_MAINTENANCE':
-        return (
-          <span className="text-amber-600 dark:text-amber-400 font-medium">
-            Đang sửa chữa
-          </span>
-        );
-      case 'STOPPED':
-        return (
-          <span className="text-stay-text-muted font-medium">
-            Ngừng sử dụng
-          </span>
-        );
-      default:
-        return <span className="text-stay-text-muted">{st}</span>;
-    }
-  };
+  const renderStatusTag = (st: RoomStatus) => <StatusBadge status={st} />;
 
   const columns = [
     {

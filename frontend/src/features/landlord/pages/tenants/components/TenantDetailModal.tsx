@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal } from 'antd';
-import { Button } from '@/shared/components';
+import { Button, StatusBadge } from '@/shared/components';
 import { Tenant, TenantLinkStatus } from '@/shared/types/landlord';
 
 interface TenantDetailModalProps {
@@ -21,11 +21,11 @@ export const TenantDetailModal: React.FC<TenantDetailModalProps> = ({
   const renderLinkStatus = (st?: TenantLinkStatus, linkedUserName?: string) => {
     switch (st) {
       case 'LINKED':
-        return `Đã liên kết tài khoản (${linkedUserName || 'Người dùng'})`;
+        return <StatusBadge status="LINKED" label={`Đã liên kết (${linkedUserName || 'Người dùng'})`} />;
       case 'PENDING':
-        return `Chờ xác nhận (${linkedUserName || 'Chờ duyệt'})`;
+        return <StatusBadge status="PENDING" label={`Chờ xác nhận (${linkedUserName || 'Chờ duyệt'})`} />;
       default:
-        return 'Chưa liên kết tài khoản hệ thống';
+        return <StatusBadge status="UNLINKED" label="Chưa liên kết" />;
     }
   };
 

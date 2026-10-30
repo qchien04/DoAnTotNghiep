@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, Edit2, Trash2, UserCheck, UserX } from 'lucide-react';
 import { Tooltip } from 'antd';
-import { Table, Popconfirm } from '@/shared/components';
+import { Table, Popconfirm, StatusBadge } from '@/shared/components';
 import { Tenant, TenantLinkStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
 
@@ -31,23 +31,16 @@ export const TenantTable: React.FC<TenantTableProps> = ({
   const renderLinkStatus = (status: TenantLinkStatus, linkedUserName?: string) => {
     switch (status) {
       case 'LINKED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text">
-            {linkedUserName || 'Đã liên kết'}
-          </span>
-        );
+        return <StatusBadge status="LINKED" label={linkedUserName || 'Đã liên kết'} />;
       case 'PENDING':
         return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text">
-            {linkedUserName ? `${linkedUserName} (chờ duyệt)` : 'Chờ xác nhận'}
-          </span>
+          <StatusBadge
+            status="PENDING"
+            label={linkedUserName ? `${linkedUserName} (chờ duyệt)` : 'Chờ xác nhận'}
+          />
         );
       default:
-        return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text">
-            Chưa liên kết
-          </span>
-        );
+        return <StatusBadge status="UNLINKED" label="Chưa liên kết" />;
     }
   };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button } from '@/shared/components';
+import { Table, Button, StatusBadge } from '@/shared/components';
 import { RoommateApplication } from '@/shared/types/tenant';
 import { getRoommateApplicationStatusLabel } from '@/shared/utils';
 
@@ -89,28 +89,13 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
-      render: (st: string) => {
-        if (st === 'APPROVED') {
-          return (
-            <span className=" font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              {getRoommateApplicationStatusLabel(st)}
-            </span>
-          );
-        }
-        if (st === 'REJECTED') {
-          return (
-            <span className=" font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-              {getRoommateApplicationStatusLabel(st)}
-            </span>
-          );
-        }
-        return (
-          <span className=" font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-            {getRoommateApplicationStatusLabel(st)}
-          </span>
-        );
-      },
+      width: 130,
+      render: (st: string) => (
+        <StatusBadge
+          status={st}
+          label={getRoommateApplicationStatusLabel(st)}
+        />
+      ),
     },
     {
       title: 'Thao tác',

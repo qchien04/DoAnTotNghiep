@@ -12,7 +12,7 @@ import {
   Modal,
   Form,
   Popconfirm,
-  Tag,
+  StatusBadge,
 } from '@/shared/components';
 import {
   Sparkles,
@@ -138,11 +138,7 @@ export const AdminAmenitiesPage: React.FC = () => {
       title: 'Trạng thái',
       key: 'status',
       width: 140,
-      render: () => (
-        <Tag color="green" className="rounded-full px-2.5 py-0.5 border-none">
-          Khả dụng
-        </Tag>
-      ),
+      render: () => <StatusBadge status="AVAILABLE" label="Khả dụng" />,
     },
     {
       title: 'Thao tác',

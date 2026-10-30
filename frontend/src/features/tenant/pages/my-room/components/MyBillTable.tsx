@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table } from '@/shared/components';
+import { Table, StatusBadge } from '@/shared/components';
 import { Tooltip, message } from 'antd';
 import { QrCode, Eye, CheckCircle2 } from 'lucide-react';
 import { InvoiceResponse } from '@/shared/types/landlord';
@@ -78,22 +78,14 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
       dataIndex: 'dueDate',
       key: 'dueDate',
       width: 120,
-      render: (d: string) => <span className=" text-stay-text-secondary">{d || '05/11/2026'}</span>,
+      render: (d: string) => <span className="text-stay-text-secondary">{d || '05/11/2026'}</span>,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       width: 140,
-      render: (st: string) => {
-        if (st === 'PAID') {
-          return <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[13px]">Đã thanh toán</span>;
-        }
-        if (st === 'OVERDUE') {
-          return <span className="text-rose-600 dark:text-rose-400 font-medium text-[13px]">Quá hạn</span>;
-        }
-        return <span className="text-amber-600 dark:text-amber-400 font-medium text-[13px]">Chờ thanh toán</span>;
-      },
+      render: (st: string) => <StatusBadge status={st} />,
     },
     {
       title: 'Thao tác',

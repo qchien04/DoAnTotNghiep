@@ -15,6 +15,7 @@ import {
   Tag,
   Alert,
   Popconfirm,
+  StatusBadge,
 } from '@/shared/components';
 import { Tooltip } from 'antd';
 import {
@@ -162,9 +163,12 @@ export const AdminMasterDataPage: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 130,
+      width: 140,
       render: (st: string) => (
-        st === 'ACTIVE' ? <Tag status="available">Đang áp dụng</Tag> : <Tag status="rented">Tạm dừng</Tag>
+        <StatusBadge
+          status={st === 'ACTIVE' ? 'ACTIVE' : 'STOPPED'}
+          label={st === 'ACTIVE' ? 'Đang áp dụng' : 'Tạm dừng'}
+        />
       ),
     },
     {

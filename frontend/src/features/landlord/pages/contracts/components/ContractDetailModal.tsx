@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Zap } from 'lucide-react';
-import { Modal, Button } from '@/shared/components';
+import { Modal, Button, StatusBadge } from '@/shared/components';
 import { RentalContract } from '@/shared/types/landlord';
 import { getBillingMethodShortLabel } from '@/shared/utils';
 import { useContractDetail } from '@/shared/hooks';
@@ -27,16 +27,7 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
 
   const activeContract = detailedContract || contract;
 
-  const renderStatus = (st: string) => {
-    switch (st) {
-      case 'ACTIVE':
-        return <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Đang hiệu lực</span>;
-      case 'TERMINATED':
-        return <span className="text-stay-text-muted font-medium">Đã thanh lý</span>;
-      default:
-        return st;
-    }
-  };
+  const renderStatus = (st: string) => <StatusBadge status={st} />;
 
   // Danh sách khách thuê với fallback khách đại diện nếu mảng rỗng
   const tenants: (Partial<RentalContract['tenants'] extends (infer U)[] | undefined ? U : any>)[] =

@@ -15,6 +15,7 @@ import {
   Tag,
   Badge,
   Alert,
+  StatusBadge,
 } from '@/shared/components';
 import {
   Plus,
@@ -221,12 +222,12 @@ export const AdminUsersPage: React.FC = () => {
       key: 'status',
       width: 140,
       ellipsis: { showTitle: true },
-      render: (st: UserAccountStatus) => {
-        if (st === 'ACTIVE') {
-          return <Tag status="available">Đang hoạt động</Tag>;
-        }
-        return <Tag status="rented">Đã bị khóa</Tag>;
-      },
+      render: (st: UserAccountStatus) => (
+        <StatusBadge
+          status={st === 'ACTIVE' ? 'ACTIVE' : 'LOCKED'}
+          label={st === 'ACTIVE' ? 'Đang hoạt động' : 'Đã bị khóa'}
+        />
+      ),
     },
     {
       title: 'Thao tác',

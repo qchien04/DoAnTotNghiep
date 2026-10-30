@@ -1,6 +1,7 @@
 // UI Core Components (Tailwind & Ant Design Integrations)
 export * from './ui/Button';
 export * from './ui/Badge';
+export * from './ui/StatusBadge';
 export * from './ui/HabitChip';
 export * from './ui/Tabs';
 export * from './ui/Modal';
