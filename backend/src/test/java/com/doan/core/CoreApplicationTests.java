@@ -74,12 +74,39 @@ class CoreApplicationTests {
     @Autowired
     private com.doan.core.business.repository.AmenityRepository amenityRepository;
 
+    @Autowired
+    private com.doan.core.business.service.AmenityService amenityService;
+
     @Test
     void testAmenityRepository() {
         assertDoesNotThrow(() -> {
             var all = amenityRepository.findAllByOrderByNameAsc();
             assertNotNull(all);
             assertFalse(all.isEmpty(), "Amenities should have seeded items");
+        });
+    }
+
+    @Test
+    void testAmenityServiceCrud() {
+        assertDoesNotThrow(() -> {
+            var list = amenityService.getAllAmenities();
+            assertNotNull(list);
+
+            var page = amenityService.getAmenities("Điều", 0, 10, "name", "asc");
+            assertNotNull(page);
+
+            var req = com.doan.core.business.dto.amenity.CreateAmenityRequest.builder()
+                    .name("Test Tiện Ích " + System.currentTimeMillis())
+                    .description("Mô tả test")
+                    .build();
+            var created = amenityService.createAmenity(req);
+            assertNotNull(created.getId());
+
+            req.setDescription("Mô tả test cập nhật");
+            var updated = amenityService.updateAmenity(created.getId(), req);
+            assertEquals("Mô tả test cập nhật", updated.getDescription());
+
+            amenityService.deleteAmenity(created.getId());
         });
     }
 }

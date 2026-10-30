@@ -19,6 +19,8 @@ public final class SecurityConstants {
 
     // Public URL patterns (bỏ qua xác thực JWT)
     public static final String[] PUBLIC_URLS = {
+        "/api/public/**",
+        "/api/v1/public/**",
         "/api/v1/auth/**",
         "/api/v1/home/**",
         "/api/v1/tenant/lifestyle/questions",
