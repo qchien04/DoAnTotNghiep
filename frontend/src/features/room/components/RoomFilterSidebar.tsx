@@ -104,9 +104,13 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
   };
 
   return (
-    <div className="bg-stay-card-bg border border-stay-border rounded-2xl p-5 shadow-sm space-y-5 max-h-[calc(80vh-2rem)] overflow-y-auto custom-modal-scroll">
+    <div className="bg-stay-card-bg border border-stay-border rounded-2xl p-5 shadow-sm space-y-5 max-h-[calc(100vh-2rem)] overflow-y-auto custom-modal-scroll">
       {/* Tiêu đề & Nút đặt lại (Sticky top bên trong sidebar) */}
       <div className="flex items-center justify-between pb-3 border-b border-stay-border sticky top-0 bg-stay-card-bg z-10 -mx-1 px-1">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-stay-primary" />
+          <h2 className="text-base font-bold text-stay-text m-0">Bộ Lọc Tìm Kiếm</h2>
+        </div>
         <button
           onClick={onReset}
           className="text-xs text-stay-text-secondary hover:text-stay-primary flex items-center gap-1 transition cursor-pointer font-medium"
