@@ -42,7 +42,6 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
     );
   }, [bill]);
 
-  const hasAdjustments = adjustmentItems.length > 0;
   const hasPaidAmount = Number(bill?.paidAmount || 0) > 0 && bill?.status !== 'PAID';
 
   const renderStatusBadge = (status: InvoiceStatus) => {
@@ -309,86 +308,86 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                       </tr>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-          </div>
 
-          {/* SECTION 3: BẢNG PHỤ THU & GIẢM TRỪ (NẾU CÓ) */}
-          {hasAdjustments && (
-            <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
-              <h3 className="text-sm font-semibold text-stay-text m-0">
-                Phụ thu & giảm trừ
-              </h3>
-
-              <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-xs font-semibold">
-                    <tr>
-                      <th className="p-2.5 pl-3 w-28 text-center">Loại</th>
-                      <th className="p-2.5">Nguyên nhân / Nội dung</th>
-                      <th className="p-2.5 text-center w-20">SL</th>
-                      <th className="p-2.5 text-right w-36">Đơn giá</th>
-                      <th className="p-2.5 text-right w-36 pr-3">Thành tiền</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stay-border text-stay-text text-sm">
-                    {adjustmentItems.map((adj, idx) => {
-                      const isSurcharge = adj.itemType === 'SURCHARGE';
-                      const cleanName = adj.itemName ? adj.itemName.replace(/^\[(Phụ thu|Giảm trừ)\]\s*/i, '') : 'Khoản phát sinh';
-                      return (
-                        <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
-                          <td className="p-2.5 pl-3 text-center">
+                  {/* 3. Phụ thu & giảm trừ (nếu có) */}
+                  {adjustmentItems.map((adj, idx) => {
+                    const isSurcharge = adj.itemType === 'SURCHARGE';
+                    const cleanName = adj.itemName
+                      ? adj.itemName.replace(/^\[(Phụ thu|Giảm trừ)\]\s*/i, '')
+                      : 'Khoản phát sinh';
+                    return (
+                      <tr key={`adj-${idx}`} className="hover:bg-stay-bg-app/40 transition-colors">
+                        <td className="p-2.5 pl-3">
+                          <div className="flex items-center gap-1.5">
                             <Tag
-                              className={`m-0 font-medium ${isSurcharge
+                              className={`m-0 font-medium ${
+                                isSurcharge
                                   ? 'border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
                                   : 'border-rose-200 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800'
-                                }`}
+                              }`}
                             >
                               {isSurcharge ? 'Phụ thu' : 'Giảm trừ'}
                             </Tag>
-                          </td>
-                          <td className="p-2.5 font-medium">{cleanName}</td>
-                          <td className="p-2.5 text-center">{adj.quantity || 1}</td>
-                          <td className="p-2.5 text-right text-stay-text-secondary">
-                            {formatCurrency(adj.unitPrice || 0)}
-                          </td>
-                          <td
-                            className={`p-2.5 text-right font-bold pr-3 ${isSurcharge ? 'text-stay-text' : 'text-rose-600'
-                              }`}
-                          >
-                            {isSurcharge ? '+' : '-'} {formatCurrency(Math.abs(adj.amount || 0))}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                            <span className="font-semibold text-stay-text">{cleanName}</span>
+                          </div>
+                        </td>
+                        <td className="p-2.5 text-right text-stay-text-secondary">
+                          {formatCurrency(adj.unitPrice || 0)}
+                        </td>
+                        <td className="p-2.5 text-center text-stay-text-muted">-</td>
+                        <td className="p-2.5 text-center">{adj.quantity || 1}</td>
+                        <td className="p-2.5 text-center font-medium text-stay-text">
+                          {adj.quantity || 1} lần
+                        </td>
+                        <td
+                          className={`p-2.5 text-right font-bold pr-3 ${
+                            isSurcharge ? 'text-stay-text' : 'text-rose-600'
+                          }`}
+                        >
+                          {isSurcharge ? '+' : '-'} {formatCurrency(Math.abs(adj.amount || 0))}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
 
-          {/* TỔNG TIỀN HÓA ĐƠN */}
-          <div className="pt-4 border-t border-stay-border space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-stay-text text-sm uppercase">TỔNG TIỀN HÓA ĐƠN:</span>
-              <span className="text-xl font-bold text-stay-primary">
-                {formatCurrency(bill.totalAmount)}
-              </span>
-            </div>
+                {/* TỔNG TIỀN NẰM NGAY CUỐI BẢNG (TFOOT) */}
+                <tfoot className="bg-stay-bg-app border-t-2 border-stay-border text-sm">
+                  <tr>
+                    <td colSpan={5} className="p-3 pl-3 text-right font-bold text-stay-text uppercase text-xs tracking-wider">
+                      Tổng tiền hóa đơn:
+                    </td>
+                    <td className="p-3 text-right font-bold text-lg text-stay-primary pr-3">
+                      {formatCurrency(bill.totalAmount)}
+                    </td>
+                  </tr>
 
-            {hasPaidAmount && (
-              <div className="pt-2 space-y-1 text-sm border-t border-stay-border/60">
-                <div className="flex justify-between text-emerald-600 font-medium">
-                  <span>Đã thanh toán:</span>
-                  <span>{formatCurrency(bill.paidAmount || 0)}</span>
-                </div>
-                <div className="flex justify-between text-rose-600 font-bold pt-1 border-t border-dashed border-stay-border">
-                  <span>Còn lại cần thu:</span>
-                  <span>{formatCurrency(bill.remainingAmount || ((bill.totalAmount || 0) - (bill.paidAmount || 0)))}</span>
-                </div>
-              </div>
-            )}
+                  {hasPaidAmount && (
+                    <>
+                      <tr className="border-t border-stay-border-subtle text-emerald-600">
+                        <td colSpan={5} className="p-2 pl-3 text-right font-medium text-xs">
+                          Đã thanh toán:
+                        </td>
+                        <td className="p-2 text-right font-semibold text-sm pr-3">
+                          {formatCurrency(bill.paidAmount || 0)}
+                        </td>
+                      </tr>
+                      <tr className="border-t border-stay-border-subtle text-rose-600 font-bold">
+                        <td colSpan={5} className="p-2 pl-3 text-right text-xs uppercase">
+                          Còn lại cần thu:
+                        </td>
+                        <td className="p-2 text-right text-base pr-3">
+                          {formatCurrency(
+                            bill.remainingAmount ||
+                              ((bill.totalAmount || 0) - (bill.paidAmount || 0))
+                          )}
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                </tfoot>
+              </table>
+            </div>
           </div>
         </div>
       )}
