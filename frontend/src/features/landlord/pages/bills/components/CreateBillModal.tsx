@@ -368,11 +368,11 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
             </div>
             <div>
               <span className="text-stay-text-secondary text-[13px] block mb-0.5">Khách đại diện:</span>
-              <span className="font-semibold text-stay-text text-[14px]">
+              <span className="font-semibold text-stay-text text-[14px] block truncate">
                 {selectedContract.representativeTenantName || '—'}
               </span>
               {selectedContract.representativeTenantPhone && (
-                <span className="text-stay-text-secondary text-[12px] block">
+                <span className="text-stay-text-secondary text-[12px] block mt-0.5">
                   {selectedContract.representativeTenantPhone}
                 </span>
               )}
@@ -385,7 +385,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
             </div>
             <div>
               <span className="text-stay-text-secondary text-[13px] block mb-0.5">Tiền thuê phòng:</span>
-              <span className="text-[15px] font-bold text-stay-primary">
+              <span className="text-[15px] font-bold text-stay-text">
                 {roomRentPrice.toLocaleString()} đ/tháng
               </span>
             </div>
@@ -689,7 +689,7 @@ export const CreateBillModal: React.FC<CreateBillModalProps> = ({
           )}
           <div className="pt-2.5 border-t border-stay-border flex justify-between items-center">
             <span className="font-bold text-stay-text text-[14px]">TỔNG TIỀN HÓA ĐƠN:</span>
-            <span className="text-[16px] font-bold text-stay-primary">
+            <span className="text-[16px] font-bold text-stay-text">
               {grandTotal.toLocaleString()} VNĐ
             </span>
           </div>

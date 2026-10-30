@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form } from '@/shared/components';
 import { InputNumber, Tooltip } from 'antd';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, FileText } from 'lucide-react';
 import { RentalContract, TerminateContractDto } from '@/shared/types/landlord';
 
 interface TerminateContractModalProps {
@@ -102,7 +102,12 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
 
   return (
     <Modal
-      title="Thanh lý hợp đồng"
+      title={
+        <div className="flex items-center gap-2">
+          <FileText className="w-5 h-5 text-rose-500" />
+          <span>Thanh lý hợp đồng #{contract?.id}</span>
+        </div>
+      }
       open={open}
       onOk={handleFinish}
       onCancel={onCancel}
@@ -118,22 +123,22 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         onValuesChange={handleValuesChange}
       >
         {/* Tóm tắt hợp đồng */}
-        <div className="space-y-2 pb-1 text-[14px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6">
+        <div className="bg-stay-bg-app/40 border border-stay-border rounded-xl p-4 text-[14px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-8">
             <div className="flex items-center gap-2">
-              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Hợp đồng:</span>
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Hợp đồng:</span>
               <span className="text-stay-text font-semibold text-[14px]">{`HĐ #${contract?.id}`}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Tiền cọc ban đầu:</span>
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Tiền cọc ban đầu:</span>
               <span className="text-stay-text font-semibold text-[14px]">{(contract?.depositAmount ?? 0).toLocaleString()} VNĐ</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Phòng thuê:</span>
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Phòng thuê:</span>
               <span className="text-stay-text font-medium text-[14px]">{contract?.roomName || '—'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-stay-text-secondary text-[14px] w-32 shrink-0">Khách đại diện:</span>
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Khách đại diện:</span>
               <span className="text-stay-text font-medium text-[14px]">{contract?.representativeTenantName || '—'}</span>
             </div>
           </div>
@@ -228,7 +233,7 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
                 <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
               </Tooltip>
             </div>
-            <span className="text-[16px] font-bold text-stay-primary">
+            <span className="text-[16px] font-bold text-stay-text">
               {calculatedRefund.toLocaleString()} VNĐ
             </span>
           </div>

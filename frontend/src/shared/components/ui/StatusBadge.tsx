@@ -6,6 +6,7 @@ interface StatusBadgeProps {
   status?: string | null;
   type?: StatusType;
   label?: string;
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
@@ -166,6 +167,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   type: _type,
   label,
+  size = 'md',
   className = '',
 }) => {
   if (!status) {
@@ -180,9 +182,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     config?.className ||
     'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700';
 
+  const sizeClasses =
+    size === 'lg'
+      ? 'px-3.5 py-1 text-[13px] font-bold shadow-xs'
+      : size === 'sm'
+        ? 'px-2 py-0.5 text-[11px] font-medium'
+        : 'px-2.5 py-0.5 text-xs font-semibold';
+
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styleClasses} ${className}`}
+      className={`inline-flex items-center rounded-full border ${sizeClasses} ${styleClasses} ${className}`}
     >
       {displayText}
     </span>

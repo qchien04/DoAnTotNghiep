@@ -41,14 +41,7 @@ export const RoommatesList: React.FC<RoommatesListProps> = ({ roommates = [] }) 
                   {idx + 1}
                 </td>
                 <td className="py-2.5 px-3">
-                  <div className="flex items-center gap-2.5">
-                    <img
-                      src={rm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                      alt={rm.name}
-                      className="w-7 h-7 rounded-full object-cover border border-stay-border shrink-0"
-                    />
-                    <span className="font-semibold text-stay-text">{rm.name}</span>
-                  </div>
+                  <span className="font-semibold text-stay-text">{rm.name}</span>
                 </td>
                 <td className="py-2.5 px-3 font-medium text-stay-text">
                   {rm.phone || '—'}

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Printer } from 'lucide-react';
-import { Modal, Button, Tag, StatusBadge } from '@/shared/components';
+import { Printer, Receipt } from 'lucide-react';
+import { Modal, Button, StatusBadge, Tag } from '@/shared/components';
 import { InvoiceResponse, InvoiceStatus } from '@/shared/types/landlord';
 import { formatCurrency, formatDate } from '@/shared/utils';
 
@@ -44,20 +44,24 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
 
   const hasPaidAmount = Number(bill?.paidAmount || 0) > 0 && bill?.status !== 'PAID';
 
-  const renderStatusBadge = (status: InvoiceStatus) => <StatusBadge status={status} />;
+  const renderStatusBadge = (status: InvoiceStatus) => <StatusBadge status={status} size="lg" />;
 
   return (
     <Modal
       title={
         bill ? (
-          <div className="flex items-center justify-between gap-3 pr-6">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-stay-text text-base">Chi tiết hóa đơn</span>
-              <span className="font-mono text-xs px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border text-stay-text-secondary">
+          <div className="flex items-center justify-between gap-4 pr-6 py-0.5">
+            <div className="flex items-center gap-2.5">
+              <Receipt className="w-5 h-5 text-stay-primary" />
+              <span className="font-semibold text-stay-text text-base">Hóa đơn tiền phòng</span>
+              <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-stay-bg-app border border-stay-border text-stay-text-secondary">
                 #{bill.id}
               </span>
             </div>
-            {renderStatusBadge(bill.status)}
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-stay-text-secondary font-medium">Trạng thái:</span>
+              {renderStatusBadge(bill.status)}
+            </div>
           </div>
         ) : (
           'Chi tiết hóa đơn'
@@ -66,25 +70,36 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
       open={open}
       onCancel={onCancel}
       width={960}
+      centered
+      destroyOnClose
       footer={
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
           <Button
             key="print"
-            size="middle"
+            size="md"
+            variant="outline"
             onClick={() => window.print()}
             icon={<Printer className="w-3.5 h-3.5" />}
+            className="h-9 px-4 rounded-lg border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium text-[14px]"
           >
             In hóa đơn
           </Button>
 
           <div className="flex items-center gap-2">
-            <Button onClick={onCancel}>
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              size="md"
+              className="h-9 px-4 rounded-lg border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium text-[14px]"
+            >
               Đóng
             </Button>
 
             {bill && bill.status === 'DRAFT' && onPublish && (
               <Button
-                className="border-amber-500 text-amber-600 hover:text-amber-500 font-medium"
+                variant="outline"
+                size="md"
+                className="h-9 px-4 rounded-lg border-amber-500 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-medium text-[14px]"
                 onClick={() => {
                   onCancel();
                   onPublish(bill);
@@ -97,12 +112,13 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
             {bill &&
               (bill.status === 'UNPAID' || bill.status === 'PARTIALLY_PAID' || bill.status === 'OVERDUE') && (
                 <Button
-                  type="primary"
+                  variant="primary"
+                  size="md"
                   onClick={() => {
                     onCancel();
                     onOpenPayment(bill);
                   }}
-                  className="bg-stay-primary hover:bg-stay-primary-hover font-medium"
+                  className="h-9 px-4 rounded-lg bg-stay-primary hover:bg-stay-primary-hover font-medium text-white text-[14px] shadow-xs"
                 >
                   Xác nhận thu tiền
                 </Button>
@@ -112,70 +128,90 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
       }
     >
       {bill && (
-        <div className="mt-4 space-y-5 text-[14px]">
+        <div className="mt-4 space-y-4 text-[14px]">
           {/* SECTION 1: THÔNG TIN CHUNG HÓA ĐƠN */}
-          <div className="space-y-3 text-[14px]">
-            {/* PHẦN 1: PHÒNG & TÒA NHÀ */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[100px]">Tòa nhà:</span>
-                <span className="text-stay-text font-medium">
+          <div className="bg-stay-bg-app/40 border border-stay-border rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-stay-border-subtle">
+              <Receipt className="w-4 h-4 text-stay-primary" />
+              <span className="text-[13px] font-semibold text-stay-text">
+                Thông tin phòng thuê & Kỳ thanh toán
+              </span>
+            </div>
+
+            {/* Dòng 1: Căn hộ & Khách thuê đại diện */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-8">
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Tòa nhà / Khu:
+                </span>
+                <span className="text-stay-text font-medium text-[14px]">
                   {bill.buildingName || 'Phòng độc lập'}
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[100px]">Phòng trọ:</span>
-                <span className="text-stay-text font-semibold">
-                  {bill.roomName || '---'}
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Khách đại diện:
                 </span>
-              </div>
-            </div>
-
-            {/* PHẦN 2: KHÁCH THUÊ ĐẠI DIỆN */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 pt-1 border-t border-stay-border-subtle">
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Khách đại diện:</span>
-                <span className="text-stay-text font-medium">
+                <span className="text-stay-text font-medium text-[14px]">
                   {bill.representativeTenantName || 'Chưa cập nhật'}
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Số điện thoại:</span>
-                <span className="text-stay-text font-medium">
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Phòng trọ:
+                </span>
+                <span className="text-stay-text font-semibold text-[14px]">
+                  {bill.roomName || '---'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Số điện thoại:
+                </span>
+                <span className="text-stay-text font-medium text-[14px]">
                   {bill.representativeTenantPhone || '—'}
                 </span>
               </div>
             </div>
 
-            {/* PHẦN 3: KỲ CƯỚC & THỜI HẠN */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 pt-1 border-t border-stay-border-subtle">
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Kỳ cước:</span>
-                <span className="text-stay-text font-medium">
+            {/* Dòng 2: Kỳ cước & Thời hạn */}
+            <div className="pt-3 border-t border-stay-border-subtle grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-8">
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Kỳ cước:
+                </span>
+                <span className="text-stay-text font-semibold text-[14px]">
                   {bill.billingPeriod || '---'}
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Ngày lập:</span>
-                <span className="text-stay-text font-medium">
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Ngày lập hóa đơn:
+                </span>
+                <span className="text-stay-text text-[14px]">
                   {bill.createdAt ? formatDate(bill.createdAt) : '---'}
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Hạn nộp tiền:</span>
-                <span className="text-stay-text font-medium">
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Hạn nộp tiền:
+                </span>
+                <span className="text-stay-text text-[14px]">
                   {bill.dueDate ? formatDate(bill.dueDate) : 'Trong kỳ'}
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
-                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Tình trạng:</span>
-                <span className="text-stay-text font-medium">
-                  {bill.paidAt ? `Đã nộp (${formatDate(bill.paidAt)})` : 'Chưa thanh toán'}
+              <div className="flex items-center gap-2">
+                <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">
+                  Ngày thanh toán:
+                </span>
+                <span className="text-stay-text text-[14px]">
+                  {bill.paidAt ? formatDate(bill.paidAt) : 'Chưa thanh toán'}
                 </span>
               </div>
             </div>
@@ -183,15 +219,16 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
 
           {/* SECTION 2: BẢNG DỊCH VỤ & CHI PHÍ */}
           <div className="space-y-2 pt-2 border-t border-stay-border-subtle">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-stay-text m-0">
-                Dịch vụ & chi phí phòng
-              </h3>
+            <div className="flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-stay-primary" />
+              <span className="text-[13px] font-semibold text-stay-text">
+                Bảng chi phí & Dịch vụ phòng
+              </span>
             </div>
 
             <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-xs font-semibold">
+                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-[13px] font-semibold">
                   <tr>
                     <th className="p-2.5 pl-3">Khoản mục</th>
                     <th className="p-2.5 text-right w-36">Đơn giá</th>
@@ -316,26 +353,26 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                     <td colSpan={5} className="p-3 pl-3 text-right font-semibold text-stay-text uppercase text-[13px]">
                       Tổng tiền hóa đơn:
                     </td>
-                    <td className="p-3 text-right font-bold text-[15px] text-stay-primary pr-3">
+                    <td className="p-3 text-right font-bold text-[15px] text-stay-text pr-3">
                       {formatCurrency(bill.totalAmount)}
                     </td>
                   </tr>
 
                   {hasPaidAmount && (
                     <>
-                      <tr className="border-t border-stay-border-subtle text-emerald-600">
-                        <td colSpan={5} className="p-2.5 pl-3 text-right font-medium text-[13px]">
+                      <tr className="border-t border-stay-border-subtle">
+                        <td colSpan={5} className="p-2.5 pl-3 text-right font-medium text-[13px] text-stay-text-secondary">
                           Đã thanh toán:
                         </td>
-                        <td className="p-2.5 text-right font-semibold text-[14px] pr-3">
+                        <td className="p-2.5 text-right font-semibold text-[14px] text-stay-text pr-3">
                           {formatCurrency(bill.paidAmount || 0)}
                         </td>
                       </tr>
-                      <tr className="border-t border-stay-border-subtle text-rose-600">
-                        <td colSpan={5} className="p-2.5 pl-3 text-right font-semibold text-[13px] uppercase">
+                      <tr className="border-t border-stay-border-subtle">
+                        <td colSpan={5} className="p-2.5 pl-3 text-right font-semibold text-[13px] uppercase text-stay-text">
                           Còn lại cần thu:
                         </td>
-                        <td className="p-2.5 text-right font-bold text-[15px] pr-3">
+                        <td className="p-2.5 text-right font-bold text-[15px] text-stay-text pr-3">
                           {formatCurrency(
                             bill.remainingAmount ||
                               ((bill.totalAmount || 0) - (bill.paidAmount || 0))

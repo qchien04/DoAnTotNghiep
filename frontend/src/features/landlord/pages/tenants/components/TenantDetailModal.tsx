@@ -21,11 +21,11 @@ export const TenantDetailModal: React.FC<TenantDetailModalProps> = ({
   const renderLinkStatus = (st?: TenantLinkStatus, linkedUserName?: string) => {
     switch (st) {
       case 'LINKED':
-        return <StatusBadge status="LINKED" label={`Đã liên kết (${linkedUserName || 'Người dùng'})`} />;
+        return <StatusBadge status="LINKED" size="lg" label={`Đã liên kết (${linkedUserName || 'Người dùng'})`} />;
       case 'PENDING':
-        return <StatusBadge status="PENDING" label={`Chờ xác nhận (${linkedUserName || 'Chờ duyệt'})`} />;
+        return <StatusBadge status="PENDING" size="lg" label={`Chờ xác nhận (${linkedUserName || 'Chờ duyệt'})`} />;
       default:
-        return <StatusBadge status="UNLINKED" label="Chưa liên kết" />;
+        return <StatusBadge status="UNLINKED" size="lg" label="Chưa liên kết" />;
     }
   };
 
@@ -33,8 +33,18 @@ export const TenantDetailModal: React.FC<TenantDetailModalProps> = ({
     <Modal
       open={open}
       onCancel={onCancel}
-      title={`Chi tiết khách thuê: ${tenant.fullName}`}
-      width={820}
+      title={
+        <div className="flex items-center justify-between gap-4 pr-6 py-0.5">
+          <span className="font-semibold text-stay-text text-base">
+            Chi tiết khách thuê: {tenant.fullName}
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-stay-text-secondary font-medium">Trạng thái:</span>
+            {renderLinkStatus(tenant.linkStatus, tenant.userEmail)}
+          </div>
+        </div>
+      }
+      width={780}
       centered
       destroyOnClose
       footer={
@@ -44,7 +54,7 @@ export const TenantDetailModal: React.FC<TenantDetailModalProps> = ({
             variant="outline"
             size="md"
             onClick={onCancel}
-            className="h-10 px-5 rounded-xl border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium"
+            className="h-9 px-4 rounded-lg border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium text-[14px]"
           >
             Đóng
           </Button>
@@ -57,7 +67,7 @@ export const TenantDetailModal: React.FC<TenantDetailModalProps> = ({
                 onCancel();
                 onEdit(tenant);
               }}
-              className="h-10 px-5 rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white font-semibold shadow-xs"
+              className="h-9 px-4 rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white font-medium text-[14px] shadow-xs"
             >
               Chỉnh sửa
             </Button>

@@ -58,7 +58,7 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Khách đại diện',
       key: 'representativeTenantName',
-      width: 170,
+      width: 180,
       ellipsis: { showTitle: true },
       render: (_: any, r: InvoiceResponse) => (
         <div>
@@ -66,7 +66,7 @@ export const BillTable: React.FC<BillTableProps> = ({
             {r.representativeTenantName || '—'}
           </span>
           {r.representativeTenantPhone && (
-            <span className="text-[12px] text-stay-text-secondary block">
+            <span className="text-[12px] text-stay-text-secondary block truncate">
               {r.representativeTenantPhone}
             </span>
           )}

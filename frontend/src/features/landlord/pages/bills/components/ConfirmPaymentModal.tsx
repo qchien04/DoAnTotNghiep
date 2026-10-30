@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Radio } from '@/shared/components';
+import { DollarSign } from 'lucide-react';
 import { InputNumber } from 'antd';
 import { InvoiceResponse, InvoicePaymentRequest } from '@/shared/types/landlord';
 
@@ -43,7 +44,12 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
 
   return (
     <Modal
-      title="Xác nhận thu tiền"
+      title={
+        <div className="flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-stay-primary" />
+          <span>Xác nhận thu tiền hóa đơn</span>
+        </div>
+      }
       open={open}
       onOk={handleFinish}
       onCancel={onCancel}
@@ -53,18 +59,37 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
       width={640}
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
-        <div className="space-y-1.5 pb-1 text-stay-text">
-          <p className="text-stay-text-secondary">
-            Hóa đơn: <strong className="text-stay-text">Kỳ {bill?.billingPeriod} (#{bill?.id})</strong>
-          </p>
-          <p className="text-stay-text-secondary">
-            Phòng:{' '}
-            <strong className="text-stay-text">{bill?.roomName}</strong> (
-            {bill?.representativeTenantName || '---'})
-          </p>
-          <p className="text-emerald-600 dark:text-emerald-400 font-bold text-base mt-2">
-            Số tiền phải thu: {(bill?.remainingAmount || bill?.totalAmount || 0).toLocaleString()} VNĐ
-          </p>
+        {/* TỔNG QUAN HÓA ĐƠN */}
+        <div className="bg-stay-bg-app/40 border border-stay-border rounded-xl p-4 space-y-3 text-[14px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-28 shrink-0">Hóa đơn:</span>
+              <span className="text-stay-text font-semibold text-[14px]">
+                Kỳ {bill?.billingPeriod} (#{bill?.id})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-28 shrink-0">Phòng thuê:</span>
+              <span className="text-stay-text font-semibold text-[14px]">
+                {bill?.roomName || '—'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-28 shrink-0">Khách đại diện:</span>
+              <span className="text-stay-text font-medium text-[14px]">
+                {bill?.representativeTenantName || '—'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-28 shrink-0">Phải thu:</span>
+              <span className="font-bold text-stay-text text-[15px]">
+                {(bill?.remainingAmount || bill?.totalAmount || 0).toLocaleString()} VNĐ
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="pt-3 border-t border-stay-border-subtle">
@@ -74,7 +99,7 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
             rules={[{ required: true, message: 'Vui lòng nhập số tiền đã nhận' }]}
           >
           <InputNumber
-            className="w-full h-10 pt-1 font-bold text-emerald-600 dark:text-emerald-400"
+            className="w-full h-10 pt-1 font-bold text-stay-text"
             step={100000}
             formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}

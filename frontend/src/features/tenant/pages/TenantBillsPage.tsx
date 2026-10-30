@@ -69,7 +69,9 @@ export const TenantBillsPage: React.FC = () => {
     }
   };
 
-  const renderStatus = (st: InvoiceStatus | string) => <StatusBadge status={st} />;
+  const renderStatus = (st: InvoiceStatus | string, size: 'sm' | 'md' | 'lg' = 'md') => (
+    <StatusBadge status={st} size={size} />
+  );
 
   const columns = [
     {
@@ -302,7 +304,7 @@ export const TenantBillsPage: React.FC = () => {
         {selectedBill && (
           <div className="space-y-3.5 pt-2 ">
             {/* Header Box */}
-            <div className="flex items-center justify-between pb-1">
+            <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border flex items-center justify-between">
               <div>
                 <p className="font-semibold text-sm text-stay-text">
                   Kỳ cước: {selectedBill.billingPeriod || (selectedBill as any).billingMonth}
@@ -311,7 +313,10 @@ export const TenantBillsPage: React.FC = () => {
                   Hạn nộp tiền: {selectedBill.dueDate || '—'}
                 </p>
               </div>
-              {renderStatus(selectedBill.status)}
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] text-stay-text-secondary font-medium">Trạng thái:</span>
+                {renderStatus(selectedBill.status, 'lg')}
+              </div>
             </div>
 
             {/* Items Table */}
@@ -382,16 +387,16 @@ export const TenantBillsPage: React.FC = () => {
                     <td colSpan={3} className="py-2.5 px-3 text-right text-stay-text-secondary">
                       Tổng tiền hóa đơn:
                     </td>
-                    <td className="py-2.5 px-3 text-right text-sm text-stay-primary font-bold">
+                    <td className="py-2.5 px-3 text-right text-sm text-stay-text font-bold">
                       {formatCurrency(selectedBill.totalAmount)}
                     </td>
                   </tr>
                   {selectedBill.status === 'PAID' && (
-                    <tr className="text-emerald-600 dark:text-emerald-400">
-                      <td colSpan={3} className="py-1.5 px-3 text-right">
+                    <tr className="border-t border-stay-border-subtle">
+                      <td colSpan={3} className="py-1.5 px-3 text-right text-stay-text-secondary">
                         Số tiền đã thanh toán:
                       </td>
-                      <td className="py-1.5 px-3 text-right">
+                      <td className="py-1.5 px-3 text-right text-stay-text font-semibold">
                         {formatCurrency(selectedBill.paidAmount || selectedBill.totalAmount)}
                       </td>
                     </tr>

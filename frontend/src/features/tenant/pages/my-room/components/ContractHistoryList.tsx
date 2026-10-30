@@ -32,11 +32,11 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  const getStatusBadge = (status: string, isCurrent: boolean) => {
+  const getStatusBadge = (status: string, isCurrent: boolean, size: 'sm' | 'md' | 'lg' = 'md') => {
     if (isCurrent) {
-      return <StatusBadge status="ACTIVE" label="Đang thuê" />;
+      return <StatusBadge status="ACTIVE" label="Đang thuê" size={size} />;
     }
-    return <StatusBadge status={status} />;
+    return <StatusBadge status={status} size={size} />;
   };
 
   const filteredContracts = useMemo(() => {
@@ -276,69 +276,72 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
         {selectedContract && (
           <div className="space-y-3.5 pt-2 ">
             {/* Header info */}
-            <div className="p-3 rounded-lg bg-stay-bg-app border border-stay-border flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border flex items-center justify-between">
               <div>
                 <span className="font-semibold text-sm text-stay-text">
                   Hợp đồng thuê #HD{selectedContract.id}
                 </span>
-                <p className="text-stay-text-secondary  mt-0.5">
+                <p className="text-stay-text-secondary text-xs mt-0.5">
                   Thời hạn: {formatDate(selectedContract.startDate)} ➔ {formatDate(selectedContract.endDate)}
                 </p>
               </div>
-              {getStatusBadge(selectedContract.status, selectedContract.isCurrent)}
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] text-stay-text-secondary font-medium">Trạng thái:</span>
+                {getStatusBadge(selectedContract.status, selectedContract.isCurrent, 'lg')}
+              </div>
             </div>
 
             {/* Room info */}
             <div className="bg-stay-card-bg border border-stay-border rounded-lg p-3 space-y-2">
-              <h4 className="font-semibold text-stay-text  flex items-center gap-1.5">
+              <h4 className="font-semibold text-stay-text flex items-center gap-1.5">
                 <Home className="w-3.5 h-3.5 text-stay-primary" /> Thông tin phòng & Chủ trọ
               </h4>
-              <div className="grid grid-cols-2 gap-2.5  pt-0.5">
+              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
                 <div>
-                  <span className="text-stay-text-muted block">Phòng:</span>
-                  <span className="font-semibold text-stay-text">{selectedContract.roomName || '—'}</span>
+                  <span className="text-stay-text-muted block text-[13px]">Phòng:</span>
+                  <span className="font-semibold text-stay-text text-[14px]">{selectedContract.roomName || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-stay-text-muted block">Tòa nhà:</span>
-                  <span className="font-semibold text-stay-text">{selectedContract.buildingName || '—'}</span>
+                  <span className="text-stay-text-muted block text-[13px]">Tòa nhà:</span>
+                  <span className="font-semibold text-stay-text text-[14px]">{selectedContract.buildingName || '—'}</span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-stay-text-muted block">Địa chỉ:</span>
-                  <span className="text-stay-text">{selectedContract.buildingAddress || '—'}</span>
+                  <span className="text-stay-text-muted block text-[13px]">Địa chỉ:</span>
+                  <span className="text-stay-text text-[14px]">{selectedContract.buildingAddress || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-stay-text-muted block">Chủ trọ:</span>
-                  <span className="font-semibold text-stay-text">{selectedContract.landlordName || '—'}</span>
+                  <span className="text-stay-text-muted block text-[13px]">Chủ trọ:</span>
+                  <span className="font-semibold text-stay-text text-[14px]">{selectedContract.landlordName || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-stay-text-muted block">SĐT liên hệ:</span>
-                  <span className="font-semibold text-stay-text">{selectedContract.landlordPhone || '—'}</span>
+                  <span className="text-stay-text-muted block text-[13px]">SĐT liên hệ:</span>
+                  <span className="font-semibold text-stay-text text-[14px]">{selectedContract.landlordPhone || '—'}</span>
                 </div>
               </div>
             </div>
 
             {/* Rent & Deposit */}
             <div className="bg-stay-card-bg border border-stay-border rounded-lg p-3 space-y-2">
-              <h4 className="font-semibold text-stay-text  flex items-center gap-1.5">
+              <h4 className="font-semibold text-stay-text flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-stay-primary" /> Chi phí & Đặt cọc
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5  pt-0.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-0.5">
                 <div>
-                  <span className="text-stay-text-muted block">Tiền phòng / tháng:</span>
-                  <span className="font-bold text-stay-primary text-sm">
+                  <span className="text-stay-text-muted block text-[13px]">Tiền phòng / tháng:</span>
+                  <span className="font-bold text-stay-text text-[14px]">
                     {formatCurrency(selectedContract.monthlyRent)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-stay-text-muted block">Tiền cọc ban đầu:</span>
-                  <span className="font-semibold text-stay-text">
+                  <span className="text-stay-text-muted block text-[13px]">Tiền cọc ban đầu:</span>
+                  <span className="font-semibold text-stay-text text-[14px]">
                     {formatCurrency(selectedContract.depositAmount)}
                   </span>
                 </div>
                 {selectedContract.depositRefundAmount !== null && selectedContract.depositRefundAmount !== undefined && (
                   <div>
-                    <span className="text-stay-text-muted block">Tiền cọc hoàn trả:</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-stay-text-muted block text-[13px]">Tiền cọc hoàn trả:</span>
+                    <span className="font-semibold text-stay-text text-[14px]">
                       {formatCurrency(selectedContract.depositRefundAmount)}
                     </span>
                   </div>

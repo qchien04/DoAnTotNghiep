@@ -58,11 +58,11 @@ export const ContractTable: React.FC<ContractTableProps> = ({
       ellipsis: { showTitle: true },
       render: (_: any, r: RentalContract) => (
         <div>
-          <p className="font-medium text-[14px] text-stay-text">
+          <p className="font-medium text-[14px] text-stay-text truncate">
             {r.representativeTenantName || '—'}
           </p>
           {r.representativeTenantPhone && (
-            <p className="text-[12px] text-stay-text-secondary">
+            <p className="text-[12px] text-stay-text-secondary truncate">
               {r.representativeTenantPhone}
             </p>
           )}

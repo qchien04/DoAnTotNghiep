@@ -92,7 +92,7 @@ export const VietQRPaymentModal: React.FC<VietQRPaymentModalProps> = ({
                 )}
                 <tr className="bg-stay-bg-app font-bold text-sm">
                   <td className="p-3 text-stay-text" colSpan={2}>Tổng số tiền thanh toán:</td>
-                  <td className="p-3 text-right text-stay-primary">
+                  <td className="p-3 text-right text-stay-text font-bold">
                     {activeBill.totalAmount.toLocaleString()} VNĐ
                   </td>
                 </tr>
@@ -125,9 +125,9 @@ export const VietQRPaymentModal: React.FC<VietQRPaymentModalProps> = ({
 
             <div className="space-y-1 text-stay-text-secondary">
               <p>Ngân hàng: <strong>{vietQRData?.bankName || '---'}</strong></p>
-              <p>Số tài khoản: <strong className="text-stay-primary font-mono text-sm">{vietQRData?.accountNumber || '---'}</strong></p>
+              <p>Số tài khoản: <strong className="text-stay-text font-mono text-sm">{vietQRData?.accountNumber || '---'}</strong></p>
               <p>Chủ tài khoản: <strong>{vietQRData?.accountHolder || '---'}</strong></p>
-              <p>Số tiền: <strong className="text-stay-primary">{activeBill.totalAmount.toLocaleString()} đ</strong></p>
+              <p>Số tiền: <strong className="text-stay-text font-bold">{activeBill.totalAmount.toLocaleString()} đ</strong></p>
               <p>Nội dung CK: <strong className="text-stay-text bg-stay-card-bg px-2 py-0.5 rounded border border-stay-border font-mono">{vietQRData?.transferContent || `HD${activeBill.id} thanh toan`}</strong></p>
             </div>
 
