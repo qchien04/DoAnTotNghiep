@@ -43,23 +43,23 @@
 **Interfaces:**
 - Produces: `Amenity` entity, `AmenityRepository`, `room.getAmenities()` returns `List<Amenity>`.
 
-- [ ] **Step 1: Viết migration script tạo bảng `amenities` và `room_amenities`**
+- [x] **Step 1: Viết migration script tạo bảng `amenities` và `room_amenities`**
   Tạo bảng `amenities` (`id`, `name`, `description`, `created_at`, `updated_at`), bảng `room_amenities` (`room_id`, `amenity_id`), và nạp 16 tiện ích khởi tạo: Điều hòa, Bình nóng lạnh, Tủ lạnh, Máy giặt, Giường nệm, Tủ quần áo, Bếp riêng, Ban công, Thang máy, Khóa vân tay, Chỗ để xe, Wifi, Gác xép, Giờ giấc tự do, Không chung chủ, Bảo vệ 24/7.
 
-- [ ] **Step 2: Thực thi migration trực tiếp lên PostgreSQL `rental_room_management`**
+- [x] **Step 2: Thực thi migration trực tiếp lên PostgreSQL `rental_room_management`**
   Chạy JDBC migration hoặc script SQL cập nhật database đang chạy trên máy cục bộ để đồng bộ schema.
 
-- [ ] **Step 3: Tạo Entity `Amenity.java` & `AmenityRepository.java`**
+- [x] **Step 3: Tạo Entity `Amenity.java` & `AmenityRepository.java`**
   Tạo `Amenity` kế thừa `BaseEntity` với `name` (unique, not null) và `description`. Tạo `AmenityRepository extends JpaRepository<Amenity, Long>`.
 
-- [ ] **Step 4: Cập nhật Entity `Room.java`**
+- [x] **Step 4: Cập nhật Entity `Room.java`**
   Thay thế trường `String amenities` bằng quan hệ `@ManyToMany` qua bảng `room_amenities`.
 
-- [ ] **Step 5: Kiểm tra biên dịch & Hibernate validate**
+- [x] **Step 5: Kiểm tra biên dịch & Hibernate validate**
   Run: `mvn test -Dtest=CoreApplicationTests#contextLoads`
   Expected: BUILD SUCCESS (Hibernate `ddl-auto: validate` vượt qua 100%).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   ```bash
   git add backend/src/main/java/com/doan/core/business/entity/ backend/src/main/java/com/doan/core/business/repository/AmenityRepository.java backend/src/main/resources/db/migration/
   git commit -m "feat(db): create amenities and room_amenities tables and entity mappings"
@@ -90,25 +90,25 @@
   - `RoomRequest.amenityIds`: `List<Long>`
   - `RoomResponse.amenities`: `List<AmenityResponse>`
 
-- [ ] **Step 1: Tạo các DTOs cho Amenity**
+- [x] **Step 1: Tạo các DTOs cho Amenity**
   Tạo `AmenityResponse`, `CreateAmenityRequest` (validation `@NotBlank String name`).
 
-- [ ] **Step 2: Xây dựng `AdminAmenityService` & `AdminAmenityController`**
+- [x] **Step 2: Xây dựng `AdminAmenityService` & `AdminAmenityController`**
   Hỗ trợ lấy danh sách phân trang (kèm tìm kiếm từ khóa), thêm mới, cập nhật, xóa tiện ích.
 
-- [ ] **Step 3: Xây dựng `PublicAmenityController`**
+- [x] **Step 3: Xây dựng `PublicAmenityController`**
   Endpoint `GET /api/v1/public/amenities` trả về toàn bộ danh sách tiện ích sắp xếp theo tên để phục vụ bộ lọc tìm kiếm và form chủ trọ.
 
-- [ ] **Step 4: Cập nhật `RoomRequest`, `RoomResponse` và `LandlordRoomServiceImpl`**
+- [x] **Step 4: Cập nhật `RoomRequest`, `RoomResponse` và `LandlordRoomServiceImpl`**
   - Trong `RoomRequest`: Thêm `List<Long> amenityIds = new ArrayList<>()`.
   - Trong `RoomResponse`: Trả về `List<AmenityResponse> amenities`.
   - Trong `LandlordRoomServiceImpl.createRoom` và `updateRoom`: Lấy danh sách `Amenity` theo `amenityIds` từ `amenityRepository.findAllById(amenityIds)` và gán vào `room.setAmenities(...)`.
 
-- [ ] **Step 5: Kiểm tra biên dịch backend**
+- [x] **Step 5: Kiểm tra biên dịch backend**
   Run: `mvn test-compile`
   Expected: BUILD SUCCESS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   ```bash
   git add backend/src/main/java/com/doan/core/business/
   git commit -m "feat(amenities): add admin and public amenity endpoints and landlord room integration"
@@ -130,26 +130,26 @@
 - Produces: `POST /api/v1/home/rooms/search` -> `ResponseData<PageResponse<RoomResponse>>`
   Nhận body: `PublicRoomSearchRequest(keyword, province, district, minPrice, maxPrice, minArea, maxArea, amenityIds, zones, page, size, sortBy, sortDirection)`
 
-- [ ] **Step 1: Tạo DTOs `CircleZoneDto` và `PublicRoomSearchRequest`**
+- [x] **Step 1: Tạo DTOs `CircleZoneDto` và `PublicRoomSearchRequest`**
   - `CircleZoneDto`: `Double latitude`, `Double longitude`, `Double radiusInMeters`.
   - `PublicRoomSearchRequest`: Đầy đủ các trường lọc và phân trang.
 
-- [ ] **Step 2: Viết Native/JPQL query trong `RoomRepository`**
+- [x] **Step 2: Viết Native/JPQL query trong `RoomRepository`**
   Xây dựng truy vấn tìm kiếm kết hợp các bộ lọc giá, diện tích, từ khóa, tiện ích và danh sách các vùng tròn `zones`:
   Dùng công thức Haversine cho từng vùng `zones` với toán tử `OR`.
   Xử lý an toàn: `r.latitude IS NOT NULL AND r.longitude IS NOT NULL` khi có zones.
 
-- [ ] **Step 3: Tạo Endpoint `POST /api/v1/home/rooms/search` trong `HomeController`**
+- [x] **Step 3: Tạo Endpoint `POST /api/v1/home/rooms/search` trong `HomeController`**
   Trả về `ResponseData<PageResponse<RoomResponse>>`.
 
-- [ ] **Step 4: Viết unit test trong `CoreApplicationTests`**
+- [x] **Step 4: Viết unit test trong `CoreApplicationTests`**
   Viết test case gọi API tìm kiếm với danh sách vùng tròn `zones` và danh sách `amenityIds`.
 
-- [ ] **Step 5: Chạy test xác minh**
+- [x] **Step 5: Chạy test xác minh**
   Run: `mvn test -Dtest=CoreApplicationTests`
   Expected: BUILD SUCCESS, tất cả các test case đều pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   ```bash
   git add backend/src/main/java/com/doan/core/business/ backend/src/test/
   git commit -m "feat(search): implement public room search with spatial circular zones"
@@ -169,24 +169,24 @@
 - Produces: `amenityService.getPublicAmenities(): Promise<ResponseData<AmenityItem[]>>`
 - Consumes: Backend `/api/v1/public/amenities`
 
-- [ ] **Step 1: Tạo `amenity.ts` và `amenityService.ts`**
+- [x] **Step 1: Tạo `amenity.ts` và `amenityService.ts`**
   Khai báo interface `AmenityItem(id, name, description)` và các hàm gọi API `/api/v1/public/amenities`.
 
-- [ ] **Step 2: Cập nhật types trong `landlord.ts`**
+- [x] **Step 2: Cập nhật types trong `landlord.ts`**
   Trong `CreateRoomDto`: `amenityIds?: number[]`.
   Trong `Room`: `amenities?: AmenityItem[] | string[]`.
 
-- [ ] **Step 3: Cập nhật `RoomFormModal.tsx`**
+- [x] **Step 3: Cập nhật `RoomFormModal.tsx`**
   Tải danh sách tiện ích qua `amenityService.getPublicAmenities()`.
   Thay thế ô `Select mode="tags"` bằng `<Select mode="multiple">` với danh sách tiện ích từ API.
   Khi submit form: Gửi `amenityIds: values.amenityIds`.
   Khi mở sửa phòng: Khởi tạo `amenityIds: editingRoom.amenities?.map(a => typeof a === 'object' ? a.id : ...)` tương thích mượt mà.
 
-- [ ] **Step 4: Kiểm tra build TypeScript**
+- [x] **Step 4: Kiểm tra build TypeScript**
   Run: `npm run build` trong `frontend`
   Expected: Không có lỗi type.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   ```bash
   git add frontend/src/shared/services/amenityService.ts frontend/src/shared/types/ frontend/src/features/landlord/
   git commit -m "feat(fe): integrate amenity master data into landlord room modal"
