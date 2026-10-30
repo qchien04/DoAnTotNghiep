@@ -66,93 +66,49 @@ export const TenantDetailModal: React.FC<TenantDetailModalProps> = ({
       }
     >
       <div className="mt-4 space-y-4 text-[14px]">
-        {/* SECTION 1: NHÂN THÂN & LIÊN HỆ */}
-        <div className="space-y-3">
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Họ và tên khách thuê
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {tenant.fullName}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Số điện thoại liên lạc
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {tenant.phone || '—'}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Số định danh CCCD / CMND
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {tenant.idCardNumber || '—'}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Quê quán / Nơi thường trú
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {tenant.hometown || '—'}
-                </div>
-              </div>
-            </div>
-
-            {tenant.userEmail && (
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Email tài khoản
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {tenant.userEmail}
-                </div>
-              </div>
-            )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-[14px]">
+          <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle sm:col-span-2">
+            <span className="text-stay-text-secondary shrink-0">Họ và tên:</span>
+            <span className="text-stay-text font-semibold">{tenant.fullName}</span>
           </div>
-        </div>
 
-        {/* SECTION 2: BỐ TRÍ PHÒNG & VAI TRÒ */}
-        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Phòng trọ đang ở
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {tenant.roomName || '—'}
-                </div>
-              </div>
+          <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+            <span className="text-stay-text-secondary shrink-0 min-w-[110px]">Số điện thoại:</span>
+            <span className="text-stay-text font-medium">{tenant.phone || '—'}</span>
+          </div>
 
-              <div>
-                <label className="text-stay-text font-medium  block mb-1">
-                  Vai trò trong phòng trọ
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {tenant.isRepresentative ? 'Đại diện hợp đồng chính' : 'Thành viên ở cùng'}
-                </div>
-              </div>
+          <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+            <span className="text-stay-text-secondary shrink-0 min-w-[110px]">CCCD / CMND:</span>
+            <span className="text-stay-text font-medium">{tenant.idCardNumber || '—'}</span>
+          </div>
+
+          <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+            <span className="text-stay-text-secondary shrink-0 min-w-[110px]">Quê quán:</span>
+            <span className="text-stay-text font-medium">{tenant.hometown || '—'}</span>
+          </div>
+
+          <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+            <span className="text-stay-text-secondary shrink-0 min-w-[110px]">Vai trò:</span>
+            <span className="text-stay-text font-medium">
+              {tenant.isRepresentative ? 'Đại diện hợp đồng chính' : 'Thành viên ở cùng'}
+            </span>
+          </div>
+
+          <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle sm:col-span-2">
+            <span className="text-stay-text-secondary shrink-0">Phòng trọ đang ở:</span>
+            <span className="text-stay-text font-medium">{tenant.roomName || '—'}</span>
+          </div>
+
+          {tenant.userEmail && (
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle sm:col-span-2">
+              <span className="text-stay-text-secondary shrink-0">Email tài khoản:</span>
+              <span className="text-stay-text font-medium">{tenant.userEmail}</span>
             </div>
+          )}
 
-            <div>
-              <label className="text-stay-text font-medium  block mb-1">
-                Trạng thái liên kết tài khoản
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {renderLinkStatus(tenant.linkStatus, tenant.userEmail)}
-              </div>
-            </div>
+          <div className="flex items-center gap-2 py-1.5 border-b border-stay-border-subtle sm:col-span-2">
+            <span className="text-stay-text-secondary shrink-0">Trạng thái liên kết:</span>
+            <div>{renderLinkStatus(tenant.linkStatus, tenant.userEmail)}</div>
           </div>
         </div>
       </div>

@@ -156,62 +156,69 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
       {bill && (
         <div className="mt-4 space-y-5 text-[14px]">
           {/* SECTION 1: THÔNG TIN CHUNG HÓA ĐƠN */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Phòng cho thuê
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {bill.roomName || '---'} {bill.buildingName ? `(${bill.buildingName})` : ''}
-                </div>
+          <div className="space-y-3 text-[14px]">
+            {/* PHẦN 1: PHÒNG & TÒA NHÀ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[100px]">Tòa nhà:</span>
+                <span className="text-stay-text font-medium">
+                  {bill.buildingName || 'Phòng độc lập'}
+                </span>
               </div>
 
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Khách thuê đại diện
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {bill.representativeTenantName || 'Chưa cập nhật'}
-                </div>
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[100px]">Phòng trọ:</span>
+                <span className="text-stay-text font-semibold">
+                  {bill.roomName || '---'}
+                </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Kỳ cước hóa đơn
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+            {/* PHẦN 2: KHÁCH THUÊ ĐẠI DIỆN */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 pt-1 border-t border-stay-border-subtle">
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Khách đại diện:</span>
+                <span className="text-stay-text font-medium">
+                  {bill.representativeTenantName || 'Chưa cập nhật'}
+                </span>
+              </div>
+
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Số điện thoại:</span>
+                <span className="text-stay-text font-medium">
+                  {bill.representativeTenantPhone || '—'}
+                </span>
+              </div>
+            </div>
+
+            {/* PHẦN 3: KỲ CƯỚC & THỜI HẠN */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 pt-1 border-t border-stay-border-subtle">
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Kỳ cước:</span>
+                <span className="text-stay-text font-medium">
                   {bill.billingPeriod || '---'}
-                </div>
+                </span>
               </div>
 
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Ngày lập hóa đơn
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Ngày lập:</span>
+                <span className="text-stay-text font-medium">
                   {bill.createdAt ? formatDate(bill.createdAt) : '---'}
-                </div>
+                </span>
               </div>
 
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Hạn nộp tiền
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Hạn nộp tiền:</span>
+                <span className="text-stay-text font-medium">
                   {bill.dueDate ? formatDate(bill.dueDate) : 'Trong kỳ'}
-                </div>
+                </span>
               </div>
 
-              <div>
-                <label className="text-stay-text font-medium block mb-1">
-                  Tình trạng thanh toán
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+              <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+                <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Tình trạng:</span>
+                <span className="text-stay-text font-medium">
                   {bill.paidAt ? `Đã nộp (${formatDate(bill.paidAt)})` : 'Chưa thanh toán'}
-                </div>
+                </span>
               </div>
             </div>
           </div>

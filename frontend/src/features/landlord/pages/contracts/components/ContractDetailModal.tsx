@@ -95,24 +95,75 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
       }
     >
       <div className="mt-4 space-y-5 text-[14px]">
-        {/* SECTION 1: PHÒNG & KHÁCH HÀNG ĐẠI DIỆN */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-stay-text font-medium block mb-1">
-              Phòng cho thuê
-            </label>
-            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-              {activeContract.roomName} {activeContract.buildingName ? `(${activeContract.buildingName})` : ''}
+        {/* SECTION 1: THÔNG TIN HỢP ĐỒNG */}
+        <div className="space-y-3 text-[14px]">
+          {/* PHẦN 1: PHÒNG & TÒA NHÀ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[100px]">Tòa nhà:</span>
+              <span className="text-stay-text font-medium">
+                {activeContract.buildingName || 'Phòng độc lập'}
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[100px]">Phòng trọ:</span>
+              <span className="text-stay-text font-semibold">
+                {activeContract.roomName}
+              </span>
             </div>
           </div>
 
-          <div>
-            <label className="text-stay-text font-medium block mb-1">
-              Khách thuê đại diện
-            </label>
-            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-              {activeContract.representativeTenantName || '—'}{' '}
-              {activeContract.representativeTenantPhone ? `(${activeContract.representativeTenantPhone})` : ''}
+          {/* PHẦN 2: KHÁCH THUÊ ĐẠI DIỆN */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 pt-1 border-t border-stay-border-subtle">
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Khách đại diện:</span>
+              <span className="text-stay-text font-medium">
+                {activeContract.representativeTenantName || '—'}
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[120px]">Số điện thoại:</span>
+              <span className="text-stay-text font-medium">
+                {activeContract.representativeTenantPhone || '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* PHẦN 3: ĐIỀU KHOẢN TÀI CHÍNH & THỜI HẠN */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 pt-1 border-t border-stay-border-subtle">
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[130px]">Tiền thuê phòng:</span>
+              <span className="text-stay-text font-medium">
+                {Number(activeContract.rentPrice || 0).toLocaleString()} đ/tháng
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[130px]">Tiền đặt cọc:</span>
+              <span className="text-stay-text font-medium">
+                {Number(activeContract.depositAmount || 0).toLocaleString()} đ
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[130px]">Thời hạn hợp đồng:</span>
+              <span className="text-stay-text font-medium">
+                {activeContract.startDate || '—'} đến {activeContract.endDate || '—'}
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 py-1.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0 min-w-[130px]">Chu kỳ thu tiền:</span>
+              <span className="text-stay-text font-medium">
+                Ngày {activeContract.paymentCycleDay || 5} hàng tháng
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 py-1.5 border-b border-stay-border-subtle sm:col-span-2">
+              <span className="text-stay-text-secondary shrink-0 min-w-[130px]">Trạng thái hợp đồng:</span>
+              <div>{renderStatus(activeContract.status)}</div>
             </div>
           </div>
         </div>
@@ -169,70 +220,6 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        {/* SECTION 3: THỜI HẠN & CHU KỲ */}
-        <div className="space-y-3 pt-2 border-t border-stay-border-subtle">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Ngày bắt đầu
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {activeContract.startDate || '—'}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Ngày kết thúc
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                {activeContract.endDate || '—'}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Kỳ thu tiền hàng tháng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                Ngày {activeContract.paymentCycleDay || 5} hàng tháng
-              </div>
-            </div>
-
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Trạng thái hợp đồng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                {renderStatus(activeContract.status)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 4: TÀI CHÍNH & TIỀN CỌC */}
-        <div className="space-y-3 pt-2 border-t border-stay-border-subtle">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Tiền thuê phòng thỏa thuận
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                {Number(activeContract.rentPrice || 0).toLocaleString()} đ/tháng
-              </div>
-            </div>
-
-            <div>
-              <label className="text-stay-text font-medium block mb-1">
-                Tiền đặt cọc giữ phòng
-              </label>
-              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                {Number(activeContract.depositAmount || 0).toLocaleString()} đ
-              </div>
-            </div>
           </div>
         </div>
 
