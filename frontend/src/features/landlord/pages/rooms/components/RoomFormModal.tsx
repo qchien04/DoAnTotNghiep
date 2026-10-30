@@ -26,6 +26,7 @@ import {
   useBuildingDetail,
   useServices,
   useUploadMultipleImages,
+  useAmenities,
 } from '@/shared/hooks';
 import {
   formatServicePriceWithUnit,
@@ -92,6 +93,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
   const watchedBuildingId = Form.useWatch('buildingId', form);
   const { building: selectedBuilding } = useBuildingDetail(watchedBuildingId);
+  const { amenities: systemAmenities = [] } = useAmenities();
 
   // Room Images State
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -161,11 +163,12 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             : [];
         setImageUrls(initialImages);
 
-        const parsedAmenities = Array.isArray(editingRoom.amenities)
-          ? editingRoom.amenities
-          : typeof editingRoom.amenities === 'string' && editingRoom.amenities.trim()
-          ? editingRoom.amenities.split(',').map((s) => s.trim())
-          : [];
+        const rawAmenities = editingRoom.amenities as any;
+        const parsedAmenities: string[] = Array.isArray(rawAmenities)
+          ? rawAmenities
+          : typeof rawAmenities === 'string' && rawAmenities.trim()
+          ? rawAmenities.split(',').map((s: string) => s.trim())
+          : (editingRoom.amenityDetails?.map((a) => a.name) ?? []);
 
         const roomServiceIds =
           editingRoom.serviceIds ||
@@ -434,8 +437,15 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   const handleOk = async () => {
     const values = await form.validateFields();
     const coverImageUrl = imageUrls.length > 0 ? imageUrls[0] : undefined;
+    const selectedAmenityNames: string[] = values.amenities || [];
+    const amenityIds = systemAmenities
+      .filter((a) => selectedAmenityNames.includes(a.name))
+      .map((a) => a.id);
+
     await onSubmit({
       ...values,
+      amenities: selectedAmenityNames,
+      amenityIds,
       coverImageUrl,
       imageUrls,
     } as CreateRoomDto);
@@ -691,15 +701,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 mode="tags"
                 className="w-full min-h-[40px]"
                 placeholder="Chọn hoặc nhập tiện nghi (Điều hòa, Nóng lạnh, Giường, Tủ...)"
-                options={[
-                  { value: 'Điều hòa', label: 'Điều hòa' },
-                  { value: 'Nóng lạnh', label: 'Nóng lạnh' },
-                  { value: 'Giường', label: 'Giường' },
-                  { value: 'Tủ quần áo', label: 'Tủ quần áo' },
-                  { value: 'Tủ lạnh', label: 'Tủ lạnh' },
-                  { value: 'Kệ bếp', label: 'Kệ bếp' },
-                  { value: 'Ban công', label: 'Ban công' },
-                ]}
+                options={systemAmenities.map((a) => ({ value: a.name, label: a.name }))}
               />
             </Form.Item>
 

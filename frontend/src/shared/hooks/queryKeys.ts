@@ -61,3 +61,10 @@ export const adminKeys = {
   reportDetail: (id: string) => [...adminKeys.reports(), 'detail', id] as const,
   analytics: () => [...adminKeys.all, 'analytics'] as const,
 };
+
+export const amenityKeys = {
+  all: ['amenities'] as const,
+  publicList: () => [...amenityKeys.all, 'public'] as const,
+  adminList: (params?: any) => [...amenityKeys.all, 'admin', params] as const,
+  detail: (id: number | string) => [...amenityKeys.all, 'detail', String(id)] as const,
+};

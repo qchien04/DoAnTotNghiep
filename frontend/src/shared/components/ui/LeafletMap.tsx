@@ -21,11 +21,20 @@ export interface MapMarker {
   link?: string;
 }
 
+export interface MapCircle {
+  center: [number, number];
+  radiusKm: number;
+  label?: string;
+  color?: string;
+}
+
 export interface LeafletMapProps {
   center?: [number, number];
   zoom?: number;
   markers?: MapMarker[];
+  circles?: MapCircle[];
   onMarkerClick?: (marker: MapMarker) => void;
+  onMapClick?: (lat: number, lng: number) => void;
   height?: string | number;
   className?: string;
   showCurrentLocation?: boolean;
@@ -51,7 +60,9 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   center = [21.0285, 105.8048], // Hà Nội center
   zoom = 13,
   markers = [],
+  circles = [],
   onMarkerClick,
+  onMapClick,
   height = '480px',
   className = '',
   showCurrentLocation = true,
@@ -60,6 +71,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const circlesLayerRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const [isGeolocating, setIsGeolocating] = useState(false);
 
@@ -115,6 +127,9 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     );
   };
 
+  const onMapClickRef = useRef(onMapClick);
+  onMapClickRef.current = onMapClick;
+
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -135,6 +150,10 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
         maxBoundsViscosity: 1.0, // Chặn cứng không cho kéo/cuộn bản đồ ra ngoài biên giới & vùng biển Việt Nam
         zoomControl: true,
         scrollWheelZoom: true,
+      });
+
+      map.on('click', (e: L.LeafletMouseEvent) => {
+        onMapClickRef.current?.(e.latlng.lat, e.latlng.lng);
       });
 
       // Sử dụng tile layer OpenStreetMap Humanitarian (HOT) qua CDN ổn định:
@@ -376,6 +395,36 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
   }, [markers, onMarkerClick]);
+
+  // Update Circles
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!circlesLayerRef.current) {
+      circlesLayerRef.current = L.layerGroup().addTo(map);
+    }
+    const layerGroup = circlesLayerRef.current;
+    layerGroup.clearLayers();
+
+    circles.forEach((circle) => {
+      const leafletCircle = L.circle(circle.center, {
+        radius: circle.radiusKm * 1000,
+        color: circle.color || '#4F46E5',
+        fillColor: circle.color || '#4F46E5',
+        fillOpacity: 0.15,
+        weight: 2,
+        dashArray: '5, 5',
+      });
+      if (circle.label) {
+        leafletCircle.bindTooltip(circle.label, {
+          permanent: true,
+          direction: 'center',
+          className: 'stay-circle-label',
+        });
+      }
+      layerGroup.addLayer(leafletCircle);
+    });
+  }, [circles]);
 
   return (
     <div

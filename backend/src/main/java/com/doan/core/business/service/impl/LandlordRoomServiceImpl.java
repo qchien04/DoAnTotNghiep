@@ -2,15 +2,20 @@ package com.doan.core.business.service.impl;
 
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
+import com.doan.core.business.entity.Amenity;
 import com.doan.core.business.entity.Building;
 import com.doan.core.business.enums.ContractStatus;
 import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.RoomImage;
+import com.doan.core.business.entity.User;
 import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.entity.UtilityService;
+import com.doan.core.business.repository.AmenityRepository;
 import com.doan.core.business.repository.BuildingRepository;
 import com.doan.core.business.repository.ContractRepository;
 import com.doan.core.business.repository.RoomRepository;
+import com.doan.core.business.repository.UserRepository;
+import com.doan.core.business.repository.UtilityServiceRepository;
 import com.doan.core.business.service.LandlordRoomService;
 import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.exception.BaseException;
@@ -35,9 +40,9 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     private final RoomRepository roomRepository;
     private final BuildingRepository buildingRepository;
     private final ContractRepository contractRepository;
-    private final com.doan.core.business.repository.UtilityServiceRepository utilityServiceRepository;
-    private final com.doan.core.business.repository.UserRepository userRepository;
-    private final com.doan.core.business.repository.AmenityRepository amenityRepository;
+    private final UtilityServiceRepository utilityServiceRepository;
+    private final UserRepository userRepository;
+    private final AmenityRepository amenityRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -131,10 +136,10 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
-        com.doan.core.business.entity.User landlord = userRepository.findById(landlordId)
+        User landlord = userRepository.findById(landlordId)
                 .orElse(building != null ? building.getLandlord() : null);
 
-        List<com.doan.core.business.entity.Amenity> amenities = new ArrayList<>();
+        List<Amenity> amenities = new ArrayList<>();
         if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
             amenities = amenityRepository.findAllById(request.getAmenityIds());
         } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
@@ -145,7 +150,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
-        List<com.doan.core.business.entity.UtilityService> services = new ArrayList<>();
+        List<UtilityService> services = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
             services = utilityServiceRepository.findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);
         }
@@ -286,7 +291,8 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             room.setFurnishingLevel(request.getFurnishingLevel());
         }
         if (request.getAmenityIds() != null) {
-            List<com.doan.core.business.entity.Amenity> updatedAmenities = amenityRepository.findAllById(request.getAmenityIds());
+            List<com.doan.core.business.entity.Amenity> updatedAmenities = amenityRepository
+                    .findAllById(request.getAmenityIds());
             room.setAmenities(updatedAmenities);
         } else if (request.getAmenities() != null) {
             List<com.doan.core.business.entity.Amenity> updatedAmenities = new ArrayList<>();

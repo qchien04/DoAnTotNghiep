@@ -111,6 +111,11 @@ export const authService = {
     return res.data;
   },
 
+  getPublicRoomDetail: async (id: number | string): Promise<ResponseData<any>> => {
+    const res = await apiClient.get<ResponseData<any>>(`/api/v1/public/rooms/${id}`);
+    return res.data;
+  },
+
   getUsers: async (params?: PagingParams): Promise<ResponseData<PageResponse<User>>> => {
     const res = await apiClient.get<ResponseData<PageResponse<User>>>('/api/v1/users', { params });
     return res.data;

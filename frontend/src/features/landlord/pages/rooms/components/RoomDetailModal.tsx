@@ -33,11 +33,12 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   };
 
   const images = room.imageUrls && room.imageUrls.length > 0 ? room.imageUrls : room.coverImageUrl ? [room.coverImageUrl] : [];
-  const amenityList: string[] = Array.isArray(room.amenities)
-    ? room.amenities
-    : typeof room.amenities === 'string' && room.amenities
-      ? room.amenities.split(',').map((s: string) => s.trim()).filter(Boolean)
-      : [];
+  const rawAmenities = room.amenities as any;
+  const amenityList: string[] = Array.isArray(rawAmenities)
+    ? rawAmenities
+    : typeof rawAmenities === 'string' && rawAmenities
+      ? rawAmenities.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : (room.amenityDetails?.map((a) => a.name) || []);
 
   return (
     <Modal

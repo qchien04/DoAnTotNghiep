@@ -1,5 +1,7 @@
 export * from './queryKeys';
+// Common hooks
 export * from './common/useFileUpload';
+export * from './common/useAmenities';
 
 // Landlord hooks (UC 01 - 29)
 export * from './landlord/useBuildings';
@@ -24,3 +26,4 @@ export * from './admin/useAdminUsers';
 export * from './admin/useMasterData';
 export * from './admin/useReports';
 export * from './admin/useAdminAnalytics';
+export * from './admin/useAdminAmenities';

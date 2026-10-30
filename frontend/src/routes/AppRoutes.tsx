@@ -50,6 +50,7 @@ import { TenantBillsPage } from '@/features/tenant/pages/TenantBillsPage';
 import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage';
 import { AdminUsersPage } from '@/features/admin/pages/AdminUsersPage';
 import { AdminMasterDataPage } from '@/features/admin/pages/AdminMasterDataPage';
+import { AdminAmenitiesPage } from '@/features/admin/pages/AdminAmenitiesPage';
 import { AdminReportsPage } from '@/features/admin/pages/AdminReportsPage';
 
 export const AppRoutes: React.FC = () => {
@@ -112,6 +113,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="amenities" element={<AdminAmenitiesPage />} />
           <Route path="master-data" element={<AdminMasterDataPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="profile" element={<ProfilePage />} />

@@ -204,10 +204,10 @@
 - Produces: `<DrawZoneModal open={open} initialZones={zones} onCancel={...} onApply={(zones: CircleZone[]) => void} />`
 - `CircleZone`: `{ id: string; latitude: number; longitude: number; radiusInMeters: number }`
 
-- [ ] **Step 1: Định nghĩa type `CircleZone` và helper tính khoảng cách**
+- [x] **Step 1: Định nghĩa type `CircleZone` và helper tính khoảng cách**
   Viết helper tính khoảng cách giữa 2 điểm tọa độ `(lat1, lng1)` và `(lat2, lng2)` theo mét (Haversine) phục vụ hiển thị bán kính theo thời gian thực.
 
-- [ ] **Step 2: Xây dựng Component `DrawZoneModal.tsx` với Leaflet**
+- [x] **Step 2: Xây dựng Component `DrawZoneModal.tsx` với Leaflet**
   - Khung Modal toàn màn hình / kích thước lớn (90vw, 85vh).
   - Khởi tạo Leaflet Map với tâm Hà Nội.
   - Floating Toolbar trên bản đồ:
@@ -222,10 +222,10 @@
   - Hiển thị danh sách các vòng tròn đã khoanh với màu sắc tím/indigo bán trong suốt (`fillColor: '#8B5CF6'`).
   - Chân Modal: Hiển thị số lượng vùng đã khoanh + Nút "Hủy" và "Áp dụng vùng chọn".
 
-- [ ] **Step 3: Kiểm tra component độc lập và build**
+- [x] **Step 3: Kiểm tra component độc lập và build**
   Run: `npm run build` trong `frontend`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
   ```bash
   git add frontend/src/features/room/components/DrawZoneModal.tsx frontend/src/features/room/types/
   git commit -m "feat(fe): build DrawZoneModal with drag-to-circle spatial drawing"
@@ -247,22 +247,22 @@
   - Cột trái: Sidebar bộ lọc + Mini Map khoanh vùng
   - Cột phải: Toggle chuyển đổi Grid Cards 🔲 và Big Map View 🗺️
 
-- [ ] **Step 1: Tách nhỏ các Component con theo SRP**
+- [x] **Step 1: Tách nhỏ các Component con theo SRP**
   - `RoomFilterSidebar.tsx`: Chứa Mini Map widget (preview các vòng tròn + nút mở `DrawZoneModal`), bộ lọc khoảng giá (slider + chip presets), tiện ích (chips từ API), diện tích, quận/huyện.
   - `RoomCard.tsx`: Thẻ phòng trọ hiện đại, hiển thị ảnh cover, badge giá tốt/mới, giá nổi bật, tag tiện ích, chủ trọ, nút xem chi tiết.
   - `RoomBigMap.tsx`: Bản đồ lớn chiếm trọn không gian, hiển thị marker huy hiệu giá tiền (Price Pill Marker - ví dụ: `4.2 tr`), render các vòng tròn `zones` đang lọc, click vào marker hiển thị popup preview sang trọng.
 
-- [ ] **Step 2: Tái cấu trúc `RoomSearchPage.tsx`**
+- [x] **Step 2: Tái cấu trúc `RoomSearchPage.tsx`**
   - Tích hợp gọi API tìm kiếm backend `POST /api/v1/home/rooms/search` kết nối với các state bộ lọc: keyword, price, area, amenityIds, zones, page, size.
   - Quản lý view mode: `grid` hoặc `map`.
   - Tích hợp chuẩn Semantic Tokens (`bg-stay-bg`, `bg-stay-card-bg`, `text-stay-text`...).
   - Phân trang Ant Design kết nối API `PageResponse`.
 
-- [ ] **Step 3: Kiểm tra build TypeScript**
+- [x] **Step 3: Kiểm tra build TypeScript**
   Run: `npm run build` trong `frontend`
   Expected: 0 lỗi.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
   ```bash
   git add frontend/src/features/room/
   git commit -m "feat(fe): redesign RoomSearchPage with filter sidebar and dual grid/big-map views"
@@ -275,19 +275,19 @@
 **Files:**
 - Test files & Code review
 
-- [ ] **Step 1: Kiểm tra Backend với Maven**
+- [x] **Step 1: Kiểm tra Backend với Maven**
   Run: `mvn clean test` trong `E:\DoAnTotNgiep\backend`
   Expected: BUILD SUCCESS 0 lỗi.
 
-- [ ] **Step 2: Kiểm tra Frontend với Vite**
+- [x] **Step 2: Kiểm tra Frontend với Vite**
   Run: `npm run build` trong `E:\DoAnTotNgiep\frontend`
   Expected: 0 lỗi compile.
 
-- [ ] **Step 3: Kiểm tra Python AI Engine**
+- [x] **Step 3: Kiểm tra Python AI Engine**
   Run: `python -c "import stayconnect_ai_engine; print('Engine syntax OK')"` trong `E:\DoAnTotNgiep\AI_Service`
   Expected: `Engine syntax OK`.
 
-- [ ] **Step 4: Commit và tổng kết**
+- [x] **Step 4: Commit và tổng kết**
   ```bash
   git add .
   git commit -m "chore: complete amenities master data and advanced room search page"

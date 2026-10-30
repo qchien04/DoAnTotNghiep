@@ -9,6 +9,7 @@
  */
 
 import { PagingParams } from '@/shared/types/api';
+import { Amenity } from './amenity';
 
 // =========================================================================
 // 1. Tòa nhà / Khu trọ (UC 01 - 04)
@@ -69,7 +70,8 @@ export interface Room {
   maxCapacity: number;
   currentOccupancy?: number;
   furnishingLevel?: string;
-  amenities?: string[] | string;
+  amenities?: string[];
+  amenityDetails?: Amenity[];
   serviceIds?: number[];
   services?: any[];
   description?: string;
@@ -77,11 +79,14 @@ export interface Room {
   province?: string;
   ward?: string;
   addressDetail?: string;
+  fullAddress?: string;
   coverImageUrl?: string;
   imageUrls?: string[];
   latitude?: number;
   longitude?: number;
   isPublic?: boolean;
+  landlordName?: string;
+  landlordPhone?: string;
   createdAt?: string;
 }
 
@@ -95,7 +100,8 @@ export interface CreateRoomDto {
   standardDeposit: number;
   maxCapacity: number;
   furnishingLevel?: string;
-  amenities?: string[] | string;
+  amenities?: string[];
+  amenityIds?: number[];
   serviceIds?: (number | string)[];
   description?: string;
   status?: RoomStatus;
