@@ -44,16 +44,16 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
       ? activeContract.tenants
       : activeContract.representativeTenantName
         ? [
-            {
-              id: activeContract.representativeTenantId || 'rep',
-              fullName: activeContract.representativeTenantName,
-              phone: activeContract.representativeTenantPhone || '—',
-              idCardNumber: '—',
-              hometown: '—',
-              isRepresentative: true,
-              linkStatus: 'NOT_LINKED',
-            },
-          ]
+          {
+            id: activeContract.representativeTenantId || 'rep',
+            fullName: activeContract.representativeTenantName,
+            phone: activeContract.representativeTenantPhone || '—',
+            idCardNumber: '—',
+            hometown: '—',
+            isRepresentative: true,
+            linkStatus: 'NOT_LINKED',
+          },
+        ]
         : [];
 
   const services = activeContract.services || [];
@@ -62,7 +62,7 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
     <Modal
       open={open}
       onCancel={onCancel}
-      title={`Chi tiết hợp đồng thuê: ${activeContract.roomName || 'Hợp đồng'}`}
+      title={`Chi tiết hợp đồng thuê`}
       width={920}
       centered
       destroyOnClose
@@ -122,7 +122,7 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-stay-primary" />
             <label className="text-stay-text font-bold block m-0">
-              Danh sách khách thuê trong phòng ({tenants.length})
+              Danh sách khách thuê trong phòng
             </label>
           </div>
 
@@ -241,7 +241,7 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-stay-primary" />
             <label className="text-stay-text font-bold block m-0">
-              Dịch vụ tiện ích áp dụng ({services.length})
+              Dịch vụ tiện ích áp dụng
             </label>
           </div>
 

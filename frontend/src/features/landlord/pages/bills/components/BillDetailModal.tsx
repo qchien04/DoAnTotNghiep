@@ -154,48 +154,70 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
       }
     >
       {bill && (
-        <div className="mt-4 space-y-4">
-          {/* SECTION 1: PHÒNG & THỜI HẠN */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="p-3 rounded-xl border border-stay-border bg-stay-card-bg">
-              <span className="text-xs text-stay-text-secondary block mb-1">
-                Phòng trọ
-              </span>
-              <p className="text-sm font-semibold text-stay-text m-0 truncate">
-                {bill.roomName || '---'} {bill.buildingName ? `(${bill.buildingName})` : ''}
-              </p>
-              <p className="text-xs text-stay-text-secondary m-0 mt-0.5 truncate">
-                Khách thuê: {bill.representativeTenantName || 'Chưa cập nhật'}
-              </p>
+        <div className="mt-4 space-y-5 text-[14px]">
+          {/* SECTION 1: THÔNG TIN CHUNG HÓA ĐƠN */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-stay-text font-medium block mb-1">
+                  Phòng cho thuê
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                  {bill.roomName || '---'} {bill.buildingName ? `(${bill.buildingName})` : ''}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-stay-text font-medium block mb-1">
+                  Khách thuê đại diện
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                  {bill.representativeTenantName || 'Chưa cập nhật'}
+                </div>
+              </div>
             </div>
 
-            <div className="p-3 rounded-xl border border-stay-border bg-stay-card-bg">
-              <span className="text-xs text-stay-text-secondary block mb-1">
-                Kỳ cước hóa đơn
-              </span>
-              <p className="text-sm font-semibold text-stay-text m-0">
-                {bill.billingPeriod}
-              </p>
-              <p className="text-xs text-stay-text-secondary m-0 mt-0.5">
-                Ngày lập: {bill.createdAt ? formatDate(bill.createdAt) : '---'}
-              </p>
-            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <label className="text-stay-text font-medium block mb-1">
+                  Kỳ cước hóa đơn
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                  {bill.billingPeriod || '---'}
+                </div>
+              </div>
 
-            <div className="p-3 rounded-xl border border-stay-border bg-stay-card-bg">
-              <span className="text-xs text-stay-text-secondary block mb-1">
-                Hạn nộp tiền
-              </span>
-              <p className="text-sm font-semibold text-stay-text m-0">
-                {bill.dueDate || 'Trong kỳ'}
-              </p>
-              <p className="text-xs text-stay-text-secondary m-0 mt-0.5">
-                {bill.paidAt ? `Đã thanh toán ngày ${formatDate(bill.paidAt)}` : 'Chưa thanh toán'}
-              </p>
+              <div>
+                <label className="text-stay-text font-medium block mb-1">
+                  Ngày lập hóa đơn
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                  {bill.createdAt ? formatDate(bill.createdAt) : '---'}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-stay-text font-medium block mb-1">
+                  Hạn nộp tiền
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                  {bill.dueDate ? formatDate(bill.dueDate) : 'Trong kỳ'}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-stay-text font-medium block mb-1">
+                  Tình trạng thanh toán
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                  {bill.paidAt ? `Đã nộp (${formatDate(bill.paidAt)})` : 'Chưa thanh toán'}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* SECTION 2: BẢNG DỊCH VỤ & CHI PHÍ */}
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-2 border-t border-stay-border-subtle">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-stay-text m-0">
                 Dịch vụ & chi phí phòng
