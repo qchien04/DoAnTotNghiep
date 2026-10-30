@@ -67,16 +67,31 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
     }
   }, [open, initialZones]);
 
-  // Cập nhật chế độ kéo bản đồ khi bật/tắt bút vẽ
-  useEffect(() => {
+  // Áp dụng trạng thái kéo/vẽ cho Leaflet Map
+  const applyPenMode = useCallback((active: boolean) => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    if (isPenActive) {
+    if (active) {
       map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.boxZoom.disable();
     } else {
       map.dragging.enable();
+      map.touchZoom.enable();
+      map.doubleClickZoom.enable();
+      map.boxZoom.enable();
     }
-  }, [isPenActive]);
+    // Ngăn chặn map bị xám/trắng bằng invalidateSize
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 50);
+  }, []);
+
+  // Cập nhật chế độ kéo bản đồ khi bật/tắt bút vẽ
+  useEffect(() => {
+    applyPenMode(isPenActive);
+  }, [isPenActive, applyPenMode]);
 
   // Xóa vùng theo ID
   const handleRemoveZone = useCallback((id: string) => {
@@ -155,6 +170,8 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
       return;
     }
 
+    let resizeObserver: ResizeObserver | null = null;
+
     const timer = setTimeout(() => {
       if (!mapContainerRef.current) return;
 
@@ -177,8 +194,21 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
       // OpenStreetMap Humanitarian Tile
       L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: ['a', 'b'],
+        subdomains: ['a', 'b', 'c'],
       }).addTo(map);
+
+      // Thiết lập trạng thái tương tác ngay khi khởi tạo
+      if (isPenActiveRef.current) {
+        map.dragging.disable();
+        map.touchZoom.disable();
+        map.doubleClickZoom.disable();
+        map.boxZoom.disable();
+      } else {
+        map.dragging.enable();
+        map.touchZoom.enable();
+        map.doubleClickZoom.enable();
+        map.boxZoom.enable();
+      }
 
       // Layer khẳng định chủ quyền Hoàng Sa & Trường Sa
       const islandsGroup = L.layerGroup().addTo(map);
@@ -224,14 +254,26 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
       // Event Mousedown: bắt đầu vẽ
       map.on('mousedown', (e: L.LeafletMouseEvent) => {
         if (!isPenActiveRef.current) return;
+        // Bỏ qua nếu không phải chuột trái
+        if (e.originalEvent && e.originalEvent.button !== 0) return;
+        if (e.originalEvent) {
+          L.DomEvent.stopPropagation(e.originalEvent);
+          L.DomEvent.preventDefault(e.originalEvent);
+        }
+
         isDrawingRef.current = true;
         startLatLngRef.current = e.latlng;
 
+        if (tempCircleRef.current) {
+          map.removeLayer(tempCircleRef.current);
+          tempCircleRef.current = null;
+        }
+
         // Tạo vòng tròn tạm thời
         const tempCircle = L.circle(e.latlng, {
-          radius: 0,
-          color: '#8B5CF6',
-          weight: 2,
+          radius: 5,
+          color: '#7C3AED',
+          weight: 2.5,
           dashArray: '6, 6',
           fillColor: '#8B5CF6',
           fillOpacity: 0.25,
@@ -251,13 +293,16 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
       // Event Mousemove: cập nhật bán kính động
       map.on('mousemove', (e: L.LeafletMouseEvent) => {
         if (!isDrawingRef.current || !startLatLngRef.current || !tempCircleRef.current) return;
+        if (e.originalEvent) {
+          L.DomEvent.stopPropagation(e.originalEvent);
+        }
         const currentRadius = haversineDistance(
           startLatLngRef.current.lat,
           startLatLngRef.current.lng,
           e.latlng.lat,
           e.latlng.lng
         );
-        tempCircleRef.current.setRadius(currentRadius);
+        tempCircleRef.current.setRadius(Math.max(currentRadius, 5));
         tempCircleRef.current.setTooltipContent(formatRadius(currentRadius));
       });
 
@@ -279,8 +324,8 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
           tempCircleRef.current = null;
         }
 
-        // Bán kính tối thiểu 50 mét để tránh click nhầm
-        if (finalRadius >= 50) {
+        // Bán kính tối thiểu 30 mét để tránh click nhầm
+        if (finalRadius >= 30) {
           const newZone: CircleZone = {
             id: `zone_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
             latitude: startLatLngRef.current.lat,
@@ -305,18 +350,34 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
 
       mapInstanceRef.current = map;
 
-      // Invalidate size để hiển thị đầy đủ
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 200);
+      // ResizeObserver đảm bảo container luôn đủ kích thước và không bị xám/trắng
+      resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      });
+      if (mapContainerRef.current) {
+        resizeObserver.observe(mapContainerRef.current);
+      }
+
+      // Invalidate size nhiều lần sau khi mở modal để khớp với animation
+      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 300);
+      setTimeout(() => map.invalidateSize(), 600);
 
       return () => {
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
         window.removeEventListener('mouseup', handleGlobalMouseUp);
       };
-    }, 150);
+    }, 80);
 
     return () => {
       clearTimeout(timer);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -446,11 +507,15 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
         </div>
 
         {/* Khu vực Bản đồ + Floating Toolbar */}
-        <div className="relative flex-1 w-full bg-slate-100 overflow-hidden">
+        <div className="relative flex-1 w-full min-h-0 bg-slate-100 overflow-hidden">
           {/* Container Leaflet */}
           <div
             ref={mapContainerRef}
-            className={`w-full h-full ${isPenActive ? 'cursor-crosshair' : 'cursor-grab'}`}
+            className="absolute inset-0 w-full h-full"
+            style={{
+              cursor: isPenActive ? 'crosshair' : 'grab',
+              touchAction: 'none',
+            }}
           />
 
           {/* Floating Instructions Banner (Góc trên bên trái) */}
@@ -472,7 +537,11 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
           </div>
 
           {/* Floating Action Toolbar (Góc trên bên phải) */}
-          <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2 bg-stay-card-bg/95 backdrop-blur-md border border-stay-border p-1.5 rounded-2xl shadow-xl">
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-4 right-4 z-[1000] flex items-center gap-2 bg-stay-card-bg/95 backdrop-blur-md border border-stay-border p-1.5 rounded-2xl shadow-xl"
+          >
             {/* Toggle Bút vẽ */}
             <Tooltip title={isPenActive ? 'Tắt chế độ vẽ (cho phép kéo map)' : 'Bật chế độ vẽ (dí chuột kéo vòng tròn)'}>
               <Button

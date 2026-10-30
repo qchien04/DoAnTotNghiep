@@ -51,7 +51,7 @@ export const RoomBigMap: React.FC<RoomBigMapProps> = ({
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      subdomains: ['a', 'b'],
+      subdomains: ['a', 'b', 'c'],
     }).addTo(map);
 
     // Layer chủ quyền biển đảo
@@ -99,11 +99,22 @@ export const RoomBigMap: React.FC<RoomBigMapProps> = ({
 
     mapInstanceRef.current = map;
 
+    // ResizeObserver đảm bảo map luôn khớp kích thước, không bị xám/trắng khi switch tabs
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
     setTimeout(() => {
       map.invalidateSize();
     }, 200);
 
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -162,26 +173,9 @@ export const RoomBigMap: React.FC<RoomBigMapProps> = ({
 
       const pricePillIcon = L.divIcon({
         className: 'room-price-marker-wrapper',
-        html: `
-          <div class="room-price-pill" style="
-            background: #4F46E5;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.4);
-            border: 2px solid #ffffff;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            transform: translate(-50%, -50%);
-          ">
-            ${priceText}
-          </div>
-        `,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
+        html: `<div class="room-price-pill"><span>${priceText}</span></div>`,
+        iconSize: [68, 28],
+        iconAnchor: [34, 14],
       });
 
       const marker = L.marker([lat, lng], { icon: pricePillIcon });

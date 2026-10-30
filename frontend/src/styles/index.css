@@ -640,3 +640,70 @@ html.dark .stay-action-btn-delete:hover {
   border-inline-end: none !important;
   border-right: none !important;
 }
+
+/* ==========================================================================
+   Roomi Leaflet Map & Price Marker Styles
+   ========================================================================== */
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.room-price-marker-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.room-price-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #4F46E5 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 3px 12px rgba(79, 70, 229, 0.45) !important;
+  border: 2px solid #ffffff !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease !important;
+  user-select: none !important;
+  line-height: 1.2 !important;
+}
+
+.room-price-pill:hover {
+  background: #4338CA !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.6) !important;
+  z-index: 1000 !important;
+}
+
+.dark .room-price-pill {
+  background: #6366F1 !important;
+  color: #ffffff !important;
+  border-color: #1E293B !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .room-price-pill:hover {
+  background: #818CF8 !important;
+}
+
+/* Tooltip cho vòng tròn vẽ bán kính */
+.stay-circle-drawing-tooltip {
+  background: rgba(15, 23, 42, 0.88) !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.5) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.stay-circle-drawing-tooltip::before {
+  display: none !important;
+}
