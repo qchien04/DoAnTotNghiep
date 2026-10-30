@@ -5,12 +5,7 @@ import {
   Lock,
   Edit3,
   Camera,
-  Phone,
-  Mail,
-  Calendar,
   LogOut,
-  Users,
-  AtSign,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { fileService } from '@/shared/services/fileService';
@@ -374,69 +369,63 @@ export const ProfilePage: React.FC = () => {
               </Button>
             </div>
 
-            {/* Mục 1: Thông tin cơ bản (Có icon đầy đủ) */}
+            {/* Mục 1: Thông tin cơ bản */}
             <div>
               <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-3">
                 Thông tin cơ bản
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
-                  <UserIcon className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-xs text-stay-text-secondary block mb-0.5">Họ và tên</span>
-                    <span className="font-semibold text-sm text-stay-text">
-                      {user?.fullName || '—'}
-                    </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px]">
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Họ và tên
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                    {user?.fullName || '—'}
                   </div>
                 </div>
 
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
-                  <AtSign className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-xs text-stay-text-secondary block mb-0.5">Tên đăng nhập</span>
-                    <span className="font-semibold text-sm text-stay-text">
-                      @{user?.username}
-                    </span>
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Tên đăng nhập
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                    @{user?.username}
                   </div>
                 </div>
 
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
-                  <Mail className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-xs text-stay-text-secondary block mb-0.5">Địa chỉ Email</span>
-                    <span className="font-semibold text-sm text-stay-text break-all">
-                      {user?.email || '—'}
-                    </span>
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Địa chỉ Email
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium truncate">
+                    {user?.email || '—'}
                   </div>
                 </div>
 
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
-                  <Phone className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-xs text-stay-text-secondary block mb-0.5">Số điện thoại</span>
-                    <span className="font-semibold text-sm text-stay-text">
-                      {user?.phone || 'Chưa cập nhật'}
-                    </span>
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Số điện thoại
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                    {user?.phone || 'Chưa cập nhật'}
                   </div>
                 </div>
 
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
-                  <Calendar className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-xs text-stay-text-secondary block mb-0.5">Ngày sinh</span>
-                    <span className="font-semibold text-sm text-stay-text">
-                      {user?.dateOfBirth ? user.dateOfBirth.substring(0, 10) : 'Chưa cập nhật'}
-                    </span>
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Ngày sinh
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                    {user?.dateOfBirth ? user.dateOfBirth.substring(0, 10) : 'Chưa cập nhật'}
                   </div>
                 </div>
 
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
-                  <Users className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-xs text-stay-text-secondary block mb-0.5">Giới tính</span>
-                    <span className="font-semibold text-sm text-stay-text">
-                      {formatGender(user?.gender)}
-                    </span>
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Giới tính
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                    {formatGender(user?.gender)}
                   </div>
                 </div>
               </div>
@@ -447,30 +436,35 @@ export const ProfilePage: React.FC = () => {
               <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-3">
                 Tiêu chuẩn lọc bạn cùng phòng
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border">
-                  <span className="font-semibold text-sm text-stay-text">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[14px]">
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Yêu cầu bạn cùng phòng
+                  </label>
+                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
                     {formatGenderPref(user?.genderPreference)}
-                  </span>
-                </div>
-
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border">
-                  <span className="text-xs text-stay-text-secondary block mb-1">
-                    Thói quen hút thuốc
-                  </span>
-                  <div className="space-y-0.5 text-xs text-stay-text">
-                    <div>Bản thân: <span className="font-medium text-stay-text">{user?.smokes ? 'Có hút thuốc' : 'Không hút'}</span></div>
-                    <div>Yêu cầu: <span className="font-medium text-stay-text">{user?.rejectsSmokers ? 'Cấm hút thuốc' : 'Không yêu cầu'}</span></div>
                   </div>
                 </div>
 
-                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border">
-                  <span className="text-xs text-stay-text-secondary block mb-1">
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
+                    Thói quen hút thuốc
+                  </label>
+                  <div className="h-10 px-3 flex items-center justify-between rounded-lg border border-stay-border bg-stay-card-bg text-stay-text text-xs">
+                    <span>Bản thân: <strong>{user?.smokes ? 'Có hút' : 'Không hút'}</strong></span>
+                    <span className="text-stay-text-secondary">|</span>
+                    <span>Yêu cầu: <strong>{user?.rejectsSmokers ? 'Cấm hút' : 'Linh hoạt'}</strong></span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-stay-text font-medium block mb-1">
                     Nuôi thú cưng
-                  </span>
-                  <div className="space-y-0.5 text-xs text-stay-text">
-                    <div>Bản thân: <span className="font-medium text-stay-text">{user?.hasPet ? 'Có nuôi' : 'Không nuôi'}</span></div>
-                    <div>Yêu cầu: <span className="font-medium text-stay-text">{user?.rejectsPets ? 'Không nhận thú cưng' : 'Thoải mái'}</span></div>
+                  </label>
+                  <div className="h-10 px-3 flex items-center justify-between rounded-lg border border-stay-border bg-stay-card-bg text-stay-text text-xs">
+                    <span>Bản thân: <strong>{user?.hasPet ? 'Có nuôi' : 'Không nuôi'}</strong></span>
+                    <span className="text-stay-text-secondary">|</span>
+                    <span>Yêu cầu: <strong>{user?.rejectsPets ? 'Không nhận' : 'Thoải mái'}</strong></span>
                   </div>
                 </div>
               </div>
@@ -498,9 +492,9 @@ export const ProfilePage: React.FC = () => {
             </div>
 
             {/* Progress indicator */}
-            <div className="space-y-1.5 bg-stay-bg-app p-3.5 rounded-xl border border-stay-border">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-stay-text">Tiến độ hoàn thành</span>
+            <div className="space-y-2 py-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-stay-text">Tiến độ khảo sát</span>
                 <span className="font-bold text-stay-primary">{completionPercentage}%</span>
               </div>
               <Progress
@@ -510,7 +504,7 @@ export const ProfilePage: React.FC = () => {
                 trailColor="var(--stay-border)"
                 className="m-0"
               />
-              <span className="text-[11px] text-stay-text-secondary block">
+              <span className="text-xs text-stay-text-secondary block">
                 {answeredCount === totalQuestions
                   ? 'Đã hoàn thành đầy đủ 15 tiêu chí lối sống.'
                   : `Còn ${totalQuestions - answeredCount} câu hỏi cần hoàn thành.`}
@@ -540,15 +534,15 @@ export const ProfilePage: React.FC = () => {
               </h3>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-stay-bg-app rounded-xl border border-stay-border">
+            <div className="flex items-center justify-between py-1">
               <div>
-                <span className="text-xs text-stay-text-secondary block">Mật khẩu tài khoản</span>
-                <span className="font-mono text-sm tracking-widest text-stay-text">••••••••••••</span>
+                <label className="text-stay-text font-medium block mb-0.5 text-sm">Mật khẩu tài khoản</label>
+                <span className="font-mono text-sm tracking-widest text-stay-text-secondary">••••••••••••</span>
               </div>
               <Button
-                size="small"
+                size="middle"
                 onClick={() => setIsPasswordModalOpen(true)}
-                className="rounded-lg border-stay-border text-xs"
+                className="rounded-lg border-stay-border text-sm"
               >
                 Đổi mật khẩu
               </Button>

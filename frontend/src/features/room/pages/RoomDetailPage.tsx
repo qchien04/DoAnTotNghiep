@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { message } from 'antd';
 import { authService } from '@/shared/services/authService';
+import { LeafletMap } from '@/shared/components/ui/LeafletMap';
 import { PublicRoomItem } from './RoomSearchPage';
 
 const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
@@ -25,6 +26,8 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     priceDisplay: '4.2 tr/tháng',
     location: 'Số 18 Ngõ 68 Trần Thái Tông, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
     district: 'Cầu Giấy',
+    latitude: 21.0313,
+    longitude: 105.7865,
     area: 28,
     imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -58,6 +61,8 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     priceDisplay: '4.8 tr/tháng',
     location: 'Ngõ 72 Phố Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
     district: 'Cầu Giấy',
+    latitude: 21.0328,
+    longitude: 105.7828,
     area: 35,
     imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -88,6 +93,8 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     priceDisplay: '3.8 tr/tháng',
     location: 'Ngõ 91 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội',
     district: 'Đống Đa',
+    latitude: 21.0232,
+    longitude: 105.8037,
     area: 26,
     imageUrl: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -117,6 +124,8 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     priceDisplay: '5.5 tr/tháng',
     location: 'Đường Đình Thôn, Mỹ Đình 1, Nam Từ Liêm, Hà Nội',
     district: 'Nam Từ Liêm',
+    latitude: 21.0172,
+    longitude: 105.7745,
     area: 45,
     imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -146,6 +155,8 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     priceDisplay: '2.8 tr/tháng',
     location: 'Số 45 Tạ Quang Bửu, Bách Khoa, Hai Bà Trưng, Hà Nội',
     district: 'Hai Bà Trưng',
+    latitude: 21.0042,
+    longitude: 105.8458,
     area: 22,
     imageUrl: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -175,6 +186,8 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     priceDisplay: '3.5 tr/tháng',
     location: 'Ngõ 88 Triều Khúc, Thanh Xuân Nam, Thanh Xuân, Hà Nội',
     district: 'Thanh Xuân',
+    latitude: 20.9856,
+    longitude: 105.7972,
     area: 25,
     imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -239,6 +252,8 @@ export const RoomDetailPage: React.FC = () => {
         priceDisplay: priceTxt,
         location: loc,
         district: found.ward || 'Hà Nội',
+        latitude: found.latitude ? Number(found.latitude) : 21.0285,
+        longitude: found.longitude ? Number(found.longitude) : 105.8048,
         area: Number(found.area || 25),
         imageUrl: img,
         gallery: found.imageUrls && found.imageUrls.length > 0 ? found.imageUrls : [img],
@@ -336,36 +351,9 @@ export const RoomDetailPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stay-border">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
-                Phòng trọ cho thuê
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Chính chủ đã xác thực</span>
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight">
-              {room.title}
-            </h1>
-            <p className="flex items-center gap-1.5  sm:text-sm text-stay-text-secondary">
-              <MapPin className="w-4 h-4 text-stay-primary shrink-0" />
-              <span>{room.location}</span>
-            </p>
-          </div>
-
-          <div className="sm:text-right">
-            <span className=" text-stay-text-secondary block">Giá thuê niêm yết:</span>
-            <span className="text-2xl font-bold text-stay-primary">{room.priceDisplay}</span>
-          </div>
-        </div>
-
         {/* Main Content Layout: 2 Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column (8 cols): Gallery + Specs + Amenities + Description */}
+          {/* Left Column (8 cols): Gallery + Title/Address + Specs + Map + Description + Amenities */}
           <div className="lg:col-span-8 space-y-6">
             {/* Gallery */}
             <div className="space-y-3">
@@ -396,8 +384,28 @@ export const RoomDetailPage: React.FC = () => {
               )}
             </div>
 
+            {/* Room Title, Badges & Address */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
+                  Phòng trọ cho thuê
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Chính chủ đã xác thực</span>
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight m-0">
+                {room.title}
+              </h1>
+              <p className="flex items-center gap-1.5 text-sm text-stay-text-secondary m-0">
+                <MapPin className="w-4 h-4 text-stay-primary shrink-0" />
+                <span>{room.location}</span>
+              </p>
+            </div>
+
             {/* Quick Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs ">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs">
               <div className="space-y-1">
                 <span className="text-stay-text-secondary flex items-center gap-1">
                   <Home className="w-3.5 h-3.5 text-stay-primary" />
@@ -428,6 +436,35 @@ export const RoomDetailPage: React.FC = () => {
                   <span>Tiền nước</span>
                 </span>
                 <p className="font-bold text-stay-text text-sm">{room.water}</p>
+              </div>
+            </div>
+
+            {/* Vị trí trên bản đồ */}
+            <div className="p-5 bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold text-stay-text uppercase tracking-wider flex items-center gap-1.5 m-0">
+                  <MapPin className="w-4 h-4 text-stay-primary" />
+                  <span>Vị trí trên bản đồ</span>
+                </h2>
+                <span className="text-xs text-stay-text-secondary font-medium">{room.district}</span>
+              </div>
+              <p className="text-xs text-stay-text-secondary m-0">{room.location}</p>
+              <div className="rounded-xl overflow-hidden border border-stay-border h-[280px] w-full">
+                <LeafletMap
+                  center={[room.latitude || 21.0285, room.longitude || 105.8048]}
+                  zoom={15}
+                  height="280px"
+                  markers={[
+                    {
+                      id: room.id,
+                      position: [room.latitude || 21.0285, room.longitude || 105.8048],
+                      title: room.title,
+                      address: room.location,
+                      price: room.priceDisplay,
+                    },
+                  ]}
+                  showCurrentLocation={false}
+                />
               </div>
             </div>
 

@@ -16,35 +16,56 @@ export const RoommatesList: React.FC<RoommatesListProps> = ({ roommates = [] }) 
   if (roommates.length === 0) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 pt-2 border-t border-stay-border-subtle">
       <div className="flex items-center gap-2">
         <Users className="w-4 h-4 text-stay-primary" />
-        <h3 className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
-          Danh sách bạn cùng phòng ({roommates.length})
-        </h3>
+        <label className="text-stay-text font-bold block m-0">
+          Danh sách khách thuê trong phòng ({roommates.length})
+        </label>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {roommates.map((rm: RoommateItem, idx: number) => (
-          <div key={idx} className="p-3 rounded-xl bg-stay-card-bg border border-stay-border flex items-center gap-3">
-            <img
-              src={rm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-              alt={rm.name}
-              className="w-9 h-9 rounded-full object-cover border border-stay-border"
-            />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className=" font-bold text-stay-text">{rm.name}</span>
-                {rm.role === 'Đại diện hợp đồng' && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-stay-primary/10 text-stay-primary font-semibold">
-                    Đại diện
-                  </span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400">{rm.phone}</p>
-            </div>
-          </div>
-        ))}
+      <div className="border border-stay-border rounded-xl overflow-hidden bg-stay-card-bg">
+        <table className="w-full text-left border-collapse text-[14px]">
+          <thead>
+            <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text-secondary font-semibold text-xs">
+              <th className="py-2.5 px-3 w-14 text-center">STT</th>
+              <th className="py-2.5 px-3">Họ và tên</th>
+              <th className="py-2.5 px-3">Số điện thoại</th>
+              <th className="py-2.5 px-3 text-center">Vai trò</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stay-border text-stay-text">
+            {roommates.map((rm, idx) => (
+              <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
+                <td className="py-2.5 px-3 text-center text-stay-text-secondary font-medium">
+                  {idx + 1}
+                </td>
+                <td className="py-2.5 px-3">
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={rm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                      alt={rm.name}
+                      className="w-7 h-7 rounded-full object-cover border border-stay-border shrink-0"
+                    />
+                    <span className="font-semibold text-stay-text">{rm.name}</span>
+                  </div>
+                </td>
+                <td className="py-2.5 px-3 font-medium text-stay-text">
+                  {rm.phone || '—'}
+                </td>
+                <td className="py-2.5 px-3 text-center">
+                  {rm.role === 'Đại diện hợp đồng' ? (
+                    <span className="inline-flex px-2 py-0.5 rounded text-xs font-semibold bg-stay-primary/10 text-stay-primary border border-stay-primary/20">
+                      Đại diện hợp đồng
+                    </span>
+                  ) : (
+                    <span className="text-xs text-stay-text-secondary">Thành viên</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

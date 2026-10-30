@@ -27,6 +27,8 @@ export interface PublicRoomItem {
   internet: string;
   landlordName: string;
   landlordPhone: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 /**

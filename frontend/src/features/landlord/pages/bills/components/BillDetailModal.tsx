@@ -333,11 +333,10 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                         <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
                           <td className="p-2.5 pl-3 text-center">
                             <Tag
-                              className={`m-0 font-medium ${
-                                isSurcharge
+                              className={`m-0 font-medium ${isSurcharge
                                   ? 'border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
                                   : 'border-rose-200 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800'
-                              }`}
+                                }`}
                             >
                               {isSurcharge ? 'Phụ thu' : 'Giảm trừ'}
                             </Tag>
@@ -348,9 +347,8 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                             {formatCurrency(adj.unitPrice || 0)}
                           </td>
                           <td
-                            className={`p-2.5 text-right font-bold pr-3 ${
-                              isSurcharge ? 'text-stay-text' : 'text-rose-600'
-                            }`}
+                            className={`p-2.5 text-right font-bold pr-3 ${isSurcharge ? 'text-stay-text' : 'text-rose-600'
+                              }`}
                           >
                             {isSurcharge ? '+' : '-'} {formatCurrency(Math.abs(adj.amount || 0))}
                           </td>

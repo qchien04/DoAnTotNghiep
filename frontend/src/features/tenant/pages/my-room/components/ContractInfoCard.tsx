@@ -32,59 +32,101 @@ export const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ roomDetails 
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <div className="p-3 bg-stay-bg-app border border-stay-border rounded-xl text-right">
-            <span className="text-[11px] text-slate-500 block">Tiền phòng tháng:</span>
-            <span className="text-lg font-bold text-stay-primary">
-              {room.monthlyRent.toLocaleString()} đ
-            </span>
-          </div>
-
           <Button
             variant="outline"
             size="sm"
             icon={<Download className="w-3.5 h-3.5" />}
             onClick={() => message.success('Đang tải bản PDF hợp đồng HĐ-2026-P102...')}
           >
-            Tải PDF
+            Tải PDF hợp đồng
           </Button>
         </div>
       </div>
 
       {/* Contract Details Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-stay-border ">
-        <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-1">
-          <span className="font-semibold text-slate-500 block">Chủ nhà cho thuê:</span>
-          <p className="font-bold text-stay-text text-sm">{room.landlord.name}</p>
-          <p className="text-slate-500 flex items-center gap-1">
-            <Phone className="w-3 h-3 text-stay-primary" /> {room.landlord.phone}
-          </p>
+      <div className="space-y-4 pt-4 border-t border-stay-border text-[14px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Phòng cho thuê
+            </label>
+            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+              {room.name} {room.buildingName ? `(${room.buildingName})` : ''}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Chủ nhà cho thuê
+            </label>
+            <div className="h-10 px-3 flex items-center justify-between rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+              <span>{room.landlord.name}</span>
+              <a
+                href={`tel:${room.landlord.phone}`}
+                className="text-stay-primary hover:underline flex items-center gap-1 text-xs font-normal"
+              >
+                <Phone className="w-3 h-3" /> {room.landlord.phone}
+              </a>
+            </div>
+          </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-1">
-          <span className="font-semibold text-slate-500 block">Thời hạn hợp đồng:</span>
-          <p className="font-bold text-stay-text text-sm">
-            {contract?.startDate || '01/10/2026'} - {contract?.endDate || '30/09/2027'}
-          </p>
-          <p className="text-slate-500">Chu kỳ thu tiền: Ngày 05 hàng tháng</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Tiền phòng hàng tháng
+            </label>
+            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-primary font-bold">
+              {room.monthlyRent.toLocaleString()} đ/tháng
+            </div>
+          </div>
+
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Tiền đặt cọc
+            </label>
+            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+              {contract?.depositAmount ? `${contract.depositAmount.toLocaleString()} đ` : '3.800.000 đ'}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Thời hạn hợp đồng
+            </label>
+            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+              {contract?.startDate || '01/10/2026'} - {contract?.endDate || '30/09/2027'}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Chu kỳ thanh toán
+            </label>
+            <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+              Ngày {(contract as any)?.paymentCycleDay || 5} hàng tháng
+            </div>
+          </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-1">
-          <span className="font-semibold text-stay-text-secondary block">Dịch vụ công tơ ban đầu:</span>
-          {contract?.services && contract.services.filter((s) => s.billingMethod === 'METER_INDEX').length > 0 ? (
-            <p className="text-stay-text  space-x-2">
+        {/* Dịch vụ công tơ ban đầu nếu có */}
+        {contract?.services && contract.services.filter((s) => s.billingMethod === 'METER_INDEX').length > 0 && (
+          <div>
+            <label className="text-stay-text font-medium block mb-1">
+              Dịch vụ công tơ ban đầu
+            </label>
+            <div className="min-h-10 px-3 py-2 flex flex-wrap items-center gap-3 rounded-lg border border-stay-border bg-stay-card-bg text-stay-text text-xs">
               {contract.services
                 .filter((s) => s.billingMethod === 'METER_INDEX')
                 .map((s, idx) => (
-                  <span key={s.id || idx} className="mr-2">
-                    {s.serviceName || s.name}: <strong className="text-stay-primary">{s.lastIndex ?? 0} {s.unit || ''}</strong>
+                  <span key={s.id || idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stay-bg-app border border-stay-border">
+                    <span className="text-stay-text-secondary">{s.serviceName || s.name}:</span>
+                    <strong className="text-stay-primary">{s.lastIndex ?? 0} {s.unit || ''}</strong>
                   </span>
                 ))}
-            </p>
-          ) : (
-            <p className="text-stay-text-secondary  italic">Không sử dụng dịch vụ công tơ</p>
-          )}
-          <p className="text-stay-text-secondary ">Tiền cọc: {contract?.depositAmount?.toLocaleString() || '3.800.000'} VNĐ</p>
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
