@@ -216,66 +216,91 @@ export const RoomDetailPage: React.FC = () => {
       return;
     }
 
-    // Check backend API rooms
-    authService
-      .getPublicRooms()
-      .then((res) => {
-        if (res?.data && Array.isArray(res.data)) {
-          const found = res.data.find((r: any) => String(r.id) === String(id));
-          if (found) {
-            const priceNum = Number(found.listedPrice || found.price || 3500000);
-            const priceTxt = `${(priceNum / 1000000).toFixed(1)} tr/tháng`;
-            const loc =
-              found.fullAddress ||
-              found.addressDetail ||
-              (found.ward ? `${found.ward}, ${found.province || 'Hà Nội'}` : 'Hà Nội');
-            const defaultImg =
-              'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80';
-            const img =
-              found.imageUrls && found.imageUrls.length > 0 ? found.imageUrls[0] : defaultImg;
+    const mapFoundToItem = (found: any): PublicRoomItem => {
+      const priceNum = Number(found.listedPrice || found.price || 3500000);
+      const priceTxt = `${(priceNum / 1000000).toFixed(1)} tr/tháng`;
+      const loc =
+        found.fullAddress ||
+        found.addressDetail ||
+        (found.ward ? `${found.ward}, ${found.province || 'Hà Nội'}` : 'Hà Nội');
+      const defaultImg =
+        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80';
+      const img =
+        found.imageUrls && found.imageUrls.length > 0
+          ? found.imageUrls[0]
+          : found.coverImageUrl || defaultImg;
 
-            const mapped: PublicRoomItem = {
-              id: found.id,
-              title: found.name
-                ? `${found.name} - ${found.buildingName || 'Phòng trọ tiện nghi'}`
-                : `Phòng #${found.id}`,
-              price: priceNum,
-              priceDisplay: priceTxt,
-              location: loc,
-              district: found.ward || 'Hà Nội',
-              area: Number(found.area || 25),
-              imageUrl: img,
-              gallery: found.imageUrls || [img],
-              amenities:
-                Array.isArray(found.amenities) && found.amenities.length > 0
-                  ? found.amenities
-                  : ['Điều hòa', 'Nóng lạnh', 'Wifi', 'Khép kín'],
-              description:
-                found.description ||
-                'Phòng trọ tiện nghi, sạch sẽ, an ninh đảm bảo, giờ giấc tự do không chung chủ.',
-              deposit: found.standardDeposit
-                ? `${Number(found.standardDeposit).toLocaleString()} đ`
-                : priceTxt,
-              electricity: '3.800 đ/kWh',
-              water: '30.000 đ/m³',
-              internet: '100.000 đ/phòng/tháng',
-              landlordName: found.landlordName || 'Chủ trọ Roomi',
-              landlordPhone: found.landlordPhone || '0988.888.999',
-            };
+      return {
+        id: found.id,
+        title: found.name
+          ? `${found.name} - ${found.buildingName || 'Phòng trọ tiện nghi'}`
+          : `Phòng #${found.id}`,
+        price: priceNum,
+        priceDisplay: priceTxt,
+        location: loc,
+        district: found.ward || 'Hà Nội',
+        area: Number(found.area || 25),
+        imageUrl: img,
+        gallery: found.imageUrls && found.imageUrls.length > 0 ? found.imageUrls : [img],
+        amenities:
+          Array.isArray(found.amenities) && found.amenities.length > 0
+            ? found.amenities
+            : ['Điều hòa', 'Nóng lạnh', 'Wifi', 'Khép kín'],
+        description:
+          found.description ||
+          'Phòng trọ tiện nghi, sạch sẽ, an ninh đảm bảo, giờ giấc tự do không chung chủ.',
+        deposit: found.standardDeposit
+          ? `${Number(found.standardDeposit).toLocaleString()} đ`
+          : priceTxt,
+        electricity: '3.800 đ/kWh',
+        water: '30.000 đ/m³',
+        internet: '100.000 đ/phòng/tháng',
+        landlordName: found.landlordName || 'Chủ trọ Roomi',
+        landlordPhone: found.landlordPhone || '0988.888.999',
+      };
+    };
+
+    const fallbackGetPublicRooms = () => {
+      authService
+        .getPublicRooms()
+        .then((res) => {
+          if (res?.data && Array.isArray(res.data)) {
+            const found = res.data.find((r: any) => String(r.id) === String(id));
+            if (found) {
+              const mapped = mapFoundToItem(found);
+              setRoom(mapped);
+              setActiveImage(mapped.imageUrl);
+              return;
+            }
+          }
+          setRoom(SAMPLE_ROOMS_DETAIL['1']);
+          setActiveImage(SAMPLE_ROOMS_DETAIL['1'].imageUrl);
+        })
+        .catch(() => {
+          setRoom(SAMPLE_ROOMS_DETAIL['1']);
+          setActiveImage(SAMPLE_ROOMS_DETAIL['1'].imageUrl);
+        });
+    };
+
+    // If numeric ID, fetch single room detail first
+    if (/^\d+$/.test(id)) {
+      authService
+        .getPublicRoomDetail(id)
+        .then((res) => {
+          if (res?.data) {
+            const mapped = mapFoundToItem(res.data);
             setRoom(mapped);
             setActiveImage(mapped.imageUrl);
-            return;
+          } else {
+            fallbackGetPublicRooms();
           }
-        }
-
-        // Fallback to item 1 if not matched
-        setRoom(SAMPLE_ROOMS_DETAIL['1']);
-        setActiveImage(SAMPLE_ROOMS_DETAIL['1'].imageUrl);
-      })
-      .catch(() => {
-        setRoom(SAMPLE_ROOMS_DETAIL['1']);
-        setActiveImage(SAMPLE_ROOMS_DETAIL['1'].imageUrl);
-      });
+        })
+        .catch(() => {
+          fallbackGetPublicRooms();
+        });
+    } else {
+      fallbackGetPublicRooms();
+    }
   }, [id]);
 
   const handleCopyPhone = () => {
@@ -354,7 +379,7 @@ export const RoomDetailPage: React.FC = () => {
 
               {galleryImages.length > 1 && (
                 <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
-                  {galleryImages.map((img, idx) => (
+                  {galleryImages.map((img: string, idx: number) => (
                     <button
                       key={idx}
                       type="button"
@@ -422,7 +447,7 @@ export const RoomDetailPage: React.FC = () => {
                 Tiện nghi & dịch vụ có sẵn
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {room.amenities.map((item, idx) => (
+                {room.amenities.map((item: string, idx: number) => (
                   <div
                     key={idx}
                     className="flex items-center gap-2 p-2.5 rounded-xl bg-stay-bg-app border border-stay-border  text-stay-text font-medium"

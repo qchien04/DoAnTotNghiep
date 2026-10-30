@@ -9,6 +9,26 @@ export interface CircleZone {
   radiusInMeters: number;
 }
 
+export interface PublicRoomItem {
+  id: string | number;
+  title: string;
+  price: number;
+  priceDisplay: string;
+  location: string;
+  district: string;
+  area: number;
+  imageUrl: string;
+  gallery?: string[];
+  amenities: string[];
+  description: string;
+  deposit: string;
+  electricity: string;
+  water: string;
+  internet: string;
+  landlordName: string;
+  landlordPhone: string;
+}
+
 /**
  * Tính khoảng cách giữa hai tọa độ địa lý theo công thức Haversine (đơn vị: mét)
  */
