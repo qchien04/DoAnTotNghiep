@@ -4,12 +4,10 @@ import {
   Search,
   RotateCcw,
   Pencil,
-  MapPin,
-  X,
   SlidersHorizontal,
   Sparkles,
 } from 'lucide-react';
-import { CircleZone, formatRadius } from '../types/roomSearch';
+import { CircleZone } from '../types/roomSearch';
 import { amenityService } from '@/shared/services/amenityService';
 import { Amenity } from '@/shared/types/amenity';
 
@@ -105,19 +103,10 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
     onChange({ amenityIds: updated });
   };
 
-  const handleRemoveZone = (id: string) => {
-    const updated = (values.zones || []).filter((z) => z.id !== id);
-    onChange({ zones: updated });
-  };
-
   return (
-    <div className="bg-stay-card-bg border border-stay-border rounded-2xl p-5 shadow-sm space-y-6">
-      {/* Tiêu đề & Nút đặt lại */}
-      <div className="flex items-center justify-between pb-3 border-b border-stay-border">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-stay-primary" />
-          <h2 className="text-base font-bold text-stay-text m-0">Bộ Lọc Tìm Kiếm</h2>
-        </div>
+    <div className="bg-stay-card-bg border border-stay-border rounded-2xl p-5 shadow-sm space-y-5 max-h-[calc(80vh-2rem)] overflow-y-auto custom-modal-scroll">
+      {/* Tiêu đề & Nút đặt lại (Sticky top bên trong sidebar) */}
+      <div className="flex items-center justify-between pb-3 border-b border-stay-border sticky top-0 bg-stay-card-bg z-10 -mx-1 px-1">
         <button
           onClick={onReset}
           className="text-xs text-stay-text-secondary hover:text-stay-primary flex items-center gap-1 transition cursor-pointer font-medium"
@@ -129,62 +118,16 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
 
       {/* Widget Khoanh Vùng Không Gian (Spatial Mini-Map Widget) */}
       <div className="rounded-xl border border-stay-border bg-stay-bg-app p-3.5 relative overflow-hidden">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-stay-primary" />
-            <span className="text-xs font-bold text-stay-text">Khoanh vùng trên bản đồ</span>
-          </div>
-          {values.zones && values.zones.length > 0 && (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
-              {values.zones.length} vùng
-            </span>
-          )}
+        <div>
+          <Button
+            type="primary"
+            icon={<Pencil className="w-3.5 h-3.5" />}
+            onClick={onOpenDrawModal}
+            className="w-full h-9 text-xs font-semibold rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white shadow-sm flex items-center justify-center gap-1.5"
+          >
+            Vẽ vùng trên bản đồ
+          </Button>
         </div>
-
-        {values.zones && values.zones.length > 0 ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {values.zones.map((zone, idx) => (
-                <span
-                  key={zone.id}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-stay-card-bg text-stay-text border border-stay-border shadow-2xs"
-                >
-                  <span>#{idx + 1}: {formatRadius(zone.radiusInMeters)}</span>
-                  <button
-                    onClick={() => handleRemoveZone(zone.id)}
-                    className="hover:text-red-500 cursor-pointer ml-0.5"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-
-            <Button
-              type="primary"
-              ghost
-              icon={<Pencil className="w-3.5 h-3.5" />}
-              onClick={onOpenDrawModal}
-              className="w-full h-8 text-xs font-semibold rounded-lg mt-1"
-            >
-              Chỉnh sửa vùng khoanh
-            </Button>
-          </div>
-        ) : (
-          <div>
-            <p className="text-xs text-stay-text-secondary m-0 mb-3 leading-relaxed">
-              Dí chuột kéo khoanh vùng để chỉ tìm các phòng trong bán kính bạn chọn.
-            </p>
-            <Button
-              type="primary"
-              icon={<Pencil className="w-3.5 h-3.5" />}
-              onClick={onOpenDrawModal}
-              className="w-full h-9 text-xs font-semibold rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white shadow-sm flex items-center justify-center gap-1.5"
-            >
-              Vẽ vùng trên bản đồ
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Tìm kiếm từ khóa */}
@@ -248,11 +191,10 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
                 key={i}
                 type="button"
                 onClick={() => onChange({ minPrice: p.min, maxPrice: p.max })}
-                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${
-                  isSelected
-                    ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
-                    : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
-                }`}
+                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${isSelected
+                  ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
+                  : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
+                  }`}
               >
                 {p.label}
               </button>
@@ -294,11 +236,10 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
                 key={i}
                 type="button"
                 onClick={() => onChange({ minArea: a.min, maxArea: a.max })}
-                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${
-                  isSelected
-                    ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
-                    : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
-                }`}
+                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${isSelected
+                  ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
+                  : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
+                  }`}
               >
                 {a.label}
               </button>
@@ -329,11 +270,10 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
                 key={amenity.id}
                 type="button"
                 onClick={() => handleToggleAmenity(amenity.id)}
-                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${
-                  isChecked
-                    ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
-                    : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
-                }`}
+                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${isChecked
+                  ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
+                  : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
+                  }`}
               >
                 {amenity.name}
               </button>

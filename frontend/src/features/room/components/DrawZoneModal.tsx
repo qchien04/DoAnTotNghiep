@@ -493,9 +493,6 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
                   Bản đồ vệ tinh
                 </span>
               </h2>
-              <p className="text-xs text-stay-text-secondary m-0 mt-0.5">
-                Bật nút <strong>Bút vẽ</strong>, sau đó nhấn giữ và kéo chuột trên bản đồ để khoanh vùng bán kính mong muốn.
-              </p>
             </div>
           </div>
           <button
@@ -548,11 +545,10 @@ export const DrawZoneModal: React.FC<DrawZoneModalProps> = ({
                 type={isPenActive ? 'primary' : 'default'}
                 icon={<Pencil className="w-4 h-4" />}
                 onClick={() => setIsPenActive((prev) => !prev)}
-                className={`h-9 px-3.5 rounded-xl font-medium flex items-center gap-1.5 transition ${
-                  isPenActive
+                className={`h-9 px-3.5 rounded-xl font-medium flex items-center gap-1.5 transition ${isPenActive
                     ? 'bg-stay-primary hover:bg-stay-primary-hover text-white shadow-md'
                     : 'text-stay-text border-stay-border hover:bg-stay-bg-app'
-                }`}
+                  }`}
               >
                 {isPenActive ? 'Đang vẽ' : 'Vẽ vùng'}
               </Button>

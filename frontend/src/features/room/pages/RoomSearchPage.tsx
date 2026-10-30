@@ -4,9 +4,6 @@ import { Select, Pagination, Empty, Spin } from 'antd';
 import {
   LayoutGrid,
   Map as MapIcon,
-  Home,
-  ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 import { Room } from '@/shared/types/landlord';
 import { publicRoomService, PublicRoomSearchRequest } from '../services/publicRoomService';
@@ -211,6 +208,8 @@ export const RoomSearchPage: React.FC = () => {
       sortDirection = 'desc';
     }
 
+    const isMapMode = viewMode === 'map';
+
     const req: PublicRoomSearchRequest = {
       keyword: filterValues.keyword.trim() || undefined,
       district: filterValues.district !== 'ALL' ? filterValues.district : undefined,
@@ -223,8 +222,8 @@ export const RoomSearchPage: React.FC = () => {
         filterValues.zones.length > 0
           ? circleZonesToGeoZones(filterValues.zones)
           : undefined,
-      page,
-      size,
+      page: isMapMode ? 0 : page,
+      size: isMapMode ? 1000 : size, // Ở chế độ bản đồ: Lấy tất cả phòng không phân trang
       sortBy,
       sortDirection,
     };
@@ -260,7 +259,7 @@ export const RoomSearchPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [filterValues, page, size, sortKey]);
+  }, [filterValues, page, size, sortKey, viewMode]);
 
   useEffect(() => {
     fetchRooms();
@@ -285,31 +284,19 @@ export const RoomSearchPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-stay-bg py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Breadcrumb & Navigation */}
-        <div className="flex items-center gap-2 text-xs text-stay-text-secondary">
-          <span
-            onClick={() => navigate('/')}
-            className="hover:text-stay-primary cursor-pointer flex items-center gap-1 font-medium"
-          >
-            <Home className="w-3.5 h-3.5" />
-            Trang chủ
-          </span>
-          <ChevronRight className="w-3 h-3 text-stay-text-muted" />
-          <span className="text-stay-text font-semibold">Tìm kiếm phòng trọ</span>
-        </div>
+
 
         {/* Thanh tiêu đề trang & Công cụ chuyển đổi View Mode */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stay-border">
           <div>
-            <h1 className="text-2xl font-extrabold text-stay-text m-0 flex items-center gap-2.5">
-              Khám Phá Phòng Trọ Tiện Nghi
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
-                <Sparkles className="w-3 h-3" />
-                Dữ liệu thời gian thực
-              </span>
-            </h1>
+
             <p className="text-xs text-stay-text-secondary m-0 mt-1">
               Tìm thấy <strong className="text-stay-primary">{totalElements}</strong> phòng trọ phù hợp với tiêu chí của bạn
+              {viewMode === 'map' && (
+                <span className="ml-2 font-semibold text-stay-match">
+                  • Hiển thị toàn bộ trên bản đồ
+                </span>
+              )}
             </p>
           </div>
 
@@ -330,11 +317,10 @@ export const RoomSearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'grid'
-                    ? 'bg-stay-primary text-white shadow-xs'
-                    : 'text-stay-text-secondary hover:text-stay-text'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${viewMode === 'grid'
+                  ? 'bg-stay-primary text-white shadow-xs'
+                  : 'text-stay-text-secondary hover:text-stay-text'
+                  }`}
               >
                 <LayoutGrid className="w-4 h-4" />
                 <span className="hidden md:inline">Danh sách</span>
@@ -342,11 +328,10 @@ export const RoomSearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setViewMode('map')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'map'
-                    ? 'bg-stay-primary text-white shadow-xs'
-                    : 'text-stay-text-secondary hover:text-stay-text'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${viewMode === 'map'
+                  ? 'bg-stay-primary text-white shadow-xs'
+                  : 'text-stay-text-secondary hover:text-stay-text'
+                  }`}
               >
                 <MapIcon className="w-4 h-4" />
                 <span className="hidden md:inline">Bản đồ</span>
