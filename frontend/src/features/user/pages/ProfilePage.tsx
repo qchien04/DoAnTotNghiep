@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  User as UserIcon,
   Sliders,
   Lock,
   Edit3,
@@ -14,7 +13,7 @@ import {
   useUserLifestyleProfile,
   useSaveLifestyleProfile,
 } from '@/shared/hooks';
-import { message, Modal, Input, Select, Button, Spin, Progress, Tag } from 'antd';
+import { message, Modal, Input, Select, Button, Spin, Progress } from 'antd';
 import { LifestyleQuestionnaire } from '@/shared/components';
 
 export const ProfilePage: React.FC = () => {
@@ -268,13 +267,13 @@ export const ProfilePage: React.FC = () => {
         className="hidden"
       />
 
-      {/* 1. HERO USER OVERVIEW CARD */}
-      <div className="w-full bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-5 relative z-10">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-            {/* Avatar with instant upload button */}
+      {/* PROFILE MASTER CARD */}
+      <div className="w-full max-w-4xl mx-auto bg-stay-card-bg rounded-2xl border border-stay-border p-6 sm:p-8 space-y-6 shadow-xs">
+        {/* HEADER: Avatar, Name, Bio, and Action Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6 border-b border-stay-border">
+          <div className="flex items-center gap-5">
             <div className="relative group shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-stay-border bg-stay-bg-app shadow-xs flex items-center justify-center">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border border-stay-border bg-stay-bg-app flex items-center justify-center">
                 {isUploadingAvatar ? (
                   <Spin size="default" />
                 ) : user?.avatarUrl || avatarUrl ? (
@@ -288,277 +287,190 @@ export const ProfilePage: React.FC = () => {
                     }}
                   />
                 ) : (
-                  <span className="text-3xl font-extrabold text-stay-primary">
+                  <span className="text-2xl font-bold text-stay-text">
                     {(user?.fullName || user?.username || 'U').charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
 
-              {/* Camera Upload Button Overlay */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingAvatar}
-                className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-stay-primary text-white hover:bg-stay-primary-hover flex items-center justify-center shadow-md border-2 border-white dark:border-slate-800 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-stay-card-bg border border-stay-border text-stay-text hover:bg-stay-bg-app flex items-center justify-center shadow-xs transition-colors cursor-pointer"
                 title="Tải ảnh đại diện mới"
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* User Meta Information */}
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h2 className="text-xl sm:text-2xl font-bold text-stay-text m-0">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-stay-text m-0">
                   {user?.fullName || 'Chưa đặt tên'}
-                </h2>
+                </h1>
+                <span className="text-xs text-stay-text-secondary">@{user?.username}</span>
               </div>
-
-              {user?.bio ? (
-                <p className="text-sm text-stay-text italic bg-stay-bg-app p-2.5 rounded-xl border border-stay-border max-w-xl m-0">
-                  "{user.bio}"
-                </p>
-              ) : (
-                <p className="text-xs text-stay-text-muted m-0">
-                  Chưa có lời giới thiệu bản thân. Bấm "Chỉnh sửa thông tin" để cập nhật.
-                </p>
-              )}
+              <p className="text-xs sm:text-sm text-stay-text-secondary m-0 max-w-xl">
+                {user?.bio || 'Chưa có lời giới thiệu bản thân.'}
+              </p>
             </div>
           </div>
 
-          {/* Action CTA Buttons */}
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 shrink-0 w-full sm:w-auto">
+          <div className="flex items-center gap-2.5 shrink-0">
             <Button
-              type="primary"
-              icon={<Edit3 className="w-4 h-4" />}
               onClick={() => setIsEditModalOpen(true)}
-              className="bg-stay-primary hover:bg-stay-primary-hover h-[40px] px-5 rounded-xl font-medium text-sm"
+              icon={<Edit3 className="w-3.5 h-3.5" />}
+              className="rounded-lg h-9 px-4 text-xs font-medium border-stay-border"
             >
               Chỉnh sửa thông tin
             </Button>
-
             <Button
-              icon={<Lock className="w-4 h-4" />}
               onClick={() => setIsPasswordModalOpen(true)}
-              className="h-[40px] px-4 rounded-xl border-stay-border text-stay-text hover:text-stay-primary"
+              icon={<Lock className="w-3.5 h-3.5" />}
+              className="rounded-lg h-9 px-4 text-xs font-medium border-stay-border"
             >
               Đổi mật khẩu
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* 2. MAIN CONTENT GRID (NO TABS) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-7 space-y-5">
-          <div className="bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-stay-border">
-              <div className="flex items-center gap-2">
-                <UserIcon className="w-5 h-5 text-stay-primary" />
-                <h3 className="text-base font-semibold text-stay-text m-0">
-                  Thông tin cá nhân
-                </h3>
-              </div>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => setIsEditModalOpen(true)}
-                className="text-stay-primary font-medium p-0"
-              >
-                Chỉnh sửa
-              </Button>
+        {/* SECTION 1: THÔNG TIN CƠ BẢN */}
+        <div className="space-y-2">
+          <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2">
+            Thông tin cơ bản
+          </span>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 text-[14px]">
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Họ và tên</span>
+              <span className="text-stay-text font-medium">{user?.fullName || '—'}</span>
             </div>
 
-            {/* Mục 1: Thông tin cơ bản */}
-            <div>
-              <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-3">
-                Thông tin cơ bản
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px]">
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Họ và tên
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                    {user?.fullName || '—'}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Tên đăng nhập
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                    @{user?.username}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Địa chỉ Email
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium truncate">
-                    {user?.email || '—'}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Số điện thoại
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                    {user?.phone || 'Chưa cập nhật'}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Ngày sinh
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                    {user?.dateOfBirth ? user.dateOfBirth.substring(0, 10) : 'Chưa cập nhật'}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Giới tính
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                    {formatGender(user?.gender)}
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Số điện thoại</span>
+              <span className="text-stay-text font-medium">{user?.phone || 'Chưa cập nhật'}</span>
             </div>
 
-            {/* Mục 2: Tiêu chuẩn lọc bạn cùng phòng */}
-            <div className="pt-4 border-t border-stay-border">
-              <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-3">
-                Tiêu chuẩn lọc bạn cùng phòng
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Tên đăng nhập</span>
+              <span className="text-stay-text font-medium">@{user?.username}</span>
+            </div>
+
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Ngày sinh</span>
+              <span className="text-stay-text font-medium">
+                {user?.dateOfBirth ? user.dateOfBirth.substring(0, 10) : 'Chưa cập nhật'}
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[14px]">
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Yêu cầu bạn cùng phòng
-                  </label>
-                  <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                    {formatGenderPref(user?.genderPreference)}
-                  </div>
-                </div>
+            </div>
 
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Thói quen hút thuốc
-                  </label>
-                  <div className="h-10 px-3 flex items-center justify-between rounded-lg border border-stay-border bg-stay-card-bg text-stay-text text-xs">
-                    <span>Bản thân: <strong>{user?.smokes ? 'Có hút' : 'Không hút'}</strong></span>
-                    <span className="text-stay-text-secondary">|</span>
-                    <span>Yêu cầu: <strong>{user?.rejectsSmokers ? 'Cấm hút' : 'Linh hoạt'}</strong></span>
-                  </div>
-                </div>
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Địa chỉ Email</span>
+              <span className="text-stay-text font-medium truncate max-w-[220px]">{user?.email || '—'}</span>
+            </div>
 
-                <div>
-                  <label className="text-stay-text font-medium block mb-1">
-                    Nuôi thú cưng
-                  </label>
-                  <div className="h-10 px-3 flex items-center justify-between rounded-lg border border-stay-border bg-stay-card-bg text-stay-text text-xs">
-                    <span>Bản thân: <strong>{user?.hasPet ? 'Có nuôi' : 'Không nuôi'}</strong></span>
-                    <span className="text-stay-text-secondary">|</span>
-                    <span>Yêu cầu: <strong>{user?.rejectsPets ? 'Không nhận' : 'Thoải mái'}</strong></span>
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Giới tính</span>
+              <span className="text-stay-text font-medium">{formatGender(user?.gender)}</span>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: LIFESTYLE SURVEY & SECURITY (5 COLS) */}
-        <div className="lg:col-span-5 space-y-5">
-          {/* Card: Khảo sát thói quen sinh hoạt */}
-          <div className="bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stay-border">
-              <div className="flex items-center gap-2">
-                <Sliders className="w-5 h-5 text-stay-primary" />
-                <h3 className="text-base font-semibold text-stay-text m-0">
-                  Khảo sát
-                </h3>
-              </div>
-              <Tag
-                color={answeredCount === totalQuestions ? 'success' : 'processing'}
-                className="rounded-full px-2.5 py-0.5 text-xs font-semibold m-0"
-              >
-                {answeredCount}/{totalQuestions} câu
-              </Tag>
+        {/* SECTION 2: TIÊU CHUẨN LỌC BẠN CÙNG PHÒNG */}
+        <div className="space-y-2 pt-2">
+          <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2">
+            Tiêu chuẩn lọc bạn cùng phòng
+          </span>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 text-[14px]">
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Yêu cầu bạn cùng phòng</span>
+              <span className="text-stay-text font-medium">{formatGenderPref(user?.genderPreference)}</span>
             </div>
 
-            {/* Progress indicator */}
-            <div className="space-y-2 py-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-stay-text">Tiến độ khảo sát</span>
-                <span className="font-bold text-stay-primary">{completionPercentage}%</span>
-              </div>
-              <Progress
-                percent={completionPercentage}
-                showInfo={false}
-                strokeColor="var(--stay-primary, #4F46E5)"
-                trailColor="var(--stay-border)"
-                className="m-0"
-              />
-              <span className="text-xs text-stay-text-secondary block">
-                {answeredCount === totalQuestions
-                  ? 'Đã hoàn thành đầy đủ 15 tiêu chí lối sống.'
-                  : `Còn ${totalQuestions - answeredCount} câu hỏi cần hoàn thành.`}
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Thói quen hút thuốc</span>
+              <span className="text-stay-text font-medium">
+                {user?.smokes ? 'Có hút' : 'Không hút'} • {user?.rejectsSmokers ? 'Cấm hút' : 'Linh hoạt'}
               </span>
             </div>
 
-            {/* Button Hoàn thành / Cập nhật khảo sát */}
-            <Button
-              type="primary"
-              size="large"
-              icon={<Sliders className="w-4 h-4" />}
-              onClick={() => setIsSurveyModalOpen(true)}
-              className="w-full h-[44px] rounded-xl font-semibold text-sm bg-stay-primary hover:bg-stay-primary-hover shadow-sm"
-            >
-              {answeredCount === totalQuestions
-                ? 'Cập nhật khảo sát lối sống'
-                : `Hoàn thành khảo sát`}
-            </Button>
+            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary">Nuôi thú cưng</span>
+              <span className="text-stay-text font-medium">
+                {user?.hasPet ? 'Có nuôi' : 'Không nuôi'} • {user?.rejectsPets ? 'Không nhận' : 'Thoải mái'}
+              </span>
+            </div>
           </div>
+        </div>
 
-          {/* Card: Bảo mật & Tài khoản */}
-          <div className="bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-stay-border">
-              <Lock className="w-5 h-5 text-stay-text-secondary" />
-              <h3 className="text-base font-semibold text-stay-text m-0">
-                Bảo mật & Phiên đăng nhập
-              </h3>
+        {/* SECTION 3: KHẢO SÁT LỐI SỐNG & BẢO MẬT */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-stay-border text-[14px]">
+          {/* Khảo sát lối sống */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
+                Khảo sát lối sống
+              </span>
+              <span className="text-xs text-stay-text-secondary">
+                {answeredCount}/{totalQuestions} câu ({completionPercentage}%)
+              </span>
             </div>
 
-            <div className="flex items-center justify-between py-1">
+            <Progress
+              percent={completionPercentage}
+              showInfo={false}
+              strokeColor="currentColor"
+              trailColor="var(--stay-border-subtle, #e4e4e7)"
+              className="m-0 text-stay-text"
+            />
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-stay-text-secondary">
+                {answeredCount === totalQuestions
+                  ? 'Đã hoàn thành 15/15 tiêu chí.'
+                  : `Còn ${totalQuestions - answeredCount} câu chưa hoàn thành.`}
+              </span>
+              <Button
+                onClick={() => setIsSurveyModalOpen(true)}
+                icon={<Sliders className="w-3.5 h-3.5" />}
+                className="rounded-lg h-8 px-3 text-xs font-medium border-stay-border"
+              >
+                {answeredCount === totalQuestions ? 'Cập nhật' : 'Làm khảo sát'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Bảo mật & Đăng xuất */}
+          <div className="space-y-3">
+            <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+              Bảo mật tài khoản
+            </span>
+
+            <div className="flex items-center justify-between py-1 border-b border-stay-border-subtle">
               <div>
-                <label className="text-stay-text font-medium block mb-0.5 text-sm">Mật khẩu tài khoản</label>
-                <span className="font-mono text-sm tracking-widest text-stay-text-secondary">••••••••••••</span>
+                <span className="text-xs text-stay-text-secondary block">Mật khẩu tài khoản</span>
+                <span className="font-mono text-xs tracking-widest text-stay-text">••••••••••••</span>
               </div>
               <Button
-                size="middle"
                 onClick={() => setIsPasswordModalOpen(true)}
-                className="rounded-lg border-stay-border text-sm"
+                icon={<Lock className="w-3.5 h-3.5" />}
+                className="rounded-lg h-8 px-3 text-xs font-medium border-stay-border"
               >
                 Đổi mật khẩu
               </Button>
             </div>
 
-            <div className="pt-2">
-              <Button
-                danger
-                block
-                icon={<LogOut className="w-4 h-4" />}
+            <div className="pt-1">
+              <button
+                type="button"
                 onClick={handleLogoutAll}
-                loading={isLoggingOutAll}
-                className="h-[40px] rounded-xl font-medium text-xs"
+                disabled={isLoggingOutAll}
+                className="inline-flex items-center gap-1.5 text-xs text-stay-text-secondary hover:text-rose-600 transition-colors cursor-pointer"
               >
-                Đăng xuất khỏi tất cả các thiết bị
-              </Button>
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Đăng xuất khỏi tất cả các thiết bị</span>
+              </button>
             </div>
           </div>
         </div>
