@@ -149,6 +149,26 @@ CREATE TABLE IF NOT EXISTS room_services (
     CONSTRAINT fk_room_services_service FOREIGN KEY (service_id) REFERENCES services (id) ON DELETE CASCADE
     );
 
+-- 7.1. Bảng Tiện ích phòng trọ (Master Data)
+CREATE TABLE IF NOT EXISTS amenities (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7.2. Bảng liên kết Phòng - Tiện ích
+CREATE TABLE IF NOT EXISTS room_amenities (
+    room_id BIGINT NOT NULL,
+    amenity_id BIGINT NOT NULL,
+    PRIMARY KEY (room_id, amenity_id),
+    CONSTRAINT fk_room_amenities_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+    CONSTRAINT fk_room_amenities_amenity FOREIGN KEY (amenity_id) REFERENCES amenities (id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_room_amenities_room_id ON room_amenities(room_id);
+CREATE INDEX IF NOT EXISTS idx_room_amenities_amenity_id ON room_amenities(amenity_id);
+
 -- 8. Bảng Khách thuê phòng
 CREATE TABLE IF NOT EXISTS tenants (
                                        id BIGSERIAL PRIMARY KEY,

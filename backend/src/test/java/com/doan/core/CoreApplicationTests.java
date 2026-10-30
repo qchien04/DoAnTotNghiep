@@ -70,5 +70,17 @@ class CoreApplicationTests {
             jdbcTemplate.execute("UPDATE contracts SET status = 'ACTIVE' WHERE status = 'EXPIRING_SOON'");
         });
     }
+
+    @Autowired
+    private com.doan.core.business.repository.AmenityRepository amenityRepository;
+
+    @Test
+    void testAmenityRepository() {
+        assertDoesNotThrow(() -> {
+            var all = amenityRepository.findAllByOrderByNameAsc();
+            assertNotNull(all);
+            assertFalse(all.isEmpty(), "Amenities should have seeded items");
+        });
+    }
 }
 

@@ -74,10 +74,9 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                             .build())
                     .collect(Collectors.toList());
 
-            List<String> amenities = new ArrayList<>();
-            if (room.getAmenities() != null && !room.getAmenities().isBlank()) {
-                amenities = List.of(room.getAmenities().split(",\\s*"));
-            }
+            List<String> amenities = room.getAmenities() != null
+                    ? room.getAmenities().stream().map(com.doan.core.business.entity.Amenity::getName).collect(Collectors.toList())
+                    : new ArrayList<>();
 
             String buildingAddress = null;
             if (building != null) {

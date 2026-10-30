@@ -34,6 +34,7 @@ public class RoomResponse {
     private Integer currentOccupancy;
     private String furnishingLevel;
     private List<String> amenities;
+    private List<com.doan.core.business.dto.amenity.AmenityResponse> amenityDetails;
     private List<Long> serviceIds;
     private List<com.doan.core.business.dto.landlord.service.UtilityServiceResponse> services;
     private String description;
@@ -65,11 +66,12 @@ public class RoomResponse {
             images = List.of(cover);
         }
 
-        List<String> amenityList = (room.getAmenities() != null && !room.getAmenities().isBlank())
-                ? java.util.Arrays.stream(room.getAmenities().split(","))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .collect(Collectors.toList())
+        List<String> amenityList = room.getAmenities() != null
+                ? room.getAmenities().stream().map(com.doan.core.business.entity.Amenity::getName).collect(Collectors.toList())
+                : List.of();
+
+        List<com.doan.core.business.dto.amenity.AmenityResponse> amenityDetails = room.getAmenities() != null
+                ? room.getAmenities().stream().map(com.doan.core.business.dto.amenity.AmenityResponse::fromEntity).collect(Collectors.toList())
                 : List.of();
 
         List<Long> sIds = room.getServices() != null
@@ -127,6 +129,7 @@ public class RoomResponse {
                 .currentOccupancy(room.getCurrentOccupancy())
                 .furnishingLevel(room.getFurnishingLevel())
                 .amenities(amenityList)
+                .amenityDetails(amenityDetails)
                 .serviceIds(sIds)
                 .services(serviceResponses)
                 .description(room.getDescription())

@@ -67,8 +67,11 @@ public class Room extends BaseEntity {
     @Builder.Default
     private String furnishingLevel = "BASIC";
 
-    @Column(name = "amenities", columnDefinition = "TEXT")
-    private String amenities;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @BatchSize(size = 30)
+    @JoinTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+    @Builder.Default
+    private List<Amenity> amenities = new ArrayList<>();
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;

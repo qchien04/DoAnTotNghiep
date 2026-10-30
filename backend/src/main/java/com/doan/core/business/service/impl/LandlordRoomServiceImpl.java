@@ -37,6 +37,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     private final ContractRepository contractRepository;
     private final com.doan.core.business.repository.UtilityServiceRepository utilityServiceRepository;
     private final com.doan.core.business.repository.UserRepository userRepository;
+    private final com.doan.core.business.repository.AmenityRepository amenityRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -133,9 +134,16 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         com.doan.core.business.entity.User landlord = userRepository.findById(landlordId)
                 .orElse(building != null ? building.getLandlord() : null);
 
-        String amenitiesStr = (request.getAmenities() != null && !request.getAmenities().isEmpty())
-                ? String.join(", ", request.getAmenities())
-                : null;
+        List<com.doan.core.business.entity.Amenity> amenities = new ArrayList<>();
+        if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
+            amenities = amenityRepository.findAllById(request.getAmenityIds());
+        } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
+            for (String amName : request.getAmenities()) {
+                if (amName != null && !amName.isBlank()) {
+                    amenityRepository.findByNameIgnoreCase(amName.trim()).ifPresent(amenities::add);
+                }
+            }
+        }
 
         List<com.doan.core.business.entity.UtilityService> services = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
@@ -172,7 +180,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .maxCapacity(request.getMaxCapacity())
                 .currentOccupancy(0)
                 .furnishingLevel(request.getFurnishingLevel() != null ? request.getFurnishingLevel() : "BASIC")
-                .amenities(amenitiesStr)
+                .amenities(amenities)
                 .services(services)
                 .description(request.getDescription())
                 .status(RoomStatus.AVAILABLE)
@@ -277,8 +285,17 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         if (request.getFurnishingLevel() != null) {
             room.setFurnishingLevel(request.getFurnishingLevel());
         }
-        if (request.getAmenities() != null) {
-            room.setAmenities(String.join(", ", request.getAmenities()));
+        if (request.getAmenityIds() != null) {
+            List<com.doan.core.business.entity.Amenity> updatedAmenities = amenityRepository.findAllById(request.getAmenityIds());
+            room.setAmenities(updatedAmenities);
+        } else if (request.getAmenities() != null) {
+            List<com.doan.core.business.entity.Amenity> updatedAmenities = new ArrayList<>();
+            for (String amName : request.getAmenities()) {
+                if (amName != null && !amName.isBlank()) {
+                    amenityRepository.findByNameIgnoreCase(amName.trim()).ifPresent(updatedAmenities::add);
+                }
+            }
+            room.setAmenities(updatedAmenities);
         }
         if (request.getServiceIds() != null) {
             List<UtilityService> updatedServices = utilityServiceRepository
