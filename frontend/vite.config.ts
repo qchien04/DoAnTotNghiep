@@ -30,7 +30,7 @@ function tileServerPlugin(): Plugin {
         }
 
         const upstreamUrl = `https://nuoclen.com/tiles/hot/${z}/${x}/${y}.png`;
-        https.get(upstreamUrl, { headers: { 'User-Agent': 'StayConnectDevServer/1.0' } }, (upstreamRes) => {
+        https.get(upstreamUrl, { headers: { 'User-Agent': 'RoomiDevServer/1.0' } }, (upstreamRes) => {
           if (upstreamRes.statusCode === 200) {
             res.setHeader('Content-Type', 'image/png');
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

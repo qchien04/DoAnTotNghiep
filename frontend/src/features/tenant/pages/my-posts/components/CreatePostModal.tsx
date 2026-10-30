@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Modal, Form, Input, InputNumber, Select, message, Segmented } from 'antd';
-import { useCreatePostWithRoom, useCreatePostWithoutRoom } from '@/shared/hooks';
-import { Home, Search, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Input, InputNumber, Select, Segmented, Radio } from 'antd';
+import { useCreatePostWithRoom, useCreatePostWithoutRoom, useLifestyleQuestions, useUserLifestyleProfile } from '@/shared/hooks';
+import { Home, Search, Users, Sparkles, Sliders } from 'lucide-react';
+import { LifestyleQuestionnaire } from '@/shared/components';
 
 interface CreatePostModalProps {
   open: boolean;
@@ -30,8 +31,27 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [form] = Form.useForm();
   const [postType, setPostType] = useState<'HAS_ROOM' | 'SEARCHING_ROOM'>('HAS_ROOM');
   const [submitting, setSubmitting] = useState(false);
+  const [surveyMode, setSurveyMode] = useState<'PROFILE' | 'CUSTOM'>('PROFILE');
+  const [surveyAnswers, setSurveyAnswers] = useState<Record<number, number[]>>({});
+
+  const { questions } = useLifestyleQuestions();
+  const { profile } = useUserLifestyleProfile();
   const { createPostWithRoom } = useCreatePostWithRoom();
   const { createPostWithoutRoom } = useCreatePostWithoutRoom();
+
+  useEffect(() => {
+    if (profile?.answers && profile.answers.length > 0) {
+      const initial: Record<number, number[]> = {};
+      profile.answers.forEach((ans: any) => {
+        if (ans.optionIds && ans.optionIds.length > 0) {
+          initial[ans.questionId] = ans.optionIds;
+        } else if (ans.optionId) {
+          initial[ans.questionId] = [ans.optionId];
+        }
+      });
+      setSurveyAnswers(initial);
+    }
+  }, [profile]);
 
   const handlePostTypeChange = (val: 'HAS_ROOM' | 'SEARCHING_ROOM') => {
     setPostType(val);
@@ -56,6 +76,15 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       const values = await form.validateFields();
       setSubmitting(true);
 
+      const lifestyleAnswers =
+        surveyMode === 'CUSTOM'
+          ? Object.entries(surveyAnswers).map(([qId, optIds]) => ({
+              questionId: Number(qId),
+              optionIds: optIds,
+              optionId: optIds[0] || null,
+            }))
+          : undefined;
+
       const payload = {
         title: values.title,
         description: values.description,
@@ -72,6 +101,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         cookingFrequency: values.cooking || 'DAILY',
         cleanlinessLevel: 'VERY_CLEAN',
         guestAllowed: 'WEEKENDS_ONLY',
+        lifestyleAnswers,
       };
 
       if (postType === 'HAS_ROOM') {
@@ -80,12 +110,10 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         await createPostWithoutRoom(payload as any);
       }
 
-      message.success('Đăng bài tìm bạn ở ghép thành công!');
       form.resetFields();
       onSuccess();
-    } catch (err: any) {
-      if (err?.errorFields) return;
-      message.error(err?.message || 'Có lỗi xảy ra khi tạo bài đăng.');
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     } finally {
       setSubmitting(false);
     }
@@ -105,14 +133,14 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       confirmLoading={submitting}
       okText="Xác nhận đăng bài"
       cancelText="Hủy bỏ"
-      width={680}
+      width={780}
       centered
       destroyOnClose
     >
-      <div className="pt-3 space-y-4">
+      <div className="pt-3 space-y-4 max-h-[75vh] overflow-y-auto pr-1">
         {/* Phân loại loại bài đăng */}
         <div>
-          <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-1.5">
+          <label className="font-semibold text-stay-text-secondary uppercase tracking-wider block mb-1.5 text-xs">
             Loại hình bài đăng
           </label>
           <Segmented
@@ -125,7 +153,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               {
                 value: 'HAS_ROOM',
                 label: (
-                  <div className="flex items-center justify-center gap-2 py-1 font-semibold text-xs sm:text-sm">
+                  <div className="flex items-center justify-center gap-2 py-1 font-semibold  sm:text-sm">
                     <Home className="w-4 h-4 text-stay-primary" />
                     <span>Đã có phòng sẵn (Tìm người vào ở cùng)</span>
                   </div>
@@ -134,7 +162,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               {
                 value: 'SEARCHING_ROOM',
                 label: (
-                  <div className="flex items-center justify-center gap-2 py-1 font-semibold text-xs sm:text-sm">
+                  <div className="flex items-center justify-center gap-2 py-1 font-semibold  sm:text-sm">
                     <Search className="w-4 h-4 text-emerald-600" />
                     <span>Chưa có phòng (Tìm bạn cùng lập nhóm thuê)</span>
                   </div>
@@ -165,14 +193,14 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         >
           {/* Tiêu đề */}
           <Form.Item
-            label={<span className="font-semibold text-xs text-stay-text">Tiêu đề bài đăng</span>}
+            label={<span className="font-semibold  text-stay-text">Tiêu đề bài đăng</span>}
             name="title"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề bài đăng!' }]}
             className="mb-3"
           >
             <Input
               placeholder="VD: Tìm 1 bạn nam ở ghép phòng 30m2 khép kín Triều Khúc..."
-              className="h-10 text-xs"
+              className="h-10 "
             />
           </Form.Item>
 
@@ -180,7 +208,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Form.Item
               label={
-                <span className="font-semibold text-xs text-stay-text">
+                <span className="font-semibold  text-stay-text">
                   {postType === 'HAS_ROOM' ? 'Địa chỉ phòng trọ' : 'Khu vực muốn tìm trọ'}
                 </span>
               }
@@ -190,19 +218,19 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             >
               <Input
                 placeholder="VD: Ngõ 175 Xuân Thủy, Dịch Vọng Hậu"
-                className="h-10 text-xs"
+                className="h-10 "
               />
             </Form.Item>
 
             <Form.Item
-              label={<span className="font-semibold text-xs text-stay-text">Quận / Huyện</span>}
+              label={<span className="font-semibold  text-stay-text">Quận / Huyện</span>}
               name="district"
               rules={[{ required: true, message: 'Vui lòng chọn quận/huyện!' }]}
               className="mb-3"
             >
               <Select
                 options={DISTRICT_OPTIONS}
-                className="h-10 text-xs"
+                className="h-10 "
                 placeholder="Chọn quận/huyện"
               />
             </Form.Item>
@@ -211,13 +239,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           {/* Chi phí & Số lượng */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Form.Item
-              label={<span className="font-semibold text-xs text-stay-text">Giá share mỗi người</span>}
+              label={<span className="font-semibold  text-stay-text">Giá share mỗi người</span>}
               name="sharePrice"
               rules={[{ required: true, message: 'Vui lòng nhập giá share!' }]}
               className="mb-3"
             >
               <InputNumber
-                className="w-full h-10 text-xs"
+                className="w-full h-10 "
                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
                 addonAfter="đ"
@@ -228,13 +256,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
             {postType === 'HAS_ROOM' ? (
               <Form.Item
-                label={<span className="font-semibold text-xs text-stay-text">Tổng tiền phòng gốc</span>}
+                label={<span className="font-semibold  text-stay-text">Tổng tiền phòng gốc</span>}
                 name="totalRoomPrice"
                 rules={[{ required: true, message: 'Vui lòng nhập tổng tiền phòng!' }]}
                 className="mb-3"
               >
                 <InputNumber
-                  className="w-full h-10 text-xs"
+                  className="w-full h-10 "
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
                   addonAfter="đ"
@@ -244,12 +272,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               </Form.Item>
             ) : (
               <Form.Item
-                label={<span className="font-semibold text-xs text-stay-text">Ngân sách tối đa</span>}
+                label={<span className="font-semibold  text-stay-text">Ngân sách tối đa</span>}
                 name="totalRoomPrice"
                 className="mb-3"
               >
                 <InputNumber
-                  className="w-full h-10 text-xs"
+                  className="w-full h-10 "
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
                   addonAfter="đ"
@@ -260,13 +288,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             )}
 
             <Form.Item
-              label={<span className="font-semibold text-xs text-stay-text">Số bạn cần tìm</span>}
+              label={<span className="font-semibold  text-stay-text">Số bạn cần tìm</span>}
               name="neededRoommates"
               rules={[{ required: true, message: 'Vui lòng chọn số lượng!' }]}
               className="mb-3"
             >
               <InputNumber
-                className="w-full h-10 text-xs"
+                className="w-full h-10 "
                 min={1}
                 max={5}
                 addonAfter="người"
@@ -274,11 +302,16 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             </Form.Item>
           </div>
 
-          {/* Tiêu chí lối sống cơ bản */}
-          <div className="p-3.5 bg-stay-bg-app border border-stay-border rounded-xl space-y-2">
-            <span className="text-xs font-semibold text-stay-text block">
-              Tiêu chuẩn lối sống & Thói quen sinh hoạt
-            </span>
+          {/* Tiêu chí lối sống cơ bản & AI Matching */}
+          <div className="space-y-3 pt-3 border-t border-stay-border-subtle">
+            <div>
+              <span className="font-semibold text-stay-text text-sm block">
+                Tiêu chuẩn lọc cứng & Lối sống ghép đôi (AI Matching)
+              </span>
+              <span className="text-xs text-stay-text-secondary">
+                Thuật toán Roomi AI dùng tiêu chuẩn này để tính điểm tương thích với người nộp đơn ứng tuyển.
+              </span>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
               <Form.Item
@@ -287,7 +320,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 className="mb-0"
               >
                 <Select
-                  className="w-full text-xs"
+                  className="w-full"
                   options={[
                     { value: 'ANY', label: 'Linh hoạt Nam/Nữ' },
                     { value: 'MALE_ONLY', label: 'Ưu tiên Nam' },
@@ -302,7 +335,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 className="mb-0"
               >
                 <Select
-                  className="w-full text-xs"
+                  className="w-full"
                   options={[
                     { value: 'BEFORE_23H', label: 'Trước 23:00 (Ngủ sớm)' },
                     { value: 'BEFORE_24H', label: 'Khoảng 23h - 24h' },
@@ -317,7 +350,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 className="mb-0"
               >
                 <Select
-                  className="w-full text-xs"
+                  className="w-full"
                   options={[
                     { value: 'NO', label: 'Không khói thuốc' },
                     { value: 'YES', label: 'Có hút thuốc' },
@@ -331,7 +364,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 className="mb-0"
               >
                 <Select
-                  className="w-full text-xs"
+                  className="w-full"
                   options={[
                     { value: 'NO', label: 'Không nuôi pet' },
                     { value: 'YES', label: 'Thoải mái với pet' },
@@ -339,18 +372,58 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 />
               </Form.Item>
             </div>
+
+            {/* Chế độ khảo sát 15 chiều */}
+            <div className="p-3.5 bg-stay-bg-app rounded-xl border border-stay-border space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-stay-primary" />
+                  <span className="font-semibold text-xs text-stay-text">
+                    Khảo sát lối sống 15 chiều Roomi
+                  </span>
+                </div>
+                <Radio.Group
+                  value={surveyMode}
+                  onChange={(e) => setSurveyMode(e.target.value)}
+                  size="small"
+                  buttonStyle="solid"
+                >
+                  <Radio.Button value="PROFILE">Dùng hồ sơ của tôi</Radio.Button>
+                  <Radio.Button value="CUSTOM">Tùy chỉnh riêng cho bài này</Radio.Button>
+                </Radio.Group>
+              </div>
+
+              {surveyMode === 'PROFILE' ? (
+                <div className="flex items-start gap-2.5 text-xs text-stay-text-secondary bg-stay-card-bg p-3 rounded-lg border border-stay-border">
+                  <Sparkles className="w-4 h-4 text-stay-primary shrink-0 mt-0.5" />
+                  <span>
+                    Bài đăng này sẽ tự động kế thừa trọn bộ 15 tiêu chí lối sống từ hồ sơ cá nhân của bạn (sạch sẽ, giờ giấc, tiếng ồn, làm việc, sở thích...). Chuyển sang <strong>Tùy chỉnh riêng cho bài này</strong> nếu bạn muốn thiết lập tiêu chí riêng biệt.
+                  </span>
+                </div>
+              ) : (
+                <div className="pt-2">
+                  <LifestyleQuestionnaire
+                    questions={questions}
+                    answers={surveyAnswers}
+                    onAnswerChange={(qId, optIds) =>
+                      setSurveyAnswers((prev) => ({ ...prev, [qId]: optIds }))
+                    }
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mô tả chi tiết */}
           <Form.Item
-            label={<span className="font-semibold text-xs text-stay-text">Mô tả chi tiết phòng & yêu cầu</span>}
+            label={<span className="font-semibold  text-stay-text">Mô tả chi tiết phòng & yêu cầu</span>}
             name="description"
             className="mb-0"
           >
             <Input.TextArea
               rows={3}
               placeholder="Mô tả đặc điểm phòng, tính cách, giờ giấc làm việc/học tập của bạn..."
-              className="text-xs"
+              className=""
             />
           </Form.Item>
         </Form>

@@ -56,7 +56,7 @@ public class LandlordInvoiceController {
     @Operation(summary = "UC 23: Ghi chỉ số công tơ và phát hành hóa đơn mới", description = "Nhập chỉ số điện nước mới, tự động tính tiền phòng + điện + nước + dịch vụ và xuất hóa đơn")
     public ResponseEntity<ResponseData<InvoiceResponse>> createInvoice(
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody MeterReadingInvoiceRequest request) {
+            @Valid @RequestBody CreateInvoiceRequest request) {
         InvoiceResponse created = invoiceService.createInvoice(principal.getId(), request);
         return ResponseEntity.ok(ResponseData.success("Phát hành hóa đơn thành công!", created));
     }

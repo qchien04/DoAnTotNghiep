@@ -101,7 +101,7 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
           <Tooltip title="Xem chi tiết">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => onView(r)}
             >
               <Eye className="w-4 h-4" />
@@ -111,7 +111,7 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
           <Tooltip title="Chỉnh sửa">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => onEdit(r)}
             >
               <Edit2 className="w-4 h-4" />
@@ -129,7 +129,7 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
             >
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-delete"
+                className="stay-action-btn"
                 disabled={isDeleting}
               >
                 <Trash2 className="w-4 h-4" />

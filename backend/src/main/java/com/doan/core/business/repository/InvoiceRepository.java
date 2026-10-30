@@ -23,7 +23,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
            "JOIN FETCH i.contract c " +
            "JOIN FETCH c.room r " +
            "LEFT JOIN FETCH r.building b " +
-           "LEFT JOIN FETCH c.representativeTenant t " +
+           "LEFT JOIN c.contractTenants ct " +
+           "LEFT JOIN ct.tenant t " +
            "WHERE c.landlord.id = :landlordId " +
            "AND (:buildingId IS NULL OR (b IS NOT NULL AND b.id = :buildingId)) " +
            "AND (:billingPeriod IS NULL OR i.billingPeriod = :billingPeriod) " +
@@ -37,7 +38,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
            "JOIN i.contract c " +
            "JOIN c.room r " +
            "LEFT JOIN r.building b " +
-           "LEFT JOIN c.representativeTenant t " +
+           "LEFT JOIN c.contractTenants ct " +
+           "LEFT JOIN ct.tenant t " +
            "WHERE c.landlord.id = :landlordId " +
            "AND (:buildingId IS NULL OR (b IS NOT NULL AND b.id = :buildingId)) " +
            "AND (:billingPeriod IS NULL OR i.billingPeriod = :billingPeriod) " +
@@ -56,10 +58,12 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query(value = "SELECT DISTINCT i FROM Invoice i " +
            "JOIN FETCH i.contract c " +
-           "JOIN c.tenants tn " +
+           "JOIN c.contractTenants ct " +
+           "JOIN ct.tenant tn " +
            "JOIN FETCH c.room r " +
            "LEFT JOIN FETCH r.building b " +
-           "LEFT JOIN FETCH c.representativeTenant t " +
+           "LEFT JOIN c.contractTenants ct2 " +
+           "LEFT JOIN ct2.tenant t " +
            "WHERE tn.user.id = :userId " +
            "AND tn.linkStatus = com.doan.core.business.enums.TenantLinkStatus.LINKED " +
            "AND i.status <> com.doan.core.business.enums.InvoiceStatus.DRAFT " +
@@ -69,14 +73,17 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
            "     LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "     (b IS NOT NULL AND LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) OR " +
            "     LOWER(i.billingPeriod) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     (t IS NOT NULL AND (LOWER(t.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR t.phone LIKE CONCAT('%', :keyword, '%'))) OR " +
            "     CONCAT('INV', i.id) LIKE CONCAT('%', :keyword, '%') OR " +
            "     CONCAT('HD', i.id) LIKE CONCAT('%', :keyword, '%'))",
            countQuery = "SELECT COUNT(DISTINCT i) FROM Invoice i " +
            "JOIN i.contract c " +
-           "JOIN c.tenants tn " +
+           "JOIN c.contractTenants ct " +
+           "JOIN ct.tenant tn " +
            "JOIN c.room r " +
            "LEFT JOIN r.building b " +
-           "LEFT JOIN c.representativeTenant t " +
+           "LEFT JOIN c.contractTenants ct2 " +
+           "LEFT JOIN ct2.tenant t " +
            "WHERE tn.user.id = :userId " +
            "AND tn.linkStatus = com.doan.core.business.enums.TenantLinkStatus.LINKED " +
            "AND i.status <> com.doan.core.business.enums.InvoiceStatus.DRAFT " +
@@ -86,6 +93,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
            "     LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "     (b IS NOT NULL AND LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) OR " +
            "     LOWER(i.billingPeriod) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     (t IS NOT NULL AND (LOWER(t.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR t.phone LIKE CONCAT('%', :keyword, '%'))) OR " +
            "     CONCAT('INV', i.id) LIKE CONCAT('%', :keyword, '%') OR " +
            "     CONCAT('HD', i.id) LIKE CONCAT('%', :keyword, '%'))")
     Page<Invoice> filterTenantInvoices(@Param("userId") Long userId,

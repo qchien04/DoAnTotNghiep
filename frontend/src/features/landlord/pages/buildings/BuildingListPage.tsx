@@ -5,7 +5,6 @@ import {
   useUpdateBuilding,
   useDeleteBuilding,
 } from '@/shared/hooks';
-import { message } from '@/shared/components';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { BuildingFilter } from './components/BuildingFilter';
 import { BuildingTable } from './components/BuildingTable';
@@ -55,25 +54,20 @@ export const BuildingListPage: React.FC = () => {
     try {
       if (editingBuilding) {
         await updateBuilding({ id: editingBuilding.id, dto });
-        message.success('Cập nhật thông tin tòa nhà thành công!');
       } else {
         await createBuilding(dto);
-        message.success('Thêm mới tòa nhà thành công!');
       }
       setIsModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) {
-        message.error(err.message);
-      }
+    } catch {
+      // Handled in mutation hooks
     }
   };
 
   const handleDelete = async (id: string | number) => {
     try {
       await deleteBuilding(id);
-      message.success('Xóa tòa nhà thành công!');
-    } catch (err: any) {
-      message.error(err.message || 'Không thể xóa tòa nhà');
+    } catch {
+      // Handled in mutation hook
     }
   };
 

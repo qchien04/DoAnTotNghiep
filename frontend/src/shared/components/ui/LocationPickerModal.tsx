@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Modal, Button, Input, message, Spin, Tag } from 'antd';
+import { Modal, Button, Input, message, Spin, Tag, Tooltip } from 'antd';
 import {
   MapPin,
-  Navigation,
   Search,
   Check,
   Copy,
+  LocateFixed,
+  Loader2,
 } from 'lucide-react';
 import { VIETNAM_BOUNDS } from './LeafletMap';
 
@@ -167,7 +168,6 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
         {
           maxZoom: 19,
           subdomains: 'abcd',
-          attribution: '&copy; OpenStreetMap &bull; Chủ quyền Việt Nam',
         }
       ).addTo(map);
 
@@ -335,8 +335,8 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
       centered
     >
       <div className="space-y-3 mt-1 max-h-[calc(85vh-100px)] overflow-y-auto pr-1.5 custom-modal-scroll">
-        {/* Thanh tìm kiếm & Nút lấy vị trí hiện tại */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        {/* Thanh tìm kiếm */}
+        <div className="flex items-center gap-2">
           <Input.Search
             placeholder="Tìm theo địa chỉ, tên đường, trường đại học (Ví dụ: Ngõ 80 Cầu Giấy)..."
             value={searchQuery}
@@ -344,26 +344,34 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
             onSearch={handleSearchLocation}
             loading={isSearching}
             enterButton={<Search className="w-4 h-4" />}
-            className="flex-1"
+            className="w-full"
           />
-
-          <Button
-            icon={<Navigation className="w-4 h-4 text-emerald-600" />}
-            onClick={handleGetCurrentLocation}
-            loading={isGeolocating}
-            className="font-semibold border-emerald-500 text-emerald-600 hover:bg-emerald-50 shrink-0"
-          >
-            Vị trí hiện tại
-          </Button>
         </div>
 
         {/* Vùng hiển thị bản đồ Leaflet */}
         <div className="relative rounded-2xl overflow-hidden border border-stay-border shadow-inner">
           <div
             ref={mapContainerRef}
-            style={{ width: '100%', height: '340px' }}
+            style={{ width: '100%', height: '360px' }}
             className="z-0"
           />
+
+          {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+          <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+            <button
+              type="button"
+              onClick={handleGetCurrentLocation}
+              disabled={isGeolocating}
+              className="absolute bottom-4 right-4 z-[500] w-10 h-10 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+              aria-label="Vị trí hiện tại"
+            >
+              {isGeolocating ? (
+                <Loader2 className="w-5 h-5 animate-spin text-stay-primary" />
+              ) : (
+                <LocateFixed className="w-5 h-5 text-stay-primary" />
+              )}
+            </button>
+          </Tooltip>
 
           {(isSearching || isGeolocating) && (
             <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-1000">
@@ -373,13 +381,13 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
         </div>
 
         {/* Thông tin tọa độ & địa chỉ đã chọn */}
-        <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border space-y-2 text-xs">
+        <div className="p-3.5 rounded-xl bg-stay-card-bg border border-stay-border space-y-2 ">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Tag color="blue" className="font-mono text-xs px-2 py-0.5 m-0 font-bold">
+              <Tag color="blue" className="font-mono  px-2 py-0.5 m-0 font-bold">
                 LAT: {position[0].toFixed(6)}
               </Tag>
-              <Tag color="cyan" className="font-mono text-xs px-2 py-0.5 m-0 font-bold">
+              <Tag color="cyan" className="font-mono  px-2 py-0.5 m-0 font-bold">
                 LNG: {position[1].toFixed(6)}
               </Tag>
               <Button

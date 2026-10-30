@@ -13,7 +13,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
+import { ThemeSwitcher, RoomiLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
 import { Avatar, Dropdown } from 'antd';
 
 export const LandlordLayout: React.FC = () => {
@@ -75,20 +75,6 @@ export const LandlordLayout: React.FC = () => {
 
   const userMenuItems = [
     {
-      key: 'info',
-      label: (
-        <div className="py-1">
-          <p className="font-semibold text-sm text-stay-text">{user?.fullName || 'Nguyễn Văn Thành'}</p>
-          <p className="text-xs text-slate-500">{user?.email || 'thanhlandlord@gmail.com'}</p>
-          <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-            Chủ trọ
-          </span>
-        </div>
-      ),
-      disabled: true,
-    },
-    { type: 'divider' as const },
-    {
       key: 'logout',
       icon: <LogOut className="w-4 h-4 text-red-500" />,
       label: <span className="text-red-500 font-medium">Đăng xuất</span>,
@@ -123,12 +109,12 @@ export const LandlordLayout: React.FC = () => {
         className="h-full shrink-0 z-30"
         header={
           !collapsed ? (
-            <Link to="/landlord" className="flex items-center gap-2">
-              <StayConnectLogo size="sm" />
+            <Link to="/landlord" className="w-full flex items-center justify-center py-1">
+              <RoomiLogo size="md" />
             </Link>
           ) : (
-            <div className="w-full flex justify-center">
-              <Building2 className="w-6 h-6 text-stay-primary" />
+            <div className="w-full flex items-center justify-center py-1">
+              <Building2 className="w-7 h-7 text-stay-primary" />
             </div>
           )
         }
@@ -149,20 +135,19 @@ export const LandlordLayout: React.FC = () => {
 
             <NotificationDropdown
               viewAllLink="/landlord/complaints"
-              viewAllText="Xem tất cả khiếu nại & thông báo"
+              viewAllText="Xem tất cả"
             />
 
             <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
-              <div className="flex items-center gap-2 cursor-pointer p-1.5 pl-2.5 rounded-xl border border-stay-border hover:bg-stay-bg-app transition-colors">
+              <div className="flex items-center gap-2 cursor-pointer p-1.5 pl-2.5 rounded-xl hover:bg-stay-bg-app transition-colors">
                 <Avatar
                   size={32}
                   style={{ backgroundColor: 'var(--stay-primary)', color: '#fff' }}
                 >
-                  {(user?.fullName || 'Thành').charAt(0).toUpperCase()}
+                  {(user?.fullName || 'T').charAt(0).toUpperCase()}
                 </Avatar>
                 <div className="text-left hidden md:block leading-tight">
-                  <p className="text-xs font-semibold text-stay-text">{user?.fullName || 'Nguyễn Văn Thành'}</p>
-                  <p className="text-[10px] text-amber-600 font-bold">Chủ trọ</p>
+                  <p className=" font-semibold text-stay-text">{user?.fullName || 'Nguyễn Văn Thành'}</p>
                 </div>
               </div>
             </Dropdown>

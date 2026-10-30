@@ -67,12 +67,21 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
 
         if (request.getAnswers() != null && !request.getAnswers().isEmpty()) {
             for (SaveLifestyleAnswersRequest.AnswerItem item : request.getAnswers()) {
-                if (item.getQuestionId() == null || item.getOptionId() == null)
+                if (item.getQuestionId() == null)
                     continue;
-                LifestyleOptionResponse option = LifestyleConstants.OPTIONS_BY_ID
-                        .get(item.getOptionId());
-                if (option != null) {
-                    selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(option);
+                if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
+                    for (Long optId : item.getOptionIds()) {
+                        LifestyleOptionResponse opt = LifestyleConstants.OPTIONS_BY_ID.get(optId);
+                        if (opt != null) {
+                            selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(opt);
+                        }
+                    }
+                } else if (item.getOptionId() != null) {
+                    LifestyleOptionResponse option = LifestyleConstants.OPTIONS_BY_ID
+                            .get(item.getOptionId());
+                    if (option != null) {
+                        selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(option);
+                    }
                 }
             }
         }
@@ -320,12 +329,22 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
         if (customAnswers != null && !customAnswers.isEmpty()) {
             Map<Long, List<LifestyleOptionResponse>> selectedOptionsMap = new HashMap<>();
             for (SaveLifestyleAnswersRequest.AnswerItem item : customAnswers) {
-                if (item.getQuestionId() == null || item.getOptionId() == null)
+                if (item.getQuestionId() == null)
                     continue;
-                LifestyleOptionResponse option = com.doan.core.business.service.LifestyleConstants.OPTIONS_BY_ID
-                        .get(item.getOptionId());
-                if (option != null) {
-                    selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(option);
+                if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
+                    for (Long optId : item.getOptionIds()) {
+                        LifestyleOptionResponse opt = com.doan.core.business.service.LifestyleConstants.OPTIONS_BY_ID
+                                .get(optId);
+                        if (opt != null) {
+                            selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(opt);
+                        }
+                    }
+                } else if (item.getOptionId() != null) {
+                    LifestyleOptionResponse option = com.doan.core.business.service.LifestyleConstants.OPTIONS_BY_ID
+                            .get(item.getOptionId());
+                    if (option != null) {
+                        selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(option);
+                    }
                 }
             }
             vector = vectorHelper.buildVectorFromOptionMap(selectedOptionsMap);
@@ -396,12 +415,22 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
             isCustomized = true;
             Map<Long, List<LifestyleOptionResponse>> selectedOptionsMap = new HashMap<>();
             for (SaveLifestyleAnswersRequest.AnswerItem item : request.getLifestyleAnswers()) {
-                if (item.getQuestionId() == null || item.getOptionId() == null)
+                if (item.getQuestionId() == null)
                     continue;
-                LifestyleOptionResponse opt = com.doan.core.business.service.LifestyleConstants.OPTIONS_BY_ID
-                        .get(item.getOptionId());
-                if (opt != null) {
-                    selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(opt);
+                if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
+                    for (Long optId : item.getOptionIds()) {
+                        LifestyleOptionResponse opt = com.doan.core.business.service.LifestyleConstants.OPTIONS_BY_ID
+                                .get(optId);
+                        if (opt != null) {
+                            selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(opt);
+                        }
+                    }
+                } else if (item.getOptionId() != null) {
+                    LifestyleOptionResponse opt = com.doan.core.business.service.LifestyleConstants.OPTIONS_BY_ID
+                            .get(item.getOptionId());
+                    if (opt != null) {
+                        selectedOptionsMap.computeIfAbsent(item.getQuestionId(), k -> new ArrayList<>()).add(opt);
+                    }
                 }
             }
             appVector = vectorHelper.buildVectorFromOptionMap(selectedOptionsMap);

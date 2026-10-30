@@ -82,11 +82,10 @@ export const PopupItem: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left ${
-        destructive
+      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg  font-medium transition-colors cursor-pointer text-left ${destructive
           ? 'text-red-600 hover:bg-red-50'
           : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-      } ${className}`}
+        } ${className}`}
     >
       {icon && <span className="shrink-0">{icon}</span>}
       <span className="truncate">{children}</span>

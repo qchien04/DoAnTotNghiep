@@ -47,30 +47,39 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       width={940}
       centered
       destroyOnClose
-      footer={[
-        <Button key="close" onClick={onCancel} className="h-9 px-4 rounded-lg">
-          Đóng
-        </Button>,
-        onEdit && (
+      footer={
+        <div className="flex items-center justify-end gap-2.5 w-full pt-1">
           <Button
-            key="edit"
-            type="primary"
-            onClick={() => {
-              onCancel();
-              onEdit(room);
-            }}
-            className="h-9 px-4 rounded-lg bg-[#E60023] hover:bg-[#CC001F] text-white font-medium"
+            key="close"
+            variant="outline"
+            size="md"
+            onClick={onCancel}
+            className="h-10 px-5 rounded-xl border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium"
           >
-            Chỉnh sửa
+            Đóng
           </Button>
-        ),
-      ]}
+          {onEdit && (
+            <Button
+              key="edit"
+              variant="primary"
+              size="md"
+              onClick={() => {
+                onCancel();
+                onEdit(room);
+              }}
+              className="h-10 px-5 rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white font-semibold shadow-xs"
+            >
+              Chỉnh sửa
+            </Button>
+          )}
+        </div>
+      }
     >
       <div className="mt-4 space-y-4 text-[14px]">
         {/* Hình ảnh phòng */}
         {images.length > 0 && (
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stay-text-secondary block">
+            <label className=" font-semibold text-stay-text-secondary block">
               Hình ảnh phòng trọ ({images.length} ảnh)
             </label>
             <div className="flex gap-2 overflow-x-auto pb-1">
@@ -87,13 +96,11 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         )}
 
         {/* SECTION 1: TÒA NHÀ & VỊ TRÍ */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Tòa nhà & vị trí phòng trọ
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        {/* SECTION 1: TÒA NHÀ & VỊ TRÍ */}
+        <div className="space-y-3">
+          <div className="space-y-3">
             <div>
-              <label className="text-stay-text font-medium text-xs block mb-1">
+              <label className="text-stay-text font-medium block mb-1">
                 Thuộc tòa nhà / Khu trọ
               </label>
               <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
@@ -102,7 +109,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             </div>
 
             <div>
-              <label className="text-stay-text font-medium text-xs block mb-1">
+              <label className="text-stay-text font-medium block mb-1">
                 Địa chỉ chi tiết
               </label>
               <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
@@ -113,13 +120,10 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
         {/* SECTION 2: THÔNG TIN CƠ BẢN & GIÁ THUÊ */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Thông tin cơ bản & giá thuê
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-3">
             <div>
-              <label className="text-stay-text font-medium text-xs block mb-1">
+              <label className="text-stay-text font-medium block mb-1">
                 Tên phòng
               </label>
               <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
@@ -129,7 +133,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
+                <label className="text-stay-text font-medium block mb-1">
                   Tầng bố trí
                 </label>
                 <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
@@ -138,7 +142,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </div>
 
               <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
+                <label className="text-stay-text font-medium block mb-1">
                   Diện tích phòng
                 </label>
                 <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
@@ -147,7 +151,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </div>
 
               <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
+                <label className="text-stay-text font-medium block mb-1">
                   Sức chứa tối đa
                 </label>
                 <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
@@ -158,7 +162,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
+                <label className="text-stay-text font-medium block mb-1">
                   Giá thuê niêm yết
                 </label>
                 <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
@@ -167,7 +171,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </div>
 
               <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
+                <label className="text-stay-text font-medium block mb-1">
                   Tiền cọc tiêu chuẩn
                 </label>
                 <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
@@ -177,7 +181,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
             </div>
 
             <div>
-              <label className="text-stay-text font-medium text-xs block mb-1">
+              <label className="text-stay-text font-medium block mb-1">
                 Trạng thái phòng
               </label>
               <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
@@ -189,32 +193,30 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
         {/* SECTION 3: TIỆN NGHI */}
         {amenityList.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
             <h3 className="text-sm font-semibold text-stay-text">
-              3. Tiện nghi phòng trọ
+              Tiện nghi phòng trọ
             </h3>
-            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border">
-              <div className="flex flex-wrap gap-2">
-                {amenityList.map((item, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1.5 text-xs rounded-lg bg-stay-card-bg border border-stay-border text-stay-text font-medium"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {amenityList.map((item, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1.5 rounded-lg border border-stay-border text-stay-text font-medium text-sm"
+                >
+                  {item}
+                </span>
+              ))}
             </div>
           </div>
         )}
 
         {/* SECTION 4: MÔ TẢ CHI TIẾT */}
         {room.description && (
-          <div className="space-y-2">
+          <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
             <h3 className="text-sm font-semibold text-stay-text">
               4. Mô tả chi tiết phòng
             </h3>
-            <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border text-xs text-stay-text whitespace-pre-line leading-relaxed">
+            <div className="text-stay-text whitespace-pre-line leading-relaxed text-sm">
               {room.description}
             </div>
           </div>

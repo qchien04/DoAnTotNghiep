@@ -15,7 +15,7 @@ import {
   CreateTenantComplaintDto,
   RateComplaintDto,
 } from '@/shared/types/tenant';
-import { Bill, Complaint } from '@/shared/types/landlord';
+import { InvoiceResponse, Complaint } from '@/shared/types/landlord';
 
 export const tenantService = {
   // 0. Khảo sát lối sống & Vector Profile
@@ -125,8 +125,8 @@ export const tenantService = {
   },
 
   // 4. Hóa đơn & VietQR (UC 43 - 44)
-  getMyBills: async (params?: { keyword?: string; status?: string; billingPeriod?: string; sortBy?: string; sortDirection?: string; page?: number; size?: number }): Promise<ResponseData<PageResponse<Bill>>> => {
-    const res = await apiClient.get<ResponseData<PageResponse<Bill>>>('/api/v1/tenant/my-bills', { params });
+  getMyBills: async (params?: { keyword?: string; status?: string; billingPeriod?: string; sortBy?: string; sortDirection?: string; page?: number; size?: number }): Promise<ResponseData<PageResponse<InvoiceResponse>>> => {
+    const res = await apiClient.get<ResponseData<PageResponse<InvoiceResponse>>>('/api/v1/tenant/my-bills', { params });
     return res.data;
   },
 
@@ -135,8 +135,8 @@ export const tenantService = {
     return res.data;
   },
 
-  confirmPaymentTransferred: async (billId: string): Promise<ResponseData<Bill>> => {
-    const res = await apiClient.post<ResponseData<Bill>>(`/api/v1/tenant/my-bills/${billId}/pay-completed`);
+  confirmPaymentTransferred: async (billId: string): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.post<ResponseData<InvoiceResponse>>(`/api/v1/tenant/my-bills/${billId}/pay-completed`);
     return res.data;
   },
 

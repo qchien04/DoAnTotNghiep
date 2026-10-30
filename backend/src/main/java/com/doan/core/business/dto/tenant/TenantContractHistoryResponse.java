@@ -17,7 +17,7 @@ import java.util.List;
 public class TenantContractHistoryResponse {
 
     private Long id;
-    private ContractStatus status; // ACTIVE, EXPIRING_SOON, TERMINATED, EXPIRED, CANCELLED
+    private ContractStatus status; // ACTIVE, TERMINATED
     private Boolean isCurrent;
     private Boolean isRepresentative;
     private LocalDate startDate;

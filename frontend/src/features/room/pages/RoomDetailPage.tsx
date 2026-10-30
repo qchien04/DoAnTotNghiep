@@ -259,7 +259,7 @@ export const RoomDetailPage: React.FC = () => {
               electricity: '3.800 đ/kWh',
               water: '30.000 đ/m³',
               internet: '100.000 đ/phòng/tháng',
-              landlordName: found.landlordName || 'Chủ trọ StayConnect',
+              landlordName: found.landlordName || 'Chủ trọ Roomi',
               landlordPhone: found.landlordPhone || '0988.888.999',
             };
             setRoom(mapped);
@@ -304,7 +304,7 @@ export const RoomDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/rooms')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stay-text-secondary hover:text-stay-primary transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5  font-semibold text-stay-text-secondary hover:text-stay-primary transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Quay lại danh sách phòng</span>
@@ -326,14 +326,14 @@ export const RoomDetailPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight">
               {room.title}
             </h1>
-            <p className="flex items-center gap-1.5 text-xs sm:text-sm text-stay-text-secondary">
+            <p className="flex items-center gap-1.5  sm:text-sm text-stay-text-secondary">
               <MapPin className="w-4 h-4 text-stay-primary shrink-0" />
               <span>{room.location}</span>
             </p>
           </div>
 
           <div className="sm:text-right">
-            <span className="text-xs text-stay-text-secondary block">Giá thuê niêm yết:</span>
+            <span className=" text-stay-text-secondary block">Giá thuê niêm yết:</span>
             <span className="text-2xl font-bold text-stay-primary">{room.priceDisplay}</span>
           </div>
         </div>
@@ -359,11 +359,10 @@ export const RoomDetailPage: React.FC = () => {
                       key={idx}
                       type="button"
                       onClick={() => setActiveImage(img)}
-                      className={`relative w-20 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                        activeImage === img
+                      className={`relative w-20 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${activeImage === img
                           ? 'border-stay-primary shadow-xs'
                           : 'border-stay-border opacity-70 hover:opacity-100'
-                      }`}
+                        }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -373,7 +372,7 @@ export const RoomDetailPage: React.FC = () => {
             </div>
 
             {/* Quick Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-stay-card-bg rounded-2xl border border-stay-border shadow-xs ">
               <div className="space-y-1">
                 <span className="text-stay-text-secondary flex items-center gap-1">
                   <Home className="w-3.5 h-3.5 text-stay-primary" />
@@ -412,7 +411,7 @@ export const RoomDetailPage: React.FC = () => {
               <h2 className="text-sm font-bold text-stay-text uppercase tracking-wider">
                 Mô tả chi tiết phòng trọ
               </h2>
-              <p className="text-xs sm:text-sm text-stay-text leading-relaxed whitespace-pre-line">
+              <p className=" sm:text-sm text-stay-text leading-relaxed whitespace-pre-line">
                 {room.description}
               </p>
             </div>
@@ -426,7 +425,7 @@ export const RoomDetailPage: React.FC = () => {
                 {room.amenities.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2 p-2.5 rounded-xl bg-stay-bg-app border border-stay-border text-xs text-stay-text font-medium"
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-stay-bg-app border border-stay-border  text-stay-text font-medium"
                   >
                     <Check className="w-3.5 h-3.5 text-stay-primary shrink-0" />
                     <span>{item}</span>
@@ -448,7 +447,7 @@ export const RoomDetailPage: React.FC = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-sm text-stay-text truncate">{room.landlordName}</p>
-                  <span className="text-[11px] text-emerald-600 font-medium">Chủ trọ StayConnect</span>
+                  <span className="text-[11px] text-emerald-600 font-medium">Chủ trọ Roomi</span>
                 </div>
               </div>
 
@@ -465,7 +464,7 @@ export const RoomDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCopyPhone}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-semibold border border-stay-border bg-stay-card-bg text-stay-text hover:bg-stay-bg-app transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl  font-semibold border border-stay-border bg-stay-card-bg text-stay-text hover:bg-stay-bg-app transition-colors cursor-pointer"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>{copied ? 'Đã sao chép' : 'Sao chép số điện thoại'}</span>
@@ -473,7 +472,7 @@ export const RoomDetailPage: React.FC = () => {
               </div>
 
               {/* Cost Summary Box */}
-              <div className="pt-3 border-t border-stay-border space-y-2 text-xs">
+              <div className="pt-3 border-t border-stay-border space-y-2 ">
                 <span className="font-bold text-stay-text block">Chi phí hàng tháng:</span>
                 <div className="flex justify-between text-stay-text-secondary">
                   <span>Tiền phòng:</span>

@@ -14,7 +14,6 @@ import {
   Input,
   Select,
   Modal,
-  message,
   Tooltip,
 } from 'antd';
 import {
@@ -107,12 +106,11 @@ export const MyRoommatePostsPage: React.FC = () => {
       onOk: async () => {
         try {
           await approveApplication(selectedApplicant.id);
-          message.success(`Đã chấp thuận ${selectedApplicant.applicantName} vào nhóm!`);
           setReviewModalOpen(false);
           refetchApps?.();
           refetch?.();
-        } catch (err: any) {
-          message.error(err?.message || 'Lỗi duyệt thành viên');
+        } catch {
+          // Handled in mutation hook
         }
       },
     });
@@ -122,12 +120,11 @@ export const MyRoommatePostsPage: React.FC = () => {
     if (!selectedApplicant) return;
     try {
       await rejectApplication({ applicationId: selectedApplicant.id, reason: rejectReason });
-      message.success(`Đã từ chối đơn của ${selectedApplicant.applicantName}.`);
       setRejectModalOpen(false);
       setReviewModalOpen(false);
       refetchApps?.();
-    } catch (err: any) {
-      message.error(err?.message || 'Lỗi từ chối đơn');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -140,13 +137,12 @@ export const MyRoommatePostsPage: React.FC = () => {
       onOk: async () => {
         try {
           await lockGroup(post.id);
-          message.success('Đã chốt nhóm thành công!');
           if (selectedPost && String(selectedPost.id) === String(post.id)) {
             setSelectedPost({ ...selectedPost, status: 'COMPLETED' });
           }
           refetch?.();
-        } catch (err: any) {
-          message.error(err?.message || 'Lỗi chốt nhóm');
+        } catch {
+          // Handled in mutation hook
         }
       },
     });
@@ -162,13 +158,12 @@ export const MyRoommatePostsPage: React.FC = () => {
       onOk: async () => {
         try {
           await closePost(id);
-          message.success('Đã đóng bài đăng thành công.');
           if (selectedPost && String(selectedPost.id) === String(id)) {
             setSelectedPost({ ...selectedPost, status: 'CLOSED' });
           }
           refetch?.();
-        } catch (err: any) {
-          message.error(err?.message || 'Không thể đóng bài đăng');
+        } catch {
+          // Handled in mutation hook
         }
       },
     });
@@ -189,7 +184,7 @@ export const MyRoommatePostsPage: React.FC = () => {
       title: 'Tiêu đề bài đăng',
       key: 'title',
       render: (_: any, r: RoommatePost) => (
-        <div className="space-y-0.5 max-w-md">
+        <div className="space-y-0.5">
           <Link
             to={`/roommates/${r.id}`}
             target="_blank"
@@ -253,7 +248,7 @@ export const MyRoommatePostsPage: React.FC = () => {
           <Button
             size="small"
             onClick={() => handleOpenApplications(r)}
-            className="h-[32px] rounded-[6px] border-stay-border hover:border-stay-primary hover:text-stay-primary text-stay-text text-xs"
+            className="h-[32px] rounded-[6px] border-stay-border hover:border-stay-primary hover:text-stay-primary text-stay-text "
           >
             <Users className="w-3.5 h-3.5 inline mr-1" />
             Xem đơn ({count})
@@ -268,15 +263,15 @@ export const MyRoommatePostsPage: React.FC = () => {
       width: 130,
       align: 'center' as const,
       render: (st: RoommatePostStatus) => {
-        if (st === 'OPEN') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">Đang tìm</span>;
-        if (st === 'COMPLETED') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold text-stay-primary bg-stay-primary/10 border border-stay-primary/20">Đã chốt</span>;
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-stay-text-muted bg-stay-bg-app border border-stay-border">Đã đóng</span>;
+        if (st === 'OPEN') return <span className="inline-flex items-center px-2 py-0.5 rounded  font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">Đang tìm</span>;
+        if (st === 'COMPLETED') return <span className="inline-flex items-center px-2 py-0.5 rounded  font-semibold text-stay-primary bg-stay-primary/10">Đã chốt</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded  font-medium text-stay-text-muted bg-stay-bg-app">Đã đóng</span>;
       },
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 130,
+      width: 120,
       fixed: 'right' as const,
       render: (_: any, r: RoommatePost) => {
         const isOpen = r.status === 'OPEN';
@@ -285,7 +280,7 @@ export const MyRoommatePostsPage: React.FC = () => {
             <Tooltip title="Xem đơn ứng tuyển">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-view"
+                className="stay-action-btn"
                 onClick={() => handleOpenApplications(r)}
               >
                 <Users className="w-4 h-4" />
@@ -295,7 +290,7 @@ export const MyRoommatePostsPage: React.FC = () => {
             <Tooltip title={isOpen ? 'Chốt nhóm (Đã đủ người)' : 'Bài đăng đã kết thúc'}>
               <button
                 type="button"
-                className={`stay-action-btn ${isOpen ? 'stay-action-btn-edit' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!isOpen ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => isOpen && handleFinishGroup(r)}
                 disabled={!isOpen}
               >
@@ -306,7 +301,7 @@ export const MyRoommatePostsPage: React.FC = () => {
             <Tooltip title={isOpen ? 'Đóng bài đăng' : 'Bài đăng đã đóng'}>
               <button
                 type="button"
-                className={`stay-action-btn ${isOpen ? 'stay-action-btn-delete' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!isOpen ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => isOpen && handleClosePost(String(r.id))}
                 disabled={!isOpen}
               >

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@/shared/services/authService';
 import {
-  StayConnectHero,
+  RoomiHero,
   SearchFilters,
   LifestyleMatchCard,
   RoommateProfile,
@@ -103,173 +103,173 @@ const ALL_ROOMS: (RoomListing & {
   landlordPhone: string;
   gallery: string[];
 })[] = [
-  {
-    id: 1,
-    title: 'Phòng studio ban công full tiện nghi, giờ giấc tự do',
-    price: '4.2 tr/tháng',
-    priceNumber: 4200000,
-    location: 'Số 18 Ngõ 68 Trần Thái Tông, Cầu Giấy, Hà Nội',
-    district: 'Cầu Giấy',
-    area: '28m²',
-    verified: true,
-    imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
-    ],
-    amenities: [
-      { key: 'ac', label: 'Điều hòa' },
-      { key: 'wifi', label: 'Wifi tốc độ cao' },
-      { key: '24/7', label: 'Khóa vân tay 24/7' },
-      { key: 'balcony', label: 'Ban công thoáng' },
-    ],
-    fullDescription: 'Phòng studio mới 100%, trang bị đầy đủ giường tủ cao cấp, bàn học/làm việc, nóng lạnh, điều hòa inverter. Ban công đón ánh sáng tự nhiên, khu dân trí cao, an ninh tuyệt đối camera 24/7.',
-    deposit: '4.200.000 đ (1 tháng)',
-    electricity: '3.800 đ / kWh',
-    water: '30.000 đ / m³',
-    internet: '100.000 đ / phòng / tháng',
-    landlordName: 'Nguyễn Văn Thành',
-    landlordPhone: '0988.123.456',
-  },
-  {
-    id: 2,
-    title: 'Căn hộ mini 1N1K riêng biệt, bếp thoáng tại Duy Tân',
-    price: '4.8 tr/tháng',
-    priceNumber: 4800000,
-    location: 'Ngõ 72 Phố Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
-    district: 'Cầu Giấy',
-    area: '35m²',
-    verified: true,
-    imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
-    ],
-    amenities: [
-      { key: 'ac', label: 'Điều hòa' },
-      { key: 'wifi', label: 'Wifi' },
-      { key: '24/7', label: 'Thang máy' },
-      { key: 'kitchen', label: 'Bếp riêng' },
-    ],
-    fullDescription: 'Căn hộ 1 phòng ngủ 1 phòng khách, bếp riêng biệt không ám mùi, thang máy tốc độ cao, máy giặt dùng chung tại tầng thượng. Vị trí đắc địa ngay cụm văn phòng công nghệ Duy Tân và ĐH Quốc Gia.',
-    deposit: '4.800.000 đ (1 tháng)',
-    electricity: '3.800 đ / kWh',
-    water: '100.000 đ / người / tháng',
-    internet: 'Miễn phí',
-    landlordName: 'Trần Thị Mai',
-    landlordPhone: '0912.888.999',
-  },
-  {
-    id: 3,
-    title: 'Phòng trọ cao cấp gần ĐH Bách Khoa, có gác lửng',
-    price: '3.5 tr/tháng',
-    priceNumber: 3500000,
-    location: 'Số 42 Tạ Quang Bửu, Bách Khoa, Hai Bà Trưng, Hà Nội',
-    district: 'Hai Bà Trưng',
-    area: '25m²',
-    verified: true,
-    imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
-    ],
-    amenities: [
-      { key: 'ac', label: 'Điều hòa' },
-      { key: 'wifi', label: 'Wifi' },
-      { key: '24/7', label: 'Giờ tự do' },
-      { key: 'mezzanine', label: 'Gác lửng cao' },
-    ],
-    fullDescription: 'Phòng khép kín sạch sẽ, có gác lửng đứng thẳng người, chỉ cách cổng phụ ĐH Bách Khoa 200m. Phù hợp cho nhóm 2 bạn sinh viên Bách Khoa - Xây Dựng - Kinh Tế Quốc Dân.',
-    deposit: '3.500.000 đ (1 tháng)',
-    electricity: '3.500 đ / kWh',
-    water: '25.000 đ / m³',
-    internet: '80.000 đ / người',
-    landlordName: 'Lê Hoàng Nam',
-    landlordPhone: '0977.654.321',
-  },
-  {
-    id: 4,
-    title: 'Phòng khép kín ban công lộng gió gần ĐH Ngoại Thương',
-    price: '3.8 tr/tháng',
-    priceNumber: 3800000,
-    location: 'Ngõ 91 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội',
-    district: 'Đống Đa',
-    area: '26m²',
-    verified: true,
-    imageUrl: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80',
-    ],
-    amenities: [
-      { key: 'ac', label: 'Điều hòa' },
-      { key: 'wifi', label: 'Wifi' },
-      { key: 'balcony', label: 'Ban công' },
-      { key: 'water_heater', label: 'Nóng lạnh' },
-    ],
-    fullDescription: 'Phòng tầng 3 trong nhà 6 tầng thang máy, ban công hướng Đông Nam thoáng mát, đầy đủ tiện nghi cơ bản. Cách ĐH Ngoại Thương 300m, gần hồ Chùa Láng nhiều quán ăn uống sinh viên.',
-    deposit: '3.800.000 đ',
-    electricity: '3.800 đ / kWh',
-    water: '80.000 đ / người',
-    internet: '100.000 đ / phòng',
-    landlordName: 'Vũ Quốc Huy',
-    landlordPhone: '0903.456.789',
-  },
-  {
-    id: 5,
-    title: 'Căn hộ chung cư mini 2 phòng ngủ tại Mỹ Đình',
-    price: '5.5 tr/tháng',
-    priceNumber: 5500000,
-    location: 'Đường Đình Thôn, Mỹ Đình 1, Nam Từ Liêm, Hà Nội',
-    district: 'Nam Từ Liêm',
-    area: '45m²',
-    verified: true,
-    imageUrl: 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef9?auto=format&fit=crop&w=800&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1540518614846-7ede433c4ef9?auto=format&fit=crop&w=800&q=80',
-    ],
-    amenities: [
-      { key: 'ac', label: '2 Điều hòa' },
-      { key: 'kitchen', label: 'Tủ bếp trên dưới' },
-      { key: 'parking', label: 'Chỗ để xe máy' },
-      { key: '24/7', label: 'Bảo vệ 24/24' },
-    ],
-    fullDescription: 'Căn hộ 2 phòng ngủ riêng biệt, phòng khách chung rộng rãi, phù hợp cho nhóm 3-4 bạn sinh viên hoặc đồng nghiệp đi làm. Tòa nhà có hầm gửi xe rộng, bảo vệ thường trực 24/7.',
-    deposit: '5.500.000 đ',
-    electricity: '3.500 đ / kWh',
-    water: '28.000 đ / m³',
-    internet: '120.000 đ / phòng',
-    landlordName: 'Phạm Thị Thoa',
-    landlordPhone: '0989.112.233',
-  },
-  {
-    id: 6,
-    title: 'Phòng trọ giá rẻ sinh viên, sạch sẽ không chung chủ',
-    price: '2.6 tr/tháng',
-    priceNumber: 2600000,
-    location: 'Ngõ 165 Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội',
-    district: 'Cầu Giấy',
-    area: '20m²',
-    verified: true,
-    imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-    ],
-    amenities: [
-      { key: 'ac', label: 'Điều hòa' },
-      { key: 'water_heater', label: 'Nóng lạnh' },
-      { key: 'wifi', label: 'Wifi' },
-      { key: '24/7', label: 'Giờ tự do' },
-    ],
-    fullDescription: 'Phòng khép kín sạch sẽ, giá sinh viên tiết kiệm, có sẵn điều hòa, bình nóng lạnh, kệ bếp nấu ăn. Không chung chủ, ra vào khóa cổng vân tay.',
-    deposit: '2.600.000 đ',
-    electricity: '3.800 đ / kWh',
-    water: '80.000 đ / người',
-    internet: '70.000 đ / người',
-    landlordName: 'Đặng Tuấn Anh',
-    landlordPhone: '0966.333.444',
-  },
-];
+    {
+      id: 1,
+      title: 'Phòng studio ban công full tiện nghi, giờ giấc tự do',
+      price: '4.2 tr/tháng',
+      priceNumber: 4200000,
+      location: 'Số 18 Ngõ 68 Trần Thái Tông, Cầu Giấy, Hà Nội',
+      district: 'Cầu Giấy',
+      area: '28m²',
+      verified: true,
+      imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+      gallery: [
+        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
+      ],
+      amenities: [
+        { key: 'ac', label: 'Điều hòa' },
+        { key: 'wifi', label: 'Wifi tốc độ cao' },
+        { key: '24/7', label: 'Khóa vân tay 24/7' },
+        { key: 'balcony', label: 'Ban công thoáng' },
+      ],
+      fullDescription: 'Phòng studio mới 100%, trang bị đầy đủ giường tủ cao cấp, bàn học/làm việc, nóng lạnh, điều hòa inverter. Ban công đón ánh sáng tự nhiên, khu dân trí cao, an ninh tuyệt đối camera 24/7.',
+      deposit: '4.200.000 đ (1 tháng)',
+      electricity: '3.800 đ / kWh',
+      water: '30.000 đ / m³',
+      internet: '100.000 đ / phòng / tháng',
+      landlordName: 'Nguyễn Văn Thành',
+      landlordPhone: '0988.123.456',
+    },
+    {
+      id: 2,
+      title: 'Căn hộ mini 1N1K riêng biệt, bếp thoáng tại Duy Tân',
+      price: '4.8 tr/tháng',
+      priceNumber: 4800000,
+      location: 'Ngõ 72 Phố Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
+      district: 'Cầu Giấy',
+      area: '35m²',
+      verified: true,
+      imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+      gallery: [
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+      ],
+      amenities: [
+        { key: 'ac', label: 'Điều hòa' },
+        { key: 'wifi', label: 'Wifi' },
+        { key: '24/7', label: 'Thang máy' },
+        { key: 'kitchen', label: 'Bếp riêng' },
+      ],
+      fullDescription: 'Căn hộ 1 phòng ngủ 1 phòng khách, bếp riêng biệt không ám mùi, thang máy tốc độ cao, máy giặt dùng chung tại tầng thượng. Vị trí đắc địa ngay cụm văn phòng công nghệ Duy Tân và ĐH Quốc Gia.',
+      deposit: '4.800.000 đ (1 tháng)',
+      electricity: '3.800 đ / kWh',
+      water: '100.000 đ / người / tháng',
+      internet: 'Miễn phí',
+      landlordName: 'Trần Thị Mai',
+      landlordPhone: '0912.888.999',
+    },
+    {
+      id: 3,
+      title: 'Phòng trọ cao cấp gần ĐH Bách Khoa, có gác lửng',
+      price: '3.5 tr/tháng',
+      priceNumber: 3500000,
+      location: 'Số 42 Tạ Quang Bửu, Bách Khoa, Hai Bà Trưng, Hà Nội',
+      district: 'Hai Bà Trưng',
+      area: '25m²',
+      verified: true,
+      imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
+      gallery: [
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+      ],
+      amenities: [
+        { key: 'ac', label: 'Điều hòa' },
+        { key: 'wifi', label: 'Wifi' },
+        { key: '24/7', label: 'Giờ tự do' },
+        { key: 'mezzanine', label: 'Gác lửng cao' },
+      ],
+      fullDescription: 'Phòng khép kín sạch sẽ, có gác lửng đứng thẳng người, chỉ cách cổng phụ ĐH Bách Khoa 200m. Phù hợp cho nhóm 2 bạn sinh viên Bách Khoa - Xây Dựng - Kinh Tế Quốc Dân.',
+      deposit: '3.500.000 đ (1 tháng)',
+      electricity: '3.500 đ / kWh',
+      water: '25.000 đ / m³',
+      internet: '80.000 đ / người',
+      landlordName: 'Lê Hoàng Nam',
+      landlordPhone: '0977.654.321',
+    },
+    {
+      id: 4,
+      title: 'Phòng khép kín ban công lộng gió gần ĐH Ngoại Thương',
+      price: '3.8 tr/tháng',
+      priceNumber: 3800000,
+      location: 'Ngõ 91 Chùa Láng, Láng Thượng, Đống Đa, Hà Nội',
+      district: 'Đống Đa',
+      area: '26m²',
+      verified: true,
+      imageUrl: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80',
+      gallery: [
+        'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80',
+      ],
+      amenities: [
+        { key: 'ac', label: 'Điều hòa' },
+        { key: 'wifi', label: 'Wifi' },
+        { key: 'balcony', label: 'Ban công' },
+        { key: 'water_heater', label: 'Nóng lạnh' },
+      ],
+      fullDescription: 'Phòng tầng 3 trong nhà 6 tầng thang máy, ban công hướng Đông Nam thoáng mát, đầy đủ tiện nghi cơ bản. Cách ĐH Ngoại Thương 300m, gần hồ Chùa Láng nhiều quán ăn uống sinh viên.',
+      deposit: '3.800.000 đ',
+      electricity: '3.800 đ / kWh',
+      water: '80.000 đ / người',
+      internet: '100.000 đ / phòng',
+      landlordName: 'Vũ Quốc Huy',
+      landlordPhone: '0903.456.789',
+    },
+    {
+      id: 5,
+      title: 'Căn hộ chung cư mini 2 phòng ngủ tại Mỹ Đình',
+      price: '5.5 tr/tháng',
+      priceNumber: 5500000,
+      location: 'Đường Đình Thôn, Mỹ Đình 1, Nam Từ Liêm, Hà Nội',
+      district: 'Nam Từ Liêm',
+      area: '45m²',
+      verified: true,
+      imageUrl: 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef9?auto=format&fit=crop&w=800&q=80',
+      gallery: [
+        'https://images.unsplash.com/photo-1540518614846-7ede433c4ef9?auto=format&fit=crop&w=800&q=80',
+      ],
+      amenities: [
+        { key: 'ac', label: '2 Điều hòa' },
+        { key: 'kitchen', label: 'Tủ bếp trên dưới' },
+        { key: 'parking', label: 'Chỗ để xe máy' },
+        { key: '24/7', label: 'Bảo vệ 24/24' },
+      ],
+      fullDescription: 'Căn hộ 2 phòng ngủ riêng biệt, phòng khách chung rộng rãi, phù hợp cho nhóm 3-4 bạn sinh viên hoặc đồng nghiệp đi làm. Tòa nhà có hầm gửi xe rộng, bảo vệ thường trực 24/7.',
+      deposit: '5.500.000 đ',
+      electricity: '3.500 đ / kWh',
+      water: '28.000 đ / m³',
+      internet: '120.000 đ / phòng',
+      landlordName: 'Phạm Thị Thoa',
+      landlordPhone: '0989.112.233',
+    },
+    {
+      id: 6,
+      title: 'Phòng trọ giá rẻ sinh viên, sạch sẽ không chung chủ',
+      price: '2.6 tr/tháng',
+      priceNumber: 2600000,
+      location: 'Ngõ 165 Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội',
+      district: 'Cầu Giấy',
+      area: '20m²',
+      verified: true,
+      imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
+      gallery: [
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
+      ],
+      amenities: [
+        { key: 'ac', label: 'Điều hòa' },
+        { key: 'water_heater', label: 'Nóng lạnh' },
+        { key: 'wifi', label: 'Wifi' },
+        { key: '24/7', label: 'Giờ tự do' },
+      ],
+      fullDescription: 'Phòng khép kín sạch sẽ, giá sinh viên tiết kiệm, có sẵn điều hòa, bình nóng lạnh, kệ bếp nấu ăn. Không chung chủ, ra vào khóa cổng vân tay.',
+      deposit: '2.600.000 đ',
+      electricity: '3.800 đ / kWh',
+      water: '80.000 đ / người',
+      internet: '70.000 đ / người',
+      landlordName: 'Đặng Tuấn Anh',
+      landlordPhone: '0966.333.444',
+    },
+  ];
 
 const QUICK_FILTERS = [
   { id: 'ALL', label: 'Tất cả phòng' },
@@ -346,7 +346,7 @@ export const HomePage: React.FC = () => {
               electricity: '3.800 đ / kWh',
               water: '30.000 đ / m³',
               internet: '100.000 đ / phòng / tháng',
-              landlordName: 'Chủ nhà StayConnect',
+              landlordName: 'Chủ nhà Roomi',
               landlordPhone: '0988.123.456',
             };
           });
@@ -412,13 +412,13 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-20">
-      {/* 1. StayConnect Hero Section */}
-      <StayConnectHero onSearch={handleHeroSearch} />
+      {/* 1. Roomi Hero Section */}
+      <RoomiHero onSearch={handleHeroSearch} />
 
       {/* 2. Quick Filter Pills Bar */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <span className="text-xs font-bold text-stay-text-secondary uppercase tracking-wider shrink-0 mr-2 flex items-center gap-1.5">
+          <span className=" font-bold text-stay-text-secondary uppercase tracking-wider shrink-0 mr-2 flex items-center gap-1.5">
             <Compass className="w-3.5 h-3.5 text-stay-primary" />
             Tìm nhanh:
           </span>
@@ -427,11 +427,10 @@ export const HomePage: React.FC = () => {
               key={f.id}
               type="button"
               onClick={() => setSelectedFilter(f.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer border ${
-                selectedFilter === f.id
+              className={`px-3.5 py-1.5 rounded-full  font-semibold shrink-0 transition-all cursor-pointer border ${selectedFilter === f.id
                   ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
                   : 'bg-stay-card-bg text-stay-text hover:border-stay-primary/50 border-stay-border'
-              }`}
+                }`}
             >
               {f.label}
             </button>
@@ -452,8 +451,8 @@ export const HomePage: React.FC = () => {
                     Phòng trọ xác minh ({filteredRooms.length})
                   </h2>
                 </div>
-                <p className="text-xs text-stay-text-secondary mt-0.5">
-                  100% tin đăng được đội ngũ StayConnect kiểm duyệt pháp lý, khảo sát hình ảnh thực tế
+                <p className=" text-stay-text-secondary mt-0.5">
+                  100% tin đăng được đội ngũ Roomi kiểm duyệt pháp lý, khảo sát hình ảnh thực tế
                 </p>
               </div>
 
@@ -462,11 +461,10 @@ export const HomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                    viewMode === 'list'
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg  font-semibold transition-all cursor-pointer ${viewMode === 'list'
                       ? 'bg-stay-primary text-white shadow-xs'
                       : 'text-stay-text-secondary hover:text-stay-text'
-                  }`}
+                    }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
                   Danh sách
@@ -474,11 +472,10 @@ export const HomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode('map')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                    viewMode === 'map'
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg  font-semibold transition-all cursor-pointer ${viewMode === 'map'
                       ? 'bg-stay-primary text-white shadow-xs'
                       : 'text-stay-text-secondary hover:text-stay-text'
-                  }`}
+                    }`}
                 >
                   <MapIcon className="w-3.5 h-3.5" />
                   Bản đồ
@@ -489,7 +486,7 @@ export const HomePage: React.FC = () => {
             {/* Map View */}
             {viewMode === 'map' && (
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-stay-card-bg rounded-2xl border border-stay-border text-xs text-stay-text-secondary">
+                <div className="flex items-center justify-between p-3 bg-stay-card-bg rounded-2xl border border-stay-border  text-stay-text-secondary">
                   <span className="flex items-center gap-1.5">
                     <MapIcon className="w-4 h-4 text-stay-primary" />
                     Bản đồ OpenStreetMap (OSM) • <strong>{roomMapMarkers.length}</strong> phòng tại Hà Nội
@@ -533,7 +530,7 @@ export const HomePage: React.FC = () => {
                 <Building className="w-5 h-5 text-stay-primary" />
                 <h3 className="text-sm font-bold text-stay-text">Khu vực sinh viên trọng điểm</h3>
               </div>
-              <div className="space-y-2.5 text-xs">
+              <div className="space-y-2.5 ">
                 <div
                   onClick={() => setSelectedFilter('CAU_GIAY')}
                   className="p-2.5 rounded-xl bg-stay-bg-app hover:bg-stay-primary-subtle transition-colors cursor-pointer flex items-center justify-between"
@@ -571,14 +568,14 @@ export const HomePage: React.FC = () => {
                 Tìm bạn ở ghép cùng gu
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-stay-text-secondary mt-1">
+            <p className=" sm:text-sm text-stay-text-secondary mt-1">
               Khám phá những người bạn cùng phòng có độ tương thích cao về nhịp sinh học và thói quen sinh hoạt
             </p>
           </div>
 
           <Link
             to="/roommates"
-            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stay-primary hover:underline"
+            className="inline-flex items-center gap-1  sm:text-sm font-semibold text-stay-primary hover:underline"
           >
             <span>Khám phá cộng đồng ở ghép</span>
             <ChevronRight className="w-4 h-4" />
@@ -602,14 +599,14 @@ export const HomePage: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl bg-gradient-to-r from-stay-primary to-indigo-700 text-white p-8 sm:p-12 relative overflow-hidden shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-3 max-w-xl text-center md:text-left">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white  font-semibold">
               <Users className="w-3.5 h-3.5" />
               Cộng đồng hơn 50.000+ sinh viên & người đi làm
             </span>
             <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Bạn đang tìm phòng hay tìm bạn ở cùng?
             </h3>
-            <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+            <p className="text-white/80  sm:text-sm leading-relaxed">
               Tạo hồ sơ lối sống miễn phí ngay hôm nay để nhận thông báo khi có bạn cùng phòng hoặc căn phòng phù hợp nhất với bạn.
             </p>
           </div>
@@ -664,7 +661,7 @@ export const HomePage: React.FC = () => {
             {/* Room Title & Location */}
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-stay-text">{selectedRoom.title}</h3>
-              <p className="text-xs text-stay-text-secondary flex items-center gap-1.5">
+              <p className=" text-stay-text-secondary flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-stay-primary shrink-0" />
                 <span>{selectedRoom.location}</span>
               </p>
@@ -692,20 +689,20 @@ export const HomePage: React.FC = () => {
 
             {/* Description */}
             <div className="space-y-1.5">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-stay-text">Mô tả phòng</h4>
-              <p className="text-xs text-stay-text-secondary leading-relaxed bg-stay-bg-app p-4 rounded-xl border border-stay-border">
+              <h4 className=" font-bold uppercase tracking-wider text-stay-text">Mô tả phòng</h4>
+              <p className=" text-stay-text-secondary leading-relaxed bg-stay-bg-app p-4 rounded-xl border border-stay-border">
                 {selectedRoom.fullDescription}
               </p>
             </div>
 
             {/* Amenities */}
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-stay-text">Tiện nghi có sẵn</h4>
+              <h4 className=" font-bold uppercase tracking-wider text-stay-text">Tiện nghi có sẵn</h4>
               <div className="flex flex-wrap gap-2">
                 {selectedRoom.amenities.map((a) => (
                   <span
                     key={a.key}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stay-primary-subtle text-stay-primary text-xs font-semibold border border-stay-primary/20"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stay-primary-subtle text-stay-primary  font-semibold border border-stay-primary/20"
                   >
                     <Check className="w-3.5 h-3.5" />
                     <span>{a.label}</span>
@@ -717,9 +714,9 @@ export const HomePage: React.FC = () => {
             {/* Landlord Contact & Actions */}
             <div className="p-4 rounded-2xl bg-stay-bg-app border border-stay-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <p className="text-xs text-slate-400">Chủ phòng:</p>
+                <p className=" text-slate-400">Chủ phòng:</p>
                 <p className="text-sm font-bold text-stay-text">{selectedRoom.landlordName}</p>
-                <p className="text-xs text-stay-primary font-semibold flex items-center gap-1 mt-0.5">
+                <p className=" text-stay-primary font-semibold flex items-center gap-1 mt-0.5">
                   <Phone className="w-3.5 h-3.5" />
                   <span>{selectedRoom.landlordPhone}</span>
                 </p>

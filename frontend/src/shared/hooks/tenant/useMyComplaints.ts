@@ -35,6 +35,7 @@ export const useSubmitComplaint = () => {
     mutationFn: (dto: CreateTenantComplaintDto) => tenantService.submitComplaint(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.myComplaints() });
+      message.success('Gửi phản ánh sự cố thành công! Chủ trọ sẽ nhận được thông báo để hẹn thợ.');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể gửi khiếu nại báo hỏng');
@@ -55,6 +56,7 @@ export const useRateComplaint = () => {
       tenantService.rateComplaint(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.myComplaints() });
+      message.success('Cảm ơn bạn đã đánh giá chất lượng sửa chữa!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể gửi đánh giá khiếu nại');

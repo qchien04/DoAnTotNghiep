@@ -36,11 +36,11 @@ export const PostGrid: React.FC<PostGridProps> = ({ posts }) => {
             </div>
           ) : (
             <div className="h-28 w-full bg-stay-bg-app border-b border-stay-border p-3 flex flex-col justify-between">
-              <span className="text-xs font-semibold text-stay-primary">
+              <span className=" font-semibold text-stay-primary">
                 {post.code} • Chưa có phòng (Tìm bạn cùng thuê)
               </span>
               {post.matchPercentage && (
-                <span className="text-xs text-stay-text-secondary">
+                <span className=" text-stay-text-secondary">
                   Độ tương thích lối sống: <strong>{post.matchPercentage}%</strong>
                 </span>
               )}
@@ -55,12 +55,12 @@ export const PostGrid: React.FC<PostGridProps> = ({ posts }) => {
               >
                 {post.title}
               </Link>
-              <p className="text-xs text-stay-text-secondary line-clamp-1">
+              <p className=" text-stay-text-secondary line-clamp-1">
                 {post.areaName || post.district}
               </p>
             </div>
 
-            <div className="pt-2 border-t border-stay-border flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-stay-border flex items-center justify-between ">
               <div>
                 <span className="text-[11px] text-slate-500 block">Giá share:</span>
                 <span className="font-bold text-stay-primary text-sm">

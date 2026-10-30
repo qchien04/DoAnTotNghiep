@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { authService } from '@/shared/services/authService';
 import { User } from '@/shared/types/auth';
-import { Users, Shield, CheckCircle, Clock } from 'lucide-react';
+import { Users, Clock } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 
 export const UserListPage: React.FC = () => {
@@ -31,11 +31,11 @@ export const UserListPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Quản Lý Người Dùng</h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className=" text-slate-500 mt-1">
             Dữ liệu người dùng được bảo vệ bởi bộ lọc JWT Authentication Filter
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700  font-semibold rounded-lg border border-blue-200">
           <Users className="w-4 h-4" />
           <span>Tổng: {users.length} tài khoản</span>
         </div>
@@ -44,7 +44,7 @@ export const UserListPage: React.FC = () => {
       {loading ? (
         <LoadingSpinner text="Đang tải danh sách người dùng từ API..." />
       ) : error ? (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl  text-red-700">
           {error}
         </div>
       ) : (
@@ -61,7 +61,7 @@ export const UserListPage: React.FC = () => {
                   <th className="py-3.5 px-4">Ngày Tạo</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stay-border-subtle text-xs text-stay-text">
+              <tbody className="divide-y divide-stay-border-subtle  text-stay-text">
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-stay-bg-app transition-colors">
                     <td className="py-3 px-4 font-mono text-stay-text-muted">#{u.id}</td>
@@ -71,14 +71,12 @@ export const UserListPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-stay-text-secondary">{u.email}</td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                        <Shield className="w-3 h-3" />
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-stay-primary-subtle text-stay-primary border border-stay-border">
                         {u.role}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
-                        <CheckCircle className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                         Đang hoạt động
                       </span>
                     </td>

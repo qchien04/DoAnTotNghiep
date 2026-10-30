@@ -21,14 +21,22 @@ public class LifestyleVectorHelper {
         for (LifestyleQuestionResponse q : questions) {
             List<LifestyleOptionResponse> opts = selectedOptionsByQuestionId != null ? selectedOptionsByQuestionId.get(q.getId()) : null;
             if (opts != null && !opts.isEmpty()) {
-                OptionalDouble avgOpt = opts.stream()
-                        .filter(o -> o != null && o.getValue() != null)
-                        .mapToDouble(o -> o.getValue().doubleValue())
-                        .average();
-                if (avgOpt.isPresent()) {
-                    values.add(String.format(Locale.US, "%.3f", avgOpt.getAsDouble()));
+                if ("MULTI".equalsIgnoreCase(q.getQType())) {
+                    // Mã hóa bitmask bảo toàn nguyên vẹn mọi lựa chọn cho các câu hỏi đa lựa chọn (SETS & NOISE)
+                    int bitmask = 0;
+                    for (LifestyleOptionResponse opt : opts) {
+                        if (opt != null && opt.getSortOrder() != null) {
+                            bitmask |= (1 << (opt.getSortOrder() - 1));
+                        }
+                    }
+                    values.add(String.format(Locale.US, "%.3f", (double) bitmask));
                 } else {
-                    values.add("nan");
+                    LifestyleOptionResponse opt = opts.get(0);
+                    if (opt != null && opt.getValue() != null) {
+                        values.add(String.format(Locale.US, "%.3f", opt.getValue().doubleValue()));
+                    } else {
+                        values.add("nan");
+                    }
                 }
             } else {
                 // Không điền giá trị giả tạo nếu câu hỏi bị bỏ trống (Zero Fake Similarity)
@@ -57,6 +65,7 @@ public class LifestyleVectorHelper {
      * Tính điểm tương thích Compatibility Score (0 -> 100%) giữa 2 vector lối sống
      * sử dụng danh mục 15 câu hỏi chuẩn hóa và trọng số trong LifestyleConstants.
      * Áp dụng nguyên tắc: Không tạo độ giống giả, an toàn với NaN và Bayesian Shrinkage.
+     * Với câu hỏi MULTI (SETS & NOISE), so khớp bằng khoảng cách Jaccard.
      */
     public int calculateCompatibilityScore(String vectorA, String vectorB) {
         if (vectorA == null || vectorA.isBlank() || vectorB == null || vectorB.isBlank()) {
@@ -77,8 +86,9 @@ public class LifestyleVectorHelper {
         for (int i = 0; i < length; i++) {
             double weight = 1.0;
             boolean isHard = false;
+            LifestyleQuestionResponse q = null;
             if (i < questions.size()) {
-                LifestyleQuestionResponse q = questions.get(i);
+                q = questions.get(i);
                 weight = q.getWeight() != null ? q.getWeight().doubleValue() : 1.0;
                 isHard = Boolean.TRUE.equals(q.getIsHard());
             }
@@ -98,7 +108,19 @@ public class LifestyleVectorHelper {
                     continue;
                 }
 
-                double diff = Math.abs(valA - valB);
+                double diff;
+                boolean isMulti = q != null && "MULTI".equalsIgnoreCase(q.getQType());
+                if (isMulti && valA >= 1.0 && valB >= 1.0) {
+                    int bmA = (int) Math.round(valA);
+                    int bmB = (int) Math.round(valB);
+                    int intersection = Integer.bitCount(bmA & bmB);
+                    int union = Integer.bitCount(bmA | bmB);
+                    double jaccard = union > 0 ? (double) intersection / union : 0.0;
+                    diff = 1.0 - jaccard;
+                } else {
+                    diff = Math.abs(valA - valB);
+                }
+
                 weightedDiffSum += diff * weight;
                 answeredWeight += weight;
 
@@ -131,8 +153,9 @@ public class LifestyleVectorHelper {
     }
 
     /**
-     * Giải mã chuỗi vector 15 chiều thành danh sách UserLifestyleAnswerDto
-     * bằng cách tìm option trong LifestyleConstants có value gần nhất với giá trị vector.
+     * Giải mã chuỗi vector 15 chiều thành danh sách UserLifestyleAnswerDto.
+     * Đối với câu hỏi MULTI: giải mã bitmask để phục hồi toàn bộ các lựa chọn được chọn.
+     * Đối với câu hỏi SINGLE: lấy option có value gần nhất với giá trị vector.
      */
     public List<UserLifestyleAnswerDto> decodeVectorToAnswers(String vector) {
         if (vector == null || vector.isBlank()) {
@@ -156,28 +179,49 @@ public class LifestyleVectorHelper {
                 double targetVal = Double.parseDouble(s);
                 if (Double.isNaN(targetVal)) continue;
 
-                LifestyleOptionResponse bestOpt = q.getOptions().get(0);
-                double minDiff = Math.abs(bestOpt.getValue().doubleValue() - targetVal);
-
-                for (LifestyleOptionResponse opt : q.getOptions()) {
-                    if (opt.getValue() != null) {
-                        double diff = Math.abs(opt.getValue().doubleValue() - targetVal);
-                        if (diff < minDiff) {
-                            minDiff = diff;
-                            bestOpt = opt;
+                boolean isMulti = "MULTI".equalsIgnoreCase(q.getQType());
+                if (isMulti && targetVal >= 1.0) {
+                    int bitmask = (int) Math.round(targetVal);
+                    for (LifestyleOptionResponse opt : q.getOptions()) {
+                        if (opt.getSortOrder() != null) {
+                            int bit = 1 << (opt.getSortOrder() - 1);
+                            if ((bitmask & bit) != 0) {
+                                result.add(UserLifestyleAnswerDto.builder()
+                                        .questionId(q.getId())
+                                        .questionCode(q.getCode())
+                                        .questionLabel(q.getLabel())
+                                        .optionId(opt.getId())
+                                        .optionLabel(opt.getLabel())
+                                        .optionValue(opt.getValue())
+                                        .fromProfile(true)
+                                        .build());
+                            }
                         }
                     }
-                }
+                } else {
+                    LifestyleOptionResponse bestOpt = q.getOptions().get(0);
+                    double minDiff = Math.abs(bestOpt.getValue().doubleValue() - targetVal);
 
-                result.add(UserLifestyleAnswerDto.builder()
-                        .questionId(q.getId())
-                        .questionCode(q.getCode())
-                        .questionLabel(q.getLabel())
-                        .optionId(bestOpt.getId())
-                        .optionLabel(bestOpt.getLabel())
-                        .optionValue(bestOpt.getValue())
-                        .fromProfile(true)
-                        .build());
+                    for (LifestyleOptionResponse opt : q.getOptions()) {
+                        if (opt.getValue() != null) {
+                            double diff = Math.abs(opt.getValue().doubleValue() - targetVal);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                bestOpt = opt;
+                            }
+                        }
+                    }
+
+                    result.add(UserLifestyleAnswerDto.builder()
+                            .questionId(q.getId())
+                            .questionCode(q.getCode())
+                            .questionLabel(q.getLabel())
+                            .optionId(bestOpt.getId())
+                            .optionLabel(bestOpt.getLabel())
+                            .optionValue(bestOpt.getValue())
+                            .fromProfile(true)
+                            .build());
+                }
             } catch (NumberFormatException ignored) {
             }
         }

@@ -158,7 +158,8 @@ export interface UserLifestyleAnswerDto {
   questionId: number;
   questionCode?: string;
   questionLabel?: string;
-  optionId: number;
+  optionId?: number;
+  optionIds?: number[];
   optionLabel?: string;
   optionValue?: number;
   fromProfile?: boolean;
@@ -172,7 +173,7 @@ export interface UserLifestyleProfileResponse {
 }
 
 export interface SaveLifestyleAnswersRequest {
-  answers: { questionId: number; optionId: number }[];
+  answers: { questionId: number; optionId?: number; optionIds?: number[] }[];
 }
 
 export interface ApplyRoommateDto {
@@ -254,7 +255,7 @@ export interface MyRoomDetails {
 export interface TenantContractHistory {
   id: number;
   contractCode: string;
-  status: string; // ACTIVE, EXPIRING_SOON, TERMINATED, EXPIRED, CANCELLED
+  status: string; // ACTIVE, TERMINATED
   isCurrent: boolean;
   isRepresentative: boolean;
   startDate: string;

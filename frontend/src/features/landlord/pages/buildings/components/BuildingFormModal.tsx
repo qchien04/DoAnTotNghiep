@@ -5,11 +5,10 @@ import {
   Modal,
   Form,
   Input,
-  Button,
   message,
 } from '@/shared/components';
 import { Tooltip, Spin } from 'antd';
-import { HelpCircle, MapPin, Navigation } from 'lucide-react';
+import { HelpCircle, LocateFixed, Loader2 } from 'lucide-react';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
 
@@ -199,7 +198,6 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         {
           maxZoom: 19,
           subdomains: ['a', 'b'],
-          attribution: '&copy; OpenStreetMap contributors, Tiles courtesy of Humanitarian OpenStreetMap Team &bull; Chủ quyền Việt Nam',
         }
       ).addTo(map);
 
@@ -322,7 +320,7 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         </div>
 
         {/* BẢN ĐỒ VỊ TRÍ & ĐỊA CHỈ (2 CỘT TỶ LỆ 6:4) */}
-        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-stay-text">
@@ -332,15 +330,6 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                 <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
               </Tooltip>
             </div>
-            <Button
-              size="small"
-              icon={<Navigation className="w-3.5 h-3.5 text-emerald-600" />}
-              onClick={handleGetQuickLocation}
-              loading={isGeolocating}
-              className="font-semibold text-xs border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-            >
-              Vị trí hiện tại
-            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -353,41 +342,54 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                   className="z-0"
                 />
 
+                {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+                <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+                  <button
+                    type="button"
+                    onClick={handleGetQuickLocation}
+                    disabled={isGeolocating}
+                    className="absolute bottom-3 right-3 z-[500] w-9 h-9 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+                    aria-label="Vị trí hiện tại"
+                  >
+                    {isGeolocating ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-stay-primary" />
+                    ) : (
+                      <LocateFixed className="w-4 h-4 text-stay-primary" />
+                    )}
+                  </button>
+                </Tooltip>
+
                 {isGeolocating && (
                   <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50">
                     <Spin tip="Đang lấy tọa độ GPS..." />
                   </div>
                 )}
               </div>
-              <p className="text-[11px] text-stay-text-muted mt-1.5 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-stay-primary shrink-0" />
-                <span>Nhấp chuột hoặc kéo thả ghim trên bản đồ để tự động điền địa chỉ</span>
-              </p>
             </div>
 
             {/* CỘT 2 (TỶ LỆ ~40%): CÁC Ô INPUT ĐỊA CHỈ */}
             <div className="lg:col-span-5 space-y-2.5">
               <Form.Item
-                label={<span className="font-semibold text-stay-text text-xs">Tỉnh / Thành phố</span>}
+                label={<span className="font-semibold text-stay-text ">Tỉnh / Thành phố</span>}
                 name="province"
                 rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / TP' }]}
                 className="mb-2"
               >
-                <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 text-xs" />
+                <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 " />
               </Form.Item>
 
               <Form.Item
-                label={<span className="font-semibold text-stay-text text-xs">Phường / Xã</span>}
+                label={<span className="font-semibold text-stay-text ">Phường / Xã</span>}
                 name="ward"
                 className="mb-2"
               >
-                <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 text-xs" />
+                <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 " />
               </Form.Item>
 
               <Form.Item
                 label={
                   <div className="flex items-center justify-between w-full">
-                    <span className="font-semibold text-stay-text text-xs">Địa chỉ chi tiết</span>
+                    <span className="font-semibold text-stay-text ">Địa chỉ chi tiết</span>
                     {isReverseGeocoding && (
                       <span className="text-[11px] text-stay-primary flex items-center gap-1 font-normal">
                         <Spin size="small" /> Đang nhận diện...
@@ -402,7 +404,7 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                 <Input.TextArea
                   rows={3}
                   placeholder="Số 12 Ngõ 80 Cầu Giấy, Dịch Vọng Hậu..."
-                  className="w-full p-2 text-xs rounded-lg"
+                  className="w-full p-2  rounded-lg"
                 />
               </Form.Item>
 
@@ -418,17 +420,19 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         </div>
 
         {/* QUY ĐỊNH CHUNG */}
-        <Form.Item
-          label={<span className="font-semibold text-stay-text text-sm">Quy định chung của tòa nhà</span>}
-          name="generalRules"
-          className="mb-0"
-        >
-          <Input.TextArea
-            rows={2}
-            placeholder="Quy định giờ giấc, bảo đảm an ninh trật tự, khóa cổng ban đêm, giữ gìn vệ sinh chung..."
-            className="p-2.5 text-xs"
-          />
-        </Form.Item>
+        <div className="pt-4 border-t border-stay-border-subtle">
+          <Form.Item
+            label={<span className="font-semibold text-stay-text text-sm">Quy định chung của tòa nhà</span>}
+            name="generalRules"
+            className="mb-0"
+          >
+            <Input.TextArea
+              rows={2}
+              placeholder="Quy định giờ giấc, bảo đảm an ninh trật tự, khóa cổng ban đêm, giữ gìn vệ sinh chung..."
+              className="p-2.5"
+            />
+          </Form.Item>
+        </div>
       </Form>
     </Modal>
   );

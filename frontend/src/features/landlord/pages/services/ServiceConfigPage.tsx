@@ -6,7 +6,7 @@ import {
   useDeleteService,
 } from '@/shared/hooks';
 import { Plus, Search, RotateCcw } from 'lucide-react';
-import { Button, Input, Select, message } from '@/shared/components';
+import { Button, Input, Select } from '@/shared/components';
 import { UtilityService, CreateServiceDto } from '@/shared/types/landlord';
 import { ServiceTable } from './components/ServiceTable';
 import { ServiceFormModal } from './components/ServiceFormModal';
@@ -41,22 +41,23 @@ export const ServiceConfigPage: React.FC = () => {
   };
 
   const handleSubmit = async (payload: CreateServiceDto) => {
-    if (editingService) {
-      await updateService({ id: editingService.id, dto: payload });
-      message.success(`Cập nhật dịch vụ ${payload.name} thành công!`);
-    } else {
-      await createService(payload);
-      message.success(`Thêm mới dịch vụ ${payload.name} thành công!`);
+    try {
+      if (editingService) {
+        await updateService({ id: editingService.id, dto: payload });
+      } else {
+        await createService(payload);
+      }
+      setIsModalOpen(false);
+    } catch {
+      // Handled in mutation hooks
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string | number) => {
     try {
       await deleteService(id);
-      message.success('Đã xóa dịch vụ thành công!');
-    } catch (err: any) {
-      message.error(err.message || 'Không thể xóa dịch vụ');
+    } catch {
+      // Handled in mutation hook
     }
   };
 

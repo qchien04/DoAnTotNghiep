@@ -2,17 +2,17 @@ import React from 'react';
 import { Eye, Send, DollarSign, XCircle } from 'lucide-react';
 import { Table } from '@/shared/components';
 import { Tooltip } from 'antd';
-import { Bill, BillStatus } from '@/shared/types/landlord';
+import { InvoiceResponse, InvoiceStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
 
 interface BillTableProps {
-  pageInfo?: PageResponse<Bill>;
+  pageInfo?: PageResponse<InvoiceResponse>;
   isLoading: boolean;
   onPageChange?: (page: number, size: number) => void;
-  onOpenDetail: (bill: Bill) => void;
-  onOpenPayment: (bill: Bill) => void;
-  onOpenCancel: (bill: Bill) => void;
-  onPublish?: (bill: Bill) => void;
+  onOpenDetail: (bill: InvoiceResponse) => void;
+  onOpenPayment: (bill: InvoiceResponse) => void;
+  onOpenCancel: (bill: InvoiceResponse) => void;
+  onPublish?: (bill: InvoiceResponse) => void;
 }
 
 export const BillTable: React.FC<BillTableProps> = ({
@@ -24,7 +24,7 @@ export const BillTable: React.FC<BillTableProps> = ({
   onOpenCancel,
   onPublish,
 }) => {
-  const renderStatus = (st: BillStatus) => {
+  const renderStatus = (st: InvoiceStatus) => {
     switch (st) {
       case 'DRAFT':
         return (
@@ -34,36 +34,40 @@ export const BillTable: React.FC<BillTableProps> = ({
         );
       case 'PAID':
         return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+          <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-medium bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
             Đã thanh toán
-          </span>
-        );
-      case 'UNPAID':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-            Chờ thanh toán
           </span>
         );
       case 'PARTIALLY_PAID':
         return (
-          <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
-            Trả một phần
+          <span className="inline-flex items-center gap-1.5 text-blue-700 dark:text-blue-300 font-medium bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+            Thanh toán 1 phần
+          </span>
+        );
+      case 'UNPAID':
+        return (
+          <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+            Chờ thanh toán
           </span>
         );
       case 'OVERDUE':
         return (
-          <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 font-medium">
+          <span className="inline-flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-medium bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">
             Quá hạn
           </span>
         );
       case 'CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
+          <span className="inline-flex items-center gap-1.5 text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
             Đã hủy
           </span>
         );
       default:
-        return <span className="text-stay-text-muted">{st}</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+            {st}
+          </span>
+        );
     }
   };
 
@@ -81,9 +85,8 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Phòng',
       key: 'roomName',
-      width: 150,
       ellipsis: { showTitle: true },
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <div>
           <span
             onClick={() => onOpenDetail(r)}
@@ -102,7 +105,7 @@ export const BillTable: React.FC<BillTableProps> = ({
       key: 'representativeTenantName',
       width: 170,
       ellipsis: { showTitle: true },
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <div>
           <span className="text-[14px] font-medium text-stay-text block truncate">
             {r.representativeTenantName || '—'}
@@ -120,7 +123,7 @@ export const BillTable: React.FC<BillTableProps> = ({
       key: 'billingPeriod',
       width: 120,
       ellipsis: { showTitle: true },
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <span className="text-[14px] text-stay-text-secondary">
           {r.billingPeriod}
         </span>
@@ -130,7 +133,7 @@ export const BillTable: React.FC<BillTableProps> = ({
       title: 'Tổng tiền',
       key: 'totalAmount',
       width: 150,
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <div>
           <span className="font-semibold text-stay-text text-[14px]">
             {(r.totalAmount ?? 0).toLocaleString()} đ
@@ -156,19 +159,19 @@ export const BillTable: React.FC<BillTableProps> = ({
       key: 'status',
       width: 140,
       ellipsis: { showTitle: true },
-      render: (_: any, r: Bill) => renderStatus(r.status),
+      render: (_: any, r: InvoiceResponse) => renderStatus(r.status),
     },
     {
       title: 'Thao tác',
       key: 'action',
       width: 120,
       fixed: 'right' as const,
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <div className="flex items-center justify-start gap-1.5">
           <Tooltip title="Xem chi tiết">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => onOpenDetail(r)}
             >
               <Eye className="w-4 h-4" />
@@ -180,7 +183,7 @@ export const BillTable: React.FC<BillTableProps> = ({
               <Tooltip title="Ban hành hóa đơn">
                 <button
                   type="button"
-                  className="stay-action-btn stay-action-btn-edit"
+                  className="stay-action-btn"
                   onClick={() => onPublish && onPublish(r)}
                 >
                   <Send className="w-4 h-4" />
@@ -189,7 +192,7 @@ export const BillTable: React.FC<BillTableProps> = ({
               <Tooltip title="Hủy hóa đơn">
                 <button
                   type="button"
-                  className="stay-action-btn stay-action-btn-delete"
+                  className="stay-action-btn"
                   onClick={() => onOpenCancel(r)}
                 >
                   <XCircle className="w-4 h-4" />
@@ -204,16 +207,15 @@ export const BillTable: React.FC<BillTableProps> = ({
                 <button
                   type="button"
                   className="stay-action-btn"
-                  style={{ color: '#059669' }}
                   onClick={() => onOpenPayment(r)}
                 >
-                  <DollarSign className="w-4 h-4 text-emerald-600" />
+                  <DollarSign className="w-4 h-4" />
                 </button>
               </Tooltip>
               <Tooltip title="Hủy hóa đơn">
                 <button
                   type="button"
-                  className="stay-action-btn stay-action-btn-delete"
+                  className="stay-action-btn"
                   onClick={() => onOpenCancel(r)}
                 >
                   <XCircle className="w-4 h-4" />

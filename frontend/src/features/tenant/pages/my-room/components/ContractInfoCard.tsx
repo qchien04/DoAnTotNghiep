@@ -19,17 +19,14 @@ export const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ roomDetails 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-              Đang thuê hoạt động
-            </span>
-            <span className="text-xs text-stay-text-secondary font-medium">
+            <span className=" text-stay-text-secondary font-medium">
               Số HĐ: {contract?.contractNumber || 'HĐ-2026-P102'}
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-stay-text">
             {room.name} - {room.buildingName}
           </h1>
-          <p className="text-xs text-stay-text-secondary mt-0.5">
+          <p className=" text-stay-text-secondary mt-0.5">
             {room.address}
           </p>
         </div>
@@ -54,7 +51,7 @@ export const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ roomDetails 
       </div>
 
       {/* Contract Details Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-stay-border text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-stay-border ">
         <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-1">
           <span className="font-semibold text-slate-500 block">Chủ nhà cho thuê:</span>
           <p className="font-bold text-stay-text text-sm">{room.landlord.name}</p>
@@ -74,7 +71,7 @@ export const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ roomDetails 
         <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-1">
           <span className="font-semibold text-stay-text-secondary block">Dịch vụ công tơ ban đầu:</span>
           {contract?.services && contract.services.filter((s) => s.billingMethod === 'METER_INDEX').length > 0 ? (
-            <p className="text-stay-text text-xs space-x-2">
+            <p className="text-stay-text  space-x-2">
               {contract.services
                 .filter((s) => s.billingMethod === 'METER_INDEX')
                 .map((s, idx) => (
@@ -84,9 +81,9 @@ export const ContractInfoCard: React.FC<ContractInfoCardProps> = ({ roomDetails 
                 ))}
             </p>
           ) : (
-            <p className="text-stay-text-secondary text-xs italic">Không sử dụng dịch vụ công tơ</p>
+            <p className="text-stay-text-secondary  italic">Không sử dụng dịch vụ công tơ</p>
           )}
-          <p className="text-stay-text-secondary text-xs">Tiền cọc: {contract?.depositAmount?.toLocaleString() || '3.800.000'} VNĐ</p>
+          <p className="text-stay-text-secondary ">Tiền cọc: {contract?.depositAmount?.toLocaleString() || '3.800.000'} VNĐ</p>
         </div>
       </div>
     </div>

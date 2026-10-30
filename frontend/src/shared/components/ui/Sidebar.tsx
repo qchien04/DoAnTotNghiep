@@ -60,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Header Slot */}
         <div className="flex-1 flex flex-col min-h-0">
           {header && (
-            <div className={`p-4 border-b border-stay-border flex items-center justify-between shrink-0 ${isCollapsed ? 'justify-center p-3' : ''}`}>
+            <div className={`p-2 border-b border-stay-border flex items-center justify-center shrink-0 w-full ${isCollapsed ? 'p-0' : ''}`}>
               {header}
             </div>
           )}

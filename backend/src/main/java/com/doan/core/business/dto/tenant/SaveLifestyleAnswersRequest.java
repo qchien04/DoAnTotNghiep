@@ -14,8 +14,10 @@ public class SaveLifestyleAnswersRequest {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class AnswerItem {
         private Long questionId;
         private Long optionId;
+        private List<Long> optionIds;
     }
 }

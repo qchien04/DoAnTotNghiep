@@ -13,20 +13,25 @@ import {
 import { Tooltip, Spin } from 'antd';
 import {
   HelpCircle,
-  MapPin,
-  Navigation,
   Upload,
   Image as ImageIcon,
   Trash2,
   Star,
+  LocateFixed,
+  Loader2,
 } from 'lucide-react';
-import { Building, CreateRoomDto, Room, UtilityService } from '@/shared/types/landlord';
+import { CreateRoomDto, Room } from '@/shared/types/landlord';
+import {
+  useBuildings,
+  useBuildingDetail,
+  useServices,
+  useUploadMultipleImages,
+} from '@/shared/hooks';
 import {
   formatServicePriceWithUnit,
   getBillingMethodInfo,
 } from '@/shared/utils/serviceUtils';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
-import { fileService } from '@/shared/services/fileService';
 
 // Fix default leaflet marker icon issue in Webpack/Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -69,8 +74,6 @@ const pinIcon = L.divIcon({
 interface RoomFormModalProps {
   open: boolean;
   editingRoom: Room | null;
-  buildings: Building[];
-  services: UtilityService[];
   confirmLoading: boolean;
   onCancel: () => void;
   onSubmit: (values: CreateRoomDto) => Promise<void>;
@@ -79,13 +82,16 @@ interface RoomFormModalProps {
 export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   open,
   editingRoom,
-  buildings,
-  services,
   confirmLoading,
   onCancel,
   onSubmit,
 }) => {
   const [form] = Form.useForm();
+  const { services } = useServices();
+  const { uploadMultipleImages } = useUploadMultipleImages();
+
+  const watchedBuildingId = Form.useWatch('buildingId', form);
+  const { building: selectedBuilding } = useBuildingDetail(watchedBuildingId);
 
   // Room Images State
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -142,32 +148,36 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   useEffect(() => {
     if (open) {
       if (editingRoom) {
-        const matchedBld = buildings.find((b: any) => String(b.id) === String(editingRoom.buildingId));
-        const effectiveLat = editingRoom.latitude ? Number(editingRoom.latitude) : (matchedBld?.latitude ? Number(matchedBld.latitude) : 21.0285);
-        const effectiveLng = editingRoom.longitude ? Number(editingRoom.longitude) : (matchedBld?.longitude ? Number(matchedBld.longitude) : 105.8048);
+        const effectiveLat = editingRoom.latitude ? Number(editingRoom.latitude) : 21.0285;
+        const effectiveLng = editingRoom.longitude ? Number(editingRoom.longitude) : 105.8048;
         const effectiveCoords = { lat: effectiveLat, lng: effectiveLng };
 
         setCurrentCoords(effectiveCoords);
-        const initialImages = editingRoom.imageUrls && editingRoom.imageUrls.length > 0
-          ? editingRoom.imageUrls
-          : (editingRoom.coverImageUrl ? [editingRoom.coverImageUrl] : []);
+        const initialImages =
+          editingRoom.imageUrls && editingRoom.imageUrls.length > 0
+            ? editingRoom.imageUrls
+            : editingRoom.coverImageUrl
+            ? [editingRoom.coverImageUrl]
+            : [];
         setImageUrls(initialImages);
 
         const parsedAmenities = Array.isArray(editingRoom.amenities)
           ? editingRoom.amenities
           : typeof editingRoom.amenities === 'string' && editingRoom.amenities.trim()
-            ? editingRoom.amenities.split(',').map((s) => s.trim())
-            : [];
+          ? editingRoom.amenities.split(',').map((s) => s.trim())
+          : [];
 
         const roomServiceIds =
           editingRoom.serviceIds ||
-          (editingRoom.services ? (editingRoom.services as any[]).map((s: any) => s.id) : []);
+          (editingRoom.services
+            ? (editingRoom.services as any[]).map((s: any) => s.id)
+            : []);
 
         form.setFieldsValue({
           buildingId: editingRoom.buildingId || null,
-          province: editingRoom.province || matchedBld?.province || 'Thành phố Hà Nội',
-          ward: editingRoom.ward || matchedBld?.ward || '',
-          addressDetail: editingRoom.addressDetail || matchedBld?.addressDetail || 'Hà Nội, Việt Nam',
+          province: editingRoom.province || 'Thành phố Hà Nội',
+          ward: editingRoom.ward || '',
+          addressDetail: editingRoom.addressDetail || 'Hà Nội, Việt Nam',
           name: editingRoom.name,
           floor: editingRoom.floor ?? 1,
           area: editingRoom.area,
@@ -190,20 +200,16 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
       } else {
         form.resetFields();
         setImageUrls([]);
-        const initialBld = buildings.length > 0 ? buildings[0] : null;
-        const initialLat = initialBld?.latitude ? Number(initialBld.latitude) : 21.0285;
-        const initialLng = initialBld?.longitude ? Number(initialBld.longitude) : 105.8048;
-        const initialCoords = { lat: initialLat, lng: initialLng };
-
+        const initialCoords = { lat: 21.0285, lng: 105.8048 };
         setCurrentCoords(initialCoords);
 
         form.setFieldsValue({
-          buildingId: initialBld ? initialBld.id : null,
-          province: initialBld?.province || 'Thành phố Hà Nội',
-          ward: initialBld?.ward || '',
-          addressDetail: initialBld?.addressDetail || 'Hà Nội, Việt Nam',
-          latitude: initialLat,
-          longitude: initialLng,
+          buildingId: null,
+          province: 'Thành phố Hà Nội',
+          ward: '',
+          addressDetail: 'Hà Nội, Việt Nam',
+          latitude: 21.0285,
+          longitude: 105.8048,
           floor: 1,
           area: 25,
           maxCapacity: 2,
@@ -214,12 +220,12 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         });
 
         if (mapInstanceRef.current && markerRef.current) {
-          mapInstanceRef.current.setView([initialLat, initialLng], 15);
-          markerRef.current.setLatLng([initialLat, initialLng]);
+          mapInstanceRef.current.setView([21.0285, 105.8048], 15);
+          markerRef.current.setLatLng([21.0285, 105.8048]);
         }
       }
     }
-  }, [open, editingRoom, buildings, services, form]);
+  }, [open, editingRoom, services, form]);
 
   // Leaflet Map Initialization directly in modal
   useEffect(() => {
@@ -258,7 +264,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         {
           maxZoom: 19,
           subdomains: ['a', 'b'],
-          attribution: '&copy; OpenStreetMap contributors, Tiles courtesy of Humanitarian OpenStreetMap Team &bull; Chủ quyền Việt Nam',
         }
       ).addTo(map);
 
@@ -305,31 +310,34 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     };
   }, [open, reverseGeocode]);
 
-  const handleBuildingChange = (val: number | string | null) => {
-    if (val) {
-      const bld = buildings.find((b: any) => String(b.id) === String(val));
-      if (bld) {
-        const lat = bld.latitude ? Number(bld.latitude) : currentCoords.lat;
-        const lng = bld.longitude ? Number(bld.longitude) : currentCoords.lng;
-        const addr = bld.addressDetail || `${bld.ward ? bld.ward + ', ' : ''}${bld.province || ''}`;
+  useEffect(() => {
+    if (selectedBuilding) {
+      const lat = selectedBuilding.latitude ? Number(selectedBuilding.latitude) : currentCoords.lat;
+      const lng = selectedBuilding.longitude ? Number(selectedBuilding.longitude) : currentCoords.lng;
+      const addr =
+        selectedBuilding.addressDetail ||
+        `${selectedBuilding.ward ? selectedBuilding.ward + ', ' : ''}${selectedBuilding.province || ''}`;
 
-        setCurrentCoords({ lat, lng });
+      setCurrentCoords({ lat, lng });
 
-        form.setFieldsValue({
-          province: bld.province || 'Thành phố Hà Nội',
-          ward: bld.ward || '',
-          addressDetail: bld.addressDetail || addr || 'Hà Nội, Việt Nam',
-          latitude: lat,
-          longitude: lng,
-        });
+      form.setFieldsValue({
+        province: selectedBuilding.province || 'Thành phố Hà Nội',
+        ward: selectedBuilding.ward || '',
+        addressDetail: selectedBuilding.addressDetail || addr || 'Hà Nội, Việt Nam',
+        latitude: lat,
+        longitude: lng,
+      });
 
-        if (mapInstanceRef.current && markerRef.current) {
-          mapInstanceRef.current.flyTo([lat, lng], 16, { duration: 1.0 });
-          markerRef.current.setLatLng([lat, lng]);
-        }
-        message.info(`Đã nạp vị trí từ tòa nhà: ${bld.name}`);
+      if (mapInstanceRef.current && markerRef.current) {
+        mapInstanceRef.current.flyTo([lat, lng], 16, { duration: 1.0 });
+        markerRef.current.setLatLng([lat, lng]);
       }
-    } else {
+      message.info(`Đã nạp vị trí từ tòa nhà: ${selectedBuilding.name}`);
+    }
+  }, [selectedBuilding]);
+
+  const handleBuildingChange = (val: number | string | null) => {
+    if (!val) {
       message.info('Đã chọn phòng độc lập. Hãy nhấp trực tiếp trên bản đồ để chọn vị trí phòng.');
     }
   };
@@ -393,13 +401,13 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
     setIsProcessingFiles(true);
     try {
-      const uploadedUrls = await fileService.uploadMultipleImages(validFiles, 'rooms');
+      const uploadedUrls = await uploadMultipleImages(validFiles, 'rooms');
       if (uploadedUrls && uploadedUrls.length > 0) {
         setImageUrls((prev) => [...prev, ...uploadedUrls]);
         message.success(`Đã tải lên ${uploadedUrls.length} ảnh phòng thành công.`);
       }
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || 'Tải ảnh lên máy chủ thất bại.');
+    } catch {
+      // Handled in mutation hook
     } finally {
       setIsProcessingFiles(false);
       if (fileInputRef.current) {
@@ -447,12 +455,9 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         {/* SECTION 1: TÒA NHÀ & VỊ TRÍ - ĐỊA CHỈ (2 CỘT TỶ LỆ 6:4) */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Tòa nhà & vị trí phòng trọ
-          </h3>
+        <div className="space-y-3">
 
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+          <div className="space-y-3">
             <Form.Item
               label={
                 <div className="flex items-center gap-1.5">
@@ -467,39 +472,25 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               name="buildingId"
               className="mb-2"
             >
-              <Select
+              <Select.Infinite
+                useQueryHook={useBuildings}
                 allowClear
                 placeholder="Chọn tòa nhà hoặc để trống nếu là phòng trọ độc lập"
                 onChange={handleBuildingChange}
                 className="w-full h-10"
-                options={[
-                  {
-                    label: '🏠 Phòng trọ độc lập (không thuộc tòa nhà nào)',
-                    value: null as any,
-                  },
-                  ...buildings.map((b: any) => ({
-                    label: `🏢 ${b.name}`,
-                    value: b.id,
-                  })),
-                ]}
+                mapOption={(b: any) => ({
+                  label: `🏢 ${b.name}${b.address ? ` (${b.address})` : ''}`,
+                  value: b.id,
+                })}
               />
             </Form.Item>
 
             {/* 2 CỘT TỶ LỆ KHOẢNG 6:4: 1 BÊN BẢN ĐỒ - 1 BÊN INPUT ĐỊA CHỈ */}
             <div className="pt-1">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-stay-text text-xs">
+                <span className="font-semibold text-stay-text">
                   Vị trí trên bản đồ & địa chỉ phòng
                 </span>
-                <Button
-                  size="small"
-                  icon={<Navigation className="w-3.5 h-3.5 text-emerald-600" />}
-                  onClick={handleGetQuickLocation}
-                  loading={isGeolocating}
-                  className="font-semibold text-xs border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-                >
-                  Vị trí hiện tại
-                </Button>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -512,41 +503,54 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                       className="z-0"
                     />
 
+                    {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+                    <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+                      <button
+                        type="button"
+                        onClick={handleGetQuickLocation}
+                        disabled={isGeolocating}
+                        className="absolute bottom-3 right-3 z-[500] w-9 h-9 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+                        aria-label="Vị trí hiện tại"
+                      >
+                        {isGeolocating ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-stay-primary" />
+                        ) : (
+                          <LocateFixed className="w-4 h-4 text-stay-primary" />
+                        )}
+                      </button>
+                    </Tooltip>
+
                     {isGeolocating && (
                       <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50">
                         <Spin tip="Đang lấy tọa độ GPS..." />
                       </div>
                     )}
                   </div>
-                  <p className="text-[11px] text-stay-text-muted mt-1.5 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-stay-primary shrink-0" />
-                    <span>Nhấp chuột hoặc kéo thả ghim trên bản đồ để tự động điền địa chỉ</span>
-                  </p>
                 </div>
 
                 {/* CỘT 2 (TỶ LỆ ~40%): CÁC Ô INPUT ĐỊA CHỈ */}
                 <div className="lg:col-span-5 space-y-2.5">
                   <Form.Item
-                    label={<span className="font-semibold text-stay-text text-xs">Tỉnh / Thành phố</span>}
+                    label={<span className="font-semibold text-stay-text ">Tỉnh / Thành phố</span>}
                     name="province"
                     rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / TP' }]}
                     className="mb-2"
                   >
-                    <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 text-xs" />
+                    <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 " />
                   </Form.Item>
 
                   <Form.Item
-                    label={<span className="font-semibold text-stay-text text-xs">Phường / Xã</span>}
+                    label={<span className="font-semibold text-stay-text ">Phường / Xã</span>}
                     name="ward"
                     className="mb-2"
                   >
-                    <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 text-xs" />
+                    <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 " />
                   </Form.Item>
 
                   <Form.Item
                     label={
                       <div className="flex items-center justify-between w-full">
-                        <span className="font-semibold text-stay-text text-xs">Địa chỉ chi tiết</span>
+                        <span className="font-semibold text-stay-text ">Địa chỉ chi tiết</span>
                         {isReverseGeocoding && (
                           <span className="text-[11px] text-stay-primary flex items-center gap-1 font-normal">
                             <Spin size="small" /> Đang nhận diện...
@@ -561,7 +565,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                     <Input.TextArea
                       rows={3}
                       placeholder="Số nhà, ngõ/ngách, tên đường..."
-                      className="w-full p-2 text-xs rounded-lg"
+                      className="w-full p-2  rounded-lg"
                     />
                   </Form.Item>
 
@@ -579,11 +583,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         </div>
 
         {/* SECTION 2: QUY MÔ & TÀI CHÍNH */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Thông tin phòng & giá cước niêm yết
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-3">
             <Form.Item
               label={<span className="font-semibold text-stay-text text-sm">Tên phòng </span>}
               name="name"
@@ -602,7 +603,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   min={1}
-                  suffix={<span className="text-xs text-stay-text-muted font-medium">Tầng</span>}
+                  suffix={<span className=" text-stay-text-muted font-medium">Tầng</span>}
                   className="w-full h-10"
                 />
               </Form.Item>
@@ -615,7 +616,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   min={5}
-                  suffix={<span className="text-xs text-stay-text-muted font-medium">m²</span>}
+                  suffix={<span className=" text-stay-text-muted font-medium">m²</span>}
                   className="w-full h-10"
                 />
               </Form.Item>
@@ -628,7 +629,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   min={1}
-                  suffix={<span className="text-xs text-stay-text-muted font-medium">Người</span>}
+                  suffix={<span className=" text-stay-text-muted font-medium">Người</span>}
                   className="w-full h-10"
                 />
               </Form.Item>
@@ -644,7 +645,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   step={100000}
-                  suffix={<span className="text-xs font-semibold text-emerald-600">VNĐ/tháng</span>}
+                  suffix={<span className=" font-semibold text-600">VNĐ/tháng</span>}
                   className="w-full h-10 font-medium"
                 />
               </Form.Item>
@@ -657,7 +658,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   step={100000}
-                  suffix={<span className="text-xs font-semibold text-stay-text">VNĐ</span>}
+                  suffix={<span className=" font-semibold text-stay-text">VNĐ</span>}
                   className="w-full h-10 font-medium"
                 />
               </Form.Item>
@@ -680,11 +681,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         </div>
 
         {/* SECTION 3: TIỆN NGHI & DỊCH VỤ */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            3. Tiện nghi & dịch vụ áp dụng
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-4">
             <Form.Item
               label={<span className="font-semibold text-stay-text text-sm">Tiện nghi có sẵn trong phòng</span>}
               name="amenities"
@@ -718,8 +716,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <div className="flex items-center gap-2">
                   <Button
                     size="small"
-                    type="link"
-                    className="p-0 text-xs text-stay-primary font-medium"
+                    type="outline"
+                    className="p-0  text-stay-primary font-medium"
                     onClick={() => form.setFieldsValue({ serviceIds: services.map((s) => s.id) })}
                   >
                     Chọn tất cả
@@ -727,8 +725,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   <span className="text-stay-border">|</span>
                   <Button
                     size="small"
-                    type="link"
-                    className="p-0 text-xs text-rose-500 font-medium"
+                    type="outline"
+                    className="p-0  text-rose-500 font-medium"
                     onClick={() => form.setFieldsValue({ serviceIds: [] })}
                   >
                     Bỏ chọn hết
@@ -763,7 +761,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input.TextArea
                   rows={2}
                   placeholder="Mô tả đặc điểm phòng, hướng cửa sổ, ánh sáng, ban công, không gian xung quanh..."
-                  className="w-full p-2.5 rounded-xl text-xs"
+                  className="w-full p-2.5 rounded-xl "
                 />
               </Form.Item>
             </div>
@@ -795,13 +793,10 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         </div>
 
         {/* SECTION 4: HÌNH ẢNH PHÒNG TRỌ THỰC TẾ */}
-        <div className="space-y-2">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-stay-text flex items-center gap-2">
-              <span>4. Album hình ảnh phòng trọ thực tế</span>
-              <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-stay-card-bg border border-stay-border text-stay-text-secondary">
-                {imageUrls.length} ảnh
-              </span>
+
             </h3>
             {imageUrls.length > 0 && (
               <button
@@ -814,7 +809,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             )}
           </div>
 
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+          <div className="space-y-4">
             {/* Thanh công cụ: Tải file từ máy tính & Nhập URL ảnh */}
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -827,11 +822,11 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 onChange={handleFileUpload}
               />
               <Button
-                type="primary"
+                type="outline"
                 icon={<Upload className="w-4 h-4" />}
                 onClick={() => fileInputRef.current?.click()}
                 loading={isProcessingFiles}
-                className="h-10 px-4 font-medium flex items-center gap-2 shrink-0 bg-stay-primary hover:bg-stay-primary-hover text-white"
+                className="h-10 px-4 font-medium flex items-center gap-2 shrink-0 "
               >
                 Tải ảnh từ máy tính
               </Button>
@@ -845,7 +840,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <div className="w-12 h-12 rounded-full bg-stay-bg-app flex items-center justify-center text-stay-text-muted mb-2 border border-stay-border">
                   <ImageIcon className="w-6 h-6" />
                 </div>
-                <p className="text-xs font-medium text-stay-text mb-1">
+                <p className=" font-medium text-stay-text mb-1">
                   Chưa có hình ảnh nào cho phòng trọ này
                 </p>
               </div>

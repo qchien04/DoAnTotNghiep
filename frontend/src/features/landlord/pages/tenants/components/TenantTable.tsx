@@ -65,7 +65,6 @@ export const TenantTable: React.FC<TenantTableProps> = ({
     {
       title: 'Khách thuê',
       key: 'name',
-      width: 170,
       ellipsis: { showTitle: true },
       render: (_: any, r: Tenant) => (
         <div>
@@ -142,7 +141,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
           <Tooltip title="Xem chi tiết">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => onView(r)}
             >
               <Eye className="w-4 h-4" />
@@ -154,7 +153,6 @@ export const TenantTable: React.FC<TenantTableProps> = ({
               <button
                 type="button"
                 className="stay-action-btn"
-                style={{ color: '#D97706' }}
                 onClick={() => onCancelInvite(r)}
               >
                 <UserX className="w-4 h-4" />
@@ -167,7 +165,6 @@ export const TenantTable: React.FC<TenantTableProps> = ({
               <button
                 type="button"
                 className="stay-action-btn"
-                style={{ color: '#2563EB' }}
                 onClick={() => onInvite(r)}
               >
                 <UserCheck className="w-4 h-4" />
@@ -178,7 +175,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
           <Tooltip title="Chỉnh sửa">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => onEdit(r)}
             >
               <Edit2 className="w-4 h-4" />
@@ -196,7 +193,7 @@ export const TenantTable: React.FC<TenantTableProps> = ({
             >
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-delete"
+                className="stay-action-btn"
                 disabled={isDeleting}
               >
                 <Trash2 className="w-4 h-4" />

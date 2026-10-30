@@ -177,8 +177,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   // Size styles
   const sizeClasses = {
-    sm: 'h-9 px-3 text-xs',
-    md: 'h-11 px-3.5 text-xs sm:text-sm',
+    sm: 'h-9 px-3 ',
+    md: 'h-11 px-3.5  sm:text-sm',
     lg: 'h-13 px-4 text-sm sm:text-base',
   };
 
@@ -206,9 +206,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       className={`relative inline-block ${fullWidth ? 'w-full' : ''} ${className}`}
     >
       <div
-        className={`flex items-center gap-2 rounded-2xl transition-all duration-200 ${sizeClasses[size]} ${
-          variantClasses[variant]
-        } ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''}`}
+        className={`flex items-center gap-2 rounded-2xl transition-all duration-200 ${sizeClasses[size]} ${variantClasses[variant]
+          } ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''}`}
       >
         {/* Search / Loading Icon */}
         <div className="shrink-0 text-stay-text-secondary flex items-center justify-center">
@@ -280,11 +279,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 key={tag.value}
                 type="button"
                 onClick={() => onTagToggle?.(tag.value)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                  isSelected
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg  font-medium border transition-all cursor-pointer ${isSelected
                     ? 'bg-stay-primary-subtle text-stay-primary border-stay-primary shadow-2xs'
                     : 'bg-stay-card-bg text-stay-text-secondary border-stay-border hover:border-stay-primary/50 hover:text-stay-text'
-                }`}
+                  }`}
               >
                 <span>{tag.label}</span>
                 {tag.count !== undefined && (
@@ -314,11 +312,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   <div
                     key={item.id || item.value || item.label || index}
                     onClick={() => handleSelectSuggestion(item)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-colors ${
-                      isHighlighted
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl  cursor-pointer transition-colors ${isHighlighted
                         ? 'bg-stay-primary-subtle text-stay-primary font-medium'
                         : 'text-stay-text hover:bg-stay-bg-app'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       {item.icon ? (
@@ -369,7 +366,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <div
                   key={idx}
                   onClick={() => handleSelectRecent(term)}
-                  className="flex items-center justify-between px-3 py-1.5 rounded-xl text-xs text-stay-text hover:bg-stay-bg-app cursor-pointer transition-colors"
+                  className="flex items-center justify-between px-3 py-1.5 rounded-xl  text-stay-text hover:bg-stay-bg-app cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-stay-text-muted">🕒</span>

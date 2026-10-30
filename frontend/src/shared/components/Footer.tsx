@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { StayConnectLogo } from './StayConnectLogo';
+import { RoomiLogo } from './RoomiLogo';
 
 export const Footer: React.FC = () => {
   return (
@@ -9,15 +9,15 @@ export const Footer: React.FC = () => {
         {/* Brand */}
         <div className="flex items-center gap-3">
           <Link to="/rooms" className="shrink-0">
-            <StayConnectLogo size="sm" />
+            <RoomiLogo size="md" />
           </Link>
-          <span className="text-xs text-stay-text-secondary hidden md:inline">
+          <span className="text-stay-text-secondary hidden md:inline">
             • Nền tảng quản lý phòng trọ & kết nối ở ghép
           </span>
         </div>
 
         {/* Quick Links */}
-        <div className="flex items-center gap-6 text-xs text-stay-text-secondary">
+        <div className="flex items-center gap-6 text-stay-text-secondary">
           <Link to="/rooms" className="hover:text-stay-primary transition-colors">
             Tìm phòng
           </Link>
@@ -30,8 +30,8 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Copyright */}
-        <p className="text-xs text-stay-text-muted">
-          © 2026 StayConnect. All rights reserved.
+        <p className="text-stay-text-muted">
+          © 2026 Roomi. All rights reserved.
         </p>
       </div>
     </footer>

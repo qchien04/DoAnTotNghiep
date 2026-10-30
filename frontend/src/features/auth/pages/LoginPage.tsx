@@ -42,13 +42,13 @@ export const LoginPage: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center space-y-1">
         <h2 className="text-xl font-bold text-stay-text">Đăng Nhập Hệ Thống</h2>
-        <p className="text-xs text-stay-text-secondary">
+        <p className=" text-stay-text-secondary">
           Nhập tài khoản để cấp JWT Token và phân quyền truy cập
         </p>
       </div>
 
       {error && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2.5 text-xs text-rose-600 dark:text-rose-400">
+        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2.5  text-rose-600 dark:text-rose-400">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
           <span>{error}</span>
         </div>
@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1.5">
+          <label className="block  font-semibold text-stay-text mb-1.5">
             Tên đăng nhập
           </label>
           <div className="relative">
@@ -72,14 +72,14 @@ export const LoginPage: React.FC = () => {
                 setUsername(e.target.value);
               }}
               placeholder="admin, landlord hoặc tenant"
-              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-semibold text-stay-text">
+            <label className=" font-semibold text-stay-text">
               Mật khẩu
             </label>
             <Link
@@ -102,7 +102,7 @@ export const LoginPage: React.FC = () => {
                 setPassword(e.target.value);
               }}
               placeholder="••••••••"
-              className="w-full pl-9 pr-10 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-10 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
             <button
               type="button"
@@ -117,7 +117,7 @@ export const LoginPage: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-2.5 bg-stay-primary hover:bg-stay-primary-hover active:scale-[0.99] text-white text-xs font-semibold rounded-lg shadow-md shadow-stay-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full py-2.5 bg-stay-primary hover:bg-stay-primary-hover active:scale-[0.99] text-white  font-semibold rounded-lg shadow-md shadow-stay-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -166,7 +166,7 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="text-center text-xs text-stay-text-secondary">
+      <div className="text-center  text-stay-text-secondary">
         Chưa có tài khoản?{' '}
         <Link to="/register" className="text-stay-primary font-semibold hover:underline">
           Đăng ký ngay

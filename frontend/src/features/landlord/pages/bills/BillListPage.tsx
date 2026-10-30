@@ -5,11 +5,9 @@ import {
   usePublishBill,
   useCancelBill,
   useConfirmPayment,
-  useRooms,
-  useContracts,
 } from '@/shared/hooks';
 import { message } from '@/shared/components';
-import { Bill, CreateBillDto, BillStatus, ConfirmPaymentDto } from '@/shared/types/landlord';
+import { InvoiceResponse, CreateInvoiceRequest, InvoiceStatus, InvoicePaymentRequest } from '@/shared/types/landlord';
 import { BillFilter } from './components/BillFilter';
 import { BillTable } from './components/BillTable';
 import { CreateBillModal } from './components/CreateBillModal';
@@ -21,7 +19,7 @@ export const BillListPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [billingMonth, setBillingMonth] = useState<string>('10/2026');
-  const [statusFilter, setStatusFilter] = useState<BillStatus | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'ALL'>('ALL');
 
   const { pageInfo: billsPageInfo, isLoading } = useBills({
     page,
@@ -34,64 +32,59 @@ export const BillListPage: React.FC = () => {
   const { cancelBill } = useCancelBill();
   const { confirmPayment, isConfirming } = useConfirmPayment();
 
-  const { pageInfo: roomsPageInfo } = useRooms();
-  const rooms = roomsPageInfo?.items ?? [];
-  const { pageInfo: contractsPageInfo } = useContracts();
-  const contracts = contractsPageInfo?.items ?? [];
-
   // Create Bill Modal (UC 23)
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Detail Modal
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [viewingBill, setViewingBill] = useState<Bill | null>(null);
+  const [viewingBill, setViewingBill] = useState<InvoiceResponse | null>(null);
 
   // Confirm Payment Modal (UC 26)
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [selectedBill, setSelectedBill] = useState<InvoiceResponse | null>(null);
 
   // Cancel Modal (UC 25)
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
-  const handleCreateSubmit = async (dto: CreateBillDto) => {
-    await createBill(dto);
-    if (dto.isDraft) {
-      message.success('Đã lưu hóa đơn dưới dạng BẢN NHÁP! (Khách thuê chưa nhận được hóa đơn này).');
-    } else {
-      message.success(
-        'Phát hành hóa đơn tiền phòng thành công! Đã tự động gửi thông báo kèm VietQR tới khách thuê.'
-      );
+  const handleCreateSubmit = async (dto: CreateInvoiceRequest) => {
+    try {
+      await createBill(dto);
+      setCreateModalOpen(false);
+    } catch {
+      // Đã xử lý thông báo trong hook useCreateBill
     }
-    setCreateModalOpen(false);
   };
 
-  const handlePublishBill = async (bill: Bill) => {
+  const handlePublishBill = async (bill: InvoiceResponse) => {
     try {
       await publishBill(bill.id);
-      message.success(`Đã ban hành hóa đơn #${bill.id} thành công! Khách thuê đã nhận được thông báo kèm mã VietQR.`);
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || err?.message || 'Không thể ban hành hóa đơn');
+    } catch {
+      // Đã xử lý thông báo trong hook usePublishBill
     }
   };
 
-  const handleOpenDetail = (bill: Bill) => {
+  const handleOpenDetail = (bill: InvoiceResponse) => {
     setViewingBill(bill);
     setDetailModalOpen(true);
   };
 
-  const handleOpenPayment = (bill: Bill) => {
+  const handleOpenPayment = (bill: InvoiceResponse) => {
     setSelectedBill(bill);
     setPaymentModalOpen(true);
   };
 
-  const handlePaymentSubmit = async (billId: string | number, dto: ConfirmPaymentDto) => {
-    await confirmPayment({ id: billId, dto });
-    message.success('Đã xác nhận thu tiền và gạch nợ hóa đơn thành công!');
-    setPaymentModalOpen(false);
+  const handlePaymentSubmit = async (billId: string | number, dto: InvoicePaymentRequest) => {
+    try {
+      await confirmPayment({ id: billId, dto });
+      setPaymentModalOpen(false);
+      setSelectedBill(null);
+    } catch {
+      // Đã xử lý thông báo trong hook useConfirmPayment
+    }
   };
 
-  const handleOpenCancel = (bill: Bill) => {
+  const handleOpenCancel = (bill: InvoiceResponse) => {
     setSelectedBill(bill);
     setCancelReason('Lập nhầm phòng hoặc sai số chỉ số dịch vụ');
     setCancelModalOpen(true);
@@ -99,14 +92,17 @@ export const BillListPage: React.FC = () => {
 
   const handleCancelSubmit = async () => {
     if (!selectedBill) return;
+    const trimmed = cancelReason.trim();
+    if (!trimmed) {
+      message.warning('Vui lòng nhập lý do hủy hóa đơn!');
+      return;
+    }
     try {
-      await cancelBill({ id: selectedBill.id, reason: cancelReason });
-      message.success('Đã hủy hóa đơn lập sai!');
+      await cancelBill({ id: selectedBill.id, cancelReason: trimmed });
       setCancelModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) {
-        message.error(err.message);
-      }
+      setSelectedBill(null);
+    } catch {
+      // Đã xử lý thông báo trong hook useCancelBill
     }
   };
 
@@ -145,8 +141,6 @@ export const BillListPage: React.FC = () => {
       {/* Create Modal */}
       <CreateBillModal
         open={createModalOpen}
-        rooms={rooms}
-        contracts={contracts}
         confirmLoading={isCreating}
         onCancel={() => setCreateModalOpen(false)}
         onSubmit={handleCreateSubmit}
@@ -174,8 +168,8 @@ export const BillListPage: React.FC = () => {
       <CancelBillModal
         open={cancelModalOpen}
         bill={selectedBill}
-        reason={cancelReason}
-        onReasonChange={setCancelReason}
+        cancelReason={cancelReason}
+        onCancelReasonChange={setCancelReason}
         onCancel={() => setCancelModalOpen(false)}
         onSubmit={handleCancelSubmit}
       />

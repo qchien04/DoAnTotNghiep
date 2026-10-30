@@ -3,7 +3,7 @@
  */
 export const env = {
   API_BASE_URL: import.meta.env.VITE_API_URL || '',
-  APP_TITLE: 'Hệ Thống Đồ Án Tốt Nghiệp',
+  APP_TITLE: 'Roomi - Nền Tảng Quản Lý Nhà Trọ & Ở Ghép',
   TOKEN_KEY: 'auth_access_token',
   REFRESH_TOKEN_KEY: 'auth_refresh_token',
   USER_KEY: 'auth_user_info',

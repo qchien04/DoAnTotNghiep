@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMyComplaints, useSubmitComplaint, useRateComplaint } from '@/shared/hooks';
 import { Button, Input } from '@/shared/components';
 import { Plus, Search, RotateCcw } from 'lucide-react';
-import { message, Select } from 'antd';
+import { Select } from 'antd';
 import { Complaint } from '@/shared/types/landlord';
 import { CreateTenantComplaintDto } from '@/shared/types/tenant';
 import { ComplaintTable } from './components/ComplaintTable';
@@ -41,10 +41,9 @@ export const MyComplaintsPage: React.FC = () => {
   const handleCreateSubmit = async (data: CreateTenantComplaintDto) => {
     try {
       await submitComplaint(data);
-      message.success('Đã gửi phản ánh sự cố thành công! Chủ trọ sẽ nhận được thông báo để hẹn thợ.');
       setCreateModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -55,10 +54,9 @@ export const MyComplaintsPage: React.FC = () => {
         id: String(selectedComplaint.id),
         dto: { rating, feedback },
       });
-      message.success('Cảm ơn bạn đã đánh giá chất lượng sửa chữa!');
       setRateModalOpen(false);
-    } catch (err: any) {
-      message.error(err.message || 'Lỗi gửi đánh giá');
+    } catch {
+      // Handled in mutation hook
     }
   };
 

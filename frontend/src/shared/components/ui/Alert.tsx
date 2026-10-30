@@ -33,7 +33,7 @@ export const Alert: React.FC<AlertProps> = ({
       message={alertMessage}
       description={alertDescription}
       showIcon={showIcon}
-      className={`rounded-xl border shadow-2xs text-xs sm:text-sm ${className}`}
+      className={`rounded-xl border shadow-2xs  sm:text-sm ${className}`}
       {...props}
     />
   );

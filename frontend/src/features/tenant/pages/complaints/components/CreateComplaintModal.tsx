@@ -31,8 +31,8 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
         ],
       });
       form.resetFields();
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -47,7 +47,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
       <Form
         form={form}
         layout="vertical"
-        className="space-y-4 pt-2 text-xs"
+        className="space-y-4 pt-2 "
         initialValues={{
           type: 'AIR_CONDITIONER',
           urgency: 'HIGH',
@@ -56,14 +56,11 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
         }}
       >
         {/* Section 1 */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-            Phân loại & Mức độ khẩn cấp
-          </label>
-          <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Form.Item
               name="type"
-              label="Loại sự cố "
+              label="Loại sự cố"
               rules={[{ required: true, message: 'Vui lòng chọn loại sự cố!' }]}
               className="mb-0"
             >
@@ -80,7 +77,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
 
             <Form.Item
               name="urgency"
-              label="Mức độ khẩn cấp "
+              label="Mức độ khẩn cấp"
               rules={[{ required: true, message: 'Vui lòng chọn mức độ!' }]}
               className="mb-0"
             >
@@ -97,14 +94,11 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
         </div>
 
         {/* Section 2 */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-            Thông tin chi tiết sự cố
-          </label>
-          <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4 space-y-3">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-3">
             <Form.Item
               name="title"
-              label="Tiêu đề "
+              label="Tiêu đề"
               rules={[{ required: true, message: 'Vui lòng nhập tiêu đề sự cố!' }]}
               className="mb-0"
             >
@@ -113,7 +107,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
 
             <Form.Item
               name="content"
-              label="Mô tả sự cố "
+              label="Mô tả sự cố"
               rules={[{ required: true, message: 'Vui lòng nhập nội dung mô tả chi tiết!' }]}
               className="mb-0"
             >
@@ -126,20 +120,18 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({
         </div>
 
         {/* Section 3 */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <label className="font-semibold text-stay-text text-sm block">
             Ảnh chụp hiện trạng
           </label>
-          <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4">
-            <Upload.Dragger
-              title="Kéo thả ảnh vào đây hoặc nhấp để tải"
-              hint="Hỗ trợ JPG, PNG (tối đa 5 ảnh)"
-              beforeUpload={() => {
-                message.success('Đã chọn ảnh hiện trạng sự cố!');
-                return false;
-              }}
-            />
-          </div>
+          <Upload.Dragger
+            title="Kéo thả ảnh vào đây hoặc nhấp để tải"
+            hint="Hỗ trợ JPG, PNG (tối đa 5 ảnh)"
+            beforeUpload={() => {
+              message.success('Đã chọn ảnh hiện trạng sự cố!');
+              return false;
+            }}
+          />
         </div>
 
         {/* Actions */}

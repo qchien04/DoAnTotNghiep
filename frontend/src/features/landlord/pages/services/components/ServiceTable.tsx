@@ -130,7 +130,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
           <Tooltip title="Xem chi tiết">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => onView(r)}
             >
               <Eye className="w-4 h-4" />
@@ -140,7 +140,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
           <Tooltip title="Chỉnh sửa đơn giá">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => onEdit(r)}
             >
               <Edit2 className="w-4 h-4" />
@@ -158,7 +158,7 @@ export const ServiceTable: React.FC<ServiceTableProps> = ({
             >
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-delete"
+                className="stay-action-btn"
                 disabled={isDeleting}
               >
                 <Trash2 className="w-4 h-4" />

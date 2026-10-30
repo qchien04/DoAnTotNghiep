@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Tooltip, message } from 'antd';
+import { LocateFixed, Loader2 } from 'lucide-react';
 import {
   VIETNAM_ISLANDS_DATA,
   HOANG_SA_CENTER,
@@ -26,6 +28,8 @@ export interface LeafletMapProps {
   onMarkerClick?: (marker: MapMarker) => void;
   height?: string | number;
   className?: string;
+  showCurrentLocation?: boolean;
+  onCurrentLocationFound?: (lat: number, lng: number) => void;
 }
 
 // Fix default leaflet marker icon issue in Webpack/Vite
@@ -50,10 +54,66 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   onMarkerClick,
   height = '480px',
   className = '',
+  showCurrentLocation = true,
+  onCurrentLocationFound,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const [isGeolocating, setIsGeolocating] = useState(false);
+
+  const handleFlyToCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      message.warning('Trình duyệt không hỗ trợ định vị vị trí GPS.');
+      return;
+    }
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    setIsGeolocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsGeolocating(false);
+        const { latitude, longitude } = pos.coords;
+
+        // Bay mượt mà đến tọa độ hiện tại
+        map.flyTo([latitude, longitude], 16, { duration: 1.5 });
+
+        // Tạo hoặc cập nhật chấm định vị phong cách Google Maps
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLatLng([latitude, longitude]);
+        } else {
+          const userDotIcon = L.divIcon({
+            className: 'user-gps-dot',
+            html: `
+              <div style="position: relative; width: 22px; height: 22px;">
+                <div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(79, 70, 229, 0.25); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                <div style="width: 22px; height: 22px; border-radius: 50%; background: #4F46E5; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
+              </div>
+            `,
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+          });
+          userMarkerRef.current = L.marker([latitude, longitude], { icon: userDotIcon })
+            .bindPopup('<strong>Vị trí hiện tại của bạn</strong>')
+            .addTo(map);
+        }
+
+        onCurrentLocationFound?.(latitude, longitude);
+        message.success('Đã xác định vị trí hiện tại thành công!');
+      },
+      (err) => {
+        setIsGeolocating(false);
+        let msg = 'Không thể lấy vị trí hiện tại.';
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = 'Vui lòng cấp quyền truy cập vị trí trên trình duyệt.';
+        }
+        message.warning(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   // Initialize Map
   useEffect(() => {
@@ -86,8 +146,6 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
         {
           maxZoom: 19,
           subdomains: ['a', 'b'],
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles courtesy of <a href="https://www.hotosm.org/">Humanitarian OpenStreetMap Team</a> &bull; Chủ quyền Việt Nam',
         }
       ).addTo(map);
 
@@ -326,10 +384,24 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     >
       <div ref={mapContainerRef} className="w-full h-full z-10" />
 
-      {/* Attribution & Legal Notice */}
-      <div className="absolute bottom-1 left-2 z-20 bg-stay-card-bg/85 backdrop-blur-xs px-2 py-0.5 rounded text-[10px] text-stay-text-secondary border border-stay-border">
-        Bản đồ OpenStreetMap (OSM) • Chủ quyền Việt Nam
-      </div>
+      {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+      {showCurrentLocation && (
+        <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+          <button
+            type="button"
+            onClick={handleFlyToCurrentLocation}
+            disabled={isGeolocating}
+            className="absolute bottom-5 right-5 z-[500] w-10 h-10 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+            aria-label="Vị trí hiện tại"
+          >
+            {isGeolocating ? (
+              <Loader2 className="w-5 h-5 animate-spin text-stay-primary" />
+            ) : (
+              <LocateFixed className="w-5 h-5 text-stay-primary" />
+            )}
+          </button>
+        </Tooltip>
+      )}
     </div>
   );
 };

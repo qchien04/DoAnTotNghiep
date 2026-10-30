@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select } from '@/shared/components';
-import { InputNumber, message } from 'antd';
-import { CreateContractDto, Room, Tenant, UtilityService } from '@/shared/types/landlord';
+import { InputNumber } from 'antd';
+import { CreateContractDto } from '@/shared/types/landlord';
+import { useRooms, useTenants, useRoomDetail, useServices } from '@/shared/hooks';
 import {
   resolveServiceUnit,
   formatServicePriceWithUnit,
@@ -10,9 +11,6 @@ import {
 
 interface CreateContractModalProps {
   open: boolean;
-  rooms: Room[];
-  tenants: Tenant[];
-  services: UtilityService[];
   confirmLoading: boolean;
   onCancel: () => void;
   onSubmit: (values: CreateContractDto) => Promise<void>;
@@ -20,165 +18,126 @@ interface CreateContractModalProps {
 
 export const CreateContractModal: React.FC<CreateContractModalProps> = ({
   open,
-  rooms,
-  tenants,
-  services,
   confirmLoading,
   onCancel,
   onSubmit,
 }) => {
   const [form] = Form.useForm();
-  const [selectedRoomServices, setSelectedRoomServices] = useState<UtilityService[]>([]);
+  const { services } = useServices();
 
-  // Lấy các dịch vụ mà phòng trọ đang hỗ trợ
-  const getServicesForRoom = (targetRoomId: number | string) => {
-    const targetRoom = rooms.find((r) => Number(r.id) === Number(targetRoomId));
-    if (!targetRoom) return services;
+  const watchedRoomId = Form.useWatch('roomId', form);
+  const { room: detailedRoom } = useRoomDetail(watchedRoomId);
 
-    // 1. Nếu room có mảng services chi tiết
-    if (targetRoom.services && targetRoom.services.length > 0) {
-      return targetRoom.services;
-    }
-
-    // 2. Nếu room có mảng serviceIds
-    if (targetRoom.serviceIds && targetRoom.serviceIds.length > 0) {
-      const ids = targetRoom.serviceIds.map(Number);
-      const matched = services.filter((s) => ids.includes(Number(s.id)));
-      if (matched.length > 0) return matched;
-    }
-
-    // 3. Fallback
-    return services;
-  };
-
-  const handleRoomSelection = (roomId: number | string) => {
-    const targetRoom = rooms.find((r) => Number(r.id) === Number(roomId));
-    if (!targetRoom) return;
-
-    const roomServices = getServicesForRoom(roomId);
-    setSelectedRoomServices(roomServices);
-
-    const rent = targetRoom.listedPrice || 3800000;
-    const deposit = targetRoom.standardDeposit || rent;
-
-    const initialMeterReadings: Record<string, number> = {};
-    roomServices.forEach((s: any) => {
-      if (
-        s.billingMethod === 'METER_INDEX' ||
-        s.chargingType === 'METER' ||
-        s.chargingType === 'METER_INDEX'
-      ) {
-        initialMeterReadings[String(s.id)] = 0;
-      }
-    });
-
-    form.setFieldsValue({
-      rentPrice: rent,
-      depositAmount: deposit,
-      serviceIds: roomServices.map((s) => s.id),
-      meterReadings: initialMeterReadings,
-    });
-  };
-
-  // Watch selected services to conditionally render meter readings
   const watchedServiceIds = Form.useWatch('serviceIds', form) || [];
-  const currentAvailableServices = selectedRoomServices.length > 0 ? selectedRoomServices : services;
-  const meterServices = currentAvailableServices.filter(
-    (s: any) =>
-      watchedServiceIds.includes(s.id) &&
-      (s.billingMethod === 'METER_INDEX' ||
-        s.chargingType === 'METER' ||
-        s.chargingType === 'METER_INDEX')
+  const watchedTenantIds = Form.useWatch('tenantIds', form) || [];
+
+  // Danh sách dịch vụ khả dụng: ưu tiên dịch vụ của phòng đã cấu hình, nếu không có thì lấy toàn bộ dịch vụ của chủ trọ
+  const availableServices =
+    detailedRoom?.services && detailedRoom.services.length > 0
+      ? detailedRoom.services
+      : services;
+
+  // Các dịch vụ tính theo công tơ (METER_INDEX) trong các dịch vụ đã chọn
+  const meterServices = availableServices.filter(
+    (s: any) => watchedServiceIds.includes(s.id) && s.billingMethod === 'METER_INDEX'
   );
 
-  useEffect(() => {
-    if (open) {
-      form.resetFields();
-      const today = new Date().toISOString().split('T')[0];
-      const end = new Date();
-      end.setFullYear(end.getFullYear() + 1);
-      end.setDate(end.getDate() - 1);
-      const defaultEndDate = end.toISOString().split('T')[0];
+  // Tự động tính ngày kết thúc hợp đồng
+  const calculateEndDate = (startDateStr: string, months: number): string => {
+    const start = new Date(startDateStr);
+    start.setMonth(start.getMonth() + months);
+    start.setDate(start.getDate() - 1);
+    return start.toISOString().split('T')[0];
+  };
 
-      const firstRoom = rooms[0];
-      const initialServices = firstRoom ? getServicesForRoom(firstRoom.id) : services;
-      setSelectedRoomServices(initialServices);
+  // Tự động cập nhật dịch vụ và giá thuê khi chọn phòng
+  useEffect(() => {
+    if (detailedRoom) {
+      const rent = Number(detailedRoom.listedPrice || 0);
+      const deposit = Number(detailedRoom.standardDeposit || rent);
+      const roomServices =
+        detailedRoom.services && detailedRoom.services.length > 0
+          ? detailedRoom.services
+          : services;
 
       const initialMeterReadings: Record<string, number> = {};
-      initialServices.forEach((s: any) => {
-        if (
-          s.billingMethod === 'METER_INDEX' ||
-          s.chargingType === 'METER' ||
-          s.chargingType === 'METER_INDEX'
-        ) {
+      roomServices.forEach((s: any) => {
+        if (s.billingMethod === 'METER_INDEX') {
           initialMeterReadings[String(s.id)] = 0;
         }
       });
 
-      const initialVals: any = {
+      form.setFieldsValue({
+        rentPrice: rent,
+        depositAmount: deposit,
+        serviceIds: roomServices.map((s: any) => s.id),
+        meterReadings: initialMeterReadings,
+      });
+    }
+  }, [detailedRoom, services, form]);
+
+  // Reset form khi modal mở
+  useEffect(() => {
+    if (open) {
+      form.resetFields();
+      const today = new Date().toISOString().split('T')[0];
+      form.setFieldsValue({
         startDate: today,
         durationMonths: 12,
-        endDate: defaultEndDate,
+        endDate: calculateEndDate(today, 12),
         paymentCycleDay: 5,
-        rentPrice: 3800000,
-        depositAmount: 3800000,
-        meterReadings: initialMeterReadings,
-      };
-
-      if (firstRoom) {
-        initialVals.roomId = firstRoom.id;
-        initialVals.rentPrice = firstRoom.listedPrice || 3800000;
-        initialVals.depositAmount = firstRoom.standardDeposit || 3800000;
-        initialVals.serviceIds = initialServices.map((s) => s.id);
-      } else {
-        initialVals.serviceIds = services.map((s) => s.id);
-      }
-
-      if (tenants.length > 0) {
-        initialVals.representativeTenantId = tenants[0].id;
-      }
-
-      form.setFieldsValue(initialVals);
+        rentPrice: 0,
+        depositAmount: 0,
+      });
     }
-  }, [open, rooms, tenants, services]);
+  }, [open, form]);
 
   const handleFinish = async () => {
     try {
       const values = await form.validateFields();
       if (!values.endDate && values.startDate) {
-        const start = new Date(values.startDate);
-        const months = Number(values.durationMonths || 12);
-        start.setMonth(start.getMonth() + months);
-        start.setDate(start.getDate() - 1);
-        values.endDate = start.toISOString().split('T')[0];
+        values.endDate = calculateEndDate(
+          values.startDate,
+          Number(values.durationMonths || 12)
+        );
       }
 
       // Đóng gói danh sách dịch vụ áp dụng kèm chỉ số ban đầu (initialIndex) cho các dịch vụ công tơ
       const selectedServiceIds: (number | string)[] = values.serviceIds || [];
-      const serviceItems = selectedServiceIds.map((sId) => {
-        const srv = currentAvailableServices.find((s: any) => String(s.id) === String(sId));
-        const initVal = values.meterReadings?.[String(sId)] !== undefined
-          ? Number(values.meterReadings[String(sId)])
-          : 0;
-        return {
-          serviceId: srv ? srv.id : sId,
-          serviceName: srv ? srv.name : 'Dịch vụ',
-          unit: srv ? srv.unit : 'Tháng',
-          appliedUnitPrice: Number(srv ? srv.unitPrice : 0),
-          billingMethod: srv ? srv.billingMethod : 'FIXED_PER_ROOM',
-          initialIndex: initVal,
-        };
-      });
+      const serviceItems = selectedServiceIds.map((sId) => ({
+        serviceId: Number(sId),
+        initialIndex:
+          values.meterReadings?.[String(sId)] !== undefined
+            ? Number(values.meterReadings[String(sId)])
+            : 0,
+      }));
 
-      values.services = serviceItems;
-      delete values.serviceIds;
-      delete values.meterReadings;
-
-      await onSubmit(values as CreateContractDto);
-    } catch (err: any) {
-      if (err?.message) {
-        message.error(err.message);
+      // Đảm bảo khách đại diện luôn có tên trong danh sách khách ở phòng
+      const selectedTenants: (number | string)[] = values.tenantIds || [];
+      if (
+        values.representativeTenantId &&
+        !selectedTenants.includes(values.representativeTenantId)
+      ) {
+        selectedTenants.push(values.representativeTenantId);
       }
+
+      const payload: CreateContractDto = {
+        roomId: values.roomId,
+        representativeTenantId: values.representativeTenantId,
+        tenantIds: selectedTenants,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        durationMonths: Number(values.durationMonths || 12),
+        paymentCycleDay: Number(values.paymentCycleDay || 5),
+        rentPrice: Number(values.rentPrice || 0),
+        depositAmount: Number(values.depositAmount || 0),
+        termsAndConditions: values.termsAndConditions,
+        services: serviceItems,
+      };
+
+      await onSubmit(payload);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -198,186 +157,221 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
         layout="vertical"
         className="mt-4 space-y-5"
         onValuesChange={(changedValues, allValues) => {
-          if (changedValues.roomId) {
-            handleRoomSelection(changedValues.roomId);
+          if (changedValues.representativeTenantId) {
+            const currentTenantIds = form.getFieldValue('tenantIds') || [];
+            if (!currentTenantIds.includes(changedValues.representativeTenantId)) {
+              form.setFieldsValue({
+                tenantIds: [...currentTenantIds, changedValues.representativeTenantId],
+              });
+            }
           }
-          if ((changedValues.startDate || changedValues.durationMonths) && allValues.startDate) {
-            const start = new Date(allValues.startDate);
-            const months = Number(allValues.durationMonths || 12);
-            start.setMonth(start.getMonth() + months);
-            start.setDate(start.getDate() - 1);
-            form.setFieldsValue({ endDate: start.toISOString().split('T')[0] });
+          if (
+            (changedValues.startDate || changedValues.durationMonths) &&
+            allValues.startDate
+          ) {
+            form.setFieldsValue({
+              endDate: calculateEndDate(
+                allValues.startDate,
+                Number(allValues.durationMonths || 12)
+              ),
+            });
           }
         }}
       >
         {/* SECTION 1: PHÒNG & KHÁCH HÀNG */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Thông tin phòng trọ & khách đại diện
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Chọn phòng trống </span>}
-                name="roomId"
-                rules={[{ required: true, message: 'Vui lòng chọn phòng trống' }]}
-                className="mb-0"
-              >
-                <Select
-                  placeholder="Chọn phòng..."
-                  className="w-full h-11"
-                  onChange={(val) => handleRoomSelection(val)}
-                  options={rooms.map((r: any) => ({
-                    label: `${r.name} (${(r.listedPrice || 0).toLocaleString()} đ)`,
-                    value: r.id,
-                  }))}
-                />
-              </Form.Item>
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item
+              label={<span className="text-stay-text font-medium">Chọn phòng trống</span>}
+              name="roomId"
+              rules={[{ required: true, message: 'Vui lòng chọn phòng trống' }]}
+              className="mb-0"
+            >
+              <Select.Infinite
+                useQueryHook={useRooms}
+                params={{ status: 'AVAILABLE' }}
+                placeholder="Chọn phòng còn trống..."
+                className="w-full h-11"
+                mapOption={(r: any) => ({
+                  label: `${r.name}${r.buildingName ? ` (${r.buildingName})` : ''} - ${(r.listedPrice || 0).toLocaleString()} đ`,
+                  value: r.id,
+                })}
+              />
+            </Form.Item>
 
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Khách đại diện </span>}
-                name="representativeTenantId"
-                rules={[{ required: true, message: 'Vui lòng chọn người thuê đại diện' }]}
-                className="mb-0"
-              >
-                <Select
-                  placeholder="Chọn khách thuê..."
-                  className="w-full h-11"
-                  options={tenants.map((t: any) => ({
-                    label: `${t.fullName} (${t.phone})`,
-                    value: t.id,
-                  }))}
-                />
-              </Form.Item>
-            </div>
+            <Form.Item
+              label={<span className="text-stay-text font-medium">Khách đại diện hợp đồng</span>}
+              name="representativeTenantId"
+              rules={[{ required: true, message: 'Vui lòng chọn người thuê đại diện' }]}
+              className="mb-0"
+            >
+              <Select.Infinite
+                useQueryHook={useTenants}
+                placeholder="Chọn khách đại diện..."
+                className="w-full h-11"
+                mapOption={(t: any) => ({
+                  label: `${t.fullName} (${t.phone || '—'}) - CCCD: ${t.idCardNumber || '—'}`,
+                  value: t.id,
+                })}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-stay-text font-medium">Khách thuê ở trong phòng</span>
+                  {detailedRoom?.maxCapacity && (
+                    <span
+                      className={`text-xs ${
+                        watchedTenantIds.length > detailedRoom.maxCapacity
+                          ? 'text-red-500 font-semibold'
+                          : 'text-stay-text-secondary'
+                      } font-normal`}
+                    >
+                      Sức chứa phòng: {detailedRoom.maxCapacity} người (Đã chọn:{' '}
+                      {watchedTenantIds.length})
+                    </span>
+                  )}
+                </div>
+              }
+              name="tenantIds"
+              className="mb-0 md:col-span-2"
+              tooltip="Chọn tất cả khách thuê sẽ sinh sống trong phòng (bao gồm khách đại diện và các thành viên)"
+            >
+              <Select.Infinite
+                mode="multiple"
+                useQueryHook={useTenants}
+                placeholder="Chọn danh sách khách thuê ở trong phòng..."
+                className="w-full min-h-[44px]"
+                mapOption={(t: any) => ({
+                  label: `${t.fullName} (${t.phone || '—'}) - CCCD: ${t.idCardNumber || '—'}`,
+                  value: t.id,
+                })}
+              />
+            </Form.Item>
           </div>
         </div>
 
         {/* SECTION 2: THỜI HẠN & CHU KỲ */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Thời hạn hợp đồng & chu kỳ thanh toán
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Ngày bắt đầu </span>}
-                name="startDate"
-                rules={[{ required: true, message: 'Nhập ngày bắt đầu ' }]}
-                className="mb-0"
-              >
-                <Input type="date" className="w-full h-11" />
-              </Form.Item>
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
+            <Form.Item
+              label={<span className="text-stay-text font-medium">Ngày bắt đầu</span>}
+              name="startDate"
+              rules={[{ required: true, message: 'Nhập ngày bắt đầu' }]}
+              className="mb-0"
+            >
+              <Input type="date" className="w-full h-11" />
+            </Form.Item>
 
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Thời hạn thuê </span>}
-                name="durationMonths"
-                initialValue={12}
-                rules={[{ required: true, message: 'Nhập số tháng thuê ' }]}
-                className="mb-0"
-              >
-                <InputNumber
-                  min={1}
-                  addonAfter="tháng"
-                  className="w-full h-11 font-medium"
-                />
-              </Form.Item>
+            <Form.Item
+              label={<span className="text-stay-text font-medium">Thời hạn thuê</span>}
+              name="durationMonths"
+              rules={[{ required: true, message: 'Nhập số tháng thuê' }]}
+              className="mb-0"
+            >
+              <InputNumber
+                min={1}
+                addonAfter="tháng"
+                className="w-full h-11 font-medium"
+              />
+            </Form.Item>
 
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Ngày kết thúc </span>}
-                name="endDate"
-                rules={[{ required: true, message: 'Nhập ngày kết thúc ' }]}
-                className="mb-0"
-              >
-                <Input type="date" className="w-full h-11" />
-              </Form.Item>
+            <Form.Item
+              label={<span className="text-stay-text font-medium">Ngày kết thúc</span>}
+              name="endDate"
+              rules={[{ required: true, message: 'Nhập ngày kết thúc' }]}
+              className="mb-0"
+            >
+              <Input type="date" className="w-full h-11" />
+            </Form.Item>
 
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Kỳ thu cước phí </span>}
-                name="paymentCycleDay"
-                initialValue={5}
-                rules={[{ required: true, message: 'Nhập ngày thu tiền ' }]}
-                className="mb-0"
-              >
-                <InputNumber
-                  min={1}
-                  max={31}
-                  prefix="Ngày"
-                  addonAfter="hàng tháng"
-                  className="w-full h-11 font-medium"
-                />
-              </Form.Item>
-            </div>
+            <Form.Item
+              label={<span className="text-stay-text font-medium">Kỳ thu cước phí</span>}
+              name="paymentCycleDay"
+              rules={[{ required: true, message: 'Nhập ngày thu tiền' }]}
+              className="mb-0"
+            >
+              <InputNumber
+                min={1}
+                max={31}
+                prefix="Ngày"
+                addonAfter="hàng tháng"
+                className="w-full h-11 font-medium"
+              />
+            </Form.Item>
           </div>
         </div>
 
         {/* SECTION 3: TÀI CHÍNH & TIỀN CỌC */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            3. Giá thuê & tiền cọc cam kết
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Tiền thuê phòng thỏa thuận </span>}
-                name="rentPrice"
-                initialValue={3800000}
-                rules={[{ required: true, message: 'Nhập tiền thuê ' }]}
-                className="mb-0"
-              >
-                <InputNumber
-                  step={100000}
-                  addonAfter="VNĐ/tháng"
-                  formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
-                  className="w-full h-11 font-medium"
-                />
-              </Form.Item>
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Form.Item
+              label={
+                <span className="text-stay-text font-medium">
+                  Tiền thuê phòng thỏa thuận
+                </span>
+              }
+              name="rentPrice"
+              rules={[{ required: true, message: 'Nhập tiền thuê' }]}
+              className="mb-0"
+            >
+              <InputNumber
+                step={100000}
+                addonAfter="VNĐ/tháng"
+                formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
+                className="w-full h-11 font-medium"
+              />
+            </Form.Item>
 
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Tiền đặt cọc giữ phòng </span>}
-                name="depositAmount"
-                initialValue={3800000}
-                rules={[{ required: true, message: 'Nhập tiền đặt cọc ' }]}
-                className="mb-0"
-              >
-                <InputNumber
-                  step={100000}
-                  addonAfter="VNĐ"
-                  formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
-                  className="w-full h-11 font-medium"
-                />
-              </Form.Item>
-            </div>
+            <Form.Item
+              label={
+                <span className="text-stay-text font-medium">
+                  Tiền đặt cọc giữ phòng
+                </span>
+              }
+              name="depositAmount"
+              rules={[{ required: true, message: 'Nhập tiền đặt cọc' }]}
+              className="mb-0"
+            >
+              <InputNumber
+                step={100000}
+                addonAfter="VNĐ"
+                formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
+                className="w-full h-11 font-medium"
+              />
+            </Form.Item>
           </div>
         </div>
 
         {/* SECTION 4: DỊCH VỤ & CÔNG TƠ ĐỒNG HỒ */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-stay-text">
-              4. Dịch vụ tiện ích & chỉ số bàn giao ban đầu
-            </h3>
-            {selectedRoomServices.length > 0 && (
-              <span className="text-xs text-stay-text-secondary">
-                Phòng hỗ trợ {selectedRoomServices.length} dịch vụ
-              </span>
-            )}
-          </div>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-3">
             <Form.Item
-              label={<span className="text-stay-text font-medium text-xs">Dịch vụ áp dụng trong hợp đồng </span>}
+              label={
+                <span className="text-stay-text font-medium">
+                  Dịch vụ áp dụng trong hợp đồng
+                </span>
+              }
               name="serviceIds"
-              rules={[{ required: true, message: 'Vui lòng chọn ít nhất 1 dịch vụ áp dụng' }]}
+              rules={[
+                { required: true, message: 'Vui lòng chọn ít nhất 1 dịch vụ áp dụng' },
+              ]}
               className="mb-2"
             >
               <Select
                 mode="multiple"
                 placeholder="Chọn các dịch vụ áp dụng..."
                 className="w-full min-h-[40px]"
-                options={(selectedRoomServices.length > 0 ? selectedRoomServices : services).map((s: any) => {
-                  const info = getBillingMethodInfo(s.billingMethod, s.chargingType, s.serviceName || s.name, s.category);
+                options={availableServices.map((s: any) => {
+                  const info = getBillingMethodInfo(
+                    s.billingMethod,
+                    s.chargingType,
+                    s.serviceName || s.name,
+                    s.category
+                  );
                   const priceFormatted = formatServicePriceWithUnit(s);
                   return {
                     label: `${s.serviceName || s.name} - ${priceFormatted} [Cách tính: ${info.shortLabel}]`,
@@ -389,7 +383,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
 
             {/* Khối nhập chỉ số công tơ ban đầu */}
             {meterServices.length > 0 && (
-              <div className="p-3.5 rounded-lg bg-stay-card-bg border border-stay-border space-y-3 mt-3">
+              <div className="p-3.5 rounded-lg border border-stay-border space-y-3 mt-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {meterServices.map((srv: any) => {
                     const sUnit = resolveServiceUnit(srv);
@@ -398,7 +392,7 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
                       <Form.Item
                         key={srv.id}
                         label={
-                          <span className="text-stay-text font-medium text-xs">
+                          <span className="text-stay-text font-medium">
                             Chỉ số ban đầu: <strong>{sName}</strong>
                           </span>
                         }
@@ -426,19 +420,18 @@ export const CreateContractModal: React.FC<CreateContractModalProps> = ({
         </div>
 
         {/* SECTION 5: ĐIỀU KHOẢN */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            5. Điều khoản & thỏa thuận chung
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
-            <Form.Item name="termsAndConditions" className="mb-0">
-              <Input.TextArea
-                rows={3}
-                placeholder="Ví dụ: Đóng tiền phòng đúng hạn từ ngày 1-5 hàng tháng, không nuôi thú cưng gây ồn, giữ gìn vệ sinh chung..."
-                className="rounded-xl p-3"
-              />
-            </Form.Item>
-          </div>
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <Form.Item
+            name="termsAndConditions"
+            label="Điều khoản & thỏa thuận chung"
+            className="mb-0"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Ví dụ: Đóng tiền phòng đúng hạn từ ngày 1-5 hàng tháng, không nuôi thú cưng gây ồn, giữ gìn vệ sinh chung..."
+              className="rounded-lg p-3"
+            />
+          </Form.Item>
         </div>
       </Form>
     </Modal>

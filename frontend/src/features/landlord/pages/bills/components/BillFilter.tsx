@@ -1,13 +1,13 @@
 import React from 'react';
 import { RotateCcw, Plus } from 'lucide-react';
 import { Select, Button } from '@/shared/components';
-import { BillStatus } from '@/shared/types/landlord';
+import { InvoiceStatus } from '@/shared/types/landlord';
 
 interface BillFilterProps {
   billingMonth: string;
   onBillingMonthChange: (val: string) => void;
-  statusFilter: BillStatus | 'ALL';
-  onStatusFilterChange: (val: BillStatus | 'ALL') => void;
+  statusFilter: InvoiceStatus | 'ALL';
+  onStatusFilterChange: (val: InvoiceStatus | 'ALL') => void;
   onReset?: () => void;
   onOpenCreate?: () => void;
 }
@@ -45,7 +45,7 @@ export const BillFilter: React.FC<BillFilterProps> = ({
 
       <Select
         value={statusFilter}
-        onChange={(val) => onStatusFilterChange(val as BillStatus | 'ALL')}
+        onChange={(val) => onStatusFilterChange(val as InvoiceStatus | 'ALL')}
         className="w-full sm:w-[220px] h-[40px] rounded-[8px]"
         options={[
           { label: 'Tất cả trạng thái', value: 'ALL' },

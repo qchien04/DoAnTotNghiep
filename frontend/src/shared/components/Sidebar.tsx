@@ -58,14 +58,14 @@ export const Sidebar: React.FC = () => {
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
-          className="border-r-0 font-medium text-xs bg-transparent"
+          className="border-r-0 font-medium  bg-transparent"
         />
 
         <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border space-y-2 mx-2">
           <Text type="secondary" className="text-[11px] font-bold uppercase tracking-wider block">
             Hạ Tầng Mono-service
           </Text>
-          <div className="space-y-1.5 text-xs text-stay-text-secondary">
+          <div className="space-y-1.5  text-stay-text-secondary">
             <div className="flex items-center gap-2">
               <CheckCircleOutlined className="text-emerald-500" />
               <span>JWT Payload Auth</span>

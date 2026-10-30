@@ -6,7 +6,6 @@ import { Tooltip, Select, message } from 'antd';
 import {
   FileText,
   Home,
-  CheckCircle2,
   Eye,
   Search,
   RotateCcw,
@@ -36,33 +35,33 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
   const getStatusBadge = (status: string, isCurrent: boolean) => {
     if (isCurrent) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Đang thuê
+        <span className="inline-flex items-center px-2 py-0.5 rounded font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+          Đang thuê
         </span>
       );
     }
     switch (status?.toUpperCase()) {
       case 'ACTIVE':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
             Hiệu lực
           </span>
         );
       case 'EXPIRED':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-stay-text-muted bg-stay-bg-app border border-stay-border">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-stay-text-muted bg-stay-bg-app border border-stay-border">
             Hết hạn
           </span>
         );
       case 'TERMINATED':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20">
             Đã thanh lý
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded  font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20">
             {status || 'Đã kết thúc'}
           </span>
         );
@@ -102,7 +101,6 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
     {
       title: 'Phòng & Tòa nhà',
       key: 'roomInfo',
-      width: 180,
       ellipsis: { showTitle: true },
       render: (_: any, r: TenantContractHistory) => (
         <div>
@@ -180,14 +178,14 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      width: 130,
+      width: 120,
       fixed: 'right' as const,
       render: (_: any, r: TenantContractHistory) => (
         <div className="flex items-center justify-start gap-1.5">
           <Tooltip title="Xem chi tiết hợp đồng">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => {
                 setSelectedContract(r);
                 setDetailModalOpen(true);
@@ -200,7 +198,7 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
           <Tooltip title="Tải xuống / In hợp đồng">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => {
                 setSelectedContract(r);
                 setDetailModalOpen(true);
@@ -213,7 +211,7 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
           <Tooltip title="Liên hệ chủ trọ">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-delete"
+              className="stay-action-btn"
               onClick={() =>
                 message.info(
                   `Chủ trọ ${r.landlordName || ''} - SĐT: ${r.landlordPhone || 'Xem trong chi tiết hợp đồng'}`
@@ -276,19 +274,19 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
         pagination={
           pageInfo
             ? {
-                current: (pageInfo.page ?? 0) + 1,
-                pageSize: pageInfo.size ?? 10,
-                total: pageInfo.totalElements ?? 0,
-                showSizeChanger: true,
-                pageSizeOptions: ['10', '20', '50'],
-                showTotal: (total) => `Tổng ${total} hợp đồng`,
-                onChange: (p, s) => onPageChange?.(p - 1, s),
-              }
+              current: (pageInfo.page ?? 0) + 1,
+              pageSize: pageInfo.size ?? 10,
+              total: pageInfo.totalElements ?? 0,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total) => `Tổng ${total} hợp đồng`,
+              onChange: (p, s) => onPageChange?.(p - 1, s),
+            }
             : {
-                pageSize: 10,
-                showSizeChanger: false,
-                showTotal: (total) => `Tổng ${total} hợp đồng`,
-              }
+              pageSize: 10,
+              showSizeChanger: false,
+              showTotal: (total) => `Tổng ${total} hợp đồng`,
+            }
         }
       />
 
@@ -305,14 +303,14 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
         width={620}
       >
         {selectedContract && (
-          <div className="space-y-3.5 pt-2 text-xs">
+          <div className="space-y-3.5 pt-2 ">
             {/* Header info */}
             <div className="p-3 rounded-lg bg-stay-bg-app border border-stay-border flex items-center justify-between">
               <div>
                 <span className="font-semibold text-sm text-stay-text">
                   Hợp đồng thuê #HD{selectedContract.id}
                 </span>
-                <p className="text-stay-text-secondary text-xs mt-0.5">
+                <p className="text-stay-text-secondary  mt-0.5">
                   Thời hạn: {formatDate(selectedContract.startDate)} ➔ {formatDate(selectedContract.endDate)}
                 </p>
               </div>
@@ -321,10 +319,10 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
 
             {/* Room info */}
             <div className="bg-stay-card-bg border border-stay-border rounded-lg p-3 space-y-2">
-              <h4 className="font-semibold text-stay-text text-xs flex items-center gap-1.5">
+              <h4 className="font-semibold text-stay-text  flex items-center gap-1.5">
                 <Home className="w-3.5 h-3.5 text-stay-primary" /> Thông tin phòng & Chủ trọ
               </h4>
-              <div className="grid grid-cols-2 gap-2.5 text-xs pt-0.5">
+              <div className="grid grid-cols-2 gap-2.5  pt-0.5">
                 <div>
                   <span className="text-stay-text-muted block">Phòng:</span>
                   <span className="font-semibold text-stay-text">{selectedContract.roomName || '—'}</span>
@@ -350,10 +348,10 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
 
             {/* Rent & Deposit */}
             <div className="bg-stay-card-bg border border-stay-border rounded-lg p-3 space-y-2">
-              <h4 className="font-semibold text-stay-text text-xs flex items-center gap-1.5">
+              <h4 className="font-semibold text-stay-text  flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-stay-primary" /> Chi phí & Đặt cọc
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-0.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5  pt-0.5">
                 <div>
                   <span className="text-stay-text-muted block">Tiền phòng / tháng:</span>
                   <span className="font-bold text-stay-primary text-sm">
@@ -380,7 +378,7 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
             {/* Services */}
             {selectedContract.services && selectedContract.services.length > 0 && (
               <div className="bg-stay-card-bg border border-stay-border rounded-lg p-3 space-y-2">
-                <h4 className="font-semibold text-stay-text text-xs">Dịch vụ thỏa thuận</h4>
+                <h4 className="font-semibold text-stay-text ">Dịch vụ thỏa thuận</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
                   {selectedContract.services.map((srv, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-stay-bg-app border border-stay-border">
@@ -397,8 +395,8 @@ export const ContractHistoryList: React.FC<ContractHistoryListProps> = ({
             {/* Terms and conditions */}
             {selectedContract.termsAndConditions && (
               <div className="bg-stay-card-bg border border-stay-border rounded-lg p-3 space-y-1">
-                <h4 className="font-semibold text-stay-text text-xs">Điều khoản & Quy định</h4>
-                <p className="text-stay-text-secondary leading-relaxed text-xs whitespace-pre-line bg-stay-bg-app p-2.5 rounded-lg border border-stay-border">
+                <h4 className="font-semibold text-stay-text ">Điều khoản & Quy định</h4>
+                <p className="text-stay-text-secondary leading-relaxed  whitespace-pre-line bg-stay-bg-app p-2.5 rounded-lg border border-stay-border">
                   {selectedContract.termsAndConditions}
                 </p>
               </div>

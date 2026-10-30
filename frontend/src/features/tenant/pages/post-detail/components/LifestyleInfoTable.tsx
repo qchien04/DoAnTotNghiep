@@ -12,7 +12,7 @@ export const LifestyleInfoTable: React.FC<LifestyleInfoTableProps> = ({ post }) 
   const getGenderText = (val?: string) => {
     if (val === 'MALE' || val === 'MALE_ONLY') return 'Chỉ Nam';
     if (val === 'FEMALE' || val === 'FEMALE_ONLY') return 'Chỉ Nữ';
-    return 'Linh hoạt (Nam hoặc Nữ)';
+    return 'Linh hoạt';
   };
 
   const getSleepTimeText = (val?: string) => {
@@ -87,13 +87,13 @@ export const LifestyleInfoTable: React.FC<LifestyleInfoTableProps> = ({ post }) 
         <h3 className="text-sm font-bold text-stay-text">
           Tiêu chuẩn lối sống & Thói quen sinh hoạt
         </h3>
-        <span className="text-xs text-stay-text-secondary">
+        <span className=" text-stay-text-secondary">
           Khảo sát lối sống 8 chiều
         </span>
       </div>
 
       <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className="w-full text-left  border-collapse">
           <thead>
             <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
               <th className="p-3 w-4/12">Tiêu chí</th>

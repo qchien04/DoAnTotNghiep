@@ -7,9 +7,6 @@
 -- =============================================================================
 -- 0. DỌN DẸP DỮ LIỆU CŨ (TRÁNH XUNG ĐỘT UNIQUE CONSTRAINT KHI CHẠY LẠI)
 -- =============================================================================
--- Gỡ bỏ liên kết vòng lặp giữa contracts và tenants trước khi xóa
-UPDATE contracts SET representative_tenant_id = NULL WHERE representative_tenant_id IS NOT NULL;
-
 DELETE FROM roommate_applications;
 DELETE FROM roommate_posts;
 DELETE FROM complaints;
@@ -17,6 +14,7 @@ DELETE FROM invoice_items;
 DELETE FROM invoices;
 DELETE FROM tenant_link_invitations;
 DELETE FROM contract_services;
+DELETE FROM contract_tenants;
 DELETE FROM tenants;
 DELETE FROM contracts;
 DELETE FROM room_services;
@@ -109,15 +107,18 @@ VALUES
 -- - tenant3 (user_id=5): Khách thuê cùng phòng, ĐANG CHỜ XÁC NHẬN LIÊN KẾT (PENDING)
 -- - tenant2 (user_id=4, Lê Thị Mai): Khách thuê tự do, KHÔNG có phòng và KHÔNG có lời mời
 -- =============================================================================
-INSERT INTO tenants (id, room_id, contract_id, user_id, full_name, phone, id_card_number, gender, is_representative, link_status, status, created_at, updated_at)
+INSERT INTO tenants (id, landlord_id, user_id, full_name, phone, id_card_number, gender, link_status, created_at, updated_at)
 VALUES
-    (1, 2, 1, 3, 'Trần Quang Chiến', '0987654321', '001202008999', 'MALE', TRUE, 'LINKED', 'STAYING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (2, 2, 1, 5, 'Hoàng Đức Anh', '0912888999', '001202007888', 'MALE', FALSE, 'PENDING', 'STAYING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (3, 1, 2, 3, 'Trần Quang Chiến', '0987654321', '001202008999', 'MALE', TRUE, 'LINKED', 'LEFT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (1, 2, 3, 'Trần Quang Chiến', '0987654321', '001202008999', 'MALE', 'LINKED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (2, 2, 5, 'Hoàng Đức Anh', '0912888999', '001202007888', 'MALE', 'PENDING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (3, 2, 3, 'Trần Quang Chiến', '0987654321', '001202008999', 'MALE', 'LINKED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Cập nhật người đại diện hợp đồng
-UPDATE contracts SET representative_tenant_id = 1 WHERE id = 1;
-UPDATE contracts SET representative_tenant_id = 3 WHERE id = 2;
+-- Bảng liên kết Hợp đồng - Khách thuê
+INSERT INTO contract_tenants (id, contract_id, tenant_id, is_representative, created_at, updated_at)
+VALUES
+    (1, 1, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (2, 1, 2, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (3, 2, 3, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =============================================================================
 -- 8b. LỜI MỜI LIÊN KẾT PHÒNG TRỌ (TENANT_LINK_INVITATIONS - UC 16)
@@ -141,11 +142,11 @@ VALUES
 -- =============================================================================
 -- 10. HÓA ĐƠN TIỀN PHÒNG HÀNG THÁNG (INVOICES)
 -- =============================================================================
-INSERT INTO invoices (id, contract_id, billing_period, due_date, room_price, services_amount, other_amount, total_amount, paid_amount, status, payment_method, paid_at, payment_note, created_at, updated_at)
+INSERT INTO invoices (id, contract_id, billing_period, due_date, room_price, services_amount, total_amount, paid_amount, status, payment_method, paid_at, payment_note, created_at, updated_at)
 VALUES
-    (1, 1, '09/2026', '2026-10-05', 3800000, 420000, 0, 4220000, 4220000, 'PAID', 'VIETQR', '2026-10-04 15:30:00+07', 'Đã gạch nợ thành công qua chuyển khoản VietQR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (2, 1, '10/2026', CURRENT_DATE + INTERVAL '5 days', 3800000, 727500, 0, 4527500, 0, 'UNPAID', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (3, 2, '12/2025', '2026-01-05', 3500000, 450000, 0, 3950000, 3950000, 'PAID', 'VIETQR', '2026-01-04 10:00:00+07', 'Đã thanh toán đủ kỳ tháng 12/2025', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (1, 1, '09/2026', '2026-10-05', 3800000, 420000, 4220000, 4220000, 'PAID', 'VIETQR', '2026-10-04 15:30:00+07', 'Đã gạch nợ thành công qua chuyển khoản VietQR', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (2, 1, '10/2026', CURRENT_DATE + INTERVAL '5 days', 3800000, 727500, 4527500, 0, 'UNPAID', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (3, 2, '12/2025', '2026-01-05', 3500000, 450000, 3950000, 3950000, 'PAID', 'VIETQR', '2026-01-04 10:00:00+07', 'Đã thanh toán đủ kỳ tháng 12/2025', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =============================================================================
 -- 11. CHI TIẾT KHOẢN THU TRONG HÓA ĐƠN (INVOICE_ITEMS)
@@ -188,6 +189,7 @@ VALUES
 INSERT INTO roommate_applications (id, post_id, applicant_id, intro_message, gender, is_smoking, is_pet, lifestyle_vector, compatibility_score, is_customized, status, reject_reason, created_at, updated_at)
 VALUES
     (1, 1, 5, 'Chào bạn Chiến, mình là Đức Anh học ĐHBK Hà Nội, tính tình gọn gàng, ít khi ở phòng ban ngày, muốn xin vào ở ghép phòng P102 Triều Khúc!', 'MALE', FALSE, FALSE, '0.667,0.333,0.333,0.500,0.250,0.250,0.333,0.500,0.500,0.500,0.400,0.850,0.500,0.500,0.500', 94, FALSE, 'PENDING', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
 
 -- =============================================================================
 -- 17. ĐỒNG BỘ AUTO-INCREMENT SEQUENCES CHO POSTGRESQL

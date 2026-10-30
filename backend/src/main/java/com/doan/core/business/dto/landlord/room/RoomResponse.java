@@ -135,7 +135,7 @@ public class RoomResponse {
                 .imageUrls(images)
                 .latitude(lat)
                 .longitude(lng)
-                .isPublic(room.getIsPublic() != null ? room.getIsPublic() : true)
+                .isPublic(room.getIsPublic())
                 .createdAt(room.getCreatedAt())
                 .build();
     }

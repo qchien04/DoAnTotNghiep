@@ -19,7 +19,7 @@ export const Switch: React.FC<SwitchProps> = ({
       <AntSwitch className="mt-0.5" {...props} />
       {(label || helperText) && (
         <div className="space-y-0.5 select-none">
-          {label && <div className="text-xs sm:text-sm font-medium text-stay-text">{label}</div>}
+          {label && <div className=" sm:text-sm font-medium text-stay-text">{label}</div>}
           {helperText && <div className="text-[11px] text-slate-500">{helperText}</div>}
         </div>
       )}

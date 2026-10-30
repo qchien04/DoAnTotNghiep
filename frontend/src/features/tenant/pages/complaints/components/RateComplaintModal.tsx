@@ -35,7 +35,7 @@ export const RateComplaintModal: React.FC<RateComplaintModalProps> = ({
         </span>
       }
     >
-      <div className="space-y-4 pt-2 text-xs">
+      <div className="space-y-4 pt-2 ">
         <div>
           <label className="text-stay-text-secondary block mb-2">
             Mức độ hài lòng:
@@ -49,9 +49,8 @@ export const RateComplaintModal: React.FC<RateComplaintModalProps> = ({
                 className="p-1 cursor-pointer transition-transform hover:scale-110"
               >
                 <Star
-                  className={`w-6 h-6 ${
-                    star <= starRating ? 'text-amber-500 fill-amber-500' : 'text-slate-300'
-                  }`}
+                  className={`w-6 h-6 ${star <= starRating ? 'text-amber-500 fill-amber-500' : 'text-slate-300'
+                    }`}
                 />
               </button>
             ))}

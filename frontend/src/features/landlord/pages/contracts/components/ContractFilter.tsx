@@ -47,7 +47,6 @@ export const ContractFilter: React.FC<ContractFilterProps> = ({
         options={[
           { label: 'Tất cả trạng thái', value: 'ALL' },
           { label: 'Đang hiệu lực', value: 'ACTIVE' },
-          { label: 'Sắp hết hạn', value: 'EXPIRING_SOON' },
           { label: 'Đã thanh lý', value: 'TERMINATED' },
         ]}
       />

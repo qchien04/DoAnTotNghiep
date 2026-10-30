@@ -68,7 +68,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
           color = 'text-amber-700 font-semibold';
         }
         return (
-          <span className={`text-xs ${color}`}>
+          <span className={` ${color}`}>
             {score}% ({label})
           </span>
         );
@@ -80,7 +80,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       key: 'createdAt',
       width: 120,
       render: (d: string) => (
-        <span className="text-xs text-stay-text-secondary">
+        <span className=" text-stay-text-secondary">
           {d ? new Date(d).toLocaleDateString('vi-VN') : '02/10/2026'}
         </span>
       ),
@@ -93,20 +93,20 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       render: (st: string) => {
         if (st === 'APPROVED') {
           return (
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <span className=" font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
               {getRoommateApplicationStatusLabel(st)}
             </span>
           );
         }
         if (st === 'REJECTED') {
           return (
-            <span className="text-xs font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+            <span className=" font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
               {getRoommateApplicationStatusLabel(st)}
             </span>
           );
         }
         return (
-          <span className="text-xs font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+          <span className=" font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
             {getRoommateApplicationStatusLabel(st)}
           </span>
         );
@@ -131,7 +131,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
   return (
     <div className="bg-stay-card-bg border border-stay-border rounded-xl overflow-hidden shadow-2xs">
       {applications.length === 0 ? (
-        <div className="py-12 text-center text-xs text-stay-text-secondary">
+        <div className="py-12 text-center  text-stay-text-secondary">
           Hiện chưa có đơn xin gia nhập nào đang chờ duyệt.
         </div>
       ) : (
@@ -140,7 +140,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
           dataSource={applications}
           rowKey="id"
           pagination={false}
-          className="text-xs"
+          className=""
         />
       )}
     </div>

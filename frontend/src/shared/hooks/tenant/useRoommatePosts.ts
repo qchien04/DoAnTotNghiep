@@ -74,6 +74,7 @@ export const useCreatePostWithRoom = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+      message.success('Đăng tin tìm bạn ở ghép (có phòng) thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể tạo bài đăng có phòng');
@@ -94,6 +95,7 @@ export const useCreatePostWithoutRoom = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+      message.success('Đăng tin tìm bạn ở ghép (chưa có phòng) thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể tạo bài đăng tìm phòng');
@@ -115,6 +117,7 @@ export const useUpdateRoommatePost = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+      message.success('Cập nhật bài đăng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật bài đăng');
@@ -135,6 +138,7 @@ export const useCloseRoommatePost = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+      message.success('Đã đóng bài đăng tìm bạn ở ghép!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể đóng bài đăng');
@@ -155,6 +159,7 @@ export const useCompleteRoommatePost = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myPosts() });
+      message.success('Đã hoàn tất tìm bạn ở ghép!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể hoàn tất / chốt bài đăng');

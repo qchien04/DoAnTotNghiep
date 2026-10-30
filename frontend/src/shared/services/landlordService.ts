@@ -22,11 +22,11 @@ import {
   TerminateContractDto,
   TerminateContractResult,
   ContractFilterParams,
-  Bill,
-  CreateBillDto,
-  UpdateBillDto,
-  ConfirmPaymentDto,
-  BillFilterParams,
+  InvoiceResponse,
+  CreateInvoiceRequest,
+  UpdateInvoiceRequest,
+  InvoicePaymentRequest,
+  InvoiceFilterParams,
   Complaint,
   UpdateComplaintProgressDto,
   ComplaintFilterParams,
@@ -172,7 +172,6 @@ export const landlordService = {
   createTenant: async (dto: CreateTenantDto): Promise<ResponseData<Tenant>> => {
     const payload = {
       ...dto,
-      roomId: Number(dto.roomId),
       isRepresentative: Boolean(dto.isRepresentative),
     };
     const res = await apiClient.post<ResponseData<Tenant>>('/api/v1/landlord/tenants', payload);
@@ -182,7 +181,6 @@ export const landlordService = {
   updateTenant: async (id: string | number, dto: UpdateTenantDto): Promise<ResponseData<Tenant>> => {
     const payload = {
       ...dto,
-      roomId: dto.roomId ? Number(dto.roomId) : undefined,
       isRepresentative: dto.isRepresentative !== undefined ? Boolean(dto.isRepresentative) : undefined,
     };
     const res = await apiClient.put<ResponseData<Tenant>>(`/api/v1/landlord/tenants/${id}`, payload);
@@ -215,7 +213,7 @@ export const landlordService = {
       params: {
         buildingId: params?.buildingId,
         status: params?.status === 'ALL' ? undefined : params?.status,
-        search: params?.keyword,
+        keyword: params?.keyword,
         page: params?.page,
         size: params?.size,
         sortBy: params?.sortBy,
@@ -251,11 +249,7 @@ export const landlordService = {
       paymentCycleDay: Number(dto.paymentCycleDay ?? 5),
       termsAndConditions: dto.termsAndConditions,
       services: dto.services?.map((s) => ({
-        serviceId: s.serviceId ? Number(s.serviceId) : undefined,
-        serviceName: s.serviceName,
-        unit: s.unit,
-        appliedUnitPrice: Number(s.appliedUnitPrice || 0),
-        billingMethod: s.billingMethod,
+        serviceId: Number(s.serviceId),
         initialIndex: Number(s.initialIndex || 0),
       })),
     };
@@ -291,8 +285,8 @@ export const landlordService = {
   },
 
   // 6. Hóa đơn (UC 22 - 26)
-  getBills: async (params?: BillFilterParams): Promise<ResponseData<PageResponse<Bill>>> => {
-    const res = await apiClient.get<ResponseData<PageResponse<Bill>>>('/api/v1/landlord/invoices', {
+  getInvoices: async (params?: InvoiceFilterParams): Promise<ResponseData<PageResponse<InvoiceResponse>>> => {
+    const res = await apiClient.get<ResponseData<PageResponse<InvoiceResponse>>>('/api/v1/landlord/invoices', {
       params: {
         buildingId: params?.buildingId,
         billingPeriod: params?.billingPeriod,
@@ -307,81 +301,34 @@ export const landlordService = {
     return res.data;
   },
 
-  getBillById: async (id: string | number): Promise<ResponseData<Bill>> => {
-    const res = await apiClient.get<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}`);
+  getInvoiceById: async (id: string | number): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.get<ResponseData<InvoiceResponse>>(`/api/v1/landlord/invoices/${id}`);
     return res.data;
   },
 
-  createBill: async (dto: CreateBillDto): Promise<ResponseData<Bill>> => {
-    let dueDate = dto.dueDate;
-    if (!dueDate) {
-      const d = new Date();
-      d.setDate(d.getDate() + 10);
-      dueDate = d.toISOString().split('T')[0];
-    }
-    const payload = {
-      contractId: dto.contractId ? Number(dto.contractId) : undefined,
-      roomId: dto.roomId ? Number(dto.roomId) : undefined,
-      billingPeriod: dto.billingPeriod,
-      dueDate: dueDate,
-      otherAmount: Number(dto.otherAmount ?? 0),
-      otherNote: dto.otherNote || '',
-      isDraft: Boolean(dto.isDraft),
-      items: dto.items?.map((it) => ({
-        contractServiceId: it.contractServiceId ? Number(it.contractServiceId) : undefined,
-        itemName: it.itemName,
-        billingMethod: it.billingMethod,
-        previousIndex: it.previousIndex !== undefined ? Number(it.previousIndex) : undefined,
-        currentIndex: it.currentIndex !== undefined ? Number(it.currentIndex) : undefined,
-        quantity: it.quantity !== undefined ? Number(it.quantity) : 1,
-        unitPrice: Number(it.unitPrice ?? 0),
-        amount: Number(it.amount ?? 0),
-        note: it.note,
-      })),
-    };
-    try {
-      const res = await apiClient.post<ResponseData<Bill>>('/api/v1/landlord/invoices', payload);
-      return res.data;
-    } catch (err: any) {
-      if (err?.response?.status === 405 || err?.response?.data?.errorDesc?.includes('POST')) {
-        const res = await apiClient.post<ResponseData<Bill>>('/api/v1/landlord/invoices/meter-reading', payload);
-        return res.data;
-      }
-      throw err;
-    }
-  },
-
-  publishBill: async (id: string | number): Promise<ResponseData<Bill>> => {
-    const res = await apiClient.put<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}/publish`);
+  createInvoice: async (dto: CreateInvoiceRequest): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.post<ResponseData<InvoiceResponse>>('/api/v1/landlord/invoices', dto);
     return res.data;
   },
 
-  updateBill: async (id: string | number, dto: UpdateBillDto): Promise<ResponseData<Bill>> => {
-    const res = await apiClient.put<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}`, dto);
+  publishInvoice: async (id: string | number): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.put<ResponseData<InvoiceResponse>>(`/api/v1/landlord/invoices/${id}/publish`);
     return res.data;
   },
 
-  cancelBill: async (id: string | number, reason: string): Promise<ResponseData<string>> => {
-    const res = await apiClient.post<ResponseData<string>>(`/api/v1/landlord/invoices/${id}/cancel`, { reason });
+  updateInvoice: async (id: string | number, dto: UpdateInvoiceRequest): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.put<ResponseData<InvoiceResponse>>(`/api/v1/landlord/invoices/${id}`, dto);
     return res.data;
   },
 
-  confirmPayment: async (id: string | number, dto: ConfirmPaymentDto): Promise<ResponseData<Bill>> => {
-    const payload = {
-      paymentAmount: Number(dto.paymentAmount ?? 0),
-      paymentMethod: dto.paymentMethod || 'CASH',
-      paymentNote: dto.paymentNote,
-    };
-    try {
-      const res = await apiClient.post<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}/payment`, payload);
-      return res.data;
-    } catch (err: any) {
-      if (err?.response?.status === 405 || err?.response?.data?.errorDesc?.includes('POST')) {
-        const res = await apiClient.post<ResponseData<Bill>>(`/api/v1/landlord/invoices/${id}/confirm-payment`, payload);
-        return res.data;
-      }
-      throw err;
-    }
+  cancelInvoice: async (id: string | number, cancelReason: string): Promise<ResponseData<string>> => {
+    const res = await apiClient.post<ResponseData<string>>(`/api/v1/landlord/invoices/${id}/cancel`, { cancelReason });
+    return res.data;
+  },
+
+  confirmPayment: async (id: string | number, dto: InvoicePaymentRequest): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.post<ResponseData<InvoiceResponse>>(`/api/v1/landlord/invoices/${id}/payment`, dto);
+    return res.data;
   },
 
   // 7. Khiếu nại (UC 27 - 28)

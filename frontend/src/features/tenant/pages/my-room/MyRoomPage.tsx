@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   useMyRoom,
   useMyContracts,
@@ -10,9 +10,8 @@ import {
   useVietQRPayment,
 } from '@/shared/hooks';
 import { Skeleton, Button } from '@/shared/components';
-import { message } from 'antd';
-import { Home, Compass, History, Wrench, Receipt, PlusCircle, ArrowRight } from 'lucide-react';
-import { Bill } from '@/shared/types/landlord';
+import { Home, Compass, History } from 'lucide-react';
+import { InvoiceResponse } from '@/shared/types/landlord';
 import { RoomInviteBanner } from './components/RoomInviteBanner';
 import { RoomInvitationModal } from './components/RoomInvitationModal';
 import { ContractInfoCard } from './components/ContractInfoCard';
@@ -39,10 +38,10 @@ export const MyRoomPage: React.FC = () => {
 
   // VietQR Modal State (UC17)
   const [qrModalOpen, setQrModalOpen] = useState(false);
-  const [activeBill, setActiveBill] = useState<Bill | null>(null);
+  const [activeBill, setActiveBill] = useState<InvoiceResponse | null>(null);
   const { qrData: vietQRData } = useVietQRPayment(activeBill ? String(activeBill.id) : undefined);
 
-  const handleOpenVietQR = (bill: Bill) => {
+  const handleOpenVietQR = (bill: InvoiceResponse) => {
     setActiveBill(bill);
     setQrModalOpen(true);
   };
@@ -51,10 +50,9 @@ export const MyRoomPage: React.FC = () => {
     if (!activeBill) return;
     try {
       await confirmTransferred(String(activeBill.id));
-      message.success('Hệ thống đã ghi nhận thông báo chuyển khoản! Đang xác nhận gạch nợ tự động.');
       setQrModalOpen(false);
-    } catch (err: any) {
-      message.error(err.message || 'Lỗi cập nhật thanh toán');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -63,11 +61,10 @@ export const MyRoomPage: React.FC = () => {
     if (!inviteId) return;
     try {
       await acceptRoomLink(inviteId);
-      message.success(`Đã chấp nhận liên kết phòng ${roomDetails?.invitation?.roomName || 'P102'} thành công!`);
       setHasLinked(true);
       setInviteModalOpen(false);
-    } catch (err: any) {
-      message.error(err.message || 'Lỗi liên kết phòng');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -76,10 +73,9 @@ export const MyRoomPage: React.FC = () => {
     if (!inviteId) return;
     try {
       await rejectRoomLink({ invitationId: inviteId, reason });
-      message.info(`Đã từ chối lời mời liên kết phòng: ${reason}`);
       setInviteModalOpen(false);
-    } catch (err: any) {
-      message.error(err.message || 'Lỗi từ chối liên kết phòng');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -114,7 +110,6 @@ export const MyRoomPage: React.FC = () => {
             : 'text-stay-text-secondary hover:text-stay-text'
             }`}
         >
-          <Home className="w-4 h-4" />
           Phòng & Hợp đồng hiện tại
         </button>
 
@@ -126,7 +121,6 @@ export const MyRoomPage: React.FC = () => {
             : 'text-stay-text-secondary hover:text-stay-text'
             }`}
         >
-          <History className="w-4 h-4" />
           Lịch sử hợp đồng
         </button>
       </div>

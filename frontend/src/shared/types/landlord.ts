@@ -1,6 +1,11 @@
 /**
  * Định nghĩa kiểu dữ liệu cho Role: Chủ trọ (Landlord) - Đồng bộ 100% với Backend Spring Boot & Database
  * Tuyệt đối không chứa các trường alias legacy hoặc các trường mã không tồn tại trong DB.
+ *
+ * QUY TẮC PHÂN TÁCH RÕ RÀNG:
+ * 1. RESPONSE OBJECTS: Dữ liệu thực tế do Backend trả về (khớp với Entity / Response DTO của Spring Boot).
+ * 2. REQUEST OBJECTS: Dữ liệu do Frontend đóng gói gửi lên Backend trong Body hoặc Params (khớp Request DTO).
+ * Tuyệt đối KHÔNG dùng adapter alias chắp vá và KHÔNG gộp chung giữa Request và Response!
  */
 
 import { PagingParams } from '@/shared/types/api';
@@ -8,6 +13,8 @@ import { PagingParams } from '@/shared/types/api';
 // =========================================================================
 // 1. Tòa nhà / Khu trọ (UC 01 - 04)
 // =========================================================================
+
+// --- 1.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface Building {
   id: number | string;
   name: string;
@@ -25,6 +32,7 @@ export interface Building {
   createdAt?: string;
 }
 
+// --- 1.B. REQUEST OBJECTS (Frontend gửi lên) ---
 export interface CreateBuildingDto {
   name: string;
   province?: string;
@@ -48,6 +56,7 @@ export interface BuildingFilterParams extends PagingParams {
 // =========================================================================
 export type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'STOPPED';
 
+// --- 2.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface Room {
   id: number | string;
   buildingId?: number | string | null;
@@ -76,6 +85,7 @@ export interface Room {
   createdAt?: string;
 }
 
+// --- 2.B. REQUEST OBJECTS (Frontend gửi lên) ---
 export interface CreateRoomDto {
   buildingId?: number | string | null;
   name: string;
@@ -126,6 +136,7 @@ export type BillingMethod =
   | 'FIXED_PER_PERSON'
   | 'FIXED_PER_UNIT';
 
+// --- 3.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface UtilityService {
   id: number | string;
   name: string;
@@ -138,6 +149,7 @@ export interface UtilityService {
   createdAt?: string;
 }
 
+// --- 3.B. REQUEST OBJECTS (Frontend gửi lên) ---
 export interface CreateServiceDto {
   name: string;
   category: string;
@@ -156,6 +168,7 @@ export interface UpdateServiceDto extends Partial<CreateServiceDto> { }
 export type TenantRoleInRoom = 'REPRESENTATIVE' | 'MEMBER';
 export type TenantLinkStatus = 'NOT_LINKED' | 'PENDING' | 'LINKED' | 'UNLINKED';
 
+// --- 4.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface Tenant {
   id: number | string;
   roomId?: number | string;
@@ -174,12 +187,11 @@ export interface Tenant {
   idCardPhotoBack?: string;
   isRepresentative?: boolean;
   linkStatus: TenantLinkStatus;
-  status: 'STAYING' | 'LEFT' | 'RENTING' | 'CHECKED_OUT';
   createdAt?: string;
 }
 
+// --- 4.B. REQUEST OBJECTS (Frontend gửi lên) ---
 export interface CreateTenantDto {
-  roomId: number | string;
   fullName: string;
   phone: string;
   idCardNumber?: string;
@@ -203,8 +215,9 @@ export interface TenantFilterParams extends PagingParams {
 // =========================================================================
 // 5. Hợp đồng thuê phòng (UC 18 - 21)
 // =========================================================================
-export type ContractStatus = 'ACTIVE' | 'EXPIRING_SOON' | 'TERMINATED' | 'CANCELLED';
+export type ContractStatus = 'ACTIVE' | 'TERMINATED';
 
+// --- 5.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface ContractServiceItem {
   id?: number | string;
   serviceId?: number | string;
@@ -239,42 +252,6 @@ export interface RentalContract {
   createdAt?: string;
 }
 
-export interface CreateContractDto {
-  roomId: number | string;
-  representativeTenantId: number | string;
-  startDate: string;
-  durationMonths?: number;
-  endDate?: string;
-  rentPrice: number;
-  depositAmount: number;
-  paymentCycleDay?: number;
-  termsAndConditions?: string;
-  services?: {
-    serviceId?: number | string;
-    serviceName: string;
-    unit: string;
-    appliedUnitPrice: number;
-    billingMethod: string;
-    initialIndex?: number;
-  }[];
-}
-
-export interface UpdateContractDto {
-  endDate?: string;
-  rentPrice?: number;
-  paymentCycleDay?: number;
-  termsAndConditions?: string;
-}
-
-export interface TerminateContractDto {
-  meterReadings?: {
-    contractServiceId: number;
-    finalIndex: number;
-  }[];
-  damageCost?: number;
-  damageNote?: string;
-}
-
 export interface TerminateContractResult {
   initialDeposit: number;
   totalUtilityCost?: number;
@@ -293,6 +270,42 @@ export interface TerminateContractResult {
   netRefundAmount?: number;
 }
 
+// --- 5.B. REQUEST OBJECTS (Frontend gửi lên) ---
+export interface CreateContractServiceRequestItem {
+  serviceId: number | string;
+  initialIndex?: number;
+}
+
+export interface CreateContractDto {
+  roomId: number | string;
+  representativeTenantId: number | string;
+  tenantIds?: (number | string)[];
+  startDate: string;
+  durationMonths?: number;
+  endDate?: string;
+  rentPrice: number;
+  depositAmount: number;
+  paymentCycleDay?: number;
+  termsAndConditions?: string;
+  services?: CreateContractServiceRequestItem[];
+}
+
+export interface UpdateContractDto {
+  endDate?: string;
+  rentPrice?: number;
+  paymentCycleDay?: number;
+  termsAndConditions?: string;
+}
+
+export interface TerminateContractDto {
+  meterReadings?: {
+    contractServiceId: number;
+    finalIndex: number;
+  }[];
+  damageCost?: number;
+  damageNote?: string;
+}
+
 export interface ContractFilterParams extends PagingParams {
   buildingId?: number | string;
   status?: ContractStatus | 'ALL';
@@ -300,9 +313,9 @@ export interface ContractFilterParams extends PagingParams {
 }
 
 // =========================================================================
-// 6. Hóa đơn & Thu tiền (UC 22 - 26)
+// 6. Hóa đơn & Thu tiền (UC 22 - 26) - Khớp 100% Backend Spring Boot
 // =========================================================================
-export type BillStatus =
+export type InvoiceStatus =
   | 'DRAFT'
   | 'UNPAID'
   | 'PARTIALLY_PAID'
@@ -312,7 +325,10 @@ export type BillStatus =
 
 export type InvoiceItemType = 'ROOM_RENT' | 'SERVICE' | 'SURCHARGE' | 'DISCOUNT';
 
-export interface BillItem {
+// --- 6.A. RESPONSE OBJECTS (Dữ liệu do Backend trả về cho Frontend) ---
+
+/** Chi tiết một dòng chi phí trong hóa đơn do Backend trả về */
+export interface InvoiceItemResponse {
   id?: number | string;
   contractServiceId?: number | string;
   itemType?: InvoiceItemType;
@@ -325,7 +341,8 @@ export interface BillItem {
   note?: string;
 }
 
-export interface Bill {
+/** Dữ liệu hóa đơn hoàn chỉnh do Backend trả về (Khớp InvoiceResponse.java) */
+export interface InvoiceResponse {
   id: number | string;
   contractId?: number | string;
   roomId?: number | string;
@@ -337,58 +354,75 @@ export interface Bill {
   dueDate: string;
   roomPrice?: number;
   servicesAmount?: number;
-  otherAmount?: number;
   totalAmount: number;
   paidAmount?: number;
   remainingAmount?: number;
-  status: BillStatus;
+  status: InvoiceStatus;
   paymentMethod?: string;
   paidAt?: string;
   cancelReason?: string;
   paymentNote?: string;
-  items?: BillItem[];
+  items?: InvoiceItemResponse[];
   createdAt?: string;
 }
 
-export interface CreateBillDto {
-  contractId?: number | string;
-  roomId?: number | string;
+// --- 6.B. REQUEST OBJECTS (Dữ liệu Frontend đóng gói gửi lên Backend) ---
+
+/** Request item chỉ số / số lượng dịch vụ gửi lên khi lập hoặc sửa hóa đơn.
+ * Server CHỈ ĐỌC currentIndex (dịch vụ METER_INDEX) hoặc quantity (dịch vụ FIXED_PER_UNIT).
+ * Tên dịch vụ, đơn giá, chỉ số cũ, thành tiền do Server tự lấy từ hợp đồng và tính toán.
+ */
+export interface InvoiceItemRequest {
+  contractServiceId: number;
+  currentIndex?: number;
+  quantity?: number;
+}
+
+/** Request dòng phụ thu / giảm trừ phát sinh gửi lên khi lập hoặc sửa hóa đơn */
+export interface InvoiceAdjustmentRequest {
+  type: 'SURCHARGE' | 'DISCOUNT';
+  reason: string;
+  quantity?: number;
+  unitPrice?: number;
+  amount?: number;
+  unit?: string;
+  note?: string;
+}
+
+/** Request lập mới hóa đơn gửi lên POST /api/v1/landlord/invoices (Khớp CreateInvoiceRequest.java) */
+export interface CreateInvoiceRequest {
+  contractId: number;
   billingPeriod: string;
   dueDate?: string;
-  otherAmount?: number;
-  otherNote?: string;
   isDraft?: boolean;
-  items?: {
-    contractServiceId?: number | string;
-    itemType?: InvoiceItemType;
-    itemName: string;
-    billingMethod?: string;
-    previousIndex?: number;
-    currentIndex?: number;
-    quantity?: number;
-    unitPrice?: number;
-    amount?: number;
-    note?: string;
-  }[];
+  items?: InvoiceItemRequest[];
+  adjustments?: InvoiceAdjustmentRequest[];
 }
 
-export interface UpdateBillDto {
+/** Request cập nhật hóa đơn gửi lên PUT /api/v1/landlord/invoices/{id} (Khớp InvoiceUpdateRequest.java) */
+export interface UpdateInvoiceRequest {
   dueDate?: string;
-  otherAmount?: number;
-  otherNote?: string;
-  items?: CreateBillDto['items'];
+  items?: InvoiceItemRequest[];
+  adjustments?: InvoiceAdjustmentRequest[];
 }
 
-export interface ConfirmPaymentDto {
+/** Request xác nhận thanh toán gửi lên POST /api/v1/landlord/invoices/{id}/payment (Khớp InvoicePaymentRequest.java) */
+export interface InvoicePaymentRequest {
   paymentAmount: number;
   paymentMethod?: 'CASH' | 'BANK_TRANSFER' | 'VIETQR' | string;
   paymentNote?: string;
 }
 
-export interface BillFilterParams extends PagingParams {
+/** Request hủy hóa đơn gửi lên POST /api/v1/landlord/invoices/{id}/cancel (Khớp InvoiceCancelRequest.java) */
+export interface InvoiceCancelRequest {
+  cancelReason: string;
+}
+
+/** Tham số bộ lọc tìm kiếm danh sách hóa đơn GET /api/v1/landlord/invoices */
+export interface InvoiceFilterParams extends PagingParams {
   billingPeriod?: string;
   buildingId?: number | string;
-  status?: BillStatus | 'ALL';
+  status?: InvoiceStatus | 'ALL';
   keyword?: string;
 }
 
@@ -402,6 +436,7 @@ export type ComplaintStatus =
   | 'RESOLVED'
   | 'REJECTED';
 
+// --- 7.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface Complaint {
   id: number | string;
   roomId?: number | string;
@@ -423,6 +458,7 @@ export interface Complaint {
   createdAt?: string;
 }
 
+// --- 7.B. REQUEST OBJECTS (Frontend gửi lên) ---
 export interface UpdateComplaintProgressDto {
   status: 'PROCESSING' | 'RESOLVED' | 'REJECTED';
   resolutionNote: string;
@@ -438,6 +474,8 @@ export interface ComplaintFilterParams extends PagingParams {
 // =========================================================================
 // 8. Dashboard Chủ trọ (UC 29)
 // =========================================================================
+
+// --- 8.A. RESPONSE OBJECTS (Backend trả về) ---
 export interface RevenueTrendItem {
   month: string;
   revenue: number;

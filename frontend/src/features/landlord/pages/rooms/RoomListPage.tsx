@@ -5,9 +5,7 @@ import {
   useUpdateRoom,
   useDeleteRoom,
   useBuildings,
-  useServices,
 } from '@/shared/hooks';
-import { message } from '@/shared/components';
 import { Room, CreateRoomDto, RoomStatus } from '@/shared/types/landlord';
 import { RoomFilter } from './components/RoomFilter';
 import { RoomTable } from './components/RoomTable';
@@ -23,7 +21,6 @@ export const RoomListPage: React.FC = () => {
 
   const { pageInfo: buildingsPageInfo } = useBuildings();
   const buildings = buildingsPageInfo?.items ?? [];
-  const { services } = useServices();
   const { pageInfo: roomsPageInfo, isLoading } = useRooms({
     page,
     size,
@@ -59,23 +56,23 @@ export const RoomListPage: React.FC = () => {
   };
 
   const handleSubmit = async (values: CreateRoomDto) => {
-    const roomName = values.name || (editingRoom ? editingRoom.name : 'mới');
-    if (editingRoom) {
-      await updateRoom({ id: editingRoom.id, dto: values });
-      message.success(`Cập nhật phòng "${roomName}" thành công!`);
-    } else {
-      await createRoom(values);
-      message.success(`Tạo phòng "${roomName}" thành công!`);
+    try {
+      if (editingRoom) {
+        await updateRoom({ id: editingRoom.id, dto: values });
+      } else {
+        await createRoom(values);
+      }
+      setIsModalOpen(false);
+    } catch {
+      // Handled in mutation hooks
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string | number) => {
     try {
       await deleteRoom(id);
-      message.success('Xóa phòng trọ thành công!');
-    } catch (err: any) {
-      message.error(err.message || 'Không thể xóa phòng');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -121,8 +118,6 @@ export const RoomListPage: React.FC = () => {
       <RoomFormModal
         open={isModalOpen}
         editingRoom={editingRoom}
-        buildings={buildings}
-        services={services}
         confirmLoading={isCreating || isUpdating}
         onCancel={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}

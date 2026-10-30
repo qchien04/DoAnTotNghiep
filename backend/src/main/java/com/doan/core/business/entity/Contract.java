@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
+
 /**
  * Entity Hợp đồng thuê phòng trọ
  */
@@ -23,10 +25,6 @@ public class Contract extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "representative_tenant_id")
-    private Tenant representativeTenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landlord_id", nullable = false)
@@ -54,7 +52,7 @@ public class Contract extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private ContractStatus status = ContractStatus.ACTIVE; // ACTIVE, EXPIRING_SOON, TERMINATED
+    private ContractStatus status = ContractStatus.ACTIVE; // ACTIVE, TERMINATED
 
     @Column(name = "pdf_file_url", length = 500)
     private String pdfFileUrl;
@@ -63,12 +61,12 @@ public class Contract extends BaseEntity {
     private String termsAndConditions;
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
-    @org.hibernate.annotations.BatchSize(size = 30)
+    @BatchSize(size = 30)
     @Builder.Default
     private List<ContractService> contractServices = new ArrayList<>();
 
-    @OneToMany(mappedBy = "contract")
-    @org.hibernate.annotations.BatchSize(size = 30)
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 30)
     @Builder.Default
-    private List<Tenant> tenants = new ArrayList<>();
+    private List<ContractTenant> contractTenants = new ArrayList<>();
 }

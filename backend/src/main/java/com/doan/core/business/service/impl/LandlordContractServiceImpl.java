@@ -5,7 +5,6 @@ import com.doan.core.business.entity.*;
 import com.doan.core.business.enums.BillingMethod;
 import com.doan.core.business.enums.ContractStatus;
 import com.doan.core.business.enums.RoomStatus;
-import com.doan.core.business.enums.TenantStatus;
 import com.doan.core.business.repository.*;
 import com.doan.core.business.service.LandlordContractService;
 import com.doan.core.common.data.PageResponse;
@@ -16,12 +15,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,11 +36,13 @@ public class LandlordContractServiceImpl implements LandlordContractService {
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final UtilityServiceRepository utilityServiceRepository;
+    private final ContractTenantRepository contractTenantRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ContractResponse> getContracts(Long landlordId, Long buildingId, ContractStatus status, String keyword,
-                                                       int page, int size, String sortBy, String sortDirection) {
+    public PageResponse<ContractResponse> getContracts(Long landlordId, Long buildingId, ContractStatus status,
+            String keyword,
+            int page, int size, String sortBy, String sortDirection) {
         String kw = (keyword != null && !keyword.trim().isBlank()) ? keyword.trim() : null;
 
         Direction direction = "asc".equalsIgnoreCase(sortDirection)
@@ -52,14 +56,15 @@ public class LandlordContractServiceImpl implements LandlordContractService {
             case "status" -> "status";
             default -> "id";
         };
-        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(direction, sortProperty);
+        Sort sort = Sort.by(direction, sortProperty);
 
         int pageNumber = Math.max(0, page);
         int pageSize = size > 0 ? size : 10;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
-        log.info("Lấy danh sách hợp đồng cho chủ trọ id: {}, tòa: {}, trạng thái: {}, keyword: {}, pageable: {}",
+        log.info("Lấy danh sách hợp đồng cho chủ trọ id: {}, tòa: {}, status: {}, keyword: {}, pageable: {}",
                 landlordId, buildingId, status, kw, pageable);
+
         Page<Contract> contracts = contractRepository.filterContracts(landlordId, buildingId, status, kw, pageable);
 
         Page<ContractResponse> dtoPage = contracts.map(ContractResponse::fromEntity);
@@ -83,24 +88,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         log.info("Tạo hợp đồng mới cho chủ trọ: {}, phòng: {}, khách đại diện: {}",
                 landlordId, request.getRoomId(), request.getRepresentativeTenantId());
 
-        if (request.getRentPrice() == null || request.getRentPrice() <= 0) {
-            throw new BaseException(ErrorCode.BAD_REQUEST, "Giá thuê phòng phải lớn hơn 0");
-        }
-        if (request.getDepositAmount() == null || request.getDepositAmount() < 0) {
-            throw new BaseException(ErrorCode.BAD_REQUEST, "Tiền cọc phòng không được là số âm");
-        }
-        if (request.getStartDate() == null) {
-            throw new BaseException(ErrorCode.BAD_REQUEST, "Ngày bắt đầu hợp đồng không được để trống");
-        }
-
         LocalDate endDate = request.getEndDate();
-        if (endDate == null) {
-            int months = (request.getDurationMonths() != null && request.getDurationMonths() > 0)
-                    ? request.getDurationMonths()
-                    : 12;
-            endDate = request.getStartDate().plusMonths(months).minusDays(1);
-        }
-
         if (endDate == null || !endDate.isAfter(request.getStartDate())) {
             throw new BaseException(ErrorCode.INVALID_CONTRACT_DATES);
         }
@@ -112,15 +100,13 @@ public class LandlordContractServiceImpl implements LandlordContractService {
             throw new BaseException(ErrorCode.ROOM_NOT_AVAILABLE);
         }
 
-        Tenant tenant = tenantRepository.findById(request.getRepresentativeTenantId())
-                .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
+        // 1. Xác thực và gom danh sách khách thuê hợp lệ
+        List<Tenant> contractTenants = validateAndGetTenants(landlordId, room, request);
 
-        User landlord = userRepository.findById(landlordId)
-                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
-
+        // 2. Khởi tạo và lưu Hợp đồng chính
+        User landlord = userRepository.getReferenceById(landlordId);
         Contract contract = Contract.builder()
                 .room(room)
-                .representativeTenant(tenant)
                 .landlord(landlord)
                 .startDate(request.getStartDate())
                 .endDate(endDate)
@@ -130,66 +116,127 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                 .termsAndConditions(request.getTermsAndConditions())
                 .status(ContractStatus.ACTIVE)
                 .build();
-
         Contract savedContract = contractRepository.save(contract);
 
-        // Lưu danh sách dịch vụ áp dụng trong hợp đồng (CHỈ ÁP DỤNG DỊCH VỤ CHỦ TRỌ CHỈ
-        // ĐỊNH TRONG REQUEST, KHÔNG TỰ Ý LẤY TỪ PHÒNG)
-        List<ContractService> csList = new ArrayList<>();
-        if (request.getServices() != null && !request.getServices().isEmpty()) {
-            for (ContractCreateRequest.ContractServiceItemRequest item : request.getServices()) {
-                UtilityService us = item.getServiceId() != null
-                        ? utilityServiceRepository.findById(item.getServiceId()).orElse(null)
-                        : null;
+        // 3. Liên kết danh sách khách thuê vào hợp đồng (bảng trung gian
+        // contract_tenants)
+        List<ContractTenant> ctList = linkTenantsToContract(savedContract, contractTenants,
+                request.getRepresentativeTenantId());
+        savedContract.setContractTenants(ctList);
 
-                BillingMethod method;
-                if (item.getBillingMethod() != null) {
-                    method = item.getBillingMethod();
-                } else if (us != null && us.getBillingMethod() != null) {
-                    method = us.getBillingMethod();
-                } else {
-                    method = BillingMethod.FIXED_PER_ROOM;
-                }
+        // 4. Liên kết danh sách dịch vụ tiện ích vào hợp đồng (bảng contract_services)
+        List<ContractService> csList = attachServicesToContract(landlordId, savedContract, request.getServices());
+        savedContract.setContractServices(csList);
 
-                int initIndex = item.getInitialIndex() != null ? item.getInitialIndex() : 0;
-                if (method == BillingMethod.METER_INDEX && initIndex < 0) {
-                    throw new BaseException(ErrorCode.BAD_REQUEST, "Chỉ số ban đầu không được là số âm");
-                }
-
-                long price = item.getAppliedUnitPrice() != null ? item.getAppliedUnitPrice()
-                        : (us != null ? us.getUnitPrice() : 0L);
-                if (price < 0) {
-                    throw new BaseException(ErrorCode.BAD_REQUEST, "Đơn giá dịch vụ không được là số âm");
-                }
-
-                ContractService cs = ContractService.builder()
-                        .contract(savedContract)
-                        .service(us)
-                        .serviceName(item.getServiceName() != null ? item.getServiceName().trim()
-                                : (us != null ? us.getName() : "Dịch vụ"))
-                        .unit(item.getUnit() != null ? item.getUnit().trim() : (us != null ? us.getUnit() : "Lần"))
-                        .appliedUnitPrice(price)
-                        .billingMethod(method)
-                        .lastIndex(initIndex)
-                        .build();
-                csList.add(cs);
-            }
-        }
-        if (!csList.isEmpty()) {
-            contractServiceRepository.saveAll(csList);
-            savedContract.setContractServices(csList);
-        }
-
-        // Cập nhật trạng thái phòng thành ĐANG THUÊ (OCCUPIED)
-        room.setStatus(RoomStatus.OCCUPIED);
-        roomRepository.save(room);
-
-        // Cập nhật khách đại diện
-        tenant.setContract(savedContract);
-        tenant.setIsRepresentative(true);
-        tenantRepository.save(tenant);
+        // 5. Cập nhật trạng thái phòng sang ĐANG THUÊ và cập nhật số người ở thực tế
+        updateRoomOccupancy(room, contractTenants.size());
 
         return ContractResponse.fromEntity(savedContract);
+    }
+
+    /**
+     * Xác thực thông tin khách thuê: kiểm tra sức chứa phòng và quyền quản lý của
+     * chủ trọ
+     */
+    private List<Tenant> validateAndGetTenants(Long landlordId, Room room, ContractCreateRequest request) {
+        Set<Long> allTenantIds = new LinkedHashSet<>();
+        allTenantIds.add(request.getRepresentativeTenantId());
+        if (request.getTenantIds() != null) {
+            allTenantIds.addAll(request.getTenantIds());
+        }
+
+        if (allTenantIds.size() > room.getMaxCapacity()) {
+            throw new BaseException(ErrorCode.BAD_REQUEST,
+                    "Số lượng khách thuê (" + allTenantIds.size() + " người) vượt quá sức chứa tối đa của phòng ("
+                            + room.getMaxCapacity() + " người)");
+        }
+
+        List<Tenant> contractTenants = tenantRepository.findAllByIdsAndLandlordId(allTenantIds, landlordId);
+        if (contractTenants.size() != allTenantIds.size()) {
+            throw new BaseException(ErrorCode.TENANT_NOT_FOUND,
+                    "Một hoặc nhiều khách thuê không tồn tại hoặc không thuộc quyền quản lý của bạn");
+        }
+        return contractTenants;
+    }
+
+    /**
+     * Lưu danh sách khách thuê liên kết với hợp đồng (bảng trung gian
+     * contract_tenants)
+     */
+    private List<ContractTenant> linkTenantsToContract(Contract contract, List<Tenant> tenants,
+            Long representativeTenantId) {
+        List<ContractTenant> ctList = new ArrayList<>();
+        for (Tenant t : tenants) {
+            boolean isRep = t.getId().equals(representativeTenantId);
+            ContractTenant ct = ContractTenant.builder()
+                    .contract(contract)
+                    .tenant(t)
+                    .isRepresentative(isRep)
+                    .build();
+            ctList.add(ct);
+        }
+        return contractTenantRepository.saveAll(ctList);
+    }
+
+    /**
+     * Gắn danh sách dịch vụ tiện ích vào hợp đồng (batch query tối ưu tránh N+1)
+     */
+    private List<ContractService> attachServicesToContract(Long landlordId, Contract contract,
+            List<ContractServiceItemRequest> serviceRequests) {
+        if (serviceRequests == null || serviceRequests.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Set<Long> serviceIds = serviceRequests.stream()
+                .map(ContractServiceItemRequest::getServiceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        if (serviceIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, UtilityService> serviceMap = utilityServiceRepository
+                .findAllByIdInAndLandlordId(serviceIds, landlordId).stream()
+                .collect(Collectors.toMap(UtilityService::getId, Function.identity()));
+
+        List<ContractService> csList = new ArrayList<>();
+        for (ContractServiceItemRequest item : serviceRequests) {
+            UtilityService us = serviceMap.get(item.getServiceId());
+            if (us == null) {
+                throw new BaseException(ErrorCode.SERVICE_NOT_FOUND,
+                        "Dịch vụ tiện ích (ID: " + item.getServiceId()
+                                + ") không tồn tại hoặc không thuộc quyền quản lý của bạn");
+            }
+
+            BillingMethod method = us.getBillingMethod();
+            int initIndex = (method == BillingMethod.METER_INDEX && item.getInitialIndex() != null)
+                    ? item.getInitialIndex()
+                    : 0;
+
+            ContractService cs = ContractService.builder()
+                    .contract(contract)
+                    .service(us)
+                    .serviceName(us.getName())
+                    .unit(us.getUnit())
+                    .appliedUnitPrice(us.getUnitPrice())
+                    .billingMethod(method)
+                    .lastIndex(initIndex)
+                    .build();
+            csList.add(cs);
+        }
+
+        return csList.isEmpty() ? Collections.emptyList() : contractServiceRepository.saveAll(csList);
+    }
+
+    /**
+     * Chuyển trạng thái phòng sang ĐANG THUÊ (OCCUPIED) và lưu số lượng khách đang
+     * ở
+     */
+    private void updateRoomOccupancy(Room room, int occupancy) {
+        room.setStatus(RoomStatus.OCCUPIED);
+        room.setCurrentOccupancy(occupancy);
+        roomRepository.save(room);
     }
 
     @Override
@@ -212,9 +259,6 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         }
 
         if (request.getRentPrice() != null) {
-            if (request.getRentPrice() <= 0) {
-                throw new BaseException(ErrorCode.BAD_REQUEST, "Giá thuê phòng phải lớn hơn 0");
-            }
             contract.setRentPrice(request.getRentPrice());
         }
 
@@ -259,8 +303,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
 
         if (contract.getContractServices() != null) {
             for (ContractService cs : contract.getContractServices()) {
-                BillingMethod method = cs.getBillingMethod() != null ? cs.getBillingMethod()
-                        : BillingMethod.FIXED_PER_ROOM;
+                BillingMethod method = cs.getBillingMethod();
 
                 // Chỉ dịch vụ có billingMethod = METER_INDEX mới tính toán theo chỉ số công tơ
                 if (method == BillingMethod.METER_INDEX) {
@@ -269,7 +312,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                                 "Vui lòng nhập chỉ số công tơ chốt ngày trả phòng cho dịch vụ: " + cs.getServiceName());
                     }
 
-                    int startIdx = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
+                    int startIdx = cs.getLastIndex();
                     int endIdx = readingMap.get(cs.getId());
 
                     if (endIdx < startIdx) {
@@ -279,7 +322,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
                     }
 
                     int consumed = endIdx - startIdx;
-                    long unitPrice = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 0L;
+                    long unitPrice = cs.getAppliedUnitPrice();
                     long amount = (long) consumed * unitPrice;
                     totalUtilityCost += amount;
                     cs.setLastIndex(endIdx);
@@ -299,7 +342,7 @@ public class LandlordContractServiceImpl implements LandlordContractService {
             contractServiceRepository.saveAll(contract.getContractServices());
         }
 
-        long initialDeposit = contract.getDepositAmount() != null ? contract.getDepositAmount() : 0L;
+        long initialDeposit = contract.getDepositAmount();
         long damageCost = request.getDamageCost() != null ? request.getDamageCost() : 0L;
         if (damageCost < 0) {
             throw new BaseException(ErrorCode.BAD_REQUEST, "Chi phí bồi thường hư hỏng không được là số âm");
@@ -311,21 +354,10 @@ public class LandlordContractServiceImpl implements LandlordContractService {
         contract.setStatus(ContractStatus.TERMINATED);
         contractRepository.save(contract);
 
-        // Chuyển phòng về trạng thái AVAILABLE, xóa occupancy và cập nhật khách thuê
-        // thành LEFT
         Room room = contract.getRoom();
-        if (room != null) {
-            room.setStatus(RoomStatus.AVAILABLE);
-            room.setCurrentOccupancy(0);
-            roomRepository.save(room);
-
-            List<Tenant> stayingTenants = tenantRepository.findByRoomId(room.getId());
-            for (Tenant t : stayingTenants) {
-                t.setStatus(TenantStatus.LEFT);
-                t.setRoom(null);
-            }
-            tenantRepository.saveAll(stayingTenants);
-        }
+        room.setStatus(RoomStatus.AVAILABLE);
+        room.setCurrentOccupancy(0);
+        roomRepository.save(room);
 
         return CheckoutCalculationResponse.builder()
                 .initialDeposit(initialDeposit)

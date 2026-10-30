@@ -61,7 +61,7 @@ export const LifestyleMatchCard: React.FC<LifestyleMatchCardProps> = ({
           <Tag
             color="var(--stay-match, #10B981)"
             icon={<ThunderboltFilled />}
-            className="rounded-full px-3 py-1 text-xs font-bold border-none m-0 shadow-2xs"
+            className="rounded-full px-3 py-1  font-bold border-none m-0 shadow-2xs"
           >
             {profile.matchPercentage}% Match
           </Tag>
@@ -71,15 +71,15 @@ export const LifestyleMatchCard: React.FC<LifestyleMatchCardProps> = ({
         <div>
           <h4 className="text-base font-bold text-stay-text hover:text-stay-primary transition-colors leading-snug">
             {profile.name}
-            {profile.age && <span className="text-xs font-normal text-stay-text-muted ml-1.5">({profile.age}t)</span>}
+            {profile.age && <span className=" font-normal text-stay-text-muted ml-1.5">({profile.age}t)</span>}
           </h4>
 
           {profile.occupation && (
-            <p className="text-xs text-stay-text-secondary font-medium mt-0.5">{profile.occupation}</p>
+            <p className=" text-stay-text-secondary font-medium mt-0.5">{profile.occupation}</p>
           )}
 
           {profile.location && (
-            <div className="flex items-center gap-1 text-xs text-stay-text-secondary mt-1">
+            <div className="flex items-center gap-1  text-stay-text-secondary mt-1">
               <EnvironmentOutlined className="text-stay-primary" />
               <span>{profile.location}</span>
               {profile.budget && <span className="font-semibold text-stay-secondary ml-1">• {profile.budget}</span>}
@@ -89,7 +89,7 @@ export const LifestyleMatchCard: React.FC<LifestyleMatchCardProps> = ({
 
         {/* Bio Quote */}
         {profile.bio && (
-          <p className="text-xs text-stay-text-secondary line-clamp-2 leading-relaxed bg-stay-bg-app p-2.5 rounded-xl border border-stay-border-subtle">
+          <p className=" text-stay-text-secondary line-clamp-2 leading-relaxed bg-stay-bg-app p-2.5 rounded-xl border border-stay-border-subtle">
             "{profile.bio}"
           </p>
         )}
@@ -103,7 +103,7 @@ export const LifestyleMatchCard: React.FC<LifestyleMatchCardProps> = ({
             {profile.habits.map((habit, idx) => (
               <Tag
                 key={idx}
-                className="bg-stay-bg-app border-stay-border text-stay-text text-xs px-2.5 py-0.5 rounded-md m-0"
+                className="bg-stay-bg-app border-stay-border text-stay-text  px-2.5 py-0.5 rounded-md m-0"
               >
                 {habit.icon && <span className="mr-1">{habit.icon}</span>}
                 <span>{habit.label}</span>

@@ -19,7 +19,7 @@ export const RoommatesList: React.FC<RoommatesListProps> = ({ roommates = [] }) 
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Users className="w-4 h-4 text-stay-primary" />
-        <h3 className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
+        <h3 className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
           Danh sách bạn cùng phòng ({roommates.length})
         </h3>
       </div>
@@ -34,7 +34,7 @@ export const RoommatesList: React.FC<RoommatesListProps> = ({ roommates = [] }) 
             />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-stay-text">{rm.name}</span>
+                <span className=" font-bold text-stay-text">{rm.name}</span>
                 {rm.role === 'Đại diện hợp đồng' && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-stay-primary/10 text-stay-primary font-semibold">
                     Đại diện

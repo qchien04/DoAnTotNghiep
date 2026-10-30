@@ -39,10 +39,6 @@ public class Invoice extends BaseEntity {
     @Builder.Default
     private Long servicesAmount = 0L;
 
-    @Column(name = "other_amount", nullable = false)
-    @Builder.Default
-    private Long otherAmount = 0L;
-
     @Column(name = "total_amount", nullable = false)
     private Long totalAmount;
 

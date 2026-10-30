@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Dropdown, Drawer } from 'antd';
 import type { MenuProps } from 'antd';
-import { StayConnectLogo } from './StayConnectLogo';
+import { RoomiLogo } from './RoomiLogo';
 import {
   Compass,
   Users,
@@ -14,7 +14,7 @@ import {
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
-export const StayConnectHeader: React.FC = () => {
+export const RoomiHeader: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ export const StayConnectHeader: React.FC = () => {
       key: 'user-info',
       label: (
         <div className="px-1 py-1 min-w-[160px]">
-          <p className="font-semibold text-xs text-stay-text truncate">
+          <p className="font-semibold text-stay-text truncate">
             {user?.fullName || user?.username || 'Người dùng'}
           </p>
           <p className="text-[11px] text-stay-text-secondary truncate">
@@ -56,8 +56,8 @@ export const StayConnectHeader: React.FC = () => {
             {role === 'ROLE_ADMIN'
               ? 'Quản trị viên'
               : role === 'ROLE_LANDLORD'
-              ? 'Chủ trọ'
-              : 'Người thuê'}
+                ? 'Chủ trọ'
+                : 'Người thuê'}
           </span>
         </div>
       ),
@@ -85,7 +85,7 @@ export const StayConnectHeader: React.FC = () => {
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-6 lg:gap-8">
           <Link to="/rooms" className="flex items-center select-none shrink-0">
-            <StayConnectLogo size="md" />
+            <RoomiLogo size="md" />
           </Link>
 
           {/* Center Navigation - Exactly 3 Items: Tìm phòng, Bài đăng ở ghép, Trang quản trị */}
@@ -93,11 +93,10 @@ export const StayConnectHeader: React.FC = () => {
             {/* 1. Nút Tìm phòng */}
             <Link
               to="/rooms"
-              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${
-                isRoomActive
-                  ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
-                  : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
-              }`}
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${isRoomActive
+                ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
+                : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+                }`}
             >
               <Compass className="w-4 h-4 shrink-0" />
               <span>Tìm phòng</span>
@@ -106,11 +105,10 @@ export const StayConnectHeader: React.FC = () => {
             {/* 2. Nút Bài đăng ở ghép */}
             <Link
               to="/roommates"
-              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${
-                isRoommateActive
-                  ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
-                  : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
-              }`}
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${isRoommateActive
+                ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
+                : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+                }`}
             >
               <Users className="w-4 h-4 shrink-0" />
               <span>Bài đăng ở ghép</span>
@@ -120,11 +118,10 @@ export const StayConnectHeader: React.FC = () => {
             <button
               type="button"
               onClick={handleAdminNavigate}
-              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors cursor-pointer ${
-                isAdminActive
-                  ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
-                  : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
-              }`}
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors cursor-pointer ${isAdminActive
+                ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
+                : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
+                }`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
               <span>Trang quản trị</span>
@@ -139,10 +136,10 @@ export const StayConnectHeader: React.FC = () => {
           {isAuthenticated && user ? (
             <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
               <div className="flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded-xl border border-stay-border hover:bg-stay-bg-app transition-colors">
-                <div className="w-7 h-7 rounded-lg bg-stay-primary text-white flex items-center justify-center font-bold text-xs select-none">
+                <div className="w-7 h-7 rounded-lg bg-stay-primary text-white flex items-center justify-center font-bold select-none">
                   {(user.fullName || user.username || 'U').charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xs font-semibold text-stay-text max-w-[120px] truncate">
+                <span className="font-semibold text-stay-text max-w-[120px] truncate">
                   {user.fullName || user.username}
                 </span>
               </div>
@@ -173,7 +170,7 @@ export const StayConnectHeader: React.FC = () => {
 
       {/* Mobile Drawer (Tối giản) */}
       <Drawer
-        title={<StayConnectLogo size="sm" />}
+        title={<RoomiLogo size="sm" />}
         placement="right"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -190,7 +187,7 @@ export const StayConnectHeader: React.FC = () => {
         <div className="space-y-4">
           {isAuthenticated && user && (
             <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
-              <p className="font-semibold text-xs text-stay-text truncate">
+              <p className="font-semibold text-stay-text truncate">
                 {user.fullName || user.username}
               </p>
               <p className="text-[11px] text-stay-text-secondary truncate">{user.email}</p>
@@ -201,11 +198,10 @@ export const StayConnectHeader: React.FC = () => {
             <Link
               to="/rooms"
               onClick={() => setDrawerOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                isRoomActive
-                  ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
-                  : 'text-stay-text hover:bg-stay-bg-app'
-              }`}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isRoomActive
+                ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                : 'text-stay-text hover:bg-stay-bg-app'
+                }`}
             >
               <Compass className="w-4 h-4 shrink-0" />
               <span>Tìm phòng</span>
@@ -214,11 +210,10 @@ export const StayConnectHeader: React.FC = () => {
             <Link
               to="/roommates"
               onClick={() => setDrawerOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                isRoommateActive
-                  ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
-                  : 'text-stay-text hover:bg-stay-bg-app'
-              }`}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isRoommateActive
+                ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                : 'text-stay-text hover:bg-stay-bg-app'
+                }`}
             >
               <Users className="w-4 h-4 shrink-0" />
               <span>Bài đăng ở ghép</span>
@@ -230,11 +225,10 @@ export const StayConnectHeader: React.FC = () => {
                 setDrawerOpen(false);
                 handleAdminNavigate();
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer ${
-                isAdminActive
-                  ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
-                  : 'text-stay-text hover:bg-stay-bg-app'
-              }`}
+              className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer ${isAdminActive
+                ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
+                : 'text-stay-text hover:bg-stay-bg-app'
+                }`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
               <span>Trang quản trị</span>
@@ -249,7 +243,7 @@ export const StayConnectHeader: React.FC = () => {
                   setDrawerOpen(false);
                   logout();
                 }}
-                className="w-full py-2 px-3 rounded-xl text-xs font-semibold text-rose-500 border border-stay-border hover:bg-stay-bg-app transition-colors cursor-pointer"
+                className="w-full py-2 px-3 rounded-xl font-semibold text-rose-500 border border-stay-border hover:bg-stay-bg-app transition-colors cursor-pointer"
               >
                 Đăng xuất
               </button>
@@ -257,7 +251,7 @@ export const StayConnectHeader: React.FC = () => {
               <Link
                 to="/login"
                 onClick={() => setDrawerOpen(false)}
-                className="block text-center w-full py-2 px-3 rounded-xl text-xs font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors"
+                className="block text-center w-full py-2 px-3 rounded-xl font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors"
               >
                 Đăng nhập
               </Link>
@@ -268,3 +262,4 @@ export const StayConnectHeader: React.FC = () => {
     </header>
   );
 };
+

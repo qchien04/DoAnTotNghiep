@@ -2,11 +2,14 @@ package com.doan.core.business.entity;
 
 import com.doan.core.business.enums.Gender;
 import com.doan.core.business.enums.TenantLinkStatus;
-import com.doan.core.business.enums.TenantStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
 
 /**
  * Entity Khách thuê phòng trọ
@@ -21,17 +24,17 @@ import java.time.LocalDate;
 public class Tenant extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn(name = "landlord_id", nullable = false)
+    private User landlord;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contract_id")
-    private Contract contract;
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 30)
+    @Builder.Default
+    private List<ContractTenant> contractTenants = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -58,17 +61,8 @@ public class Tenant extends BaseEntity {
     @Column(name = "id_card_photo_back", length = 500)
     private String idCardPhotoBack;
 
-    @Column(name = "is_representative", nullable = false)
-    @Builder.Default
-    private Boolean isRepresentative = false;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "link_status", nullable = false, length = 30)
     @Builder.Default
     private TenantLinkStatus linkStatus = TenantLinkStatus.NOT_LINKED; // NOT_LINKED, PENDING, LINKED
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 30)
-    @Builder.Default
-    private TenantStatus status = TenantStatus.STAYING; // STAYING, LEFT
 }

@@ -27,6 +27,7 @@ export const useCreateService = () => {
     mutationFn: (dto: CreateServiceDto) => landlordService.createService(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.services() });
+      message.success('Thêm dịch vụ thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể tạo dịch vụ');
@@ -47,6 +48,7 @@ export const useUpdateService = () => {
       landlordService.updateService(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.services() });
+      message.success('Cập nhật dịch vụ thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật dịch vụ');
@@ -66,6 +68,7 @@ export const useDeleteService = () => {
     mutationFn: (id: string | number) => landlordService.deleteService(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.services() });
+      message.success('Xóa dịch vụ thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể xóa dịch vụ');

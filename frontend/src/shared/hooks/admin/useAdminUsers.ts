@@ -32,6 +32,7 @@ export const useCreateAdminUser = () => {
     mutationFn: (dto: CreateAdminUserDto) => adminService.createUser(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      message.success('Tạo tài khoản người dùng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể tạo tài khoản');
@@ -52,6 +53,7 @@ export const useUpdateAdminUser = () => {
       adminService.updateUser(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      message.success('Cập nhật tài khoản người dùng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật người dùng');
@@ -72,6 +74,7 @@ export const useToggleLockUser = () => {
       adminService.toggleLockUser(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      message.success('Cập nhật trạng thái khóa tài khoản thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể thay đổi trạng thái khóa tài khoản');

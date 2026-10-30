@@ -35,19 +35,20 @@ public class EmailServiceImpl implements EmailService {
         if (mailSender != null) {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+                MimeMessageHelper helper = new MimeMessageHelper(message,
+                        MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
 
-                helper.setFrom(fromEmail, "StayConnect Support");
+                helper.setFrom(fromEmail, "Roomi Support");
                 helper.setTo(toEmail);
-                helper.setSubject("[StayConnect] Mã xác thực đăng ký tài khoản của bạn");
+                helper.setSubject("[Roomi] Mã xác thực đăng ký tài khoản của bạn");
 
                 String htmlContent = "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;\">"
                         + "<div style=\"text-align: center; margin-bottom: 24px;\">"
-                        + "<h2 style=\"color: #2563eb; margin: 0;\">StayConnect</h2>"
+                        + "<h2 style=\"color: #2563eb; margin: 0;\">Roomi</h2>"
                         + "<p style=\"color: #64748b; font-size: 13px; margin-top: 4px;\">Hệ Thống Quản Lý Nhà Trọ & Tìm Bạn Ở Ghép</p>"
                         + "</div>"
                         + "<p style=\"font-size: 15px; color: #1e293b;\">Xin chào bạn,</p>"
-                        + "<p style=\"font-size: 14px; color: #475569; line-height: 1.6;\">Bạn vừa yêu cầu đăng ký tài khoản trên nền tảng StayConnect. Vui lòng nhập mã xác thực OTP dưới đây để hoàn tất kích hoạt tài khoản:</p>"
+                        + "<p style=\"font-size: 14px; color: #475569; line-height: 1.6;\">Bạn vừa yêu cầu đăng ký tài khoản trên nền tảng Roomi. Vui lòng nhập mã xác thực OTP dưới đây để hoàn tất kích hoạt tài khoản:</p>"
                         + "<div style=\"text-align: center; margin: 28px 0;\">"
                         + "<div style=\"display: inline-block; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1d4ed8; background-color: #eff6ff; padding: 14px 28px; border-radius: 12px; border: 1px dashed #93c5fd;\">"
                         + otpCode
@@ -56,7 +57,7 @@ public class EmailServiceImpl implements EmailService {
                         + "</div>"
                         + "<p style=\"font-size: 13px; color: #64748b;\">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email. Tuyệt đối không chia sẻ mã này cho bất kỳ ai khác.</p>"
                         + "<hr style=\"border: none; border-top: 1px solid #f1f5f9; margin: 24px 0;\" />"
-                        + "<p style=\"font-size: 11px; color: #94a3b8; text-align: center;\">Đồ Án Tốt Nghiệp • StayConnect Mono-service Architecture</p>"
+                        + "<p style=\"font-size: 11px; color: #94a3b8; text-align: center;\">Đồ Án Tốt Nghiệp • Roomi Mono-service Architecture</p>"
                         + "</div>";
 
                 helper.setText(htmlContent, true);
@@ -84,15 +85,16 @@ public class EmailServiceImpl implements EmailService {
         if (mailSender != null) {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+                MimeMessageHelper helper = new MimeMessageHelper(message,
+                        MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
 
-                helper.setFrom(fromEmail, "StayConnect Security");
+                helper.setFrom(fromEmail, "Roomi Security");
                 helper.setTo(toEmail);
-                helper.setSubject("[StayConnect] Yêu cầu đặt lại mật khẩu tài khoản");
+                helper.setSubject("[Roomi] Yêu cầu đặt lại mật khẩu tài khoản");
 
                 String htmlContent = "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;\">"
                         + "<div style=\"text-align: center; margin-bottom: 24px;\">"
-                        + "<h2 style=\"color: #ef4444; margin: 0;\">StayConnect Security</h2>"
+                        + "<h2 style=\"color: #ef4444; margin: 0;\">Roomi Security</h2>"
                         + "<p style=\"color: #64748b; font-size: 13px; margin-top: 4px;\">Yêu Cầu Đặt Lại Mật Khẩu</p>"
                         + "</div>"
                         + "<p style=\"font-size: 15px; color: #1e293b;\">Xin chào,</p>"
@@ -105,7 +107,7 @@ public class EmailServiceImpl implements EmailService {
                         + "</div>"
                         + "<p style=\"font-size: 13px; color: #64748b;\">Nếu bạn không yêu cầu đổi mật khẩu, vui lòng bỏ qua email này. Tài khoản của bạn vẫn an toàn.</p>"
                         + "<hr style=\"border: none; border-top: 1px solid #f1f5f9; margin: 24px 0;\" />"
-                        + "<p style=\"font-size: 11px; color: #94a3b8; text-align: center;\">Đồ Án Tốt Nghiệp • StayConnect Security System</p>"
+                        + "<p style=\"font-size: 11px; color: #94a3b8; text-align: center;\">Đồ Án Tốt Nghiệp • Roomi Security System</p>"
                         + "</div>";
 
                 helper.setText(htmlContent, true);

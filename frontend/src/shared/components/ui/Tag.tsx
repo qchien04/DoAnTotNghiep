@@ -17,50 +17,50 @@ export const Tag: React.FC<TagProps> & {
   className = '',
   ...props
 }) => {
-  const getStatusProps = () => {
-    switch (status) {
-      case 'available':
-        return {
-          color: 'success',
-          className: 'border-stay-border bg-stay-secondary-subtle text-stay-secondary font-semibold',
-        };
-      case 'rented':
-        return {
-          color: 'error',
-          className: 'border-red-200 bg-red-50 text-red-600 font-semibold',
-        };
-      case 'pending':
-        return {
-          color: 'warning',
-          className: 'border-amber-200 bg-amber-50 text-amber-700 font-semibold',
-        };
-      case 'verified':
-        return {
-          color: 'processing',
-          className: 'border-stay-border bg-stay-primary-subtle text-stay-primary font-semibold',
-        };
-      case 'match':
-        return {
-          color: 'success',
-          className: 'border-stay-border bg-stay-match-subtle text-stay-match font-bold',
-        };
-      default:
-        return {};
-    }
+    const getStatusProps = () => {
+      switch (status) {
+        case 'available':
+          return {
+            color: 'success',
+            className: 'border-stay-border bg-stay-secondary-subtle text-stay-secondary font-semibold',
+          };
+        case 'rented':
+          return {
+            color: 'error',
+            className: 'border-red-200 bg-red-50 text-red-600 font-semibold',
+          };
+        case 'pending':
+          return {
+            color: 'warning',
+            className: 'border-amber-200 bg-amber-50 text-amber-700 font-semibold',
+          };
+        case 'verified':
+          return {
+            color: 'processing',
+            className: 'border-stay-border bg-stay-primary-subtle text-stay-primary font-semibold',
+          };
+        case 'match':
+          return {
+            color: 'success',
+            className: 'border-stay-border bg-stay-match-subtle text-stay-match font-bold',
+          };
+        default:
+          return {};
+      }
+    };
+
+    const statusConfig = getStatusProps();
+
+    return (
+      <AntTag
+        className={`rounded-lg px-2.5 py-0.5  inline-flex items-center gap-1 ${statusConfig.className || ''} ${className}`}
+        {...statusConfig}
+        {...props}
+      >
+        {children}
+      </AntTag>
+    );
   };
-
-  const statusConfig = getStatusProps();
-
-  return (
-    <AntTag
-      className={`rounded-lg px-2.5 py-0.5 text-xs inline-flex items-center gap-1 ${statusConfig.className || ''} ${className}`}
-      {...statusConfig}
-      {...props}
-    >
-      {children}
-    </AntTag>
-  );
-};
 
 Tag.CheckableTag = AntTag.CheckableTag;
 

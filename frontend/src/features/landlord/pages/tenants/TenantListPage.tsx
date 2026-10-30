@@ -7,9 +7,7 @@ import {
   useInviteTenantLink,
   useCancelTenantInvitation,
   useBuildings,
-  useRooms,
 } from '@/shared/hooks';
-import { message } from '@/shared/components';
 import { Tenant, CreateTenantDto } from '@/shared/types/landlord';
 import { TenantFilter } from './components/TenantFilter';
 import { TenantTable } from './components/TenantTable';
@@ -25,8 +23,6 @@ export const TenantListPage: React.FC = () => {
 
   const { pageInfo: buildingsPageInfo } = useBuildings();
   const buildings = buildingsPageInfo?.items ?? [];
-  const { pageInfo: roomsPageInfo } = useRooms({ buildingId });
-  const rooms = roomsPageInfo?.items ?? [];
   const { pageInfo: tenantsPageInfo, isLoading } = useTenants({
     page,
     size,
@@ -69,22 +65,23 @@ export const TenantListPage: React.FC = () => {
   };
 
   const handleSubmit = async (values: CreateTenantDto) => {
-    if (editingTenant) {
-      await updateTenant({ id: editingTenant.id, dto: values });
-      message.success('Cập nhật thông tin khách thuê thành công!');
-    } else {
-      await createTenant(values);
-      message.success('Thêm khách thuê vào phòng thành công!');
+    try {
+      if (editingTenant) {
+        await updateTenant({ id: editingTenant.id, dto: values });
+      } else {
+        await createTenant(values);
+      }
+      setIsModalOpen(false);
+    } catch {
+      // Handled in mutation hooks
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string | number) => {
     try {
       await deleteTenant(id);
-      message.success('Đã xóa khách thuê khỏi phòng!');
-    } catch (err: any) {
-      message.error(err.message || 'Không thể xóa khách thuê');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -97,9 +94,8 @@ export const TenantListPage: React.FC = () => {
   const handleCancelInvite = async (tnt: Tenant) => {
     try {
       await cancelInvitation(tnt.id);
-      message.success(`Đã hủy lời mời liên kết cho ${tnt.fullName}!`);
-    } catch (err: any) {
-      message.error(err.message || 'Không thể hủy lời mời');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -107,10 +103,9 @@ export const TenantListPage: React.FC = () => {
     if (!selectedTenant) return;
     try {
       await inviteTenantLink({ tenantId: selectedTenant.id, keyword: searchAccountKeyword });
-      message.success(`Đã gửi lời mời liên kết tới tài khoản của ${selectedTenant.fullName}!`);
       setInviteModalOpen(false);
-    } catch (err: any) {
-      message.error(err.message || 'Không tìm thấy tài khoản tương ứng');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -160,7 +155,6 @@ export const TenantListPage: React.FC = () => {
       <TenantFormModal
         open={isModalOpen}
         editingTenant={editingTenant}
-        rooms={rooms}
         confirmLoading={isCreating || isUpdating}
         onCancel={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}

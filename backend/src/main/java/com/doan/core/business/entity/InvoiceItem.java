@@ -44,9 +44,8 @@ public class InvoiceItem {
     @Column(name = "current_index")
     private Integer currentIndex;
 
-    @Column(name = "quantity", precision = 10, scale = 2, nullable = false)
-    @Builder.Default
-    private BigDecimal quantity = BigDecimal.ONE;
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
 
     @Column(name = "unit_price", nullable = false)
     private Long unitPrice;

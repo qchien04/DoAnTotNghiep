@@ -20,20 +20,20 @@ export const Empty: React.FC<EmptyProps> & {
   image = AntEmpty.PRESENTED_IMAGE_SIMPLE,
   ...props
 }) => {
-  const displayDescription = description || title || 'Không tìm thấy dữ liệu phù hợp';
+    const displayDescription = description || title || 'Không tìm thấy dữ liệu phù hợp';
 
-  return (
-    <div className={`py-12 flex flex-col items-center justify-center text-center ${className}`}>
-      <AntEmpty
-        image={image}
-        description={<span className="text-xs sm:text-sm text-slate-500 font-medium">{displayDescription}</span>}
-        {...props}
-      >
-        {(action || children) && <div className="mt-4">{action || children}</div>}
-      </AntEmpty>
-    </div>
-  );
-};
+    return (
+      <div className={`py-12 flex flex-col items-center justify-center text-center ${className}`}>
+        <AntEmpty
+          image={image}
+          description={<span className=" sm:text-sm text-slate-500 font-medium">{displayDescription}</span>}
+          {...props}
+        >
+          {(action || children) && <div className="mt-4">{action || children}</div>}
+        </AntEmpty>
+      </div>
+    );
+  };
 
 Empty.PRESENTED_IMAGE_DEFAULT = AntEmpty.PRESENTED_IMAGE_DEFAULT;
 Empty.PRESENTED_IMAGE_SIMPLE = AntEmpty.PRESENTED_IMAGE_SIMPLE;

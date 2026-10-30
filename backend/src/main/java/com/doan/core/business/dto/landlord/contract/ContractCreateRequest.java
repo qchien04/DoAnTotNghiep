@@ -1,14 +1,14 @@
 package com.doan.core.business.dto.landlord.contract;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;
-
-import com.doan.core.business.enums.BillingMethod;
 
 @Data
 @Schema(description = "Yêu cầu tạo hợp đồng thuê phòng mới")
@@ -22,26 +22,29 @@ public class ContractCreateRequest {
     @Schema(description = "ID khách thuê làm người đại diện hợp đồng", example = "1")
     private Long representativeTenantId;
 
-    @NotNull(message = "Ngày bắt đầu không được để trống")
+    @Schema(description = "Danh sách ID các khách thuê ở trong phòng (bao gồm cả khách đại diện và thành viên)", example = "[1, 2]")
+    private List<Long> tenantIds;
+
+    @NotNull(message = "Ngày bắt đầu hợp đồng không được để trống")
     @Schema(description = "Ngày bắt đầu hợp đồng", example = "2026-10-01")
     private LocalDate startDate;
 
-    @Schema(description = "Thời hạn hợp đồng (tháng) - nếu không truyền endDate, hệ thống sẽ tự tính", example = "12")
-    private Integer durationMonths;
-
+    @NotNull(message = "Ngày kết thúc hợp đồng không được để trống")
     @Schema(description = "Ngày kết thúc hợp đồng (nếu để trống hệ thống sẽ tính theo startDate + durationMonths)", example = "2027-09-30")
     private LocalDate endDate;
 
-    @NotNull(message = "Tiền thuê thỏa thuận không được để trống")
-    @Min(value = 1, message = "Tiền thuê phải lớn hơn 0")
+    @NotNull(message = "Giá thuê phòng không được để trống")
+    @Min(value = 1, message = "Giá thuê phòng phải lớn hơn 0")
     @Schema(description = "Tiền thuê thỏa thuận (VNĐ/tháng)", example = "3800000")
     private Long rentPrice;
 
-    @NotNull(message = "Tiền đặt cọc không được để trống")
-    @Min(value = 0, message = "Tiền cọc không được là số âm")
+    @NotNull(message = "Tiền cọc phòng không được để trống")
+    @Min(value = 0, message = "Tiền cọc phòng không được là số âm")
     @Schema(description = "Tiền đặt cọc (VNĐ)", example = "3800000")
     private Long depositAmount;
 
+    @Min(value = 1, message = "Ngày chu kỳ thanh toán phải từ 1 đến 31")
+    @Max(value = 31, message = "Ngày chu kỳ thanh toán phải từ 1 đến 31")
     @Schema(description = "Chu kỳ thanh toán hàng tháng (ngày thu tiền)", example = "5")
     private Integer paymentCycleDay = 5;
 
@@ -49,16 +52,5 @@ public class ContractCreateRequest {
     private String termsAndConditions;
 
     @Schema(description = "Danh sách chi tiết dịch vụ áp dụng trong hợp đồng (kèm đơn giá thỏa thuận và chỉ số ban đầu)")
-    private List<ContractServiceItemRequest> services;
-
-    @Data
-    public static class ContractServiceItemRequest {
-        private Long serviceId;
-        private String serviceName;
-        private String unit;
-        private Long appliedUnitPrice;
-        private BillingMethod billingMethod;
-        @Schema(description = "Chỉ số bàn giao ban đầu cho dịch vụ tính theo đồng hồ (kWh, m3)", example = "0")
-        private Integer initialIndex = 0;
-    }
+    private List<@Valid ContractServiceItemRequest> services;
 }

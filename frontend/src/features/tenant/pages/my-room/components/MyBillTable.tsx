@@ -2,15 +2,15 @@ import React from 'react';
 import { Table } from '@/shared/components';
 import { Tooltip, message } from 'antd';
 import { QrCode, Eye, CheckCircle2 } from 'lucide-react';
-import { Bill } from '@/shared/types/landlord';
+import { InvoiceResponse } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
 
 interface MyBillTableProps {
-  pageInfo?: PageResponse<Bill>;
-  bills?: Bill[];
+  pageInfo?: PageResponse<InvoiceResponse>;
+  bills?: InvoiceResponse[];
   isLoading?: boolean;
   onPageChange?: (page: number, size: number) => void;
-  onOpenVietQR: (bill: Bill) => void;
+  onOpenVietQR: (bill: InvoiceResponse) => void;
 }
 
 export const MyBillTable: React.FC<MyBillTableProps> = ({
@@ -35,7 +35,6 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
       title: 'Kỳ cước tháng',
       dataIndex: 'billingMonth',
       key: 'billingMonth',
-      width: 130,
       render: (val: string) => <span className="font-medium text-[14px] text-stay-text">{val}</span>,
     },
     {
@@ -79,7 +78,7 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
       dataIndex: 'dueDate',
       key: 'dueDate',
       width: 120,
-      render: (d: string) => <span className="text-xs text-stay-text-secondary">{d || '05/11/2026'}</span>,
+      render: (d: string) => <span className=" text-stay-text-secondary">{d || '05/11/2026'}</span>,
     },
     {
       title: 'Trạng thái',
@@ -88,27 +87,27 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
       width: 140,
       render: (st: string) => {
         if (st === 'PAID') {
-          return <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">Đã thanh toán</span>;
+          return <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[13px]">Đã thanh toán</span>;
         }
         if (st === 'OVERDUE') {
-          return <span className="inline-flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-medium">Quá hạn</span>;
+          return <span className="text-rose-600 dark:text-rose-400 font-medium text-[13px]">Quá hạn</span>;
         }
-        return <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">Chờ thanh toán</span>;
+        return <span className="text-amber-600 dark:text-amber-400 font-medium text-[13px]">Chờ thanh toán</span>;
       },
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 130,
+      width: 120,
       fixed: 'right' as const,
-      render: (_: any, r: Bill) => {
+      render: (_: any, r: InvoiceResponse) => {
         const canPay = r.status !== 'PAID';
         return (
           <div className="flex items-center justify-start gap-1.5">
             <Tooltip title="Xem chi tiết hóa đơn & biên lai">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-view"
+                className="stay-action-btn"
                 onClick={() => onOpenVietQR(r)}
               >
                 <Eye className="w-4 h-4" />
@@ -118,7 +117,7 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
             <Tooltip title={canPay ? 'Quét mã VietQR chuyển khoản' : 'Hóa đơn đã thanh toán'}>
               <button
                 type="button"
-                className={`stay-action-btn ${canPay ? 'stay-action-btn-edit' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!canPay ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => canPay && onOpenVietQR(r)}
                 disabled={!canPay}
               >
@@ -129,7 +128,7 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
             <Tooltip title={canPay ? 'Xác nhận đã thanh toán' : 'Đã thanh toán đủ'}>
               <button
                 type="button"
-                className={`stay-action-btn ${canPay ? 'stay-action-btn-delete' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!canPay ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() =>
                   message.success(
                     'Đã ghi nhận! Chủ trọ sẽ đối soát và cập nhật trạng thái hóa đơn sớm nhất.'

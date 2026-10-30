@@ -1,13 +1,13 @@
 import React from 'react';
-import { StayConnectSearchBar, SearchFilters } from './StayConnectSearchBar';
+import { RoomiSearchBar, SearchFilters } from './RoomiSearchBar';
 import { ShieldCheck, HeartHandshake, Sparkles } from 'lucide-react';
 
-interface StayConnectHeroProps {
+interface RoomiHeroProps {
   onSearch?: (filters: SearchFilters) => void;
   className?: string;
 }
 
-export const StayConnectHero: React.FC<StayConnectHeroProps> = ({
+export const RoomiHero: React.FC<RoomiHeroProps> = ({
   onSearch,
   className = '',
 }) => {
@@ -19,9 +19,9 @@ export const StayConnectHero: React.FC<StayConnectHeroProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Headline & Subheadline */}
         <div className="text-center max-w-3xl mx-auto space-y-3 mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-stay-primary-subtle text-stay-primary text-xs font-semibold border border-stay-border shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-stay-primary-subtle text-stay-primary font-semibold border border-stay-border shadow-2xs">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Nền tảng kết nối phòng trọ & bạn ở ghép thông minh #1</span>
+            <span>Nền tảng Roomi - Quản lý phòng trọ & Ghép bạn ở cùng thông minh #1</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stay-text tracking-tight leading-tight sm:leading-snug">
@@ -29,7 +29,7 @@ export const StayConnectHero: React.FC<StayConnectHeroProps> = ({
           </h1>
 
           <p className="text-sm sm:text-base text-stay-text-secondary leading-relaxed font-normal max-w-2xl mx-auto">
-            Nền tảng xác thực phòng trọ chính chủ và kết nối người ở ghép dựa trên độ tương thích thói quen sống.
+            Roomi - Hệ thống xác thực phòng trọ chính chủ và kết nối người ở ghép dựa trên độ tương thích thói quen sống bằng thuật toán AI.
           </p>
         </div>
 
@@ -94,12 +94,12 @@ export const StayConnectHero: React.FC<StayConnectHeroProps> = ({
             </svg>
 
             {/* Floating Trust Pills around illustration */}
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-8 bg-stay-card-bg/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-stay-border text-xs font-semibold text-stay-secondary shadow-xs flex items-center gap-1.5">
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-8 bg-stay-card-bg/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-stay-border font-semibold text-stay-secondary shadow-xs flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-stay-secondary" />
               <span>100% Phòng Trọ Xác Minh</span>
             </div>
 
-            <div className="absolute bottom-6 right-4 sm:bottom-8 sm:right-8 bg-stay-card-bg/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-stay-border text-xs font-semibold text-stay-primary shadow-xs flex items-center gap-1.5">
+            <div className="absolute bottom-6 right-4 sm:bottom-8 sm:right-8 bg-stay-card-bg/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-stay-border font-semibold text-stay-primary shadow-xs flex items-center gap-1.5">
               <HeartHandshake className="w-4 h-4 text-stay-primary" />
               <span>Ghép Gu Lối Sống Tương Thích</span>
             </div>
@@ -108,7 +108,7 @@ export const StayConnectHero: React.FC<StayConnectHeroProps> = ({
 
         {/* Floating Search Bar (Card overlapping bottom of Hero) */}
         <div className="relative z-20 max-w-4xl mx-auto pt-2">
-          <StayConnectSearchBar onSearch={onSearch} />
+          <RoomiSearchBar onSearch={onSearch} />
         </div>
       </div>
     </section>

@@ -340,14 +340,14 @@ export const RoommateSearchPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight">
               Tìm Bạn Ở Ghép & Nhóm Thuê Phòng
             </h1>
-            <p className="text-xs text-stay-text-secondary mt-1">
+            <p className=" text-stay-text-secondary mt-1">
               Khám phá bạn cùng phòng và các bài đăng ghép trọ phù hợp với ngân sách và lối sống của bạn.
             </p>
           </div>
 
           <Link
             to="/tenant/create-post"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors shrink-0 self-start sm:self-auto shadow-xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl  sm:text-sm font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors shrink-0 self-start sm:self-auto shadow-xs"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Đăng bài tìm bạn</span>
@@ -365,7 +365,7 @@ export const RoommateSearchPage: React.FC = () => {
                 placeholder="Tìm theo tiêu đề, địa chỉ, tên người đăng..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:border-stay-primary transition-colors"
+                className="w-full pl-9 pr-3 py-2  sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:border-stay-primary transition-colors"
               />
             </div>
 
@@ -374,7 +374,7 @@ export const RoommateSearchPage: React.FC = () => {
               <select
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
-                className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
+                className="w-full px-2.5 py-2  sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
               >
                 {DISTRICT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -389,7 +389,7 @@ export const RoommateSearchPage: React.FC = () => {
               <select
                 value={selectedPrice}
                 onChange={(e) => setSelectedPrice(e.target.value)}
-                className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
+                className="w-full px-2.5 py-2  sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
               >
                 {PRICE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -404,7 +404,7 @@ export const RoommateSearchPage: React.FC = () => {
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
+                className="w-full px-2.5 py-2  sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
               >
                 {TYPE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -419,7 +419,7 @@ export const RoommateSearchPage: React.FC = () => {
               <select
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
-                className="w-full px-2 py-2 text-xs sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
+                className="w-full px-2 py-2  sm:text-sm rounded-lg border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
               >
                 {GENDER_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -435,7 +435,7 @@ export const RoommateSearchPage: React.FC = () => {
                 type="button"
                 onClick={handleResetFilters}
                 title="Đặt lại bộ lọc"
-                className="w-full py-2 px-2.5 flex items-center justify-center gap-1 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text-secondary hover:text-stay-primary hover:border-stay-primary transition-colors cursor-pointer text-xs"
+                className="w-full py-2 px-2.5 flex items-center justify-center gap-1 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text-secondary hover:text-stay-primary hover:border-stay-primary transition-colors cursor-pointer "
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span className="lg:hidden">Đặt lại</span>
@@ -445,7 +445,7 @@ export const RoommateSearchPage: React.FC = () => {
         </div>
 
         {/* Số lượng kết quả */}
-        <div className="flex items-center justify-between text-xs text-stay-text-secondary px-1">
+        <div className="flex items-center justify-between  text-stay-text-secondary px-1">
           <span>
             Hiển thị <strong className="text-stay-primary font-semibold">{filteredPosts.length}</strong> bài đăng phù hợp
           </span>
@@ -455,13 +455,13 @@ export const RoommateSearchPage: React.FC = () => {
         {filteredPosts.length === 0 ? (
           <div className="text-center py-16 bg-stay-card-bg rounded-xl border border-stay-border">
             <p className="text-sm font-semibold text-stay-text">Không tìm thấy bài đăng nào phù hợp</p>
-            <p className="text-xs text-stay-text-secondary mt-1">
+            <p className=" text-stay-text-secondary mt-1">
               Vui lòng thử điều chỉnh lại điều kiện lọc hoặc từ khóa tìm kiếm.
             </p>
             <button
               type="button"
               onClick={handleResetFilters}
-              className="mt-4 px-4 py-2 rounded-lg text-xs font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
+              className="mt-4 px-4 py-2 rounded-lg  font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
             >
               Xem tất cả bài đăng
             </button>
@@ -478,8 +478,8 @@ export const RoommateSearchPage: React.FC = () => {
                 pref === 'MALE_ONLY'
                   ? 'Nam'
                   : pref === 'FEMALE_ONLY'
-                  ? 'Nữ'
-                  : 'Nam / Nữ';
+                    ? 'Nữ'
+                    : 'Nam / Nữ';
 
               return (
                 <div
@@ -502,11 +502,10 @@ export const RoommateSearchPage: React.FC = () => {
                       {/* Huy hiệu loại tin */}
                       <div className="absolute top-2.5 left-2.5">
                         <span
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-semibold backdrop-blur-xs ${
-                            isHasRoom
+                          className={`px-2 py-0.5 rounded-md text-[11px] font-semibold backdrop-blur-xs ${isHasRoom
                               ? 'bg-stay-primary text-white'
                               : 'bg-emerald-600 text-white'
-                          }`}
+                            }`}
                         >
                           {isHasRoom ? 'Đã có phòng' : 'Tìm bạn cùng thuê'}
                         </span>
@@ -521,7 +520,7 @@ export const RoommateSearchPage: React.FC = () => {
                     {/* Nội dung bài viết */}
                     <div className="p-4 space-y-3">
                       {/* Tác giả & Ngày đăng */}
-                      <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center justify-between ">
                         <div className="flex items-center gap-2 min-w-0">
                           <img
                             src={
@@ -531,7 +530,7 @@ export const RoommateSearchPage: React.FC = () => {
                             alt={post.authorName}
                             className="w-6 h-6 rounded-full object-cover border border-stay-border shrink-0"
                           />
-                          <span className="font-semibold text-stay-text text-xs truncate">
+                          <span className="font-semibold text-stay-text  truncate">
                             {post.authorName}
                           </span>
                         </div>
@@ -549,7 +548,7 @@ export const RoommateSearchPage: React.FC = () => {
                       </Link>
 
                       {/* Địa chỉ khu vực */}
-                      <div className="flex items-center gap-1.5 text-xs text-stay-text-secondary">
+                      <div className="flex items-center gap-1.5  text-stay-text-secondary">
                         <MapPin className="w-3.5 h-3.5 text-stay-primary shrink-0" />
                         <span className="truncate">{post.areaName || post.district || 'Hà Nội'}</span>
                       </div>
@@ -600,7 +599,7 @@ export const RoommateSearchPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => navigate(`/roommates/${post.id}`)}
-                      className="w-full py-2 px-3 rounded-lg text-xs font-semibold border border-stay-border bg-stay-bg-app text-stay-text hover:bg-stay-primary hover:text-white hover:border-stay-primary transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                      className="w-full py-2 px-3 rounded-lg  font-semibold border border-stay-border bg-stay-bg-app text-stay-text hover:bg-stay-primary hover:text-white hover:border-stay-primary transition-colors flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>Xem chi tiết</span>
                       <ArrowRight className="w-3.5 h-3.5" />

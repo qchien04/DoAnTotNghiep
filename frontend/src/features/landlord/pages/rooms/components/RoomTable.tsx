@@ -28,34 +28,30 @@ export const RoomTable: React.FC<RoomTableProps> = ({
     switch (st) {
       case 'AVAILABLE':
         return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
             Còn trống
           </span>
         );
       case 'OCCUPIED':
         return (
-          <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="text-blue-600 dark:text-blue-400 font-medium">
             Đang thuê
           </span>
         );
       case 'UNDER_MAINTENANCE':
         return (
-          <span className="inline-flex items-center gap-1.5  text-amber-600 dark:text-amber-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="text-amber-600 dark:text-amber-400 font-medium">
             Đang sửa chữa
           </span>
         );
       case 'STOPPED':
         return (
-          <span className="inline-flex items-center gap-1.5  text-stay-text-muted font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span className="text-stay-text-muted font-medium">
             Ngừng sử dụng
           </span>
         );
       default:
-        return <span className=" text-stay-text-muted">{st}</span>;
+        return <span className="text-stay-text-muted">{st}</span>;
     }
   };
 
@@ -108,8 +104,8 @@ export const RoomTable: React.FC<RoomTableProps> = ({
               {item.buildingName ? (
                 <p className="text-[12px] text-stay-text-muted truncate">{item.buildingName}</p>
               ) : (
-                <p className="text-[12px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
-                  🏠 {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Nhà trọ độc lập')}
+                <p className="text-[12px] text-stay-text-muted truncate">
+                  {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Chưa có địa chỉ')}
                 </p>
               )}
             </div>
@@ -206,7 +202,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
             <Tooltip title="Xem chi tiết">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-view"
+                className="stay-action-btn"
                 onClick={() => onView(item)}
               >
                 <Eye className="w-4 h-4" />
@@ -216,7 +212,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
             <Tooltip title="Chỉnh sửa">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-edit"
+                className="stay-action-btn"
                 onClick={() => onEdit(item)}
               >
                 <Edit2 className="w-4 h-4" />
@@ -234,7 +230,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
               >
                 <button
                   type="button"
-                  className="stay-action-btn stay-action-btn-delete"
+                  className="stay-action-btn"
                   disabled={isDeleting}
                 >
                   <Trash2 className="w-4 h-4" />

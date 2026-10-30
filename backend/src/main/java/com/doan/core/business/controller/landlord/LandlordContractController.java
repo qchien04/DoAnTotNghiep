@@ -27,7 +27,7 @@ public class LandlordContractController {
     private final LandlordContractService contractService;
 
     @GetMapping
-    @Operation(summary = "UC 18: Xem danh sách hợp đồng thuê phòng", description = "Lấy danh sách hợp đồng, lọc theo từ khóa, tòa nhà, trạng thái (ACTIVE, EXPIRING_SOON, TERMINATED) và sắp xếp")
+    @Operation(summary = "UC 18: Xem danh sách hợp đồng thuê phòng", description = "Lấy danh sách hợp đồng, lọc theo từ khóa, tòa nhà, trạng thái (ACTIVE, TERMINATED) và sắp xếp")
     public ResponseEntity<ResponseData<PageResponse<ContractResponse>>> getContracts(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long buildingId,

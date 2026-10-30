@@ -45,7 +45,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
       width={740}
       title={<span className="text-base font-bold text-stay-text">Lời mời liên kết phòng trọ</span>}
     >
-      <div className="space-y-4 pt-2 text-xs">
+      <div className="space-y-4 pt-2 ">
         {!rejectMode ? (
           <>
             <p className="text-stay-text-secondary">
@@ -54,7 +54,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
 
             {/* Bảng thông tin đối soát chuẩn UC16 */}
             <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left  border-collapse">
                 <thead>
                   <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
                     <th className="p-3 w-1/3">Mục thông tin</th>

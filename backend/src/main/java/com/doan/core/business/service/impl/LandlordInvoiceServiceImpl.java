@@ -17,10 +17,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,12 +32,13 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
     private final InvoiceItemRepository invoiceItemRepository;
     private final ContractServiceRepository contractServiceRepository;
     private final ContractRepository contractRepository;
+    private final TenantRepository tenantRepository;
     private final NotificationRepository notificationRepository;
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<InvoiceResponse> getInvoices(Long landlordId, Long buildingId, String billingPeriod,
-                                                     InvoiceStatus status, String keyword, int page, int size, String sortBy, String sortDirection) {
+            InvoiceStatus status, String keyword, int page, int size, String sortBy, String sortDirection) {
         String kw = (keyword != null && !keyword.trim().isBlank()) ? keyword.trim() : null;
 
         Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection)
@@ -76,27 +78,14 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
 
     @Override
     @Transactional
-    public InvoiceResponse createInvoice(Long landlordId, MeterReadingInvoiceRequest request) {
-        log.info("Lập hóa đơn kỳ: {} cho hợp đồng: {}, phòng: {} của chủ trọ: {}",
-                request.getBillingPeriod(), request.getContractId(), request.getRoomId(), landlordId);
+    public InvoiceResponse createInvoice(Long landlordId, CreateInvoiceRequest request) {
+        log.info("Lập hóa đơn kỳ: {} cho hợp đồng: {} của chủ trọ: {}",
+                request.getBillingPeriod(), request.getContractId(), landlordId);
 
-        if (request.getBillingPeriod() == null || request.getBillingPeriod().trim().isBlank()) {
-            throw new BaseException(ErrorCode.BAD_REQUEST, "Kỳ cước hóa đơn không được để trống");
-        }
-
-        // 1. Phân giải hợp đồng (Fail-close: Validate dứt khoát, không fallback lung
-        // tung)
-        Contract contract;
-        if (request.getContractId() != null) {
-            contract = contractRepository.findByIdAndLandlordId(request.getContractId(), landlordId)
-                    .orElseThrow(() -> new BaseException(ErrorCode.CONTRACT_NOT_FOUND));
-        } else if (request.getRoomId() != null) {
-            contract = contractRepository.findByRoomIdAndStatus(request.getRoomId(), ContractStatus.ACTIVE)
-                    .filter(c -> c.getLandlord() != null && c.getLandlord().getId().equals(landlordId))
-                    .orElseThrow(() -> new BaseException(ErrorCode.CONTRACT_NOT_FOUND));
-        } else {
-            throw new BaseException(ErrorCode.BAD_REQUEST, "Vui lòng chọn hợp đồng hoặc phòng để lập hóa đơn");
-        }
+        // 1. Phân giải hợp đồng (Fetch toàn bộ chi tiết phòng, tòa nhà, khách thuê và
+        // dịch vụ trong 1 query duy nhất)
+        Contract contract = contractRepository.findByIdAndLandlordIdWithDetails(request.getContractId(), landlordId)
+                .orElseThrow(() -> new BaseException(ErrorCode.CONTRACT_NOT_FOUND));
 
         if (contract.getStatus() != ContractStatus.ACTIVE) {
             throw new BaseException(ErrorCode.BAD_REQUEST,
@@ -111,7 +100,7 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
 
         boolean isDraft = Boolean.TRUE.equals(request.getIsDraft());
 
-        // Validate hạn nộp tiền (Fail-close)
+        // Validate hạn nộp tiền
         LocalDate dueDate;
         if (!isDraft) {
             if (request.getDueDate() == null) {
@@ -132,60 +121,44 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
         items.add(InvoiceItem.builder()
                 .itemType(InvoiceItemType.ROOM_RENT)
                 .itemName("Tiền thuê phòng " + contract.getRoom().getName())
-                .quantity(BigDecimal.ONE)
+                .quantity(1)
                 .unitPrice(contract.getRentPrice())
                 .amount(contract.getRentPrice())
                 .note("1 tháng")
                 .build());
 
-        // 3. Xử lý danh sách khoản mục dịch vụ
+        // Nạp toàn bộ dịch vụ của hợp đồng trong
+        List<ContractService> contractServices = contractServiceRepository.findByContractId(contract.getId());
+        Map<Long, ContractService> contractServiceMap = contractServices.stream()
+                .filter(s -> s.getId() != null)
+                .collect(Collectors.toMap(ContractService::getId, Function.identity(), (a, b) -> a));
+
+        List<ContractService> updatedMeterServices = new ArrayList<>();
+
+        // 3. Xử lý danh sách khoản mục dịch vụ (Chỉ đọc contractServiceId, currentIndex
+        // / quantity từ request)
         if (request.getItems() != null && !request.getItems().isEmpty()) {
-            for (MeterReadingInvoiceRequest.InvoiceItemRequest itemReq : request.getItems()) {
-                InvoiceItemType itemType = itemReq.getItemType();
-
-                // Bỏ qua nếu client gửi kèm khoản mục tiền phòng (đã được tạo ở trên)
-                if (itemType == InvoiceItemType.ROOM_RENT) {
-                    continue;
+            for (CreateInvoiceRequest.InvoiceItemRequest itemReq : request.getItems()) {
+                // Xác thực ContractService thuộc về hợp đồng này
+                ContractService cs = contractServiceMap.get(itemReq.getContractServiceId());
+                if (cs == null) {
+                    throw new BaseException(ErrorCode.BAD_REQUEST,
+                            "Dịch vụ tiện ích (id=" + itemReq.getContractServiceId() + ") không thuộc về hợp đồng này");
                 }
 
-                // Xác thực ContractService thuộc về hợp đồng này (Fail-close: Chặn dùng chéo
-                // hợp đồng)
-                ContractService cs = null;
-                if (itemReq.getContractServiceId() != null) {
-                    cs = contractServiceRepository.findById(itemReq.getContractServiceId())
-                            .orElseThrow(() -> new BaseException(ErrorCode.SERVICE_NOT_FOUND,
-                                    "Không tìm thấy dịch vụ thỏa thuận của hợp đồng"));
+                // Toàn bộ đơn giá, tên dịch vụ, chỉ số cũ, phương thức tính lấy từ
+                // ContractService trong DB
+                long price = cs.getAppliedUnitPrice();
+                int qty = 0;
+                Integer pIdx = null;
+                Integer cIdx = null;
+                String note = cs.getUnit();
 
-                    if (!cs.getContract().getId().equals(contract.getId())) {
-                        throw new BaseException(ErrorCode.BAD_REQUEST,
-                                "Dịch vụ tiện ích (id=" + cs.getId() + ") không thuộc về hợp đồng này");
-                    }
-                }
+                BillingMethod method = cs.getBillingMethod();
 
-                if (itemType == null) {
-                    itemType = (cs != null) ? InvoiceItemType.SERVICE : InvoiceItemType.SURCHARGE;
-                }
-
-                // Validate số tiền không âm (Fail-close: Không dùng Math.abs để che giấu lỗi)
-                if (itemReq.getUnitPrice() != null && itemReq.getUnitPrice() < 0) {
-                    throw new BaseException(ErrorCode.BAD_REQUEST, "Đơn giá khoản mục không được là số âm");
-                }
-                if (itemReq.getAmount() != null && itemReq.getAmount() < 0) {
-                    throw new BaseException(ErrorCode.BAD_REQUEST, "Số tiền khoản mục không được là số âm");
-                }
-
-                long price = itemReq.getUnitPrice() != null ? itemReq.getUnitPrice()
-                        : (cs != null ? cs.getAppliedUnitPrice() : 0L);
-
-                BigDecimal qty = BigDecimal.ONE;
-                Integer pIdx = itemReq.getPreviousIndex();
-                Integer cIdx = itemReq.getCurrentIndex();
-
-                // Xác thực nghiêm ngặt chỉ số công tơ điện nước (METER_INDEX)
-                if (cs != null && cs.getBillingMethod() == BillingMethod.METER_INDEX) {
-                    if (pIdx == null) {
-                        pIdx = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
-                    }
+                if (method == BillingMethod.METER_INDEX) {
+                    pIdx = cs.getLastIndex();
+                    cIdx = itemReq.getCurrentIndex();
 
                     if (cIdx != null) {
                         if (cIdx < pIdx) {
@@ -193,121 +166,93 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
                                     "Chỉ số mới (" + cIdx + ") không được nhỏ hơn chỉ số cũ (" + pIdx
                                             + ") cho dịch vụ: " + cs.getServiceName());
                         }
-                        qty = BigDecimal.valueOf(cIdx - pIdx);
+                        qty = cIdx - pIdx;
                         cs.setLastIndex(cIdx);
-                        contractServiceRepository.save(cs);
+                        updatedMeterServices.add(cs);
+                        note = qty + " " + cs.getUnit()
+                                + " (Từ số " + pIdx + " đến " + cIdx + ")";
                     } else {
                         if (!isDraft) {
                             throw new BaseException(ErrorCode.INVALID_METER_READING,
                                     "Vui lòng nhập chỉ số mới cho dịch vụ: " + cs.getServiceName());
                         }
-                        qty = BigDecimal.ZERO;
+                        qty = 0;
                         cIdx = pIdx;
                     }
-                } else if (itemReq.getQuantity() != null) {
-                    if (itemReq.getQuantity().compareTo(BigDecimal.ZERO) < 0) {
-                        throw new BaseException(ErrorCode.BAD_REQUEST, "Số lượng không được là số âm");
-                    }
-                    qty = itemReq.getQuantity();
-                }
-
-                long amount = itemReq.getAmount() != null ? itemReq.getAmount()
-                        : qty.multiply(BigDecimal.valueOf(price)).longValue();
-
-                if (itemType == InvoiceItemType.DISCOUNT) {
-                    servicesAmount -= amount;
+                } else if (method == BillingMethod.FIXED_PER_PERSON) {
+                    long stayingCount = tenantRepository.countByContractId(contract.getId());
+                    int defaultOccupancy = stayingCount > 0 ? (int) stayingCount : 1;
+                    qty = (itemReq != null && itemReq.getQuantity() != null && itemReq.getQuantity() > 0)
+                            ? itemReq.getQuantity()
+                            : defaultOccupancy;
+                    note = qty + " người";
+                } else if (method == BillingMethod.FIXED_PER_UNIT) {
+                    qty = (itemReq != null && itemReq.getQuantity() != null) ? itemReq.getQuantity() : 0;
+                    note = qty + " " + cs.getUnit();
                 } else {
-                    servicesAmount += amount;
+                    // FIXED_PER_ROOM
+                    qty = 1;
+                    note = "Cố định / phòng";
                 }
 
+                long amount = qty * price;
+                servicesAmount += amount;
+
+                // Server quyết định: Dịch vụ theo hợp đồng luôn là SERVICE
                 items.add(InvoiceItem.builder()
                         .contractService(cs)
-                        .itemType(itemType)
-                        .itemName(itemReq.getItemName() != null ? itemReq.getItemName().trim()
-                                : (cs != null ? cs.getServiceName() : "Khoản mục khác"))
+                        .itemType(InvoiceItemType.SERVICE)
+                        .itemName(cs.getServiceName())
                         .previousIndex(pIdx)
                         .currentIndex(cIdx)
                         .quantity(qty)
                         .unitPrice(price)
                         .amount(amount)
-                        .note(itemReq.getNote())
+                        .note(note)
                         .build());
             }
-        } else {
-            // Khi client không gửi items:
-            // Nếu phát hành hóa đơn thật mà hợp đồng có dịch vụ công tơ METER_INDEX -> Bắt
-            // buộc phải chốt số trước (Fail-close)
-            if (contract.getContractServices() != null && !contract.getContractServices().isEmpty()) {
-                if (!isDraft) {
-                    boolean hasMeterService = contract.getContractServices().stream()
-                            .anyMatch(cs -> cs.getBillingMethod() == BillingMethod.METER_INDEX);
-                    if (hasMeterService) {
-                        throw new BaseException(ErrorCode.BAD_REQUEST,
-                                "Hợp đồng có dịch vụ tính theo công tơ (điện/nước). Vui lòng chốt chỉ số trước khi phát hành hóa đơn");
-                    }
+        }
+        // Cập nhật batch các chỉ số công tơ điện nước thay đổi (1 lệnh batch thay vì N
+        // lệnh save)
+        if (!updatedMeterServices.isEmpty()) {
+            contractServiceRepository.saveAll(updatedMeterServices);
+        }
+
+        // 4. Các khoản phụ thu & giảm trừ phát sinh (Server quyết định InvoiceItemType:
+        // SURCHARGE / DISCOUNT)
+        long adjustmentTotal = 0L;
+        if (request.getAdjustments() != null && !request.getAdjustments().isEmpty()) {
+            for (CreateInvoiceRequest.InvoiceAdjustmentRequest adjReq : request.getAdjustments()) {
+                InvoiceItemType itemType = (adjReq.getType() == AdjustmentType.DISCOUNT)
+                        ? InvoiceItemType.DISCOUNT
+                        : InvoiceItemType.SURCHARGE;
+
+                int qty = adjReq.getQuantity() != null
+                        ? adjReq.getQuantity()
+                        : 1;
+                long unitPrice = adjReq.getUnitPrice() != null ? adjReq.getUnitPrice() : 0L;
+                long amount = qty * unitPrice;
+
+                // Dựa vào itemType để biết là nên cộng hay trừ:
+                if (itemType == InvoiceItemType.DISCOUNT) {
+                    adjustmentTotal -= amount;
+                } else {
+                    adjustmentTotal += amount;
                 }
 
-                for (ContractService cs : contract.getContractServices()) {
-                    BillingMethod method = cs.getBillingMethod() != null ? cs.getBillingMethod()
-                            : BillingMethod.FIXED_PER_ROOM;
-                    BigDecimal qty = BigDecimal.ONE;
-                    long price = cs.getAppliedUnitPrice() != null ? cs.getAppliedUnitPrice() : 0L;
-                    String note = cs.getUnit();
-                    Integer pIdx = null;
-                    Integer cIdx = null;
-
-                    if (method == BillingMethod.METER_INDEX) {
-                        pIdx = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
-                        cIdx = pIdx;
-                        qty = BigDecimal.ZERO;
-                        note = "Chưa chốt số mới (số cũ: " + pIdx + ")";
-                    } else if (method == BillingMethod.FIXED_PER_PERSON) {
-                        int occupancy = contract.getRoom() != null && contract.getRoom().getCurrentOccupancy() != null
-                                && contract.getRoom().getCurrentOccupancy() > 0
-                                        ? contract.getRoom().getCurrentOccupancy()
-                                        : 1;
-                        qty = BigDecimal.valueOf(occupancy);
-                        note = occupancy + " người";
-                    } else {
-                        qty = BigDecimal.ONE;
-                        note = "Cố định / phòng";
-                    }
-
-                    long amount = qty.multiply(BigDecimal.valueOf(price)).longValue();
-                    servicesAmount += amount;
-
-                    items.add(InvoiceItem.builder()
-                            .contractService(cs)
-                            .itemType(InvoiceItemType.SERVICE)
-                            .itemName(cs.getServiceName())
-                            .previousIndex(pIdx)
-                            .currentIndex(cIdx)
-                            .quantity(qty)
-                            .unitPrice(price)
-                            .amount(amount)
-                            .note(note)
-                            .build());
-                }
+                items.add(InvoiceItem.builder()
+                        .contractService(null)
+                        .itemType(itemType)
+                        .itemName(adjReq.getReason().trim())
+                        .quantity(qty)
+                        .unitPrice(unitPrice)
+                        .amount(amount)
+                        .note(adjReq.getNote())
+                        .build());
             }
         }
 
-        // 4. Chi phí phát sinh khác
-        long otherAmount = request.getOtherAmount() != null ? request.getOtherAmount() : 0L;
-        if (otherAmount < 0) {
-            throw new BaseException(ErrorCode.BAD_REQUEST, "Chi phí phát sinh khác không được là số âm");
-        }
-        if (otherAmount > 0) {
-            items.add(InvoiceItem.builder()
-                    .itemType(InvoiceItemType.SURCHARGE)
-                    .itemName("Chi phí phát sinh khác")
-                    .quantity(BigDecimal.ONE)
-                    .unitPrice(otherAmount)
-                    .amount(otherAmount)
-                    .note(request.getOtherNote())
-                    .build());
-        }
-
-        long totalAmount = Math.max(0L, contract.getRentPrice() + servicesAmount + otherAmount);
+        long totalAmount = Math.max(0L, contract.getRentPrice() + servicesAmount + adjustmentTotal);
 
         Invoice invoice = Invoice.builder()
                 .contract(contract)
@@ -315,7 +260,6 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
                 .dueDate(dueDate)
                 .roomPrice(contract.getRentPrice())
                 .servicesAmount(servicesAmount)
-                .otherAmount(otherAmount)
                 .totalAmount(totalAmount)
                 .paidAmount(0L)
                 .status(isDraft ? InvoiceStatus.DRAFT : InvoiceStatus.UNPAID)
@@ -330,19 +274,24 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
         savedInvoice.setItems(items);
 
         // Bắn thông báo cho khách thuê đại diện nếu là hóa đơn phát hành chính thức
-        if (!isDraft && contract.getRepresentativeTenant() != null
-                && contract.getRepresentativeTenant().getUser() != null) {
-            Notification n = Notification.builder()
-                    .user(contract.getRepresentativeTenant().getUser())
-                    .title("Hóa đơn tiền phòng kỳ " + invoice.getBillingPeriod() + " đã phát hành")
-                    .content("Hóa đơn kỳ " + invoice.getBillingPeriod() + " với tổng số tiền " + totalAmount
-                            + " VNĐ. Hạn nộp: " + invoice.getDueDate())
-                    .notificationType(NotificationType.INVOICE)
-                    .relatedEntityType("INVOICE")
-                    .relatedEntityId(savedInvoice.getId())
-                    .isRead(false)
-                    .build();
-            notificationRepository.save(n);
+        if (!isDraft) {
+            ContractTenant repCt = contract.getContractTenants() != null ? contract.getContractTenants().stream()
+                    .filter(ct -> Boolean.TRUE.equals(ct.getIsRepresentative()))
+                    .findFirst()
+                    .orElse(null) : null;
+            if (repCt != null && repCt.getTenant() != null && repCt.getTenant().getUser() != null) {
+                Notification n = Notification.builder()
+                        .user(repCt.getTenant().getUser())
+                        .title("Hóa đơn tiền phòng kỳ " + invoice.getBillingPeriod() + " đã phát hành")
+                        .content("Hóa đơn kỳ " + invoice.getBillingPeriod() + " với tổng số tiền " + totalAmount
+                                + " VNĐ. Hạn nộp: " + invoice.getDueDate())
+                        .notificationType(NotificationType.INVOICE)
+                        .relatedEntityType("INVOICE")
+                        .relatedEntityId(savedInvoice.getId())
+                        .isRead(false)
+                        .build();
+                notificationRepository.save(n);
+            }
         }
 
         return InvoiceResponse.fromEntity(savedInvoice);
@@ -367,13 +316,6 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
             invoice.setDueDate(request.getDueDate());
         }
 
-        if (request.getOtherAmount() != null) {
-            if (request.getOtherAmount() < 0) {
-                throw new BaseException(ErrorCode.BAD_REQUEST, "Chi phí phát sinh khác không được là số âm");
-            }
-            invoice.setOtherAmount(request.getOtherAmount());
-        }
-
         long servicesAmount = 0L;
         List<InvoiceItem> items = new ArrayList<>();
 
@@ -381,118 +323,147 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
         invoiceItemRepository.deleteByInvoiceId(invoiceId);
 
         Contract contract = invoice.getContract();
+        List<ContractService> contractServices = contractServiceRepository.findByContractId(contract.getId());
+        Map<Long, ContractService> contractServiceMap = contractServices.stream()
+                .filter(s -> s.getId() != null)
+                .collect(Collectors.toMap(ContractService::getId, Function.identity(), (a, b) -> a));
+
+        List<ContractService> updatedMeterServices = new ArrayList<>();
 
         // Tiền thuê phòng cố định
         items.add(InvoiceItem.builder()
                 .invoice(invoice)
                 .itemType(InvoiceItemType.ROOM_RENT)
                 .itemName("Tiền thuê phòng " + contract.getRoom().getName())
-                .quantity(BigDecimal.ONE)
+                .quantity(1)
                 .unitPrice(invoice.getRoomPrice())
                 .amount(invoice.getRoomPrice())
                 .note("1 tháng")
                 .build());
 
+        // 3. Xử lý danh sách khoản mục dịch vụ (Chỉ đọc contractServiceId, currentIndex
+        // / quantity từ request)
         if (request.getItems() != null && !request.getItems().isEmpty()) {
-            for (MeterReadingInvoiceRequest.InvoiceItemRequest itemReq : request.getItems()) {
-                InvoiceItemType itemType = itemReq.getItemType();
-                if (itemType == InvoiceItemType.ROOM_RENT) {
-                    continue;
-                }
-
+            for (CreateInvoiceRequest.InvoiceItemRequest itemReq : request.getItems()) {
                 ContractService cs = null;
                 if (itemReq.getContractServiceId() != null) {
-                    cs = contractServiceRepository.findById(itemReq.getContractServiceId())
-                            .orElseThrow(() -> new BaseException(ErrorCode.SERVICE_NOT_FOUND,
-                                    "Không tìm thấy dịch vụ thỏa thuận của hợp đồng"));
-
-                    if (!cs.getContract().getId().equals(contract.getId())) {
+                    cs = contractServiceMap.get(itemReq.getContractServiceId());
+                    if (cs == null) {
                         throw new BaseException(ErrorCode.BAD_REQUEST,
-                                "Dịch vụ tiện ích (id=" + cs.getId() + ") không thuộc về hợp đồng này");
+                                "Dịch vụ tiện ích (id=" + itemReq.getContractServiceId()
+                                        + ") không thuộc về hợp đồng này");
                     }
                 }
-
-                if (itemType == null) {
-                    itemType = (cs != null) ? InvoiceItemType.SERVICE : InvoiceItemType.SURCHARGE;
+                if (cs == null) {
+                    throw new BaseException(ErrorCode.BAD_REQUEST, "Vui lòng chọn dịch vụ hợp đồng");
                 }
 
-                if (itemReq.getUnitPrice() != null && itemReq.getUnitPrice() < 0) {
-                    throw new BaseException(ErrorCode.BAD_REQUEST, "Đơn giá không được là số âm");
-                }
-                if (itemReq.getAmount() != null && itemReq.getAmount() < 0) {
-                    throw new BaseException(ErrorCode.BAD_REQUEST, "Số tiền không được là số âm");
-                }
+                // Toàn bộ đơn giá, tên dịch vụ, chỉ số cũ lấy từ ContractService trong DB
+                long price = cs.getAppliedUnitPrice();
+                int qty = 1;
+                Integer pIdx = null;
+                Integer cIdx = null;
+                String note = cs.getUnit();
 
-                long price = itemReq.getUnitPrice() != null ? itemReq.getUnitPrice()
-                        : (cs != null ? cs.getAppliedUnitPrice() : 0L);
+                BillingMethod method = cs.getBillingMethod();
 
-                BigDecimal qty = BigDecimal.ONE;
-                Integer pIdx = itemReq.getPreviousIndex();
-                Integer cIdx = itemReq.getCurrentIndex();
+                if (method == BillingMethod.METER_INDEX) {
+                    pIdx = cs.getLastIndex();
+                    cIdx = itemReq.getCurrentIndex();
 
-                if (cs != null && cs.getBillingMethod() == BillingMethod.METER_INDEX) {
-                    if (pIdx == null)
-                        pIdx = cs.getLastIndex() != null ? cs.getLastIndex() : 0;
                     if (cIdx != null) {
                         if (cIdx < pIdx) {
                             throw new BaseException(ErrorCode.INVALID_METER_READING,
                                     "Chỉ số mới (" + cIdx + ") không được nhỏ hơn chỉ số cũ (" + pIdx
                                             + ") cho dịch vụ: " + cs.getServiceName());
                         }
-                        qty = BigDecimal.valueOf(cIdx - pIdx);
+                        qty = cIdx - pIdx;
                         cs.setLastIndex(cIdx);
-                        contractServiceRepository.save(cs);
+                        updatedMeterServices.add(cs);
+                        note = qty + " " + cs.getUnit()
+                                + " (Từ số " + pIdx + " đến " + cIdx + ")";
                     } else {
-                        qty = BigDecimal.ZERO;
+                        qty = 0;
                         cIdx = pIdx;
+                        note = "Chưa chốt số mới (số cũ: " + pIdx + ")";
                     }
-                } else if (itemReq.getQuantity() != null) {
-                    if (itemReq.getQuantity().compareTo(BigDecimal.ZERO) < 0) {
-                        throw new BaseException(ErrorCode.BAD_REQUEST, "Số lượng không được là số âm");
-                    }
-                    qty = itemReq.getQuantity();
-                }
-
-                long amount = itemReq.getAmount() != null ? itemReq.getAmount()
-                        : qty.multiply(BigDecimal.valueOf(price)).longValue();
-
-                if (itemType == InvoiceItemType.DISCOUNT) {
-                    servicesAmount -= amount;
+                } else if (method == BillingMethod.FIXED_PER_PERSON) {
+                    long stayingCount = tenantRepository.countByContractId(contract.getId());
+                    int defaultOccupancy = stayingCount > 0 ? (int) stayingCount : 1;
+                    qty = (itemReq != null && itemReq.getQuantity() != null && itemReq.getQuantity() > 0)
+                            ? itemReq.getQuantity()
+                            : defaultOccupancy;
+                    note = qty + " người";
+                } else if (method == BillingMethod.FIXED_PER_UNIT) {
+                    qty = (itemReq != null && itemReq.getQuantity() != null && itemReq.getQuantity() > 0)
+                            ? itemReq.getQuantity()
+                            : 1;
+                    note = qty + " " + cs.getUnit();
                 } else {
-                    servicesAmount += amount;
+                    qty = 1;
+                    note = "Cố định / phòng";
                 }
+
+                long amount = (long) qty * price;
+                servicesAmount += amount;
 
                 items.add(InvoiceItem.builder()
                         .invoice(invoice)
                         .contractService(cs)
-                        .itemType(itemType)
-                        .itemName(itemReq.getItemName() != null ? itemReq.getItemName().trim()
-                                : (cs != null ? cs.getServiceName() : "Khoản mục khác"))
+                        .itemType(InvoiceItemType.SERVICE)
+                        .itemName(cs.getServiceName())
                         .previousIndex(pIdx)
                         .currentIndex(cIdx)
                         .quantity(qty)
                         .unitPrice(price)
                         .amount(amount)
-                        .note(itemReq.getNote())
+                        .note(note)
                         .build());
             }
         }
 
-        long otherAmount = invoice.getOtherAmount() != null ? invoice.getOtherAmount() : 0L;
-        if (otherAmount > 0) {
-            items.add(InvoiceItem.builder()
-                    .invoice(invoice)
-                    .itemType(InvoiceItemType.SURCHARGE)
-                    .itemName("Chi phí phát sinh khác")
-                    .quantity(BigDecimal.ONE)
-                    .unitPrice(otherAmount)
-                    .amount(otherAmount)
-                    .note(request.getOtherNote())
-                    .build());
+        if (!updatedMeterServices.isEmpty()) {
+            contractServiceRepository.saveAll(updatedMeterServices);
+        }
+
+        // 4. Các khoản phụ thu & giảm trừ phát sinh (Server quyết định: SURCHARGE /
+        // DISCOUNT)
+        long adjustmentTotal = 0L;
+        if (request.getAdjustments() != null && !request.getAdjustments().isEmpty()) {
+            for (CreateInvoiceRequest.InvoiceAdjustmentRequest adjReq : request.getAdjustments()) {
+                InvoiceItemType itemType = (adjReq.getType() == AdjustmentType.DISCOUNT)
+                        ? InvoiceItemType.DISCOUNT
+                        : InvoiceItemType.SURCHARGE;
+
+                int qty = (adjReq.getQuantity() != null && adjReq.getQuantity() > 0)
+                        ? adjReq.getQuantity()
+                        : 1;
+                long unitPrice = adjReq.getUnitPrice() != null ? adjReq.getUnitPrice() : 0L;
+                long amount = adjReq.getAmount() != null ? adjReq.getAmount()
+                        : (long) qty * unitPrice;
+
+                // Dựa vào itemType để biết là nên cộng hay trừ:
+                if (itemType == InvoiceItemType.DISCOUNT) {
+                    adjustmentTotal -= amount;
+                } else {
+                    adjustmentTotal += amount;
+                }
+
+                items.add(InvoiceItem.builder()
+                        .invoice(invoice)
+                        .contractService(null)
+                        .itemType(itemType)
+                        .itemName(adjReq.getReason().trim())
+                        .quantity(qty)
+                        .unitPrice(unitPrice)
+                        .amount(amount)
+                        .note(adjReq.getNote())
+                        .build());
+            }
         }
 
         invoice.setServicesAmount(servicesAmount);
-        long grandTotal = Math.max(0L, invoice.getRoomPrice() + servicesAmount + otherAmount);
+        long grandTotal = Math.max(0L, invoice.getRoomPrice() + servicesAmount + adjustmentTotal);
         invoice.setTotalAmount(grandTotal);
 
         invoiceItemRepository.saveAll(items);
@@ -524,6 +495,19 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
         invoice.setStatus(InvoiceStatus.CANCELLED);
         invoice.setCancelReason(request.getCancelReason().trim());
 
+        // Hoàn trả chỉ số công tơ về chỉ số cũ trước khi lập hóa đơn này
+        if (invoice.getItems() != null) {
+            for (InvoiceItem item : invoice.getItems()) {
+                if (item.getContractService() != null
+                        && item.getContractService().getBillingMethod() == BillingMethod.METER_INDEX
+                        && item.getPreviousIndex() != null) {
+                    ContractService cs = item.getContractService();
+                    cs.setLastIndex(item.getPreviousIndex());
+                    contractServiceRepository.save(cs);
+                }
+            }
+        }
+
         Invoice updated = invoiceRepository.save(invoice);
         return InvoiceResponse.fromEntity(updated);
     }
@@ -547,7 +531,7 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
             throw new BaseException(ErrorCode.BAD_REQUEST, "Số tiền thanh toán phải lớn hơn 0");
         }
 
-        long currentPaid = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : 0L;
+        long currentPaid = invoice.getPaidAmount();
         long remaining = Math.max(0L, invoice.getTotalAmount() - currentPaid);
 
         if (request.getPaymentAmount() > remaining) {
@@ -608,10 +592,13 @@ public class LandlordInvoiceServiceImpl implements LandlordInvoiceService {
 
         // Bắn thông báo phát hành hóa đơn cho khách thuê đại diện
         Contract contract = saved.getContract();
-        if (contract != null && contract.getRepresentativeTenant() != null
-                && contract.getRepresentativeTenant().getUser() != null) {
+        ContractTenant repCt = contract.getContractTenants() != null ? contract.getContractTenants().stream()
+                .filter(ct -> Boolean.TRUE.equals(ct.getIsRepresentative()))
+                .findFirst()
+                .orElse(null) : null;
+        if (repCt != null && repCt.getTenant() != null && repCt.getTenant().getUser() != null) {
             Notification n = Notification.builder()
-                    .user(contract.getRepresentativeTenant().getUser())
+                    .user(repCt.getTenant().getUser())
                     .title("Hóa đơn tiền phòng kỳ " + saved.getBillingPeriod() + " đã phát hành")
                     .content("Hóa đơn kỳ " + saved.getBillingPeriod() + " với tổng số tiền " + saved.getTotalAmount()
                             + " VNĐ. Hạn nộp: " + saved.getDueDate())

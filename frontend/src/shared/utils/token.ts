@@ -1,7 +1,7 @@
 import { env } from '@/configs/env';
 import { User } from '@/shared/types/auth';
 
-const AUTH_SYNC_CHANNEL = 'stayconnect_auth_sync';
+const AUTH_SYNC_CHANNEL = 'roomi_auth_sync';
 
 export interface AuthSyncMessage {
   type: 'LOGIN' | 'REFRESH' | 'LOGOUT';

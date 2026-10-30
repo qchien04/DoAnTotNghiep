@@ -42,7 +42,7 @@ export const TenantInviteModal: React.FC<TenantInviteModalProps> = ({
       width={640}
     >
       <div className="py-2 space-y-3">
-        <p className="text-xs text-stay-text-secondary leading-relaxed">
+        <p className=" text-stay-text-secondary leading-relaxed">
           Nhập số điện thoại hoặc email tài khoản của khách thuê{' '}
           <strong className="text-stay-text">{tenant?.fullName}</strong>:
         </p>

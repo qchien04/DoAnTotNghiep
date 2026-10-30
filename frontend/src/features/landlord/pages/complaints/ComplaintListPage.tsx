@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useComplaints, useUpdateComplaintProgress } from '@/shared/hooks';
-
-import { message } from '@/shared/components';
 import { Complaint, ComplaintStatus, UpdateComplaintProgressDto } from '@/shared/types/landlord';
 import { ComplaintFilter } from './components/ComplaintFilter';
 import { ComplaintTable } from './components/ComplaintTable';
@@ -28,12 +26,15 @@ export const ComplaintListPage: React.FC = () => {
   };
 
   const handleProgressSubmit = async (complaintId: string | number, dto: UpdateComplaintProgressDto) => {
-    await updateProgress({
-      id: complaintId,
-      dto,
-    });
-    message.success('Cập nhật tiến độ xử lý và gửi thông báo tới khách thuê thành công!');
-    setProgressModalOpen(false);
+    try {
+      await updateProgress({
+        id: complaintId,
+        dto,
+      });
+      setProgressModalOpen(false);
+    } catch {
+      // Handled in mutation hook
+    }
   };
 
   return (

@@ -17,7 +17,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <AntPagination
         showSizeChanger={showSizeChanger}
         showTotal={showTotal}
-        className="custom-antd-pagination font-medium text-xs sm:text-sm"
+        className="custom-antd-pagination font-medium  sm:text-sm"
         {...props}
       />
     </div>

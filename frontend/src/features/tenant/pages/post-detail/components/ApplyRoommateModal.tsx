@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Select } from '@/shared/components';
+import { Modal, Button, Input, LifestyleQuestionnaire } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { useLifestyleQuestions, useUserLifestyleProfile } from '@/shared/hooks';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -10,7 +10,7 @@ interface ApplyRoommateModalProps {
   onCancel: () => void;
   onSubmit: (data: {
     introMessage: string;
-    lifestyleAnswers: { questionId: number; optionId: number }[];
+    lifestyleAnswers: { questionId: number; optionId?: number; optionIds?: number[] }[];
     isCustomized: boolean;
     gender?: string;
     sleepTime?: string;
@@ -53,11 +53,17 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
       const initialMap: Record<number, number[]> = {};
       if (profile?.answers && profile.answers.length > 0) {
         profile.answers.forEach((ans) => {
-          if (ans.questionId && ans.optionId) {
+          if (ans.questionId) {
             if (!initialMap[ans.questionId]) {
               initialMap[ans.questionId] = [];
             }
-            if (!initialMap[ans.questionId].includes(ans.optionId)) {
+            if (ans.optionIds && ans.optionIds.length > 0) {
+              ans.optionIds.forEach((id: number) => {
+                if (!initialMap[ans.questionId].includes(id)) {
+                  initialMap[ans.questionId].push(id);
+                }
+              });
+            } else if (ans.optionId && !initialMap[ans.questionId].includes(ans.optionId)) {
               initialMap[ans.questionId].push(ans.optionId);
             }
           }
@@ -75,27 +81,21 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
     }
   }, [open, profile, questions, user]);
 
-  const handleOptionChange = (questionId: number, val: any, isMulti: boolean) => {
-    const newOptions: number[] = isMulti
-      ? Array.isArray(val) ? val.map(Number) : [Number(val)]
-      : [Number(val)];
-
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: newOptions,
-    }));
-    setIsCustomized(true);
-  };
-
   const handleResetToProfile = () => {
     const profileMap: Record<number, number[]> = {};
     if (profile?.answers) {
       profile.answers.forEach((ans) => {
-        if (ans.questionId && ans.optionId) {
+        if (ans.questionId) {
           if (!profileMap[ans.questionId]) {
             profileMap[ans.questionId] = [];
           }
-          if (!profileMap[ans.questionId].includes(ans.optionId)) {
+          if (ans.optionIds && ans.optionIds.length > 0) {
+            ans.optionIds.forEach((id: number) => {
+              if (!profileMap[ans.questionId].includes(id)) {
+                profileMap[ans.questionId].push(id);
+              }
+            });
+          } else if (ans.optionId && !profileMap[ans.questionId].includes(ans.optionId)) {
             profileMap[ans.questionId].push(ans.optionId);
           }
         }
@@ -106,18 +106,17 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
   };
 
   const handleConfirm = async () => {
-    const answersList = Object.entries(selectedAnswers).flatMap(([qId, oIds]) =>
-      oIds.map((oId) => ({
-        questionId: Number(qId),
-        optionId: Number(oId),
-      }))
-    );
+    const answersList = Object.entries(selectedAnswers).map(([qId, oIds]: [string, number[]]) => ({
+      questionId: Number(qId),
+      optionId: oIds[0],
+      optionIds: oIds,
+    }));
 
     await onSubmit({
       introMessage,
       lifestyleAnswers: answersList,
       isCustomized,
-      gender: user?.gender || 'Nam',
+      gender: user?.gender || 'MALE',
     });
   };
 
@@ -138,8 +137,8 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
     >
       <div className="space-y-4 pt-2 max-h-[75vh] overflow-y-auto pr-1">
         {/* Section 1: Thông tin cá nhân & Giới thiệu */}
-        <div className="bg-stay-bg-app border border-stay-border rounded-xl p-4 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <span className="text-stay-text-secondary font-medium block mb-1">Họ và tên:</span>
               <Input
@@ -159,7 +158,7 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
           </div>
 
           <div>
-            <span className="text-xs text-stay-text-secondary font-medium block mb-1">
+            <span className="text-stay-text-secondary font-medium block mb-1">
               Lời nhắn gửi chủ phòng
             </span>
             <Input.TextArea
@@ -172,13 +171,13 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
         </div>
 
         {/* Section 2: Tiêu chí lối sống */}
-        <div className="space-y-2">
+        <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
-                Tiêu chí lối sống
+              <span className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
+                Tiêu chí lối sống (Đối chiếu hòa hợp)
               </span>
-              <Tooltip title="Đã sao chép từ hồ sơ gốc. Bạn có thể tinh chỉnh riêng cho bài đăng này mà không ảnh hưởng hồ sơ cá nhân.">
+              <Tooltip title="Đã sao chép từ hồ sơ gốc của bạn. Bạn có thể tinh chỉnh các lựa chọn riêng cho đơn này mà không làm đổi hồ sơ gốc.">
                 <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
               </Tooltip>
             </div>
@@ -194,62 +193,14 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
             )}
           </div>
 
-          <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
-                  <th className="p-3 w-5/12">Tiêu chí lối sống</th>
-                  <th className="p-3 w-7/12">Lựa chọn của bạn cho bài đăng này</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stay-border">
-                {questions.map((q) => {
-                  const isMulti = q.qType === 'MULTI';
-                  const currentSelectedOption = isMulti
-                    ? selectedAnswers[q.id] || []
-                    : selectedAnswers[q.id]?.[0];
-                  const options = q.options.map((opt) => ({
-                    label: opt.label,
-                    value: opt.id,
-                  }));
-
-                  return (
-                    <tr key={q.id} className="hover:bg-stay-bg-app transition-colors">
-                      <td className="p-3">
-                        <div className="font-semibold text-stay-text">{q.label}</div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          {isMulti ? (
-                            <span className="text-[10px] text-stay-primary bg-stay-primary-subtle border border-stay-primary/20 px-1.5 py-0.5 rounded font-medium">
-                              Chọn nhiều
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-stay-text-secondary bg-stay-bg-app border border-stay-border px-1.5 py-0.5 rounded font-medium">
-                              Chọn 1
-                            </span>
-                          )}
-                          {q.isHard && (
-                            <span className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded font-medium">
-                              Quan trọng
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <Select
-                          mode={isMulti ? 'multiple' : undefined}
-                          value={currentSelectedOption}
-                          onChange={(val) => handleOptionChange(q.id, val, isMulti)}
-                          className="w-full text-xs"
-                          options={options}
-                          placeholder={isMulti ? 'Chọn các lựa chọn phù hợp...' : 'Chọn thói quen...'}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <LifestyleQuestionnaire
+            questions={questions}
+            answers={selectedAnswers}
+            onAnswerChange={(qId, optIds) => {
+              setSelectedAnswers((prev: Record<number, number[]>) => ({ ...prev, [qId]: optIds }));
+              setIsCustomized(true);
+            }}
+          />
         </div>
 
         {/* Footer Actions */}

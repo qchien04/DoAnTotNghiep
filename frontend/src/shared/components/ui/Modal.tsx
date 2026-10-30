@@ -29,7 +29,7 @@ export const Modal: React.FC<ModalProps> & {
   onCancel,
   size = 'md',
   width,
-  maxHeight = 'calc(80vh - 120px)',
+  maxHeight = 'calc(90vh - 120px)',
   scrollable = true,
   bodyClassName = '',
   children,
@@ -38,51 +38,50 @@ export const Modal: React.FC<ModalProps> & {
   cancelButtonProps,
   ...props
 }) => {
-  const visible = open !== undefined ? open : isOpen;
+    const visible = open !== undefined ? open : isOpen;
 
-  const sizeWidths: Record<ModalSize, number> = {
-    sm: 480,
-    md: 680,
-    lg: 840,
-    xl: 960,
-    full: 1200,
-  };
+    const sizeWidths: Record<ModalSize, number> = {
+      sm: 480,
+      md: 680,
+      lg: 840,
+      xl: 960,
+      full: 1200,
+    };
 
-  const modalWidth = width !== undefined ? width : sizeWidths[size];
+    const modalWidth = width !== undefined ? width : sizeWidths[size];
 
-  const handleCancel = (e: React.SyntheticEvent) => {
-    onCancel?.(e as any);
-    onClose?.();
-  };
+    const handleCancel = (e: React.SyntheticEvent) => {
+      onCancel?.(e as any);
+      onClose?.();
+    };
 
-  return (
-    <AntModal
-      centered
-      open={visible}
-      onCancel={handleCancel}
-      width={modalWidth}
-      className={`custom-antd-modal rounded-2xl ${className}`}
-      okButtonProps={{
-        className: 'bg-stay-primary hover:bg-stay-primary-hover font-semibold rounded-xl shadow-xs',
-        ...okButtonProps,
-      }}
-      cancelButtonProps={{
-        className: 'rounded-xl font-medium border-stay-border text-stay-text hover:bg-stay-bg-app',
-        ...cancelButtonProps,
-      }}
-      {...props}
-    >
-      <div
-        className={`pt-1 text-sm text-stay-text leading-relaxed ${
-          scrollable ? 'overflow-y-auto overflow-x-hidden pr-1.5 custom-modal-scroll' : ''
-        } ${bodyClassName}`}
-        style={scrollable ? { maxHeight: maxHeight || 'calc(80vh - 120px)' } : undefined}
+    return (
+      <AntModal
+        centered
+        open={visible}
+        onCancel={handleCancel}
+        width={modalWidth}
+        className={`custom-antd-modal rounded-2xl ${className}`}
+        okButtonProps={{
+          className: 'bg-stay-primary hover:bg-stay-primary-hover font-semibold rounded-xl shadow-xs',
+          ...okButtonProps,
+        }}
+        cancelButtonProps={{
+          className: 'rounded-xl font-medium border-stay-border text-stay-text hover:bg-stay-bg-app',
+          ...cancelButtonProps,
+        }}
+        {...props}
       >
-        {children}
-      </div>
-    </AntModal>
-  );
-};
+        <div
+          className={`pt-1 text-sm text-stay-text leading-relaxed ${scrollable ? 'overflow-y-auto overflow-x-hidden pr-1.5 custom-modal-scroll' : ''
+            } ${bodyClassName}`}
+          style={scrollable ? { maxHeight: maxHeight || 'calc(80vh - 120px)' } : undefined}
+        >
+          {children}
+        </div>
+      </AntModal>
+    );
+  };
 
 // Static Modal Methods
 Modal.confirm = AntModal.confirm;

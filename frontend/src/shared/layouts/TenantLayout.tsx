@@ -12,7 +12,7 @@ import {
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
   ThemeSwitcher,
-  StayConnectLogo,
+  RoomiLogo,
   Sidebar,
   NotificationDropdown,
   type MenuItemType,
@@ -101,12 +101,12 @@ export const TenantLayout: React.FC = () => {
         className="h-full shrink-0 z-30"
         header={
           !collapsed ? (
-            <Link to="/tenant/my-room" className="flex items-center gap-2">
-              <StayConnectLogo size="sm" />
+            <Link to="/tenant/my-room" className="w-full flex items-center justify-center py-1">
+              <RoomiLogo size="md" />
             </Link>
           ) : (
-            <div className="w-full flex justify-center">
-              <Home className="w-6 h-6 text-stay-primary" />
+            <div className="w-full flex items-center justify-center py-1">
+              <Home className="w-7 h-7 text-stay-primary" />
             </div>
           )
         }
@@ -139,7 +139,7 @@ export const TenantLayout: React.FC = () => {
                   {(user?.fullName || user?.username || 'T').charAt(0).toUpperCase()}
                 </Avatar>
                 <div className="text-left hidden md:block leading-tight">
-                  <p className="text-xs font-semibold text-stay-text truncate max-w-[120px]">
+                  <p className=" font-semibold text-stay-text truncate max-w-[120px]">
                     {user?.fullName || user?.username || 'Người thuê'}
                   </p>
                   <p className="text-[10px] text-stay-primary font-bold">Người thuê</p>

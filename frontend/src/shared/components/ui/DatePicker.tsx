@@ -20,30 +20,29 @@ export const DatePicker: React.FC<DatePickerProps> & {
   className = '',
   ...props
 }) => {
-  return (
-    <div className={`space-y-1.5 ${fullWidth ? 'w-full' : ''}`}>
-      {label && (
-        <label className="block text-xs font-semibold text-stay-text">
-          {label}
-          {props.required && <span className="text-red-500 ml-1">*</span>}
-        </label>
-      )}
+    return (
+      <div className={`space-y-1.5 ${fullWidth ? 'w-full' : ''}`}>
+        {label && (
+          <label className="block  font-semibold text-stay-text">
+            {label}
+            {props.required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+        )}
 
-      <AntDatePicker
-        className={`w-full py-2 px-3 rounded-xl border-stay-border shadow-2xs hover:border-stay-primary focus:border-stay-primary transition-all ${
-          error ? 'border-red-400 focus:border-red-500 bg-red-50/20' : ''
-        } ${className}`}
-        {...props}
-      />
+        <AntDatePicker
+          className={`w-full py-2 px-3 rounded-xl border-stay-border shadow-2xs hover:border-stay-primary focus:border-stay-primary transition-all ${error ? 'border-red-400 focus:border-red-500 bg-red-50/20' : ''
+            } ${className}`}
+          {...props}
+        />
 
-      {error ? (
-        <p className="text-[11px] text-red-500 font-medium">{error}</p>
-      ) : helperText ? (
-        <p className="text-[11px] text-slate-500">{helperText}</p>
-      ) : null}
-    </div>
-  );
-};
+        {error ? (
+          <p className="text-[11px] text-red-500 font-medium">{error}</p>
+        ) : helperText ? (
+          <p className="text-[11px] text-slate-500">{helperText}</p>
+        ) : null}
+      </div>
+    );
+  };
 
 export const RangePicker: React.FC<RangePickerProps & { label?: string; error?: string }> = ({
   label,
@@ -54,12 +53,11 @@ export const RangePicker: React.FC<RangePickerProps & { label?: string; error?: 
   return (
     <div className="w-full space-y-1.5">
       {label && (
-        <label className="block text-xs font-semibold text-stay-text">{label}</label>
+        <label className="block  font-semibold text-stay-text">{label}</label>
       )}
       <AntDatePicker.RangePicker
-        className={`w-full py-2 px-3 rounded-xl border-stay-border shadow-2xs hover:border-stay-primary focus:border-stay-primary transition-all ${
-          error ? 'border-red-400 focus:border-red-500 bg-red-50/20' : ''
-        } ${className}`}
+        className={`w-full py-2 px-3 rounded-xl border-stay-border shadow-2xs hover:border-stay-primary focus:border-stay-primary transition-all ${error ? 'border-red-400 focus:border-red-500 bg-red-50/20' : ''
+          } ${className}`}
         {...props}
       />
       {error && <p className="text-[11px] text-red-500 font-medium">{error}</p>}

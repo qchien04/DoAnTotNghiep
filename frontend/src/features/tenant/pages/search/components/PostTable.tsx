@@ -42,7 +42,7 @@ export const PostTable: React.FC<PostTableProps> = ({
           >
             {title}
           </Link>
-          <div className="text-xs text-stay-text-secondary line-clamp-1">{r.description}</div>
+          <div className=" text-stay-text-secondary line-clamp-1">{r.description}</div>
         </div>
       ),
     },
@@ -52,7 +52,7 @@ export const PostTable: React.FC<PostTableProps> = ({
       key: 'areaName',
       width: 220,
       render: (area: string, r: RoommatePost) => (
-        <span className="text-xs text-stay-text">{area || r.district || 'Hà Nội'}</span>
+        <span className=" text-stay-text">{area || r.district || 'Hà Nội'}</span>
       ),
     },
     {
@@ -69,7 +69,7 @@ export const PostTable: React.FC<PostTableProps> = ({
       key: 'members',
       width: 170,
       render: (_: any, r: RoommatePost) => (
-        <span className="text-xs text-stay-text">
+        <span className=" text-stay-text">
           Cần tìm {r.neededRoommates} (Đã có {r.currentRoommates})
         </span>
       ),
@@ -90,7 +90,7 @@ export const PostTable: React.FC<PostTableProps> = ({
           colorClass = 'text-blue-700 font-semibold';
         }
         return (
-          <span className={`text-xs ${colorClass}`}>
+          <span className={` ${colorClass}`}>
             {pct}% ({label})
           </span>
         );
@@ -102,7 +102,7 @@ export const PostTable: React.FC<PostTableProps> = ({
       key: 'postType',
       width: 140,
       render: (type: string) => (
-        <span className="text-xs text-stay-text">
+        <span className=" text-stay-text">
           {type === 'HAS_ROOM' ? 'Có sẵn phòng' : 'Chưa có phòng'}
         </span>
       ),
@@ -129,17 +129,17 @@ export const PostTable: React.FC<PostTableProps> = ({
         pagination={
           pageInfo
             ? {
-                current: (pageInfo.page ?? 0) + 1,
-                pageSize: pageInfo.size ?? 10,
-                total: pageInfo.totalElements ?? 0,
-                showSizeChanger: true,
-                pageSizeOptions: ['10', '20', '50'],
-                showTotal: (total) => `Tổng ${total} bài đăng`,
-                onChange: (p, s) => onPageChange?.(p - 1, s),
-              }
+              current: (pageInfo.page ?? 0) + 1,
+              pageSize: pageInfo.size ?? 10,
+              total: pageInfo.totalElements ?? 0,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total) => `Tổng ${total} bài đăng`,
+              onChange: (p, s) => onPageChange?.(p - 1, s),
+            }
             : { pageSize: 8 }
         }
-        className="overflow-x-auto text-xs"
+        className="overflow-x-auto "
       />
     </div>
   );

@@ -17,20 +17,19 @@ export const PostHero: React.FC<PostHeroProps> = ({ post }) => {
       <div className="space-y-2.5">
         <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`px-2.5 py-0.5 rounded-md text-xs font-semibold ${
-              isHasRoom
+            className={`px-2.5 py-0.5 rounded-md  font-semibold ${isHasRoom
                 ? 'bg-stay-primary-subtle text-stay-primary border border-stay-primary/20'
                 : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-            }`}
+              }`}
           >
             {isHasRoom ? 'Đã có phòng sẵn' : 'Tìm bạn cùng thuê'}
           </span>
 
-          <span className="px-2 py-0.5 rounded-md text-xs font-mono bg-stay-bg-app border border-stay-border text-stay-text-secondary">
+          <span className="px-2 py-0.5 rounded-md  font-mono bg-stay-bg-app border border-stay-border text-stay-text-secondary">
             Mã tin: {post.code || `#BG${post.id}`}
           </span>
 
-          <span className="inline-flex items-center gap-1 text-xs text-stay-text-secondary">
+          <span className="inline-flex items-center gap-1  text-stay-text-secondary">
             <Calendar className="w-3.5 h-3.5" />
             <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : 'Mới đăng'}</span>
           </span>
@@ -40,7 +39,7 @@ export const PostHero: React.FC<PostHeroProps> = ({ post }) => {
           {post.title}
         </h1>
 
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-stay-text-secondary">
+        <div className="flex items-center gap-1.5  sm:text-sm text-stay-text-secondary">
           <MapPin className="w-4 h-4 text-stay-primary shrink-0" />
           <span>{post.areaName || post.district || 'Hà Nội'}</span>
         </div>
@@ -84,7 +83,7 @@ export const PostHero: React.FC<PostHeroProps> = ({ post }) => {
       ) : (
         <div className="p-8 rounded-xl border border-dashed border-stay-border bg-stay-bg-app text-center">
           <ImageIcon className="w-8 h-8 text-stay-text-muted mx-auto mb-2" />
-          <p className="text-xs text-stay-text-secondary">
+          <p className=" text-stay-text-secondary">
             Bài đăng tìm bạn cùng thuê nhà (chưa có sẵn hình ảnh phòng trọ cụ thể)
           </p>
         </div>

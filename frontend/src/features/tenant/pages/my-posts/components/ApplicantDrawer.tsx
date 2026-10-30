@@ -34,7 +34,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       dataIndex: 'id',
       key: 'id',
       width: 80,
-      render: (id: any) => <span className="font-mono text-xs font-semibold text-stay-text">#{id}</span>,
+      render: (id: any) => <span className="font-mono  font-semibold text-stay-text">#{id}</span>,
     },
     {
       title: 'Ứng viên',
@@ -42,9 +42,9 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       key: 'applicantName',
       render: (name: string, r: RoommateApplication) => (
         <div className="space-y-0.5">
-          <span className="font-semibold text-xs sm:text-sm text-stay-text block">{name}</span>
+          <span className="font-semibold  sm:text-sm text-stay-text block">{name}</span>
           {r.introMessage && (
-            <p className="text-xs text-stay-text-secondary line-clamp-1 italic">
+            <p className=" text-stay-text-secondary line-clamp-1 italic">
               "{r.introMessage}"
             </p>
           )}
@@ -56,7 +56,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       key: 'origin',
       width: 150,
       render: (_: any, r: RoommateApplication) => (
-        <span className="text-xs text-stay-text">
+        <span className=" text-stay-text">
           {r.birthYear || 2004} - {r.hometown || 'Hà Nội'}
         </span>
       ),
@@ -66,7 +66,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       dataIndex: 'occupationOrSchool',
       key: 'occupationOrSchool',
       width: 140,
-      render: (val: string) => <span className="text-xs text-stay-text">{val || 'Sinh viên'}</span>,
+      render: (val: string) => <span className=" text-stay-text">{val || 'Sinh viên'}</span>,
     },
     {
       title: 'Độ phù hợp',
@@ -76,7 +76,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       render: (score: number) => {
         const val = score ?? 85;
         const color = val >= 80 ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-medium';
-        return <span className={`text-xs ${color}`}>{val}%</span>;
+        return <span className={` ${color}`}>{val}%</span>;
       },
     },
     {
@@ -85,7 +85,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       key: 'createdAt',
       width: 100,
       render: (d: string) => (
-        <span className="text-xs text-stay-text-secondary">
+        <span className=" text-stay-text-secondary">
           {d ? new Date(d).toLocaleDateString('vi-VN') : 'Mới'}
         </span>
       ),
@@ -98,20 +98,20 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       render: (st: string) => {
         if (st === 'APPROVED') {
           return (
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <span className=" font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
               {getRoommateApplicationStatusLabel(st)}
             </span>
           );
         }
         if (st === 'REJECTED') {
           return (
-            <span className="text-xs font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+            <span className=" font-semibold text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
               {getRoommateApplicationStatusLabel(st)}
             </span>
           );
         }
         return (
-          <span className="text-xs font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+          <span className=" font-semibold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
             {getRoommateApplicationStatusLabel(st)}
           </span>
         );
@@ -127,7 +127,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
           type="primary"
           size="small"
           onClick={() => onOpenReview(r)}
-          className="bg-stay-primary hover:bg-stay-primary-hover text-white rounded text-xs"
+          className="bg-stay-primary hover:bg-stay-primary-hover text-white rounded "
         >
           {r.status === 'APPROVED' ? 'Đã duyệt' : 'Duyệt đơn'}
         </Button>
@@ -150,7 +150,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
         <Link
           to={`/roommates/${post.id}`}
           target="_blank"
-          className="inline-flex items-center gap-1 text-xs text-stay-primary hover:underline"
+          className="inline-flex items-center gap-1  text-stay-primary hover:underline"
         >
           <span>Xem bài công khai</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -159,7 +159,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
       footer={
         post.status === 'OPEN' ? (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-stay-text-secondary">
+            <span className=" text-stay-text-secondary">
               Có thể chốt nhóm khi đã tìm đủ người hoặc đóng tin nếu muốn dừng nhận đơn.
             </span>
             <Space>
@@ -167,7 +167,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
                 <Button
                   icon={<CheckCircle className="w-3.5 h-3.5" />}
                   onClick={onFinishGroup}
-                  className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 rounded text-xs"
+                  className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 rounded "
                 >
                   Chốt nhóm
                 </Button>
@@ -177,7 +177,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
                   danger
                   icon={<XCircle className="w-3.5 h-3.5" />}
                   onClick={onClosePost}
-                  className="rounded text-xs"
+                  className="rounded "
                 >
                   Đóng tin
                 </Button>
@@ -189,7 +189,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
     >
       <div className="space-y-4">
         {/* Post Summary Card */}
-        <div className="bg-stay-bg-app border border-stay-border rounded-lg p-3 space-y-1.5 text-xs">
+        <div className="bg-stay-bg-app border border-stay-border rounded-lg p-3 space-y-1.5 ">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-semibold text-sm text-stay-text line-clamp-1">{post.title}</h3>
             <Tag color={post.status === 'OPEN' ? 'green' : post.status === 'COMPLETED' ? 'blue' : 'default'}>
@@ -215,7 +215,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
         {/* Applications List */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-stay-text">
+            <span className=" font-semibold text-stay-text">
               Đơn xin gia nhập ({applications.length})
             </span>
             <span className="text-[11px] text-stay-text-secondary">

@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { useMyBills, useConfirmPaymentTransferred, useVietQRPayment } from '@/shared/hooks';
 import { Button, Table, Modal, Input } from '@/shared/components';
-import { Tooltip, message, Select } from 'antd';
+import { Tooltip, Select } from 'antd';
 import {
   QrCode,
   CheckCircle2,
-  Clock,
-  AlertCircle,
   Search,
   Eye,
   RotateCcw,
 } from 'lucide-react';
-import { Bill, BillStatus } from '@/shared/types/landlord';
+import { InvoiceResponse, InvoiceStatus } from '@/shared/types/landlord';
 import { formatCurrency } from '@/shared/utils';
 import { VietQRPaymentModal } from './my-room/components/VietQRPaymentModal';
 
@@ -36,19 +34,19 @@ export const TenantBillsPage: React.FC = () => {
 
   // VietQR Modal State
   const [qrModalOpen, setQrModalOpen] = useState(false);
-  const [activeBill, setActiveBill] = useState<Bill | null>(null);
+  const [activeBill, setActiveBill] = useState<InvoiceResponse | null>(null);
   const { qrData: vietQRData } = useVietQRPayment(activeBill ? String(activeBill.id) : undefined);
 
   // Detail Modal State
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [selectedBill, setSelectedBill] = useState<InvoiceResponse | null>(null);
 
-  const handleOpenVietQR = (bill: Bill) => {
+  const handleOpenVietQR = (bill: InvoiceResponse) => {
     setActiveBill(bill);
     setQrModalOpen(true);
   };
 
-  const handleOpenDetail = (bill: Bill) => {
+  const handleOpenDetail = (bill: InvoiceResponse) => {
     setSelectedBill(bill);
     setDetailModalOpen(true);
   };
@@ -57,45 +55,43 @@ export const TenantBillsPage: React.FC = () => {
     if (!activeBill) return;
     try {
       await confirmTransferred(String(activeBill.id));
-      message.success('Hệ thống đã ghi nhận thông báo chuyển khoản! Đang chờ chủ trọ xác nhận.');
       setQrModalOpen(false);
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || err?.message || 'Lỗi cập nhật thanh toán');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
   const handleConfirmDirect = async (billId: number | string) => {
     try {
       await confirmTransferred(String(billId));
-      message.success('Hệ thống đã ghi nhận thông báo chuyển khoản! Đang chờ chủ trọ xác nhận.');
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || err?.message || 'Lỗi cập nhật thanh toán');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
-  const renderStatus = (st: BillStatus | string) => {
+  const renderStatus = (st: InvoiceStatus | string) => {
     switch (st) {
       case 'PAID':
         return (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium text-[13px]">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Đã thanh toán
+          <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[13px]">
+            Đã thanh toán
           </span>
         );
       case 'UNPAID':
         return (
-          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium text-[13px]">
-            <Clock className="w-3.5 h-3.5" /> Chờ thanh toán
+          <span className="text-amber-600 dark:text-amber-400 font-medium text-[13px]">
+            Chờ thanh toán
           </span>
         );
       case 'OVERDUE':
         return (
-          <span className="inline-flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-medium text-[13px]">
-            <AlertCircle className="w-3.5 h-3.5" /> Quá hạn
+          <span className="text-rose-600 dark:text-rose-400 font-medium text-[13px]">
+            Quá hạn
           </span>
         );
       case 'CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1.5 text-stay-text-muted text-[13px]">
+          <span className="text-stay-text-muted text-[13px]">
             Đã hủy
           </span>
         );
@@ -119,7 +115,7 @@ export const TenantBillsPage: React.FC = () => {
       title: 'Kỳ cước',
       key: 'billingPeriod',
       width: 110,
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <span className="text-[14px] text-stay-text font-medium">
           {r.billingPeriod || (r as any).billingMonth || '—'}
         </span>
@@ -128,9 +124,8 @@ export const TenantBillsPage: React.FC = () => {
     {
       title: 'Phòng & Tòa nhà',
       key: 'roomInfo',
-      width: 170,
       ellipsis: { showTitle: true },
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <div>
           <span
             onClick={() => handleOpenDetail(r)}
@@ -150,7 +145,7 @@ export const TenantBillsPage: React.FC = () => {
       title: 'Hạn nộp',
       key: 'dueDate',
       width: 110,
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <span className="text-[14px] text-stay-text-secondary">
           {r.dueDate || '—'}
         </span>
@@ -160,7 +155,7 @@ export const TenantBillsPage: React.FC = () => {
       title: 'Tổng tiền',
       key: 'totalAmount',
       width: 150,
-      render: (_: any, r: Bill) => (
+      render: (_: any, r: InvoiceResponse) => (
         <div>
           <span className="font-semibold text-stay-text text-[14px] block">
             {formatCurrency(r.totalAmount ?? 0)}
@@ -177,21 +172,21 @@ export const TenantBillsPage: React.FC = () => {
       title: 'Trạng thái',
       key: 'status',
       width: 140,
-      render: (_: any, r: Bill) => renderStatus(r.status),
+      render: (_: any, r: InvoiceResponse) => renderStatus(r.status),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 130,
+      width: 120,
       fixed: 'right' as const,
-      render: (_: any, r: Bill) => {
+      render: (_: any, r: InvoiceResponse) => {
         const canPay = r.status !== 'PAID' && r.status !== 'CANCELLED';
         return (
           <div className="flex items-center justify-start gap-1.5">
             <Tooltip title="Xem chi tiết hóa đơn">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-view"
+                className="stay-action-btn"
                 onClick={() => handleOpenDetail(r)}
               >
                 <Eye className="w-4 h-4" />
@@ -201,7 +196,7 @@ export const TenantBillsPage: React.FC = () => {
             <Tooltip title={canPay ? 'Quét mã VietQR chuyển khoản' : 'Hóa đơn đã thanh toán'}>
               <button
                 type="button"
-                className={`stay-action-btn ${canPay ? 'stay-action-btn-edit' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!canPay ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => canPay && handleOpenVietQR(r)}
                 disabled={!canPay}
               >
@@ -212,7 +207,7 @@ export const TenantBillsPage: React.FC = () => {
             <Tooltip title={canPay ? 'Báo đã chuyển khoản' : 'Đã hoàn tất thanh toán'}>
               <button
                 type="button"
-                className={`stay-action-btn ${canPay ? 'stay-action-btn-delete' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!canPay ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => canPay && handleConfirmDirect(r.id)}
                 disabled={!canPay || isConfirming}
               >
@@ -286,7 +281,7 @@ export const TenantBillsPage: React.FC = () => {
       </div>
 
       {/* Bill Table */}
-      <Table<Bill>
+      <Table<InvoiceResponse>
         rowKey="id"
         dataSource={pageInfo?.items ?? []}
         columns={columns}
@@ -334,9 +329,9 @@ export const TenantBillsPage: React.FC = () => {
         width={580}
       >
         {selectedBill && (
-          <div className="space-y-3.5 pt-2 text-xs">
+          <div className="space-y-3.5 pt-2 ">
             {/* Header Box */}
-            <div className="p-3 rounded-lg bg-stay-bg-app border border-stay-border flex items-center justify-between">
+            <div className="flex items-center justify-between pb-1">
               <div>
                 <p className="font-semibold text-sm text-stay-text">
                   Kỳ cước: {selectedBill.billingPeriod || (selectedBill as any).billingMonth}
@@ -350,7 +345,7 @@ export const TenantBillsPage: React.FC = () => {
 
             {/* Items Table */}
             <div className="border border-stay-border rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left ">
                 <thead className="bg-stay-bg-app border-b border-stay-border text-stay-text-secondary font-medium">
                   <tr>
                     <th className="py-2 px-3">Khoản mục</th>
@@ -362,9 +357,9 @@ export const TenantBillsPage: React.FC = () => {
                 <tbody className="divide-y divide-stay-border">
                   {selectedBill.items && selectedBill.items.length > 0 ? (
                     selectedBill.items.map((it: any, idx: number) => {
-                      const name = it.serviceName || it.itemName || 'Dịch vụ';
-                      const isDiscount = it.itemType === 'DISCOUNT' || name.toLowerCase().includes('giảm trừ') || (it.amount || 0) < 0;
-                      const isSurcharge = it.itemType === 'SURCHARGE' || name.toLowerCase().includes('phụ thu');
+                      const name = (it.serviceName || it.itemName || 'Dịch vụ');
+                      const isDiscount = it.itemType === 'DISCOUNT';
+                      const isSurcharge = it.itemType === 'SURCHARGE';
                       const amt = Math.abs(it.amount ?? it.totalAmount ?? 0);
                       const price = Math.abs(it.unitPrice ?? it.amount ?? it.totalAmount ?? 0);
                       return (

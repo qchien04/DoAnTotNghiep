@@ -26,7 +26,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div className={`flex flex-col items-center justify-center p-8 gap-3 select-none ${className}`}>
       <Spin indicator={antIcon} size={size} tip={text} />
-      {text && <p className="text-xs text-slate-500 font-medium">{text}</p>}
+      {text && <p className=" text-slate-500 font-medium">{text}</p>}
     </div>
   );
 };

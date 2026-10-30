@@ -29,6 +29,7 @@ export const useUpdateComplaintProgress = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.complaints() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+      message.success('Cập nhật tiến độ xử lý sự cố thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật tiến độ xử lý sự cố');

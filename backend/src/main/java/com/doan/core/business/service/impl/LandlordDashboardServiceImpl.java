@@ -5,7 +5,6 @@ import com.doan.core.business.entity.*;
 import com.doan.core.business.enums.ComplaintStatus;
 import com.doan.core.business.enums.InvoiceStatus;
 import com.doan.core.business.enums.RoomStatus;
-import com.doan.core.business.enums.TenantStatus;
 import com.doan.core.business.repository.*;
 import com.doan.core.business.service.LandlordDashboardService;
 import lombok.RequiredArgsConstructor;
@@ -53,8 +52,7 @@ public class LandlordDashboardServiceImpl implements LandlordDashboardService {
                         occupancyRate = Math.round(((double) occupiedRooms / totalRooms * 100.0) * 10.0) / 10.0;
                 }
 
-                long activeTenants = tenantRepository.countByRoomBuildingLandlordIdAndStatus(landlordId,
-                                TenantStatus.STAYING);
+                long activeTenants = tenantRepository.countActiveTenantsByLandlordId(landlordId);
                 long unpaidInvoices = invoiceRepository.countByContractLandlordIdAndStatus(landlordId,
                                 InvoiceStatus.UNPAID);
                 long pendingComplaints = complaintRepository.countByRoomBuildingLandlordIdAndStatus(landlordId,
@@ -86,31 +84,25 @@ public class LandlordDashboardServiceImpl implements LandlordDashboardService {
                 java.util.List<LandlordDashboardResponse.OverdueDebtItem> debtList = allInvoices.stream()
                                 .filter(inv -> inv.getStatus() != InvoiceStatus.PAID
                                                 && inv.getStatus() != InvoiceStatus.CANCELLED)
-                                .filter(inv -> inv.getDueDate() != null && inv.getDueDate().isBefore(LocalDate.now()))
+                                .filter(inv -> inv.getDueDate().isBefore(LocalDate.now()))
                                 .map(inv -> {
-                                        long remaining = Math.max(0, inv.getTotalAmount()
-                                                        - (inv.getPaidAmount() != null ? inv.getPaidAmount() : 0L));
+                                        long remaining = Math.max(0, inv.getTotalAmount() - inv.getPaidAmount());
                                         long daysLate = java.time.temporal.ChronoUnit.DAYS.between(inv.getDueDate(),
                                                         LocalDate.now());
-                                        String rName = (inv.getContract() != null
-                                                        && inv.getContract().getRoom() != null)
-                                                                        ? inv.getContract().getRoom().getName()
-                                                                        : "---";
-                                        String bName = (inv.getContract() != null && inv.getContract().getRoom() != null
-                                                        && inv.getContract().getRoom().getBuilding() != null)
-                                                                        ? inv.getContract().getRoom().getBuilding()
-                                                                                        .getName()
-                                                                        : "---";
-                                        String tName = (inv.getContract() != null
-                                                        && inv.getContract().getRepresentativeTenant() != null)
-                                                                        ? inv.getContract().getRepresentativeTenant()
-                                                                                        .getFullName()
-                                                                        : "---";
-                                        String phone = (inv.getContract() != null
-                                                        && inv.getContract().getRepresentativeTenant() != null)
-                                                                        ? inv.getContract().getRepresentativeTenant()
-                                                                                        .getPhone()
-                                                                        : "---";
+                                        Contract contract = inv.getContract();
+                                        Room room = contract.getRoom();
+                                        String rName = room.getName();
+                                        Building building = room.getBuilding();
+                                        String bName = building != null ? building.getName() : "Phòng độc lập";
+                                        ContractTenant repCt = contract.getContractTenants() != null
+                                                        ? contract.getContractTenants().stream()
+                                                                        .filter(ct -> Boolean.TRUE.equals(ct.getIsRepresentative()))
+                                                                        .findFirst()
+                                                                        .orElse(null)
+                                                        : null;
+                                        Tenant repTenant = repCt != null ? repCt.getTenant() : null;
+                                        String tName = repTenant != null ? repTenant.getFullName() : "---";
+                                        String phone = repTenant != null ? repTenant.getPhone() : "---";
 
                                         return LandlordDashboardResponse.OverdueDebtItem.builder()
                                                         .roomName(rName)

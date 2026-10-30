@@ -20,6 +20,23 @@ export const useRooms = (params?: RoomFilterParams) => {
   };
 };
 
+export const useRoomDetail = (id?: string | number | null) => {
+  const query = useQuery({
+    queryKey: landlordKeys.roomDetail(id ? String(id) : ''),
+    queryFn: () => landlordService.getRoomById(id!),
+    enabled: !!id,
+    select: (res) => res.data,
+  });
+
+  return {
+    room: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
+};
+
 export const useCreateRoom = () => {
   const queryClient = useQueryClient();
 
@@ -29,6 +46,7 @@ export const useCreateRoom = () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.buildings() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+      message.success('Thêm phòng trọ thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể tạo phòng trọ');
@@ -50,6 +68,7 @@ export const useUpdateRoom = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+      message.success('Cập nhật phòng trọ thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật phòng trọ');
@@ -71,6 +90,7 @@ export const useDeleteRoom = () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.buildings() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+      message.success('Xóa phòng trọ thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể xóa phòng trọ');

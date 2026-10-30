@@ -62,22 +62,20 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         <button
           type="button"
           onClick={() => onSearchModeChange('ROOMMATE')}
-          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${
-            searchMode === 'ROOMMATE'
+          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${searchMode === 'ROOMMATE'
               ? 'bg-stay-primary text-white'
               : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
-          }`}
+            }`}
         >
           Tìm người ở ghép
         </button>
         <button
           type="button"
           onClick={() => onSearchModeChange('WHOLE_ROOM')}
-          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${
-            searchMode === 'WHOLE_ROOM'
+          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${searchMode === 'WHOLE_ROOM'
               ? 'bg-stay-primary text-white'
               : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
-          }`}
+            }`}
         >
           Tìm phòng trọ nguyên căn
         </button>
@@ -100,7 +98,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-stay-text block mb-1.5">
+          <label className=" font-semibold text-stay-text block mb-1.5">
             Quận / Huyện
           </label>
           <Select
@@ -124,7 +122,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-stay-text block mb-1.5">
+          <label className=" font-semibold text-stay-text block mb-1.5">
             Loại tin đăng
           </label>
           <Select
@@ -140,7 +138,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         </div>
 
         <div>
-          <div className="flex justify-between text-xs text-stay-text font-semibold mb-1">
+          <div className="flex justify-between  text-stay-text font-semibold mb-1">
             <span>Khoảng giá share:</span>
             <span className="text-stay-primary">
               {(priceRange[0] / 1000000).toFixed(1)} - {(priceRange[1] / 1000000).toFixed(1)} tr
@@ -159,7 +157,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
 
       {/* Row 2: Lifestyle Filters (UC11) */}
       <div className="pt-3 border-t border-stay-border">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2.5">
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2.5">
           Tiêu chí lối sống & sinh hoạt:
         </label>
 
@@ -169,7 +167,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             <Select
               value={genderFilter}
               onChange={onGenderFilterChange}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Tất cả giới tính', value: 'ALL' },
                 { label: 'Chỉ tìm Nam', value: 'MALE' },
@@ -187,7 +185,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 else if (val === 'NO_SMOKE') onNoSmokingFilterChange(true);
                 else onNoSmokingFilterChange(false);
               }}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Không yêu cầu', value: 'ALL' },
                 { label: 'Không hút thuốc', value: 'NO_SMOKE' },
@@ -201,7 +199,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             <Select
               value={sleepTimeFilter}
               onChange={onSleepTimeFilterChange}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Tất cả thói quen', value: 'ALL' },
                 { label: 'Đi ngủ trước 24h', value: 'BEFORE_24H' },
@@ -219,7 +217,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 else if (val === 'NO_PET') onNoPetFilterChange(true);
                 else onNoPetFilterChange(false);
               }}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Không yêu cầu', value: 'ALL' },
                 { label: 'Không nuôi thú cưng', value: 'NO_PET' },
@@ -237,7 +235,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 else if (val === 'COOK') onCookingFilterChange(true);
                 else onCookingFilterChange(false);
               }}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Không yêu cầu', value: 'ALL' },
                 { label: 'Thường xuyên nấu ăn', value: 'COOK' },
@@ -249,7 +247,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       </div>
 
       {priceError && (
-        <div className="p-3 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-xs">
+        <div className="p-3 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 ">
           {priceError}
         </div>
       )}

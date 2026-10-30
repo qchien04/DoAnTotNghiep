@@ -23,14 +23,14 @@ export const AuthLayout: React.FC = () => {
           </div>
           <span className="text-xl font-bold text-stay-text tracking-tight">{env.APP_TITLE}</span>
         </Link>
-        <p className="text-xs text-stay-text-secondary mt-1">Hệ Thống Xác Thực JWT Mono-Service</p>
+        <p className=" text-stay-text-secondary mt-1">Hệ Thống Xác Thực JWT Mono-Service</p>
       </div>
 
       <div className="w-full max-w-md bg-stay-card-bg rounded-2xl shadow-xl border border-stay-border p-8">
         <Outlet />
       </div>
 
-      <div className="mt-8 text-center text-xs text-stay-text-muted">
+      <div className="mt-8 text-center  text-stay-text-muted">
         <p>Đồ Án Tốt Nghiệp • Spring Boot & ReactJS Architecture</p>
       </div>
     </div>

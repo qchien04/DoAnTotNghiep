@@ -46,7 +46,7 @@ export const Dragger: React.FC<DraggerProps> = ({
             {icon || <InboxOutlined />}
           </p>
           <p className="text-sm font-semibold text-stay-text">{title}</p>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">{hint}</p>
+          <p className=" text-slate-500 max-w-sm mx-auto">{hint}</p>
         </div>
       )}
     </AntDragger>

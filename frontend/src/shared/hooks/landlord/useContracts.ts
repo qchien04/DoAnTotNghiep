@@ -25,6 +25,26 @@ export const useContracts = (params?: ContractFilterParams) => {
   };
 };
 
+/**
+ * Hook lấy chi tiết một hợp đồng thuê (dùng React Query cache)
+ */
+export const useContractDetail = (id?: string | number | null) => {
+  const query = useQuery({
+    queryKey: landlordKeys.contractDetail(id ? String(id) : ''),
+    queryFn: () => landlordService.getContractById(id!),
+    enabled: !!id,
+    select: (res) => res.data,
+  });
+
+  return {
+    contract: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
+};
+
 export const useCreateContract = () => {
   const queryClient = useQueryClient();
 
@@ -35,6 +55,7 @@ export const useCreateContract = () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.buildings() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+      message.success('Tạo hợp đồng thuê phòng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể tạo hợp đồng');
@@ -55,6 +76,7 @@ export const useUpdateContract = () => {
       landlordService.updateContract(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.contracts() });
+      message.success('Cập nhật hợp đồng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật hợp đồng');
@@ -78,6 +100,7 @@ export const useTerminateContract = () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.buildings() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.dashboard() });
+      message.success('Thanh lý hợp đồng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể thanh lý hợp đồng');

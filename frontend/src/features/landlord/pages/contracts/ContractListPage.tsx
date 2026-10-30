@@ -3,11 +3,7 @@ import {
   useContracts,
   useCreateContract,
   useTerminateContract,
-  useRooms,
-  useTenants,
-  useServices,
 } from '@/shared/hooks';
-import { message } from '@/shared/components';
 import { RentalContract, CreateContractDto, TerminateContractDto, ContractStatus } from '@/shared/types/landlord';
 import { ContractFilter } from './components/ContractFilter';
 import { ContractTable } from './components/ContractTable';
@@ -30,12 +26,6 @@ export const ContractListPage: React.FC = () => {
   const { createContract, isCreating } = useCreateContract();
   const { terminateContract, isTerminating } = useTerminateContract();
 
-  const { pageInfo: roomsPageInfo } = useRooms({ status: 'AVAILABLE' });
-  const rooms = roomsPageInfo?.items ?? [];
-  const { pageInfo: tenantsPageInfo } = useTenants();
-  const tenants = tenantsPageInfo?.items ?? [];
-  const { services } = useServices();
-
   // Modals state
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [terminateModalOpen, setTerminateModalOpen] = useState(false);
@@ -53,15 +43,21 @@ export const ContractListPage: React.FC = () => {
   };
 
   const handleCreateSubmit = async (values: CreateContractDto) => {
-    await createContract(values);
-    message.success('Tạo và kích hoạt hợp đồng thuê phòng thành công!');
-    setCreateModalOpen(false);
+    try {
+      await createContract(values);
+      setCreateModalOpen(false);
+    } catch {
+      // Handled in mutation hook
+    }
   };
 
   const handleTerminateSubmit = async (contractId: string | number, dto: TerminateContractDto) => {
-    await terminateContract({ id: contractId, dto });
-    message.success('Xác nhận hoàn tất thanh lý hợp đồng và trả cọc!');
-    setTerminateModalOpen(false);
+    try {
+      await terminateContract({ id: contractId, dto });
+      setTerminateModalOpen(false);
+    } catch {
+      // Handled in mutation hook
+    }
   };
 
   return (
@@ -97,9 +93,6 @@ export const ContractListPage: React.FC = () => {
       {/* Create Modal */}
       <CreateContractModal
         open={createModalOpen}
-        rooms={rooms}
-        tenants={tenants}
-        services={services}
         confirmLoading={isCreating}
         onCancel={() => setCreateModalOpen(false)}
         onSubmit={handleCreateSubmit}

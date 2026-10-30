@@ -29,6 +29,7 @@ export const useEnforceReportAction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      message.success('Xử lý vi phạm báo cáo thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể xử lý vi phạm báo cáo');

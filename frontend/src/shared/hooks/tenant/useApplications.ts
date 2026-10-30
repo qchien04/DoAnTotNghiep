@@ -32,6 +32,7 @@ export const useApplyToGroup = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.postApplications(variables.postId) });
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      message.success('Gửi đơn ứng tuyển ở ghép thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể gửi đơn ứng tuyển');
@@ -52,6 +53,7 @@ export const useApproveApplication = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.applications() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      message.success('Duyệt đơn ứng tuyển thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể duyệt đơn ứng tuyển');
@@ -73,6 +75,7 @@ export const useRejectApplication = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.applications() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.posts() });
+      message.success('Đã từ chối đơn ứng tuyển!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể từ chối đơn ứng tuyển');

@@ -20,15 +20,15 @@ export const Card: React.FC<CardProps> & {
   className = '',
   ...props
 }) => {
-  return (
-    <AntCard
-      className={`rounded-2xl border-stay-border shadow-card bg-stay-card-bg transition-all overflow-hidden ${className}`}
-      {...props}
-    >
-      {children}
-    </AntCard>
-  );
-};
+    return (
+      <AntCard
+        className={`rounded-2xl border-stay-border shadow-card bg-stay-card-bg transition-all overflow-hidden ${className}`}
+        {...props}
+      >
+        {children}
+      </AntCard>
+    );
+  };
 
 export const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
@@ -52,7 +52,7 @@ export const CardDescription: React.FC<{ children: React.ReactNode; className?: 
   children,
   className = '',
 }) => {
-  return <p className={`text-xs text-slate-500 mt-0.5 ${className}`}>{children}</p>;
+  return <p className={` text-slate-500 mt-0.5 ${className}`}>{children}</p>;
 };
 
 export const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({

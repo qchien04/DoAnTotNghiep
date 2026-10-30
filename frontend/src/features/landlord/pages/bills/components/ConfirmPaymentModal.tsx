@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Radio } from '@/shared/components';
-import { InputNumber, message } from 'antd';
-import { Bill, ConfirmPaymentDto } from '@/shared/types/landlord';
+import { InputNumber } from 'antd';
+import { InvoiceResponse, InvoicePaymentRequest } from '@/shared/types/landlord';
 
 interface ConfirmPaymentModalProps {
   open: boolean;
-  bill: Bill | null;
+  bill: InvoiceResponse | null;
   confirmLoading: boolean;
   onCancel: () => void;
-  onSubmit: (billId: string | number, dto: ConfirmPaymentDto) => Promise<void>;
+  onSubmit: (billId: string | number, dto: InvoicePaymentRequest) => Promise<void>;
 }
 
 export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
@@ -24,9 +24,9 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
     if (open && bill) {
       form.resetFields();
       form.setFieldsValue({
-        amount: bill.remainingAmount || bill.totalAmount,
+        paymentAmount: bill.remainingAmount || bill.totalAmount,
         paymentMethod: 'BANK_TRANSFER',
-        note: 'Đã nhận tiền phòng qua chuyển khoản ngân hàng',
+        paymentNote: 'Đã nhận tiền phòng qua chuyển khoản ngân hàng',
       });
     }
   }, [open, bill]);
@@ -35,11 +35,9 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
     if (!bill) return;
     try {
       const values = await form.validateFields();
-      await onSubmit(bill.id, values as ConfirmPaymentDto);
-    } catch (err: any) {
-      if (err?.message) {
-        message.error(err.message);
-      }
+      await onSubmit(bill.id, values as InvoicePaymentRequest);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -55,7 +53,7 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
       width={640}
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
-        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-1.5 text-stay-text">
+        <div className="space-y-1.5 pb-1 text-stay-text">
           <p className="text-stay-text-secondary">
             Hóa đơn: <strong className="text-stay-text">Kỳ {bill?.billingPeriod} (#{bill?.id})</strong>
           </p>
@@ -64,16 +62,17 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
             <strong className="text-stay-text">{bill?.roomName}</strong> (
             {bill?.representativeTenantName || '---'})
           </p>
-          <p className="text-emerald-600 dark:text-emerald-400 font-bold text-base mt-2 pt-2 border-t border-stay-border">
+          <p className="text-emerald-600 dark:text-emerald-400 font-bold text-base mt-2">
             Số tiền phải thu: {(bill?.remainingAmount || bill?.totalAmount || 0).toLocaleString()} VNĐ
           </p>
         </div>
 
-        <Form.Item
-          label={<span className="text-stay-text font-medium text-xs">Số tiền thực nhận (VNĐ) </span>}
-          name="amount"
-          rules={[{ required: true, message: 'Vui lòng nhập số tiền đã nhận' }]}
-        >
+        <div className="pt-3 border-t border-stay-border-subtle">
+          <Form.Item
+            label={<span className="text-stay-text font-medium">Số tiền thực nhận (VNĐ)</span>}
+            name="paymentAmount"
+            rules={[{ required: true, message: 'Vui lòng nhập số tiền đã nhận' }]}
+          >
           <InputNumber
             className="w-full h-10 pt-1 font-bold text-emerald-600 dark:text-emerald-400"
             step={100000}
@@ -83,7 +82,7 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
         </Form.Item>
 
         <Form.Item
-          label={<span className="text-stay-text font-medium text-xs">Hình thức thanh toán</span>}
+          label={<span className="text-stay-text font-medium ">Hình thức thanh toán</span>}
           name="paymentMethod"
           initialValue="BANK_TRANSFER"
         >
@@ -94,11 +93,12 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
         </Form.Item>
 
         <Form.Item
-          label={<span className="text-stay-text font-medium text-xs">Ghi chú xác nhận</span>}
-          name="note"
+          label={<span className="text-stay-text font-medium">Ghi chú xác nhận</span>}
+          name="paymentNote"
         >
           <Input placeholder="Ví dụ: Đã nhận qua MB Bank, khách nộp tiền mặt..." className="h-10" />
         </Form.Item>
+        </div>
       </Form>
     </Modal>
   );

@@ -63,12 +63,12 @@ export function Table<T extends object>({
     };
   }
 
-  // Setup scroll config: if fillHeight is true, enable vertical scroll
+  // Setup scroll config: horizontal scroll is enabled by default ('max-content')
+  // Do not set vertical 'y' by default unless consumer explicitly provided scroll.y,
+  // ensuring Ant Design uses a single unified <table> where headers and rows are 100% aligned
   const scrollConfig = {
-    x: scroll?.x || 'max-content',
-    ...(fillHeight
-      ? { y: scroll?.y || '100%' }
-      : (scroll?.y ? { y: scroll.y } : {})),
+    x: scroll?.x ?? 'max-content',
+    ...(scroll?.y ? { y: scroll.y } : {}),
   };
 
   return (

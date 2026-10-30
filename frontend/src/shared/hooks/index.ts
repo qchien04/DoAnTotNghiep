@@ -1,4 +1,5 @@
 export * from './queryKeys';
+export * from './common/useFileUpload';
 
 // Landlord hooks (UC 01 - 29)
 export * from './landlord/useBuildings';

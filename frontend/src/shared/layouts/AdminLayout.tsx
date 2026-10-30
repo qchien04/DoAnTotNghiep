@@ -10,7 +10,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
+import { ThemeSwitcher, RoomiLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
 import { Avatar, Dropdown } from 'antd';
 
 export const AdminLayout: React.FC = () => {
@@ -88,12 +88,12 @@ export const AdminLayout: React.FC = () => {
         className="h-full shrink-0 z-30"
         header={
           !collapsed ? (
-            <Link to="/admin" className="flex items-center gap-2">
-              <StayConnectLogo size="sm" />
+            <Link to="/admin" className="w-full flex items-center justify-center py-1">
+              <RoomiLogo size="md" />
             </Link>
           ) : (
-            <div className="w-full flex justify-center">
-              <Shield className="w-6 h-6 text-purple-600" />
+            <div className="w-full flex items-center justify-center py-1">
+              <Shield className="w-7 h-7 text-purple-600" />
             </div>
           )
         }
@@ -124,7 +124,7 @@ export const AdminLayout: React.FC = () => {
                   {(user?.fullName || 'Admin').charAt(0).toUpperCase()}
                 </Avatar>
                 <div className="text-left hidden md:block leading-tight">
-                  <p className="text-xs font-semibold text-stay-text">{user?.fullName || 'Quản Trị Viên'}</p>
+                  <p className=" font-semibold text-stay-text">{user?.fullName || 'Quản Trị Viên'}</p>
                   <p className="text-[10px] text-purple-600 font-bold">Quản trị viên</p>
                 </div>
               </div>

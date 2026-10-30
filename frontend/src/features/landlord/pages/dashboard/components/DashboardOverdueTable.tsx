@@ -34,7 +34,6 @@ export const DashboardOverdueTable: React.FC<DashboardOverdueTableProps> = ({
       title: 'Khách đại diện',
       dataIndex: 'tenantName',
       key: 'tenantName',
-      width: 180,
       ellipsis: { showTitle: true },
       render: (val: string, r: any) => (
         <div>
@@ -74,7 +73,7 @@ export const DashboardOverdueTable: React.FC<DashboardOverdueTableProps> = ({
           <Tooltip title="Gửi nhắc nợ">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => onRemindDebt(r.roomName, r.phone)}
             >
               <Bell className="w-4 h-4" />

@@ -33,7 +33,7 @@ export const RoommatePostDetailPage: React.FC = () => {
 
   const handleApplySubmit = async (data: any) => {
     try {
-      const res = await applyToGroup({
+      await applyToGroup({
         postId: id || '',
         introMessage: data.introMessage,
         lifestyleAnswers: data.lifestyleAnswers,
@@ -41,12 +41,10 @@ export const RoommatePostDetailPage: React.FC = () => {
         gender: data.gender,
       });
 
-      const score = (res as any)?.compatibilityScore ?? (res as any)?.data?.compatibilityScore ?? 92;
-      message.success(`Đã gửi hồ sơ tham gia nhóm thành công! Điểm tương thích lối sống: ${score}%.`);
       setHasApplied(true);
       setApplyModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -72,7 +70,7 @@ export const RoommatePostDetailPage: React.FC = () => {
         <div className="flex items-center justify-between pb-2 border-b border-stay-border-subtle">
           <Link
             to="/roommates"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stay-text-secondary hover:text-stay-primary transition-colors"
+            className="inline-flex items-center gap-1.5  font-semibold text-stay-text-secondary hover:text-stay-primary transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Quay lại danh sách tìm bạn</span>
@@ -85,7 +83,7 @@ export const RoommatePostDetailPage: React.FC = () => {
                 navigator.clipboard?.writeText(window.location.href);
                 message.success('Đã sao chép liên kết bài đăng!');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-stay-border bg-stay-card-bg text-stay-text hover:text-stay-primary hover:border-stay-primary transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg  font-medium border border-stay-border bg-stay-card-bg text-stay-text hover:text-stay-primary hover:border-stay-primary transition-colors cursor-pointer"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>Chia sẻ</span>
@@ -94,7 +92,7 @@ export const RoommatePostDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setReportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-stay-border bg-stay-card-bg text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg  font-medium border border-stay-border bg-stay-card-bg text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
             >
               <Flag className="w-3.5 h-3.5" />
               <span>Báo cáo</span>
@@ -116,7 +114,7 @@ export const RoommatePostDetailPage: React.FC = () => {
               <h2 className="text-sm font-bold text-stay-text flex items-center gap-2">
                 <span>Mô tả chi tiết bài đăng</span>
               </h2>
-              <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs sm:text-sm text-stay-text leading-relaxed whitespace-pre-line">
+              <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border  sm:text-sm text-stay-text leading-relaxed whitespace-pre-line">
                 {post.description || 'Chưa có mô tả chi tiết cho bài đăng này.'}
               </div>
             </div>
@@ -132,7 +130,7 @@ export const RoommatePostDetailPage: React.FC = () => {
                   {amenities.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-lg bg-stay-bg-app border border-stay-border text-xs text-stay-text flex items-center gap-2"
+                      className="p-2.5 rounded-lg bg-stay-bg-app border border-stay-border  text-stay-text flex items-center gap-2"
                     >
                       <span>{item}</span>
                     </div>
@@ -159,11 +157,11 @@ export const RoommatePostDetailPage: React.FC = () => {
                   <span className="text-2xl font-bold text-stay-primary">
                     {post.sharePrice.toLocaleString()} đ
                   </span>
-                  <span className="text-xs text-stay-text-secondary">/ người / tháng</span>
+                  <span className=" text-stay-text-secondary">/ người / tháng</span>
                 </div>
 
                 {post.totalRoomPrice && post.totalRoomPrice > 0 && (
-                  <p className="text-xs text-stay-text-muted mt-1">
+                  <p className=" text-stay-text-muted mt-1">
                     Tổng tiền phòng: {post.totalRoomPrice.toLocaleString()} đ/tháng
                   </p>
                 )}
@@ -171,7 +169,7 @@ export const RoommatePostDetailPage: React.FC = () => {
 
               {/* Tiến độ nhóm */}
               <div className="p-3 rounded-lg bg-stay-bg-app border border-stay-border space-y-2">
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between ">
                   <span className="text-stay-text-secondary flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-stay-primary" />
                     <span>Tiến độ nhóm:</span>
@@ -202,7 +200,7 @@ export const RoommatePostDetailPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-stay-primary shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-stay-primary">Độ hòa hợp lối sống</p>
+                      <p className=" font-bold text-stay-primary">Độ hòa hợp lối sống</p>
                       <p className="text-[11px] text-stay-text-secondary">Theo thuật toán AI 8 chiều</p>
                     </div>
                   </div>
@@ -215,7 +213,7 @@ export const RoommatePostDetailPage: React.FC = () => {
               {/* Nút hành động chính */}
               <div>
                 {hasApplied ? (
-                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400  font-semibold flex items-center justify-center gap-2">
                     <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>Đã gửi hồ sơ ứng tuyển (Đang chờ duyệt)</span>
                   </div>
@@ -236,7 +234,7 @@ export const RoommatePostDetailPage: React.FC = () => {
 
             {/* Lưu ý an toàn */}
             <div className="p-4 rounded-xl bg-stay-card-bg border border-stay-border space-y-2">
-              <h3 className="text-xs font-bold text-stay-text flex items-center gap-1.5">
+              <h3 className=" font-bold text-stay-text flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 <span>Lưu ý an toàn khi ở ghép</span>
               </h3>

@@ -1,5 +1,5 @@
 /**
- * StayConnect Standalone Tile Server (Node.js)
+ * Roomi Standalone Tile Server (Node.js)
  * Tự host và cache các mảnh bản đồ (tiles) cục bộ, hoàn toàn không phụ thuộc bên ngoài
  */
 import http from 'http';
@@ -35,7 +35,7 @@ const server = http.createServer((req, res) => {
   if (!match) {
     if (url === '/health' || url === '/') {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify({ status: 'OK', message: 'StayConnect Tile Server is running', cacheDir: CACHE_DIR }));
+      return res.end(JSON.stringify({ status: 'OK', message: 'Roomi Tile Server is running', cacheDir: CACHE_DIR }));
     }
     res.statusCode = 404;
     return res.end('Not Found');
@@ -55,7 +55,7 @@ const server = http.createServer((req, res) => {
 
   // 2. Kéo ảnh từ upstream HOT OpenStreetMap và lưu vào cache
   const upstreamUrl = `https://nuoclen.com/tiles/hot/${z}/${x}/${y}.png`;
-  https.get(upstreamUrl, { headers: { 'User-Agent': 'StayConnectTileServer/1.0' } }, (upstreamRes) => {
+  https.get(upstreamUrl, { headers: { 'User-Agent': 'RoomiTileServer/1.0' } }, (upstreamRes) => {
     if (upstreamRes.statusCode === 200) {
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`[StayConnect Tile Server] Đang chạy tại http://localhost:${PORT}`);
+  console.log(`[Roomi Tile Server] Đang chạy tại http://localhost:${PORT}`);
   console.log(`- Endpoint: http://localhost:${PORT}/tiles/hot/{z}/{x}/{y}.png`);
   console.log(`- Thư mục cache: ${CACHE_DIR}`);
 });

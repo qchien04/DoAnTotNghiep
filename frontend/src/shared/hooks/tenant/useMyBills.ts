@@ -34,6 +34,7 @@ export const useConfirmPaymentTransferred = () => {
     mutationFn: (billId: string) => tenantService.confirmPaymentTransferred(billId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.myBills() });
+      message.success('Hệ thống đã ghi nhận thông báo chuyển khoản! Đang chờ chủ trọ xác nhận.');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể xác nhận thanh toán');

@@ -28,12 +28,6 @@ export const ContractTable: React.FC<ContractTableProps> = ({
             Đang hiệu lực
           </span>
         );
-      case 'EXPIRING_SOON':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-            Sắp hết hạn
-          </span>
-        );
       case 'TERMINATED':
         return (
           <span className="inline-flex items-center gap-1.5 text-stay-text-muted">
@@ -59,7 +53,6 @@ export const ContractTable: React.FC<ContractTableProps> = ({
     {
       title: 'Phòng',
       key: 'roomName',
-      width: 140,
       ellipsis: { showTitle: true },
       render: (_: any, r: RentalContract) => (
         <div>
@@ -146,7 +139,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
           <Tooltip title="Xem chi tiết">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => onOpenDetail(r)}
             >
               <Eye className="w-4 h-4" />
@@ -157,7 +150,7 @@ export const ContractTable: React.FC<ContractTableProps> = ({
             <Tooltip title="Thanh lý hợp đồng">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-delete"
+                className="stay-action-btn"
                 onClick={() => onOpenTerminate(r)}
               >
                 <FileText className="w-4 h-4" />

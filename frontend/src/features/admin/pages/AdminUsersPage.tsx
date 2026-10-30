@@ -22,13 +22,11 @@ import {
   Lock,
   Unlock,
   Edit2,
-  Shield,
-  Building,
-  User,
   RotateCcw,
   Eye,
+  User,
 } from 'lucide-react';
-import { message, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import { AdminUserItem, CreateAdminUserDto, UpdateAdminUserDto, ToggleLockUserDto, UserAccountStatus } from '@/shared/types/admin';
 import { Role } from '@/shared/types/auth';
 
@@ -87,10 +85,9 @@ export const AdminUsersPage: React.FC = () => {
     try {
       const values = await createForm.validateFields();
       await createUser(values as CreateAdminUserDto);
-      message.success('Thêm mới người dùng vào hệ thống thành công!');
       setCreateModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -110,10 +107,9 @@ export const AdminUsersPage: React.FC = () => {
     try {
       const values = await editForm.validateFields();
       await updateUser({ id: editingUser.id, dto: values as UpdateAdminUserDto });
-      message.success('Cập nhật phân quyền & thông tin tài khoản thành công!');
       setEditModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -139,12 +135,9 @@ export const AdminUsersPage: React.FC = () => {
           duration: values.duration,
         } as ToggleLockUserDto,
       });
-      message.success(
-        willLock ? 'Đã khóa tài khoản người dùng thành công!' : 'Đã mở khóa tài khoản thành công!'
-      );
       setLockModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -169,11 +162,10 @@ export const AdminUsersPage: React.FC = () => {
     {
       title: 'Tài khoản',
       key: 'user',
-      width: 200,
       ellipsis: { showTitle: true },
       render: (_: any, r: AdminUserItem) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-stay-bg-app border border-stay-border flex items-center justify-center font-bold text-xs text-stay-primary flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-stay-bg-app border border-stay-border flex items-center justify-center font-bold  text-stay-primary flex-shrink-0">
             {r.fullName.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -189,7 +181,7 @@ export const AdminUsersPage: React.FC = () => {
       width: 200,
       ellipsis: { showTitle: true },
       render: (_: any, r: AdminUserItem) => (
-        <div className="text-xs space-y-0.5 min-w-0">
+        <div className=" space-y-0.5 min-w-0">
           <p className="text-stay-text font-medium truncate">{r.email}</p>
           <p className="text-slate-400 truncate">{r.phone || 'Chưa cập nhật'}</p>
         </div>
@@ -204,20 +196,20 @@ export const AdminUsersPage: React.FC = () => {
       render: (role: Role) => {
         if (role === 'ROLE_ADMIN') {
           return (
-            <Badge variant="primary" icon={<Shield className="w-3.5 h-3.5" />}>
+            <Badge variant="primary">
               Quản trị viên
             </Badge>
           );
         }
         if (role === 'ROLE_USER') {
           return (
-            <Badge variant="secondary" icon={<Building className="w-3.5 h-3.5" />}>
+            <Badge variant="secondary">
               Người dùng sàn
             </Badge>
           );
         }
         return (
-          <Badge variant="outline" icon={<User className="w-3.5 h-3.5" />}>
+          <Badge variant="outline">
             {role}
           </Badge>
         );
@@ -246,7 +238,7 @@ export const AdminUsersPage: React.FC = () => {
           <Tooltip title="Xem chi tiết người dùng">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => handleOpenDetail(r)}
             >
               <Eye className="w-4 h-4" />
@@ -255,7 +247,7 @@ export const AdminUsersPage: React.FC = () => {
           <Tooltip title="Chỉnh sửa phân quyền">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => handleOpenEdit(r)}
             >
               <Edit2 className="w-4 h-4" />
@@ -264,14 +256,13 @@ export const AdminUsersPage: React.FC = () => {
           <Tooltip title={r.status === 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}>
             <button
               type="button"
-              className={r.status === 'ACTIVE' ? 'stay-action-btn stay-action-btn-delete' : 'stay-action-btn'}
-              style={r.status !== 'ACTIVE' ? { color: '#059669' } : undefined}
+              className="stay-action-btn"
               onClick={() => handleOpenToggleLock(r)}
             >
               {r.status === 'ACTIVE' ? (
                 <Lock className="w-4 h-4" />
               ) : (
-                <Unlock className="w-4 h-4 text-emerald-600" />
+                <Unlock className="w-4 h-4" />
               )}
             </button>
           </Tooltip>
@@ -377,7 +368,7 @@ export const AdminUsersPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-stay-primary" />
             <span className="text-base font-semibold text-stay-text">Thông tin chi tiết người dùng</span>
-            <span className="ml-2 text-xs font-mono font-normal text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border">
+            <span className="ml-2  font-mono font-normal text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border">
               #{viewingUser?.id}
             </span>
           </div>
@@ -387,14 +378,14 @@ export const AdminUsersPage: React.FC = () => {
       >
         {viewingUser && (
           <div className="py-3 space-y-4">
-            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex items-start justify-between">
+            <div className="flex items-start justify-between pb-1">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-stay-primary-subtle text-stay-primary flex items-center justify-center font-bold text-lg">
                   {viewingUser.fullName?.charAt(0) || 'U'}
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-stay-text">{viewingUser.fullName}</h3>
-                  <p className="text-xs text-stay-text-muted">@{viewingUser.username}</p>
+                  <p className="text-stay-text-muted text-sm">@{viewingUser.username}</p>
                 </div>
               </div>
               <div>
@@ -406,16 +397,16 @@ export const AdminUsersPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+            <div className="pt-3 border-t border-stay-border-subtle grid grid-cols-2 gap-4">
+              <div>
                 <span className="text-xs text-stay-text-muted block mb-1">Email liên hệ</span>
                 <span className="text-sm font-semibold text-stay-text truncate block">{viewingUser.email || '—'}</span>
               </div>
-              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+              <div>
                 <span className="text-xs text-stay-text-muted block mb-1">Số điện thoại</span>
                 <span className="text-sm font-semibold text-stay-text truncate block">{viewingUser.phone || '—'}</span>
               </div>
-              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border col-span-2">
+              <div className="col-span-2 pt-2 border-t border-stay-border-subtle">
                 <span className="text-xs text-stay-text-muted block mb-1">Vai trò hệ thống</span>
                 <span className="text-sm font-semibold text-stay-text">
                   {viewingUser.role === 'ROLE_ADMIN' ? 'Quản trị viên hệ thống' : 'Người dùng sàn (Chủ trọ / Khách thuê)'}
@@ -580,7 +571,7 @@ export const AdminUsersPage: React.FC = () => {
               </Form>
             </>
           ) : (
-            <p className="text-xs text-stay-text-secondary">
+            <p className=" text-stay-text-secondary">
               Bạn có chắc chắn muốn mở khóa cho tài khoản <strong>{lockingUser?.fullName}</strong>? Người dùng sẽ có thể đăng nhập lại bình thường.
             </p>
           )}

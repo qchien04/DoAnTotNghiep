@@ -34,39 +34,39 @@ export const ReviewApplicantModal: React.FC<ReviewApplicantModalProps> = ({
     >
       <div className="space-y-4 pt-2">
         {/* Applicant Summary */}
-        <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border space-y-2 text-xs">
+        <div className="space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <span className="font-bold text-stay-text text-sm block">
+              <span className="font-bold text-stay-text text-base block">
                 {applicant.applicantName} ({applicant.birthYear || 2004})
               </span>
-              <span className="text-stay-text-muted">
+              <span className="text-stay-text-muted text-sm">
                 Quê: {applicant.hometown || 'Hải Dương'} • {applicant.occupationOrSchool}
               </span>
             </div>
             <div className="text-left sm:text-right">
               <span className="text-[11px] text-stay-text-muted block">Độ tương thích:</span>
-              <span className="text-base font-bold text-emerald-600">
+              <span className="text-lg font-bold text-emerald-600">
                 {applicant.compatibilityScore}%
               </span>
             </div>
           </div>
 
           {applicant.introMessage && (
-            <div className="pt-2 border-t border-stay-border/70 text-stay-text italic">
+            <div className="pt-2 text-stay-text italic text-sm">
               "{applicant.introMessage}"
             </div>
           )}
         </div>
 
         {/* Bảng đối chiếu trực quan từng tiêu chí lối sống (Chuẩn UC15) */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
+          <label className="font-semibold text-stay-text text-sm block">
             Bảng đối chiếu từng tiêu chí sinh hoạt
           </label>
 
           <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left  border-collapse">
               <thead>
                 <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
                   <th className="p-3 w-1/4">Tiêu chí sinh hoạt</th>

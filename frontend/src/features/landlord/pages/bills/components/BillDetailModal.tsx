@@ -1,20 +1,15 @@
-import React from 'react';
-import {
-  QrCode,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  XCircle,
-} from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Printer } from 'lucide-react';
 import { Modal, Button, Tag } from '@/shared/components';
-import { Bill, BillStatus } from '@/shared/types/landlord';
+import { InvoiceResponse, InvoiceStatus } from '@/shared/types/landlord';
+import { formatCurrency, formatDate } from '@/shared/utils';
 
 interface BillDetailModalProps {
   open: boolean;
-  bill: Bill | null;
+  bill: InvoiceResponse | null;
   onCancel: () => void;
-  onOpenPayment: (bill: Bill) => void;
-  onPublish?: (bill: Bill) => void;
+  onOpenPayment: (bill: InvoiceResponse) => void;
+  onPublish?: (bill: InvoiceResponse) => void;
 }
 
 export const BillDetailModal: React.FC<BillDetailModalProps> = ({
@@ -24,236 +19,354 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
   onOpenPayment,
   onPublish,
 }) => {
-  const renderStatus = (st: BillStatus) => {
-    switch (st) {
-      case 'DRAFT':
-        return (
-          <Tag color="warning" icon={<Clock className="w-3 h-3 inline mr-1" />}>
-            Bản nháp (Chưa phát hành)
-          </Tag>
-        );
+  const roomRentCost = useMemo(() => {
+    if (!bill) return 0;
+    const roomItem = bill.items?.find((it) => it.itemType === 'ROOM_RENT');
+    return roomItem?.amount ?? bill.roomPrice ?? 0;
+  }, [bill]);
+
+  const serviceItems = useMemo(() => {
+    if (!bill?.items) return [];
+    return bill.items.filter(
+      (it) => it.itemType === 'SERVICE' || (!it.itemType && it.contractServiceId != null)
+    );
+  }, [bill]);
+
+  const adjustmentItems = useMemo(() => {
+    if (!bill?.items) return [];
+    return bill.items.filter(
+      (it) =>
+        it.itemType === 'SURCHARGE' ||
+        it.itemType === 'DISCOUNT' ||
+        (!it.itemType && it.contractServiceId == null && it.itemType !== 'ROOM_RENT')
+    );
+  }, [bill]);
+
+  const hasAdjustments = adjustmentItems.length > 0;
+  const hasPaidAmount = Number(bill?.paidAmount || 0) > 0 && bill?.status !== 'PAID';
+
+  const renderStatusBadge = (status: InvoiceStatus) => {
+    switch (status) {
       case 'PAID':
         return (
-          <Tag color="green" icon={<CheckCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
             Đã thanh toán
-          </Tag>
+          </span>
         );
       case 'UNPAID':
         return (
-          <Tag color="orange" icon={<Clock className="w-3 h-3 inline mr-1" />}>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800">
             Chờ thanh toán
-          </Tag>
+          </span>
+        );
+      case 'PARTIALLY_PAID':
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800">
+            Thanh toán 1 phần
+          </span>
         );
       case 'OVERDUE':
         return (
-          <Tag color="error" icon={<AlertCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800">
             Quá hạn
-          </Tag>
+          </span>
+        );
+      case 'DRAFT':
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+            Bản nháp
+          </span>
         );
       case 'CANCELLED':
         return (
-          <Tag color="default" icon={<XCircle className="w-3 h-3 inline mr-1" />}>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
             Đã hủy
-          </Tag>
+          </span>
         );
       default:
-        return <Tag>{st}</Tag>;
+        return <Tag>{status}</Tag>;
     }
   };
 
   return (
     <Modal
-      title={bill ? `Chi tiết hóa đơn: Kỳ ${bill.billingPeriod} (${bill.roomName || ''})` : 'Chi tiết hóa đơn'}
+      title={
+        bill ? (
+          <div className="flex items-center justify-between gap-3 pr-6">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-stay-text text-base">Chi tiết hóa đơn</span>
+              <span className="font-mono text-xs px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border text-stay-text-secondary">
+                #{bill.id}
+              </span>
+            </div>
+            {renderStatusBadge(bill.status)}
+          </div>
+        ) : (
+          'Chi tiết hóa đơn'
+        )
+      }
       open={open}
       onCancel={onCancel}
-      footer={[
-        <Button key="close" onClick={onCancel} className="rounded-lg">
-          Đóng
-        </Button>,
-        bill && bill.status === 'DRAFT' && (
+      width={960}
+      footer={
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
           <Button
-            key="publish"
-            type="primary"
-            onClick={() => {
-              onCancel();
-              onPublish && onPublish(bill);
-            }}
-            className="bg-amber-600 hover:bg-amber-700 font-semibold rounded-lg text-white"
+            key="print"
+            size="middle"
+            onClick={() => window.print()}
+            icon={<Printer className="w-3.5 h-3.5" />}
           >
-            🚀 Ban hành hóa đơn cho khách thuê
+            In hóa đơn
           </Button>
-        ),
-        bill &&
-          (bill.status === 'UNPAID' || bill.status === 'PARTIALLY_PAID' || bill.status === 'OVERDUE') && (
-            <Button
-              key="pay"
-              type="primary"
-              onClick={() => {
-                onCancel();
-                onOpenPayment(bill);
-              }}
-              className="bg-stay-primary hover:bg-stay-primary-hover font-semibold rounded-lg"
-            >
-              Xác nhận thu tiền
+
+          <div className="flex items-center gap-2">
+            <Button onClick={onCancel}>
+              Đóng
             </Button>
-          ),
-      ]}
-      width={840}
+
+            {bill && bill.status === 'DRAFT' && onPublish && (
+              <Button
+                className="border-amber-500 text-amber-600 hover:text-amber-500 font-medium"
+                onClick={() => {
+                  onCancel();
+                  onPublish(bill);
+                }}
+              >
+                Ban hành hóa đơn
+              </Button>
+            )}
+
+            {bill &&
+              (bill.status === 'UNPAID' || bill.status === 'PARTIALLY_PAID' || bill.status === 'OVERDUE') && (
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    onCancel();
+                    onOpenPayment(bill);
+                  }}
+                  className="bg-stay-primary hover:bg-stay-primary-hover font-medium"
+                >
+                  Xác nhận thu tiền
+                </Button>
+              )}
+          </div>
+        </div>
+      }
     >
       {bill && (
-        <div className="mt-4 space-y-4 text-xs">
-          {bill.status === 'DRAFT' && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-200 flex items-center justify-between">
-              <span>Hóa đơn dạng <strong>Bản nháp</strong> (chưa gửi thông báo cho khách thuê).</span>
-            </div>
-          )}
-          {/* Header info card */}
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-stay-text-secondary text-xs">Hóa đơn số:</p>
-              <p className="font-bold text-base text-stay-primary">
-                #{bill.id} - Kỳ {bill.billingPeriod}
+        <div className="mt-4 space-y-4">
+          {/* SECTION 1: PHÒNG & THỜI HẠN */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="p-3 rounded-xl border border-stay-border bg-stay-card-bg">
+              <span className="text-xs text-stay-text-secondary block mb-1">
+                Phòng trọ
+              </span>
+              <p className="text-sm font-semibold text-stay-text m-0 truncate">
+                {bill.roomName || '---'} {bill.buildingName ? `(${bill.buildingName})` : ''}
               </p>
-              <p className="text-stay-text-secondary text-xs mt-2">Phòng / Tòa nhà:</p>
-              <p className="font-semibold text-stay-text text-sm">
-                {bill.roomName}{' '}
-                {bill.buildingName && <span className="text-stay-text-secondary">({bill.buildingName})</span>}
+              <p className="text-xs text-stay-text-secondary m-0 mt-0.5 truncate">
+                Khách thuê: {bill.representativeTenantName || 'Chưa cập nhật'}
               </p>
             </div>
-            <div>
-              <p className="text-stay-text-secondary text-xs">Khách thuê đại diện:</p>
-              <p className="font-semibold text-stay-text text-sm">
-                {bill.representativeTenantName || '---'}
-                {bill.representativeTenantPhone && ` - ${bill.representativeTenantPhone}`}
+
+            <div className="p-3 rounded-xl border border-stay-border bg-stay-card-bg">
+              <span className="text-xs text-stay-text-secondary block mb-1">
+                Kỳ cước hóa đơn
+              </span>
+              <p className="text-sm font-semibold text-stay-text m-0">
+                {bill.billingPeriod}
               </p>
-              <p className="text-stay-text-secondary text-xs mt-2">Kỳ cước & Hạn nộp:</p>
-              <p className="font-semibold text-stay-text text-sm">
-                {bill.billingPeriod} | Hạn: {bill.dueDate || '---'}
+              <p className="text-xs text-stay-text-secondary m-0 mt-0.5">
+                Ngày lập: {bill.createdAt ? formatDate(bill.createdAt) : '---'}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl border border-stay-border bg-stay-card-bg">
+              <span className="text-xs text-stay-text-secondary block mb-1">
+                Hạn nộp tiền
+              </span>
+              <p className="text-sm font-semibold text-stay-text m-0">
+                {bill.dueDate || 'Trong kỳ'}
+              </p>
+              <p className="text-xs text-stay-text-secondary m-0 mt-0.5">
+                {bill.paidAt ? `Đã thanh toán ngày ${formatDate(bill.paidAt)}` : 'Chưa thanh toán'}
               </p>
             </div>
           </div>
 
-          {/* Bảng kê chi tiết khoản mục items */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-stay-text">Bảng kê chi tiết các khoản mục chi phí:</h3>
-            <div className="rounded-xl border border-stay-border overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-xs">
+          {/* SECTION 2: BẢNG DỊCH VỤ & CHI PHÍ */}
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-stay-text m-0">
+                Dịch vụ & chi phí phòng
+              </h3>
+            </div>
+
+            <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-xs font-semibold">
                   <tr>
-                    <th className="p-3">Khoản mục</th>
-                    <th className="p-3 text-center">Số lượng / Ghi chú</th>
-                    <th className="p-3 text-right">Đơn giá</th>
-                    <th className="p-3 text-right">Thành tiền</th>
+                    <th className="p-2.5 pl-3">Khoản mục</th>
+                    <th className="p-2.5 text-right w-36">Đơn giá</th>
+                    <th className="p-2.5 text-center w-24">Chỉ số cũ</th>
+                    <th className="p-2.5 text-center w-36">Chỉ số mới / SL</th>
+                    <th className="p-2.5 text-center w-24">Sử dụng</th>
+                    <th className="p-2.5 text-right w-36 pr-3">Thành tiền</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stay-border text-xs">
-                  {/* Tiền phòng */}
-                  <tr>
-                    <td className="p-3 font-semibold text-stay-text">Tiền thuê phòng</td>
-                    <td className="p-3 text-center text-stay-text-secondary">1 tháng</td>
-                    <td className="p-3 text-right text-stay-text-secondary">
-                      {(bill.roomPrice || 0).toLocaleString()} đ
+                <tbody className="divide-y divide-stay-border text-stay-text text-sm">
+                  {/* 1. Tiền thuê phòng */}
+                  <tr className="hover:bg-stay-bg-app/40 transition-colors">
+                    <td className="p-2.5 pl-3">
+                      <p className="font-semibold text-stay-text m-0">Tiền thuê phòng trọ</p>
+                      <p className="text-xs text-stay-text-secondary m-0">Giá thuê theo hợp đồng</p>
                     </td>
-                    <td className="p-3 text-right font-bold text-stay-text">
-                      {(bill.roomPrice || 0).toLocaleString()} đ
+                    <td className="p-2.5 text-right text-stay-text-secondary">
+                      {formatCurrency(roomRentCost)}
+                    </td>
+                    <td className="p-2.5 text-center text-stay-text-muted">-</td>
+                    <td className="p-2.5 text-center text-stay-text-secondary">1</td>
+                    <td className="p-2.5 text-center font-medium text-stay-text">1 tháng</td>
+                    <td className="p-2.5 text-right font-bold text-stay-text pr-3">
+                      {formatCurrency(roomRentCost)}
                     </td>
                   </tr>
 
-                  {/* Danh sách items */}
-                  {bill.items && bill.items.length > 0 ? (
-                    bill.items.map((it, idx) => {
-                      const name = it.itemName || '';
-                      const isDiscount = it.itemType === 'DISCOUNT' || name.toLowerCase().includes('giảm trừ') || (it.amount || 0) < 0;
-                      const isSurcharge = it.itemType === 'SURCHARGE' || name.toLowerCase().includes('phụ thu');
-                      const displayQty = it.note || (
-                        it.previousIndex !== undefined && it.currentIndex !== undefined
-                          ? `${it.quantity ?? (it.currentIndex - it.previousIndex)} (Số cũ: ${it.previousIndex} ➔ Số mới: ${it.currentIndex})`
-                          : `${it.quantity || 1}`
-                      );
-                      return (
-                        <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
-                          <td className="p-3 font-medium text-stay-text">
-                            {name}
-                            {isDiscount && (
-                              <Tag color="error" className="ml-1.5 text-[10px] py-0 px-1">
-                                Giảm trừ
-                              </Tag>
-                            )}
-                            {isSurcharge && (
-                              <Tag color="warning" className="ml-1.5 text-[10px] py-0 px-1">
-                                Phụ thu
-                              </Tag>
-                            )}
-                          </td>
-                          <td className="p-3 text-center text-stay-text-secondary">
-                            {displayQty}
-                          </td>
-                          <td className="p-3 text-right text-stay-text-secondary">
-                            {Math.abs(it.unitPrice || 0).toLocaleString()} đ
-                          </td>
-                          <td className={`p-3 text-right font-bold ${isDiscount ? 'text-red-500' : 'text-stay-text'}`}>
-                            {isDiscount ? '-' : ''}{Math.abs(it.amount || 0).toLocaleString()} đ
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : null}
+                  {/* 2. Dịch vụ tiện ích */}
+                  {serviceItems.map((svc, idx) => {
+                    const hasMeterIndex =
+                      svc.previousIndex !== undefined &&
+                      svc.currentIndex !== undefined &&
+                      (svc.currentIndex > 0 || svc.previousIndex > 0);
+                    const consumed = hasMeterIndex
+                      ? (svc.currentIndex ?? 0) - (svc.previousIndex ?? 0)
+                      : (svc.quantity ?? 1);
 
-                  {/* Phụ thu nếu có */}
-                  {bill.otherAmount && bill.otherAmount > 0 && (
-                    <tr className="hover:bg-stay-bg-app/40 transition-colors">
-                      <td className="p-3 font-medium text-stay-text">Chi phí phát sinh khác</td>
-                      <td className="p-3 text-center text-stay-text-secondary">Phụ thu</td>
-                      <td className="p-3 text-right text-stay-text-secondary">
-                        {bill.otherAmount.toLocaleString()} đ
-                      </td>
-                      <td className="p-3 text-right font-bold text-stay-text">
-                        {bill.otherAmount.toLocaleString()} đ
-                      </td>
-                    </tr>
-                  )}
+                    return (
+                      <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
+                        <td className="p-2.5 pl-3">
+                          <p className="font-semibold text-stay-text m-0">{svc.itemName}</p>
+                          {svc.note && (
+                            <p className="text-xs text-stay-text-secondary m-0">{svc.note}</p>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-right text-stay-text-secondary">
+                          {formatCurrency(svc.unitPrice || 0)}
+                        </td>
+                        <td className="p-2.5 text-center">
+                          {hasMeterIndex ? (
+                            <span className="px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border font-semibold text-stay-text text-xs">
+                              {svc.previousIndex}
+                            </span>
+                          ) : (
+                            <span className="text-stay-text-muted">-</span>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-center font-medium">
+                          {hasMeterIndex ? (
+                            <span className="px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border font-semibold text-stay-text text-xs">
+                              {svc.currentIndex}
+                            </span>
+                          ) : (
+                            svc.quantity || 1
+                          )}
+                        </td>
+                        <td className="p-2.5 text-center font-medium text-stay-text">
+                          {consumed}
+                        </td>
+                        <td className="p-2.5 text-right font-bold text-stay-text pr-3">
+                          {formatCurrency(svc.amount || 0)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Tổng cộng & VietQR */}
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-stay-text-secondary font-medium">Trạng thái:</span>
-                {renderStatus(bill.status)}
+          {/* SECTION 3: BẢNG PHỤ THU & GIẢM TRỪ (NẾU CÓ) */}
+          {hasAdjustments && (
+            <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
+              <h3 className="text-sm font-semibold text-stay-text m-0">
+                Phụ thu & giảm trừ
+              </h3>
+
+              <div className="rounded-xl border border-stay-border overflow-hidden bg-stay-card-bg">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-stay-bg-app text-stay-text-secondary border-b border-stay-border text-xs font-semibold">
+                    <tr>
+                      <th className="p-2.5 pl-3 w-28 text-center">Loại</th>
+                      <th className="p-2.5">Nguyên nhân / Nội dung</th>
+                      <th className="p-2.5 text-center w-20">SL</th>
+                      <th className="p-2.5 text-right w-36">Đơn giá</th>
+                      <th className="p-2.5 text-right w-36 pr-3">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stay-border text-stay-text text-sm">
+                    {adjustmentItems.map((adj, idx) => {
+                      const isSurcharge = adj.itemType === 'SURCHARGE';
+                      const cleanName = adj.itemName ? adj.itemName.replace(/^\[(Phụ thu|Giảm trừ)\]\s*/i, '') : 'Khoản phát sinh';
+                      return (
+                        <tr key={idx} className="hover:bg-stay-bg-app/40 transition-colors">
+                          <td className="p-2.5 pl-3 text-center">
+                            <Tag
+                              className={`m-0 font-medium ${
+                                isSurcharge
+                                  ? 'border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                                  : 'border-rose-200 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800'
+                              }`}
+                            >
+                              {isSurcharge ? 'Phụ thu' : 'Giảm trừ'}
+                            </Tag>
+                          </td>
+                          <td className="p-2.5 font-medium">{cleanName}</td>
+                          <td className="p-2.5 text-center">{adj.quantity || 1}</td>
+                          <td className="p-2.5 text-right text-stay-text-secondary">
+                            {formatCurrency(adj.unitPrice || 0)}
+                          </td>
+                          <td
+                            className={`p-2.5 text-right font-bold pr-3 ${
+                              isSurcharge ? 'text-stay-text' : 'text-rose-600'
+                            }`}
+                          >
+                            {isSurcharge ? '+' : '-'} {formatCurrency(Math.abs(adj.amount || 0))}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-              <p className="text-stay-text-secondary mt-1.5">
-                Đã thanh toán:{' '}
-                <strong className="font-bold text-stay-text">
-                  {(bill.paidAmount || 0).toLocaleString()} đ
-                </strong>
-                {' | '}Còn lại:{' '}
-                <strong className="font-bold text-stay-text">
-                  {(bill.remainingAmount || bill.totalAmount || 0).toLocaleString()} đ
-                </strong>
-              </p>
-              <div className="mt-2 text-sm font-bold text-stay-text">
-                Tổng tiền hóa đơn:{' '}
-                <span className="text-stay-primary text-xl font-black">
-                  {bill.totalAmount.toLocaleString()} VNĐ
-                </span>
-              </div>
+            </div>
+          )}
+
+          {/* TỔNG TIỀN HÓA ĐƠN */}
+          <div className="pt-4 border-t border-stay-border space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-stay-text text-sm uppercase">TỔNG TIỀN HÓA ĐƠN:</span>
+              <span className="text-xl font-bold text-stay-primary">
+                {formatCurrency(bill.totalAmount)}
+              </span>
             </div>
 
-            {/* VietQR minh họa */}
-            <div className="flex items-center gap-3 bg-stay-card-bg p-3 rounded-xl border border-stay-border shadow-xs">
-              <QrCode className="w-12 h-12 text-stay-primary" />
-              <div className="text-[11px] text-stay-text-secondary">
-                <p className="font-bold text-stay-text text-xs">Quét VietQR nộp tiền</p>
-                <p>Chuyển khoản trực tiếp</p>
-                <p className="font-medium text-stay-text-secondary mt-0.5">Tự động gạch nợ</p>
+            {hasPaidAmount && (
+              <div className="pt-2 space-y-1 text-sm border-t border-stay-border/60">
+                <div className="flex justify-between text-emerald-600 font-medium">
+                  <span>Đã thanh toán:</span>
+                  <span>{formatCurrency(bill.paidAmount || 0)}</span>
+                </div>
+                <div className="flex justify-between text-rose-600 font-bold pt-1 border-t border-dashed border-stay-border">
+                  <span>Còn lại cần thu:</span>
+                  <span>{formatCurrency(bill.remainingAmount || ((bill.totalAmount || 0) - (bill.paidAmount || 0)))}</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
     </Modal>
   );
 };
+
+export default BillDetailModal;

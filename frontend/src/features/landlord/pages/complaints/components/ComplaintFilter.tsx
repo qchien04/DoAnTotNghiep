@@ -30,7 +30,7 @@ export const ComplaintFilter: React.FC<ComplaintFilterProps> = ({
         className="w-full sm:w-[260px] h-[40px] rounded-[8px]"
         options={[
           { label: 'Tất cả trạng thái sự cố', value: 'ALL' },
-          { label: 'Mới gửi', value: 'NEW' },
+          { label: 'Chờ xử lý', value: 'PENDING' },
           { label: 'Đang xử lý', value: 'PROCESSING' },
           { label: 'Đã giải quyết', value: 'RESOLVED' },
           { label: 'Từ chối giải quyết', value: 'REJECTED' },

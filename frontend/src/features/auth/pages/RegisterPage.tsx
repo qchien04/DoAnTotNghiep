@@ -95,25 +95,25 @@ export const RegisterPage: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center space-y-1">
         <h2 className="text-xl font-bold text-stay-text">Đăng Ký Tài Khoản</h2>
-        <p className="text-xs text-stay-text-secondary">Xác thực mã OTP qua Email để kích hoạt tài khoản StayConnect</p>
+        <p className=" text-stay-text-secondary">Xác thực mã OTP qua Email để kích hoạt tài khoản Roomi</p>
       </div>
 
       {error && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2.5 text-xs text-rose-600 dark:text-rose-400">
+        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2.5  text-rose-600 dark:text-rose-400">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
           <span>{error}</span>
         </div>
       )}
 
       {otpInfoMsg && !error && (
-        <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl flex items-center gap-2.5 text-xs text-sky-600 dark:text-sky-400">
+        <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl flex items-center gap-2.5  text-sky-600 dark:text-sky-400">
           <Mail className="w-4 h-4 shrink-0 text-sky-500" />
           <span>{otpInfoMsg}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2.5 text-xs text-emerald-600 dark:text-emerald-400">
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2.5  text-emerald-600 dark:text-emerald-400">
           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
           <span>{successMsg}</span>
         </div>
@@ -121,7 +121,7 @@ export const RegisterPage: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Họ và tên
           </label>
           <div className="relative">
@@ -135,13 +135,13 @@ export const RegisterPage: React.FC = () => {
               value={formData.fullName}
               onChange={handleChange}
               placeholder="Nguyễn Văn A"
-              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Tên đăng nhập
           </label>
           <div className="relative">
@@ -155,13 +155,13 @@ export const RegisterPage: React.FC = () => {
               value={formData.username}
               onChange={handleChange}
               placeholder="nguyenvana"
-              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Email xác thực
           </label>
           <div className="flex gap-2">
@@ -176,14 +176,14 @@ export const RegisterPage: React.FC = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="vana@gmail.com"
-                className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
               />
             </div>
             <button
               type="button"
               disabled={isSendingOtp || countdown > 0 || !formData.email}
               onClick={handleSendOtp}
-              className="px-3 py-2 text-xs font-medium rounded-lg bg-stay-primary text-white hover:bg-stay-primary-hover disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer transition-colors shadow-sm"
+              className="px-3 py-2  font-medium rounded-lg bg-stay-primary text-white hover:bg-stay-primary-hover disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer transition-colors shadow-sm"
             >
               {isSendingOtp ? 'Đang gửi...' : countdown > 0 ? `Gửi lại (${countdown}s)` : 'Gửi mã OTP'}
             </button>
@@ -191,7 +191,7 @@ export const RegisterPage: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Mã OTP (6 chữ số)
           </label>
           <div className="relative">
@@ -206,13 +206,13 @@ export const RegisterPage: React.FC = () => {
               value={formData.otpCode}
               onChange={handleChange}
               placeholder="Nhập 6 số mã OTP từ email"
-              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted tracking-widest font-mono focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted tracking-widest font-mono focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Số điện thoại
           </label>
           <div className="relative">
@@ -225,13 +225,13 @@ export const RegisterPage: React.FC = () => {
               value={formData.phone}
               onChange={handleChange}
               placeholder="0912345678"
-              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Vai trò tham gia
           </label>
           <div className="relative">
@@ -242,7 +242,7 @@ export const RegisterPage: React.FC = () => {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             >
               <option value="ROLE_TENANT">Khách thuê (Tìm phòng & Tìm bạn ở ghép)</option>
               <option value="ROLE_LANDLORD">Chủ trọ (Quản lý nhà trọ & phòng)</option>
@@ -251,7 +251,7 @@ export const RegisterPage: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stay-text mb-1">
+          <label className="block  font-semibold text-stay-text mb-1">
             Mật khẩu
           </label>
           <div className="relative">
@@ -265,7 +265,7 @@ export const RegisterPage: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="w-full pl-9 pr-10 py-2 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
+              className="w-full pl-9 pr-10 py-2 bg-stay-bg-app border border-stay-border rounded-lg  text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:ring-2 focus:ring-stay-primary focus:border-transparent transition-all"
             />
             <button
               type="button"
@@ -280,7 +280,7 @@ export const RegisterPage: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-2 py-2.5 bg-stay-primary hover:bg-stay-primary-hover active:scale-[0.99] text-white text-xs font-semibold rounded-lg shadow-md shadow-stay-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+          className="w-full mt-2 py-2.5 bg-stay-primary hover:bg-stay-primary-hover active:scale-[0.99] text-white  font-semibold rounded-lg shadow-md shadow-stay-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -293,7 +293,7 @@ export const RegisterPage: React.FC = () => {
         </button>
       </form>
 
-      <div className="text-center text-xs text-stay-text-secondary">
+      <div className="text-center  text-stay-text-secondary">
         Đã có tài khoản?{' '}
         <Link to="/login" className="text-stay-primary font-semibold hover:underline">
           Đăng nhập ngay

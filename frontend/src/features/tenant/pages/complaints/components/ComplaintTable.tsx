@@ -102,11 +102,10 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
         const isUrgent = urg === 'HIGH' || urg === 'URGENT';
         return (
           <span
-            className={`text-xs font-semibold px-2 py-0.5 rounded ${
-              isUrgent
-                ? 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20'
-                : 'text-stay-text-secondary bg-stay-bg-app border border-stay-border'
-            }`}
+            className={` font-semibold px-2 py-0.5 rounded ${isUrgent
+              ? 'text-rose-600 dark:text-rose-400'
+              : 'text-stay-text-secondary'
+              }`}
           >
             {getComplaintSeverityLabel(urg)}
           </span>
@@ -146,7 +145,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      width: 130,
+      width: 120,
       fixed: 'right' as const,
       render: (_: any, r: Complaint) => {
         const canRate = r.status === 'RESOLVED';
@@ -155,7 +154,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
             <Tooltip title="Xem chi tiết sự cố">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-view"
+                className="stay-action-btn"
                 onClick={() => onOpenDetail(r)}
               >
                 <Eye className="w-4 h-4" />
@@ -165,7 +164,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
             <Tooltip title={canRate ? 'Đánh giá chất lượng sửa chữa' : 'Chỉ đánh giá khi đã khắc phục'}>
               <button
                 type="button"
-                className={`stay-action-btn ${canRate ? 'stay-action-btn-edit' : 'opacity-40 cursor-not-allowed text-slate-400'}`}
+                className={`stay-action-btn ${!canRate ? 'opacity-40 cursor-not-allowed' : ''}`}
                 onClick={() => canRate && onOpenRate(r)}
                 disabled={!canRate}
               >
@@ -176,7 +175,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
             <Tooltip title="Liên hệ chủ trọ hỗ trợ">
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-delete"
+                className="stay-action-btn"
                 onClick={() => message.info('Vui lòng liên hệ số điện thoại chủ trọ hoặc xem chi tiết hợp đồng để gọi trực tiếp.')}
               >
                 <Phone className="w-4 h-4" />

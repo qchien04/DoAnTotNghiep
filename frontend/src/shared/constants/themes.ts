@@ -50,7 +50,7 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
   // 1. Figma Poster Palette (Mặc định)
   stayconnect: {
     id: 'stayconnect',
-    name: 'StayConnect Classic (Figma)',
+    name: 'Roomi Classic (Figma)',
     description: 'Xanh dương hoàng gia & xanh lá xác thực chuẩn Figma Poster',
     preview: {
       primary: '#2563EB',

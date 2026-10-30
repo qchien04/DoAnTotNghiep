@@ -11,7 +11,7 @@ public interface LandlordInvoiceService {
 
     InvoiceResponse getInvoiceById(Long landlordId, Long invoiceId);
 
-    InvoiceResponse createInvoice(Long landlordId, MeterReadingInvoiceRequest request);
+    InvoiceResponse createInvoice(Long landlordId, CreateInvoiceRequest request);
 
     InvoiceResponse updateInvoice(Long landlordId, Long invoiceId, InvoiceUpdateRequest request);
 

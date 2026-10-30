@@ -202,7 +202,7 @@ export const RoomSearchPage: React.FC = () => {
               electricity: '3.800 đ/kWh',
               water: '30.000 đ/m³',
               internet: '100.000 đ/tháng',
-              landlordName: r.landlordName || 'Chủ trọ StayConnect',
+              landlordName: r.landlordName || 'Chủ trọ Roomi',
               landlordPhone: r.landlordPhone || '0988.888.999',
             };
           });
@@ -260,11 +260,11 @@ export const RoomSearchPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight">
               Tìm Phòng Trọ
             </h1>
-            <p className="text-xs text-stay-text-secondary mt-1">
+            <p className=" text-stay-text-secondary mt-1">
               Danh sách phòng trọ cho thuê trực tiếp từ chủ nhà, giá niêm yết rõ ràng.
             </p>
           </div>
-          <div className="text-xs font-medium text-stay-text-secondary bg-stay-card-bg px-3 py-1.5 rounded-xl border border-stay-border self-start sm:self-auto">
+          <div className=" font-medium text-stay-text-secondary bg-stay-card-bg px-3 py-1.5 rounded-xl border border-stay-border self-start sm:self-auto">
             Tổng cộng: <strong className="text-stay-primary">{filteredRooms.length}</strong> phòng
           </div>
         </div>
@@ -280,7 +280,7 @@ export const RoomSearchPage: React.FC = () => {
                 placeholder="Nhập tên phòng, tên đường hoặc địa chỉ..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-stay-border bg-stay-bg-app text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:border-stay-primary transition-colors"
+                className="w-full pl-9 pr-3 py-2  sm:text-sm rounded-xl border border-stay-border bg-stay-bg-app text-stay-text placeholder:text-stay-text-muted focus:outline-none focus:border-stay-primary transition-colors"
               />
             </div>
 
@@ -289,7 +289,7 @@ export const RoomSearchPage: React.FC = () => {
               <select
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
-                className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
+                className="w-full px-3 py-2  sm:text-sm rounded-xl border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
               >
                 {DISTRICT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -304,7 +304,7 @@ export const RoomSearchPage: React.FC = () => {
               <select
                 value={selectedPrice}
                 onChange={(e) => setSelectedPrice(e.target.value)}
-                className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
+                className="w-full px-3 py-2  sm:text-sm rounded-xl border border-stay-border bg-stay-bg-app text-stay-text focus:outline-none focus:border-stay-primary transition-colors cursor-pointer"
               >
                 {PRICE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -332,13 +332,13 @@ export const RoomSearchPage: React.FC = () => {
         {filteredRooms.length === 0 ? (
           <div className="text-center py-16 bg-stay-card-bg rounded-2xl border border-stay-border">
             <p className="text-sm font-semibold text-stay-text">Không tìm thấy phòng trọ phù hợp</p>
-            <p className="text-xs text-stay-text-secondary mt-1">
+            <p className=" text-stay-text-secondary mt-1">
               Thử điều chỉnh lại từ khóa hoặc bộ lọc khu vực/mức giá.
             </p>
             <button
               type="button"
               onClick={handleResetFilters}
-              className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
+              className="mt-4 px-4 py-2 rounded-xl  font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
             >
               Xem tất cả phòng
             </button>
@@ -362,7 +362,7 @@ export const RoomSearchPage: React.FC = () => {
                     <ShieldCheck className="w-3 h-3 text-emerald-500" />
                     <span>Đã xác thực</span>
                   </div>
-                  <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg text-xs font-bold bg-stay-primary text-white">
+                  <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg  font-bold bg-stay-primary text-white">
                     {room.priceDisplay}
                   </div>
                 </div>
@@ -373,7 +373,7 @@ export const RoomSearchPage: React.FC = () => {
                     <h3 className="text-sm font-bold text-stay-text line-clamp-1 group-hover:text-stay-primary transition-colors">
                       {room.title}
                     </h3>
-                    <div className="flex items-center gap-1 text-xs text-stay-text-secondary">
+                    <div className="flex items-center gap-1  text-stay-text-secondary">
                       <MapPin className="w-3.5 h-3.5 text-stay-primary shrink-0" />
                       <span className="truncate">{room.location}</span>
                     </div>
@@ -399,7 +399,7 @@ export const RoomSearchPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => navigate(`/rooms/${room.id}`)}
-                      className="w-full py-2 px-3 rounded-xl text-xs font-semibold border border-stay-border bg-stay-card-bg text-stay-text hover:bg-stay-primary hover:text-white hover:border-stay-primary transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-2 px-3 rounded-xl  font-semibold border border-stay-border bg-stay-card-bg text-stay-text hover:bg-stay-primary hover:text-white hover:border-stay-primary transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>Xem chi tiết & liên hệ</span>
                       <ArrowRight className="w-3.5 h-3.5" />

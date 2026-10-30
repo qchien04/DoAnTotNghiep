@@ -133,7 +133,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
           <Tooltip title="Xem & Xử lý khiếu nại">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => onOpenDetail(r)}
             >
               <Eye className="w-4 h-4" />

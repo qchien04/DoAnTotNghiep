@@ -234,7 +234,7 @@ CREATE TABLE invoice_items (
     invoice_id BIGINT NOT NULL,
     contract_service_id BIGINT,
     item_name VARCHAR(100) NOT NULL,
-    quantity DECIMAL(10, 2) NOT NULL DEFAULT 1,
+    quantity INT NOT NULL DEFAULT 1,
     unit_price BIGINT NOT NULL,
     amount BIGINT NOT NULL,
     note VARCHAR(255),

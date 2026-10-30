@@ -1,10 +1,13 @@
 package com.doan.core.business.dto.landlord.tenant;
 
-import com.doan.core.business.enums.Gender;
+import com.doan.core.business.entity.Contract;
+import com.doan.core.business.entity.ContractTenant;
+import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.Tenant;
+import com.doan.core.business.enums.ContractStatus;
+import com.doan.core.business.enums.Gender;
 import com.doan.core.business.enums.TenantLinkStatus;
 import com.doan.core.business.enums.TenantRoleInRoom;
-import com.doan.core.business.enums.TenantStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -42,29 +45,44 @@ public class TenantResponse {
     private String identityCard;
     private String birthDate;
     private TenantLinkStatus linkStatus;
-    private TenantStatus status;
     private LocalDateTime createdAt;
 
     public static TenantResponse fromEntity(Tenant tenant) {
         if (tenant == null)
             return null;
 
-        String rName = tenant.getRoom() != null ? tenant.getRoom().getName() : null;
-        String bName = (tenant.getRoom() != null && tenant.getRoom().getBuilding() != null)
-                ? tenant.getRoom().getBuilding().getName()
-                : null;
+        ContractTenant activeCt = null;
+        if (tenant.getContractTenants() != null) {
+            activeCt = tenant.getContractTenants().stream()
+                    .filter(ct -> ct.getContract() != null && ct.getContract().getStatus() == ContractStatus.ACTIVE)
+                    .findFirst()
+                    .orElse(null);
+        }
 
-        boolean isRep = Boolean.TRUE.equals(tenant.getIsRepresentative());
-        if (!isRep && tenant.getContract() != null && tenant.getContract().getRepresentativeTenant() != null) {
-            isRep = tenant.getId().equals(tenant.getContract().getRepresentativeTenant().getId());
+        Long rId = null;
+        String rName = null;
+        String bName = null;
+        Long cId = null;
+        boolean isRep = false;
+
+        if (activeCt != null) {
+            isRep = Boolean.TRUE.equals(activeCt.getIsRepresentative());
+            Contract contract = activeCt.getContract();
+            Room room = contract.getRoom();
+            cId = contract.getId();
+            rId = room.getId();
+            rName = room.getName();
+            if (room.getBuilding() != null) {
+                bName = room.getBuilding().getName();
+            }
         }
 
         return TenantResponse.builder()
                 .id(tenant.getId())
-                .roomId(tenant.getRoom() != null ? tenant.getRoom().getId() : null)
+                .roomId(rId)
                 .roomName(rName)
                 .buildingName(bName)
-                .contractId(tenant.getContract() != null ? tenant.getContract().getId() : null)
+                .contractId(cId)
                 .userId(tenant.getUser() != null ? tenant.getUser().getId() : null)
                 .userEmail(tenant.getUser() != null ? tenant.getUser().getEmail() : null)
                 .fullName(tenant.getFullName())
@@ -80,8 +98,28 @@ public class TenantResponse {
                 .isRepresentative(isRep)
                 .roleInRoom(isRep ? TenantRoleInRoom.REPRESENTATIVE : TenantRoleInRoom.MEMBER)
                 .linkStatus(tenant.getLinkStatus())
-                .status(tenant.getStatus())
                 .createdAt(tenant.getCreatedAt())
                 .build();
+    }
+
+    public static TenantResponse fromContractTenant(ContractTenant ct) {
+        if (ct == null || ct.getTenant() == null)
+            return null;
+        Tenant tenant = ct.getTenant();
+        TenantResponse res = fromEntity(tenant);
+        res.setIsRepresentative(Boolean.TRUE.equals(ct.getIsRepresentative()));
+        res.setRoleInRoom(Boolean.TRUE.equals(ct.getIsRepresentative()) ? TenantRoleInRoom.REPRESENTATIVE
+                : TenantRoleInRoom.MEMBER);
+        if (ct.getContract() != null) {
+            res.setContractId(ct.getContract().getId());
+            if (ct.getContract().getRoom() != null) {
+                res.setRoomId(ct.getContract().getRoom().getId());
+                res.setRoomName(ct.getContract().getRoom().getName());
+                if (ct.getContract().getRoom().getBuilding() != null) {
+                    res.setBuildingName(ct.getContract().getRoom().getBuilding().getName());
+                }
+            }
+        }
+        return res;
     }
 }

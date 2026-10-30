@@ -48,10 +48,9 @@ export const TenantSubNav: React.FC<TenantSubNavProps> = () => {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
-                      isActive
-                        ? 'bg-stay-primary text-white shadow-xs font-bold'
-                        : 'text-stay-text-secondary hover:text-stay-primary hover:bg-stay-bg-app'
+                    `flex items-center gap-2 px-3.5 py-2 rounded-xl  font-semibold whitespace-nowrap transition-all duration-150 ${isActive
+                      ? 'bg-stay-primary text-white shadow-xs font-bold'
+                      : 'text-stay-text-secondary hover:text-stay-primary hover:bg-stay-bg-app'
                     }`
                   }
                 >
@@ -68,7 +67,7 @@ export const TenantSubNav: React.FC<TenantSubNavProps> = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs font-semibold text-stay-primary border-stay-primary/30 hover:bg-stay-primary/5 flex items-center gap-1.5"
+                className=" font-semibold text-stay-primary border-stay-primary/30 hover:bg-stay-primary/5 flex items-center gap-1.5"
                 icon={<PlusCircle className="w-4 h-4 text-stay-primary" />}
               >
                 Đăng bài tìm bạn ở ghép

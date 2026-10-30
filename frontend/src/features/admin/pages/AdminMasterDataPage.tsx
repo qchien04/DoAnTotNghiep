@@ -14,7 +14,6 @@ import {
   Form,
   Tag,
   Alert,
-  message,
   Popconfirm,
 } from '@/shared/components';
 import { Tooltip } from 'antd';
@@ -95,7 +94,6 @@ export const AdminMasterDataPage: React.FC = () => {
             status: values.status,
           } as UpdateLifestyleCriterionDto,
         });
-        message.success('Cập nhật tiêu chí lối sống thành công!');
       } else {
         await createCriterion({
           code: values.code,
@@ -104,20 +102,18 @@ export const AdminMasterDataPage: React.FC = () => {
           algorithmWeight: Number(values.algorithmWeight),
           options,
         } as CreateLifestyleCriterionDto);
-        message.success('Thêm tiêu chí lối sống mới thành công!');
       }
       setModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteCriterion(id);
-      message.success('Đã xóa tiêu chí khỏi thuật toán matching!');
-    } catch (err: any) {
-      message.error(err.message || 'Lỗi xóa tiêu chí');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
@@ -126,7 +122,6 @@ export const AdminMasterDataPage: React.FC = () => {
       title: 'Tên tiêu chí',
       dataIndex: 'name',
       key: 'name',
-      width: 280,
       ellipsis: { showTitle: true },
       render: (val: string, r: LifestyleCriterion) => (
         <div>
@@ -182,7 +177,7 @@ export const AdminMasterDataPage: React.FC = () => {
           <Tooltip title="Xem chi tiết tiêu chí">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-view"
+              className="stay-action-btn"
               onClick={() => handleOpenDetail(r)}
             >
               <Eye className="w-4 h-4" />
@@ -192,7 +187,7 @@ export const AdminMasterDataPage: React.FC = () => {
           <Tooltip title="Chỉnh sửa tiêu chí">
             <button
               type="button"
-              className="stay-action-btn stay-action-btn-edit"
+              className="stay-action-btn"
               onClick={() => handleOpenEdit(r)}
             >
               <Edit2 className="w-4 h-4" />
@@ -210,7 +205,7 @@ export const AdminMasterDataPage: React.FC = () => {
             >
               <button
                 type="button"
-                className="stay-action-btn stay-action-btn-delete"
+                className="stay-action-btn"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -272,7 +267,7 @@ export const AdminMasterDataPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-stay-primary" />
             <span className="text-base font-semibold text-stay-text">Chi tiết tiêu chí thuật toán</span>
-            <span className="ml-2 text-xs font-mono font-normal text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border">
+            <span className="ml-2  font-mono font-normal text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border">
               #{viewingCriterion?.id}
             </span>
           </div>
@@ -281,11 +276,11 @@ export const AdminMasterDataPage: React.FC = () => {
         destroyOnClose
       >
         {viewingCriterion && (
-          <div className="py-3 space-y-4">
-            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex items-start justify-between">
+          <div className="py-2 space-y-4">
+            <div className="flex items-start justify-between pb-4 border-b border-stay-border-subtle">
               <div>
                 <h3 className="text-base font-bold text-stay-text">{viewingCriterion.name}</h3>
-                <span className="text-xs font-mono text-stay-primary mt-1 inline-block">
+                <span className="font-mono text-stay-primary mt-1 inline-block text-xs">
                   Mã: {viewingCriterion.code}
                 </span>
               </div>
@@ -298,33 +293,33 @@ export const AdminMasterDataPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <span className="text-xs text-stay-text-muted block mb-1">Nhóm tiêu chí</span>
                 <span className="text-sm font-semibold text-stay-text">
                   {viewingCriterion.category === 'HABIT'
                     ? 'Thói quen sinh hoạt'
                     : viewingCriterion.category === 'TIME'
-                    ? 'Giờ giấc sinh học'
-                    : viewingCriterion.category === 'SHARED_LIVING'
-                    ? 'Ý thức chung'
-                    : 'Không gian riêng'}
+                      ? 'Giờ giấc sinh học'
+                      : viewingCriterion.category === 'SHARED_LIVING'
+                        ? 'Ý thức chung'
+                        : 'Không gian riêng'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border">
+              <div>
                 <span className="text-xs text-stay-text-muted block mb-1">Trọng số thuật toán</span>
                 <span className="text-base font-bold text-stay-primary flex items-center gap-1">
                   <Percent className="w-4 h-4" />
                   {viewingCriterion.algorithmWeight}%
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-stay-bg-app border border-stay-border col-span-2">
-                <span className="text-xs text-stay-text-muted block mb-1.5">Các tùy chọn câu trả lời</span>
+              <div className="col-span-2 pt-3 border-t border-stay-border-subtle">
+                <span className="text-xs text-stay-text-muted block mb-2">Các tùy chọn câu trả lời</span>
                 <div className="flex flex-wrap gap-1.5">
                   {viewingCriterion.options?.map((opt, i) => (
                     <span
                       key={i}
-                      className="px-2.5 py-1 rounded bg-stay-card-bg border border-stay-border text-xs text-stay-text font-medium"
+                      className="px-2.5 py-1 rounded bg-stay-bg-app border border-stay-border-subtle text-stay-text font-medium text-xs"
                     >
                       {opt}
                     </span>

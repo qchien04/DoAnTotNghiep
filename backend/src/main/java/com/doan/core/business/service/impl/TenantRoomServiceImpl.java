@@ -47,20 +47,29 @@ public class TenantRoomServiceImpl implements TenantRoomService {
     public TenantRoomResponse getMyRoomDetails(Long userId) {
         log.info("Lấy thông tin phòng trọ của người thuê userId={}", userId);
 
-        List<Tenant> activeTenants = tenantRepository.findActiveLinkedTenants(userId, TenantLinkStatus.LINKED, TenantStatus.STAYING);
+        List<Tenant> activeTenants = tenantRepository.findActiveLinkedTenants(userId, TenantLinkStatus.LINKED);
         Tenant tenant = activeTenants.isEmpty() ? null : activeTenants.get(0);
-        if (tenant != null && tenant.getRoom() != null && tenant.getLinkStatus() == TenantLinkStatus.LINKED) {
-            Room room = tenant.getRoom();
-            Contract contract = tenant.getContract();
+        ContractTenant activeCt = (tenant != null && tenant.getContractTenants() != null)
+                ? tenant.getContractTenants().stream()
+                        .filter(ct -> ct.getContract() != null && ct.getContract().getStatus() == ContractStatus.ACTIVE)
+                        .findFirst()
+                        .orElse(null)
+                : null;
+        if (tenant != null && activeCt != null && activeCt.getContract() != null
+                && activeCt.getContract().getRoom() != null && tenant.getLinkStatus() == TenantLinkStatus.LINKED) {
+            Contract contract = activeCt.getContract();
+            Room room = contract.getRoom();
             Building building = room.getBuilding();
             User landlord = (building != null) ? building.getLandlord() : null;
 
-            List<Tenant> roomTenants = tenantRepository.findByRoomId(room.getId());
-            List<TenantRoomResponse.RoommateInfo> roommates = roomTenants.stream()
-                    .map(t -> TenantRoomResponse.RoommateInfo.builder()
-                            .name(t.getFullName())
-                            .role(Boolean.TRUE.equals(t.getIsRepresentative()) ? "Đại diện hợp đồng" : "Thành viên")
-                            .phone(t.getPhone())
+            List<ContractTenant> contractTenants = contract.getContractTenants() != null ? contract.getContractTenants()
+                    : List.of();
+            List<TenantRoomResponse.RoommateInfo> roommates = contractTenants.stream()
+                    .filter(ct -> ct.getTenant() != null)
+                    .map(ct -> TenantRoomResponse.RoommateInfo.builder()
+                            .name(ct.getTenant().getFullName())
+                            .role(Boolean.TRUE.equals(ct.getIsRepresentative()) ? "Đại diện hợp đồng" : "Thành viên")
+                            .phone(ct.getTenant().getPhone())
                             .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100")
                             .build())
                     .collect(Collectors.toList());
@@ -99,43 +108,34 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                     .name(room.getName())
                     .buildingName(building != null ? building.getName() : "Phòng riêng")
                     .address(buildingAddress)
-                    .monthlyRent(
-                            room.getListedPrice() != null ? BigDecimal.valueOf(room.getListedPrice()) : BigDecimal.ZERO)
-                    .deposit(room.getStandardDeposit() != null ? BigDecimal.valueOf(room.getStandardDeposit())
-                            : BigDecimal.ZERO)
-                    .area(room.getArea() != null ? room.getArea().doubleValue() : 0.0)
+                    .monthlyRent(BigDecimal.valueOf(room.getListedPrice()))
+                    .deposit(BigDecimal.valueOf(room.getStandardDeposit()))
+                    .area(room.getArea().doubleValue())
                     .amenities(amenities)
                     .landlord(landlordDto)
                     .roommates(roommates)
                     .build();
 
             List<TenantRoomResponse.ContractServiceDto> contractServices = new ArrayList<>();
-            if (contract != null && contract.getContractServices() != null) {
+            if (contract.getContractServices() != null) {
                 contractServices = contract.getContractServices().stream()
                         .map(cs -> TenantRoomResponse.ContractServiceDto.builder()
                                 .name(cs.getServiceName())
-                                .price(cs.getAppliedUnitPrice() != null ? BigDecimal.valueOf(cs.getAppliedUnitPrice())
-                                        : BigDecimal.ZERO)
+                                .price(BigDecimal.valueOf(cs.getAppliedUnitPrice()))
                                 .unit(cs.getUnit())
                                 .lastIndex(cs.getLastIndex())
                                 .build())
                         .collect(Collectors.toList());
             }
 
-            TenantRoomResponse.ContractDetailDto contractDto = null;
-            if (contract != null) {
-                contractDto = TenantRoomResponse.ContractDetailDto.builder()
-                        .contractNumber("HD" + contract.getId())
-                        .startDate(contract.getStartDate())
-                        .endDate(contract.getEndDate())
-                        .monthlyRent(contract.getRentPrice() != null ? BigDecimal.valueOf(contract.getRentPrice())
-                                : BigDecimal.ZERO)
-                        .depositAmount(
-                                contract.getDepositAmount() != null ? BigDecimal.valueOf(contract.getDepositAmount())
-                                        : BigDecimal.ZERO)
-                        .services(contractServices)
-                        .build();
-            }
+            TenantRoomResponse.ContractDetailDto contractDto = TenantRoomResponse.ContractDetailDto.builder()
+                    .contractNumber("HD" + contract.getId())
+                    .startDate(contract.getStartDate())
+                    .endDate(contract.getEndDate())
+                    .monthlyRent(BigDecimal.valueOf(contract.getRentPrice()))
+                    .depositAmount(BigDecimal.valueOf(contract.getDepositAmount()))
+                    .services(contractServices)
+                    .build();
 
             return TenantRoomResponse.builder()
                     .hasLinkedRoom(true)
@@ -152,8 +152,7 @@ public class TenantRoomServiceImpl implements TenantRoomService {
         if (!pendingInvites.isEmpty()) {
             TenantLinkInvitation invite = pendingInvites.get(0);
             Contract contract = invite.getContract();
-            Room room = (contract != null && contract.getRoom() != null) ? contract.getRoom()
-                    : ((invite.getTenant() != null) ? invite.getTenant().getRoom() : null);
+            Room room = (contract != null) ? contract.getRoom() : null;
             Building building = (room != null) ? room.getBuilding() : null;
             User landlord = invite.getInvitedBy();
             if (landlord == null && building != null) {
@@ -164,7 +163,7 @@ public class TenantRoomServiceImpl implements TenantRoomService {
             if (building != null) {
                 StringBuilder sb = new StringBuilder();
                 if (room != null)
-                    sb.append(room.getName() != null ? room.getName() : "Phòng " + room.getId()).append(", ");
+                    sb.append(room.getName()).append(", ");
                 if (building.getAddressDetail() != null)
                     sb.append(building.getAddressDetail());
                 if (building.getWard() != null && !building.getWard().isBlank())
@@ -174,12 +173,18 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                 addressStr = sb.toString();
             }
 
-            boolean isRep = invite.getTenant() != null && Boolean.TRUE.equals(invite.getTenant().getIsRepresentative());
+            boolean isRep = false;
+            if (contract != null && invite.getTenant() != null && contract.getContractTenants() != null) {
+                isRep = contract.getContractTenants().stream()
+                        .anyMatch(ct -> ct.getTenant() != null
+                                && ct.getTenant().getId().equals(invite.getTenant().getId())
+                                && Boolean.TRUE.equals(ct.getIsRepresentative()));
+            }
 
-            BigDecimal rentPrice = null;
-            if (contract != null && contract.getRentPrice() != null) {
+            BigDecimal rentPrice = BigDecimal.ZERO;
+            if (contract != null) {
                 rentPrice = BigDecimal.valueOf(contract.getRentPrice());
-            } else if (room != null && room.getListedPrice() != null) {
+            } else if (room != null) {
                 rentPrice = BigDecimal.valueOf(room.getListedPrice());
             }
 
@@ -190,9 +195,9 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                     .buildingName(building != null ? building.getName() : "Tòa nhà Ánh Dương")
                     .roomName(room != null ? room.getName() : "P102")
                     .address(addressStr)
-                    .monthlyRent(rentPrice != null ? rentPrice : BigDecimal.ZERO)
+                    .monthlyRent(rentPrice)
                     .roleInRoom(isRep ? "REPRESENTATIVE" : "MEMBER")
-                    .status(invite.getStatus() != null ? invite.getStatus() : InvitationStatus.PENDING)
+                    .status(invite.getStatus())
                     .build();
 
             return TenantRoomResponse.builder()
@@ -290,7 +295,8 @@ public class TenantRoomServiceImpl implements TenantRoomService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<TenantContractHistoryResponse> getMyContracts(Long userId, String keyword, ContractStatus status,
+    public PageResponse<TenantContractHistoryResponse> getMyContracts(Long userId, String keyword,
+            ContractStatus status,
             int page, int size, String sortBy, String sortDirection) {
         log.info("Lấy lịch sử danh sách hợp đồng của người thuê userId={}", userId);
         String kw = (keyword != null && !keyword.trim().isBlank()) ? keyword.trim() : null;
@@ -308,10 +314,9 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                 case "status" -> "status";
                 default -> "id";
             };
-            sort = org.springframework.data.domain.Sort.by(direction, sortProperty);
+            sort = Sort.by(direction, sortProperty);
         } else {
-            sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,
-                    "startDate", "id");
+            sort = Sort.by(Sort.Direction.DESC, "startDate", "id");
         }
 
         int pageNumber = Math.max(0, page);
@@ -322,13 +327,15 @@ public class TenantRoomServiceImpl implements TenantRoomService {
         List<TenantContractHistoryResponse> result = new ArrayList<>();
 
         for (Contract contract : contracts.getContent()) {
-            Tenant tenant = contract.getTenants() != null ? contract.getTenants().stream()
-                    .filter(t -> t.getUser() != null && t.getUser().getId().equals(userId))
+            ContractTenant ct = contract.getContractTenants() != null ? contract.getContractTenants().stream()
+                    .filter(item -> item.getTenant() != null && item.getTenant().getUser() != null
+                            && item.getTenant().getUser().getId().equals(userId))
                     .findFirst().orElse(null) : null;
-            if (tenant == null)
+            if (ct == null)
                 continue;
+            Tenant tenant = ct.getTenant();
 
-            Room room = tenant.getRoom() != null ? tenant.getRoom() : contract.getRoom();
+            Room room = contract.getRoom();
             Building building = room != null ? room.getBuilding() : null;
             User landlord = (building != null && building.getLandlord() != null) ? building.getLandlord()
                     : contract.getLandlord();
@@ -350,28 +357,24 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                 contractServices = contract.getContractServices().stream()
                         .map(cs -> TenantRoomResponse.ContractServiceDto.builder()
                                 .name(cs.getServiceName())
-                                .price(cs.getAppliedUnitPrice() != null ? BigDecimal.valueOf(cs.getAppliedUnitPrice())
-                                        : BigDecimal.ZERO)
+                                .price(BigDecimal.valueOf(cs.getAppliedUnitPrice()))
                                 .unit(cs.getUnit())
                                 .build())
                         .collect(Collectors.toList());
             }
 
             boolean isCurrent = tenant.getLinkStatus() == TenantLinkStatus.LINKED
-                    && tenant.getStatus() == TenantStatus.STAYING
                     && contract.getStatus() == ContractStatus.ACTIVE;
 
             result.add(TenantContractHistoryResponse.builder()
                     .id(contract.getId())
                     .status(contract.getStatus())
                     .isCurrent(isCurrent)
-                    .isRepresentative(Boolean.TRUE.equals(tenant.getIsRepresentative()))
+                    .isRepresentative(Boolean.TRUE.equals(ct.getIsRepresentative()))
                     .startDate(contract.getStartDate())
                     .endDate(contract.getEndDate())
-                    .monthlyRent(contract.getRentPrice() != null ? BigDecimal.valueOf(contract.getRentPrice())
-                            : BigDecimal.ZERO)
-                    .depositAmount(contract.getDepositAmount() != null ? BigDecimal.valueOf(contract.getDepositAmount())
-                            : BigDecimal.ZERO)
+                    .monthlyRent(BigDecimal.valueOf(contract.getRentPrice()))
+                    .depositAmount(BigDecimal.valueOf(contract.getDepositAmount()))
                     .depositRefundAmount(contract.getDepositRefundAmount() != null
                             ? BigDecimal.valueOf(contract.getDepositRefundAmount())
                             : null)
@@ -381,7 +384,7 @@ public class TenantRoomServiceImpl implements TenantRoomService {
                     .roomName(room != null ? room.getName() : null)
                     .buildingName(building != null ? building.getName() : null)
                     .buildingAddress(buildingAddress)
-                    .roomArea(room != null && room.getArea() != null ? room.getArea().doubleValue() : null)
+                    .roomArea(room != null ? room.getArea().doubleValue() : null)
                     .landlordName(landlord != null ? landlord.getFullName() : null)
                     .landlordPhone(landlord != null ? landlord.getPhone() : null)
                     .services(contractServices)
@@ -400,15 +403,18 @@ public class TenantRoomServiceImpl implements TenantRoomService {
 
         // Phân quyền: Kiểm tra người dùng có phải là khách thuê của hợp đồng này không
         // (Fail-close)
-        boolean isTenantOfContract = tenantRepository.findAllByUserIdAndLinkStatus(userId, TenantLinkStatus.LINKED)
-                .stream()
-                .anyMatch(t -> t.getContract() != null && invoice.getContract() != null
-                        && t.getContract().getId().equals(invoice.getContract().getId()));
+        Contract contract = invoice.getContract();
+        boolean isTenantOfContract = false;
+        if (contract != null && contract.getContractTenants() != null) {
+            isTenantOfContract = contract.getContractTenants().stream()
+                    .anyMatch(ct -> ct.getTenant() != null && ct.getTenant().getUser() != null
+                            && ct.getTenant().getUser().getId().equals(userId)
+                            && ct.getTenant().getLinkStatus() == TenantLinkStatus.LINKED);
+        }
         if (!isTenantOfContract) {
             throw new BaseException(ErrorCode.FORBIDDEN, "Bạn không có quyền truy cập hóa đơn này");
         }
 
-        Contract contract = invoice.getContract();
         User landlord = contract != null ? contract.getLandlord() : null;
 
         String bankCode = "MB";
@@ -421,8 +427,8 @@ public class TenantRoomServiceImpl implements TenantRoomService {
         String bNumber = "HD" + invoice.getId();
         String transferContent = bNumber.replaceAll("[^a-zA-Z0-9]", "") + " Thanh toan";
 
-        long total = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : 0L;
-        long paid = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : 0L;
+        long total = invoice.getTotalAmount();
+        long paid = invoice.getPaidAmount();
         long remaining = Math.max(0L, total - paid);
         BigDecimal amount = BigDecimal.valueOf(remaining > 0 ? remaining : total);
 
@@ -453,10 +459,14 @@ public class TenantRoomServiceImpl implements TenantRoomService {
 
         // Phân quyền: Kiểm tra người dùng có phải là khách thuê của hợp đồng này không
         // (Fail-close)
-        boolean isTenantOfContract = tenantRepository.findAllByUserIdAndLinkStatus(userId, TenantLinkStatus.LINKED)
-                .stream()
-                .anyMatch(t -> t.getContract() != null && invoice.getContract() != null
-                        && t.getContract().getId().equals(invoice.getContract().getId()));
+        Contract contract = invoice.getContract();
+        boolean isTenantOfContract = false;
+        if (contract != null && contract.getContractTenants() != null) {
+            isTenantOfContract = contract.getContractTenants().stream()
+                    .anyMatch(ct -> ct.getTenant() != null && ct.getTenant().getUser() != null
+                            && ct.getTenant().getUser().getId().equals(userId)
+                            && ct.getTenant().getLinkStatus() == TenantLinkStatus.LINKED);
+        }
         if (!isTenantOfContract) {
             throw new BaseException(ErrorCode.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này");
         }
@@ -475,41 +485,36 @@ public class TenantRoomServiceImpl implements TenantRoomService {
     }
 
     private TenantInvoiceResponse mapToInvoiceResponse(Invoice i) {
-        Room room = (i.getContract() != null) ? i.getContract().getRoom() : null;
-        Building building = (room != null) ? room.getBuilding() : null;
+        Room room = i.getContract().getRoom();
+        Building building = room.getBuilding();
 
         List<TenantInvoiceResponse.InvoiceItemDto> items = new ArrayList<>();
 
         if (i.getItems() != null) {
             for (InvoiceItem it : i.getItems()) {
-                BigDecimal itemTotal = it.getAmount() != null ? BigDecimal.valueOf(it.getAmount()) : BigDecimal.ZERO;
-                BigDecimal unitPrice = it.getUnitPrice() != null ? BigDecimal.valueOf(it.getUnitPrice())
-                        : BigDecimal.ZERO;
-                double qty = it.getQuantity() != null ? it.getQuantity().doubleValue() : 1.0;
-
                 items.add(TenantInvoiceResponse.InvoiceItemDto.builder()
                         .serviceName(it.getItemName())
-                        .quantity(qty)
-                        .unitPrice(unitPrice)
-                        .totalAmount(itemTotal)
+                        .quantity(1)
+                        .unitPrice(it.getUnitPrice())
+                        .totalAmount(it.getAmount())
                         .build());
             }
         }
 
-        long total = i.getTotalAmount() != null ? i.getTotalAmount() : 0L;
-        long paid = i.getPaidAmount() != null ? i.getPaidAmount() : 0L;
+        long total = i.getTotalAmount();
+        long paid = i.getPaidAmount();
         long remaining = Math.max(0L, total - paid);
 
         return TenantInvoiceResponse.builder()
                 .id(i.getId())
                 .billingMonth(i.getBillingPeriod())
-                .roomName(room != null ? room.getName() : "Phòng")
-                .buildingName(building != null ? building.getName() : "Khu trọ")
-                .roomRent(BigDecimal.valueOf(i.getRoomPrice() != null ? i.getRoomPrice() : 0L))
-                .serviceAmount(BigDecimal.valueOf(i.getServicesAmount() != null ? i.getServicesAmount() : 0L))
-                .totalAmount(BigDecimal.valueOf(total))
-                .paidAmount(BigDecimal.valueOf(paid))
-                .remainingAmount(BigDecimal.valueOf(remaining))
+                .roomName(room.getName())
+                .buildingName(building != null ? building.getName() : "Phòng riêng")
+                .roomRent(i.getRoomPrice())
+                .serviceAmount(i.getServicesAmount())
+                .totalAmount(total)
+                .paidAmount(paid)
+                .remainingAmount(remaining)
                 .dueDate(i.getDueDate())
                 .status(i.getStatus())
                 .items(items)

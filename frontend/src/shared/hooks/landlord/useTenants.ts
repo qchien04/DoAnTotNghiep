@@ -28,6 +28,7 @@ export const useCreateTenant = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.tenants() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
+      message.success('Thêm khách thuê thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể thêm khách thuê');
@@ -48,6 +49,7 @@ export const useUpdateTenant = () => {
       landlordService.updateTenant(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.tenants() });
+      message.success('Cập nhật khách thuê thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật khách thuê');
@@ -68,6 +70,7 @@ export const useDeleteTenant = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.tenants() });
       queryClient.invalidateQueries({ queryKey: landlordKeys.rooms() });
+      message.success('Xóa khách thuê thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể xóa khách thuê');
@@ -88,6 +91,7 @@ export const useInviteTenantLink = () => {
       landlordService.inviteTenantLink(tenantId, keyword),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.tenants() });
+      message.success('Đã gửi lời mời liên kết tài khoản!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể gửi lời mời liên kết');
@@ -107,6 +111,7 @@ export const useCancelTenantInvitation = () => {
     mutationFn: (tenantId: string | number) => landlordService.cancelTenantInvitation(tenantId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: landlordKeys.tenants() });
+      message.success('Đã hủy lời mời liên kết!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể hủy lời mời liên kết');

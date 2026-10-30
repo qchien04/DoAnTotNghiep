@@ -48,114 +48,108 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
       width={820}
       centered
       destroyOnClose
-      footer={[
-        <Button key="close" onClick={onCancel} className="h-9 px-4 rounded-lg">
-          Đóng
-        </Button>,
-        onEdit && (
+      footer={
+        <div className="flex items-center justify-end gap-2.5 w-full pt-1">
           <Button
-            key="edit"
-            type="primary"
-            onClick={() => {
-              onCancel();
-              onEdit(service);
-            }}
-            className="h-9 px-4 rounded-lg bg-[#E60023] hover:bg-[#CC001F] text-white font-medium"
+            key="close"
+            variant="outline"
+            size="md"
+            onClick={onCancel}
+            className="h-10 px-5 rounded-xl border border-stay-border text-stay-text hover:bg-stay-bg-app bg-stay-card-bg font-medium"
           >
-            Chỉnh sửa
+            Đóng
           </Button>
-        ),
-      ]}
+          {onEdit && (
+            <Button
+              key="edit"
+              variant="primary"
+              size="md"
+              onClick={() => {
+                onCancel();
+                onEdit(service);
+              }}
+              className="h-10 px-5 rounded-xl bg-stay-primary hover:bg-stay-primary-hover text-white font-semibold shadow-xs"
+            >
+              Chỉnh sửa
+            </Button>
+          )}
+        </div>
+      }
     >
       <div className="mt-4 space-y-4 text-[14px]">
         {/* SECTION 1: ĐỊNH DANH & PHÂN LOẠI */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Định danh & phân loại dịch vụ
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Tên dịch vụ
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {service.name}
-                </div>
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Tên dịch vụ
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                {service.name}
               </div>
+            </div>
 
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Phân loại dịch vụ
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {renderCategoryLabel(service.category as string)}
-                </div>
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Phân loại dịch vụ
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                {renderCategoryLabel(service.category as string)}
               </div>
             </div>
           </div>
         </div>
 
         {/* SECTION 2: ĐƠN GIÁ & HÌNH THỨC THU */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Định mức chi phí & hình thức tính thu
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Đơn vị tính
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {service.unit || '—'}
-                </div>
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Đơn vị tính
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                {service.unit || '—'}
               </div>
+            </div>
 
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Đơn giá (VNĐ)
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
-                  {price.toLocaleString()} đ
-                </div>
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Đơn giá (VNĐ)
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text font-medium">
+                {price.toLocaleString()} đ
               </div>
+            </div>
 
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Hình thức thu phí
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {getBillingMethodShortLabel(service.billingMethod)}
-                </div>
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Hình thức thu phí
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                {getBillingMethodShortLabel(service.billingMethod)}
               </div>
             </div>
           </div>
         </div>
 
         {/* SECTION 3: PHẠM VI & TRẠNG THÁI */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            3. Phạm vi & trạng thái áp dụng
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Phạm vi áp dụng
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {service.scope || 'Tất cả'}
-                </div>
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Phạm vi áp dụng
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                {service.scope || 'Tất cả'}
               </div>
+            </div>
 
-              <div>
-                <label className="text-stay-text font-medium text-xs block mb-1">
-                  Trạng thái
-                </label>
-                <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
-                  {service.isActive !== false ? 'Đang áp dụng' : 'Tạm dừng'}
-                </div>
+            <div>
+              <label className="text-stay-text font-medium block mb-1">
+                Trạng thái
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-lg border border-stay-border bg-stay-card-bg text-stay-text">
+                {service.isActive !== false ? 'Đang áp dụng' : 'Tạm dừng'}
               </div>
             </div>
           </div>

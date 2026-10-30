@@ -50,6 +50,7 @@ export const useAcceptRoomLink = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.myRoom() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myContracts() });
+      message.success('Liên kết phòng thành công!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể liên kết phòng');
@@ -71,6 +72,7 @@ export const useRejectRoomLink = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantKeys.myRoom() });
       queryClient.invalidateQueries({ queryKey: tenantKeys.myContracts() });
+      message.success('Đã từ chối lời mời liên kết phòng!');
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || err?.message || 'Không thể từ chối liên kết phòng');

@@ -2,7 +2,6 @@ package com.doan.core;
 
 import com.doan.core.business.dto.tenant.TenantRoomResponse;
 import com.doan.core.business.enums.TenantLinkStatus;
-import com.doan.core.business.enums.TenantStatus;
 import com.doan.core.business.repository.RoommatePostRepository;
 import com.doan.core.business.repository.TenantRepository;
 import com.doan.core.business.service.TenantRoomService;
@@ -55,12 +54,21 @@ class CoreApplicationTests {
         });
     }
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @Test
     void testFindActiveLinkedTenantsForUser3() {
-        var tenants = tenantRepository.findActiveLinkedTenants(3L, TenantLinkStatus.LINKED, TenantStatus.STAYING);
+        var tenants = tenantRepository.findActiveLinkedTenants(3L, TenantLinkStatus.LINKED);
         assertNotNull(tenants);
         assertFalse(tenants.isEmpty(), "User 3 should have active staying tenant");
-        assertEquals(TenantStatus.STAYING, tenants.get(0).getStatus());
+    }
+
+    @Test
+    void testMigrateExpiringSoonContracts() {
+        assertDoesNotThrow(() -> {
+            jdbcTemplate.execute("UPDATE contracts SET status = 'ACTIVE' WHERE status = 'EXPIRING_SOON'");
+        });
     }
 }
 

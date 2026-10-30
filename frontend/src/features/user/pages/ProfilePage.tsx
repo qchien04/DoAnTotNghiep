@@ -1,33 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   User as UserIcon,
-  Mail,
-  Phone,
-  Calendar,
-  Save,
-  CheckCircle2,
-  ShieldCheck,
-  HeartHandshake,
-  CigaretteOff,
   Sliders,
-  RefreshCw,
-  Check,
-  Palette,
   Lock,
-  AlertCircle,
+  Edit3,
+  Camera,
+  Phone,
+  Mail,
+  Calendar,
   LogOut,
+  Users,
+  AtSign,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { fileService } from '@/shared/services/fileService';
 import {
   useLifestyleQuestions,
   useUserLifestyleProfile,
   useSaveLifestyleProfile,
 } from '@/shared/hooks';
-import { message, Tabs, Spin } from 'antd';
-import { LifestyleQuestionResponse } from '@/shared/types/tenant';
+import { message, Modal, Input, Select, Button, Spin, Progress, Tag } from 'antd';
+import { LifestyleQuestionnaire } from '@/shared/components';
 
 export const ProfilePage: React.FC = () => {
-  const { user, updateProfile, changePassword, logoutAll, isLoading: isUpdatingUser } = useAuthStore();
+  const {
+    user,
+    updateProfile,
+    changePassword,
+    logoutAll,
+    isLoading: isUpdatingUser,
+  } = useAuthStore();
+
   const { questions, isLoading: isLoadingQuestions } = useLifestyleQuestions();
   const {
     profile: lifestyleProfile,
@@ -36,10 +39,12 @@ export const ProfilePage: React.FC = () => {
   } = useUserLifestyleProfile();
   const { saveProfile, isSavingProfile } = useSaveLifestyleProfile();
 
-  // Active tab state
-  const [activeTab, setActiveTab] = useState<string>('info');
+  // Modals visibility state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSurveyModalOpen, setIsSurveyModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  // Tab 1: Form state - Personal Info
+  // Edit Profile Form State
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth || '');
@@ -52,7 +57,7 @@ export const ProfilePage: React.FC = () => {
   const [bio, setBio] = useState(user?.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
 
-  // Tab 2: Lifestyle survey answers state (questionId -> optionId[])
+  // Lifestyle survey answers state (questionId -> optionId[])
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
 
   // Password Change state
@@ -60,52 +65,11 @@ export const ProfilePage: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess('');
-
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      setPasswordError('Vui lòng điền đầy đủ các thông tin mật khẩu');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError('Mật khẩu mới phải có tối thiểu 6 ký tự');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Mật khẩu xác nhận không khớp với mật khẩu mới');
-      return;
-    }
-
-    setIsChangingPassword(true);
-    const success = await changePassword({ oldPassword, newPassword, confirmPassword });
-    setIsChangingPassword(false);
-    if (success) {
-      setPasswordSuccess('Đổi mật khẩu thành công! Các phiên đăng nhập trên thiết bị khác đã được thu hồi.');
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      message.success('Đổi mật khẩu thành công!');
-    } else {
-      setPasswordError('Mật khẩu cũ không chính xác');
-    }
-  };
-
-  const handleLogoutAll = async () => {
-    if (window.confirm('Bạn có chắc chắn muốn đăng xuất tài khoản khỏi tất cả các thiết bị?')) {
-      setIsLoggingOutAll(true);
-      await logoutAll();
-      setIsLoggingOutAll(false);
-      window.location.replace('/login');
-    }
-  };
+  // Avatar upload file input ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Sync user info when store user changes
   useEffect(() => {
@@ -129,42 +93,68 @@ export const ProfilePage: React.FC = () => {
     if (lifestyleProfile?.answers) {
       const map: Record<number, number[]> = {};
       lifestyleProfile.answers.forEach((ans) => {
-        if (!map[ans.questionId]) {
-          map[ans.questionId] = [];
-        }
-        if (!map[ans.questionId].includes(ans.optionId)) {
-          map[ans.questionId].push(ans.optionId);
+        if (ans.questionId) {
+          if (!map[ans.questionId]) {
+            map[ans.questionId] = [];
+          }
+          if (ans.optionIds && ans.optionIds.length > 0) {
+            ans.optionIds.forEach((id) => {
+              if (!map[ans.questionId].includes(id)) {
+                map[ans.questionId].push(id);
+              }
+            });
+          } else if (ans.optionId && !map[ans.questionId].includes(ans.optionId)) {
+            map[ans.questionId].push(ans.optionId);
+          }
         }
       });
       setAnswers(map);
     }
   }, [lifestyleProfile]);
 
-  // Handle select option for SINGLE or MULTI
-  const handleSelectOption = (q: LifestyleQuestionResponse, optId: number) => {
-    const isMulti = q.qType === 'MULTI';
-    const current = answers[q.id] || [];
-
-    if (isMulti) {
-      const next = current.includes(optId)
-        ? current.filter((id) => id !== optId)
-        : [...current, optId];
-      setAnswers((prev) => ({ ...prev, [q.id]: next }));
-    } else {
-      setAnswers((prev) => ({ ...prev, [q.id]: [optId] }));
-    }
-  };
-
   // Survey completion progress
-  const totalQuestions = questions.length;
+  const totalQuestions = questions.length || 15;
   const answeredCount = questions.filter(
     (q) => answers[q.id] && answers[q.id].length > 0
   ).length;
-  const percentComplete = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+  const completionPercentage = Math.round((answeredCount / totalQuestions) * 100);
+
+  // Handle avatar upload via file input
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      message.error('Vui lòng chọn tệp tin hình ảnh (JPG, PNG, WebP)!');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Kích thước ảnh tối đa là 5MB!');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const url = await fileService.uploadImage(file, 'avatars');
+      if (url) {
+        setAvatarUrl(url);
+        if (!isEditModalOpen) {
+          await updateProfile({ avatarUrl: url });
+        }
+        message.success('Tải lên ảnh đại diện thành công!');
+      } else {
+        message.error('Không thể tải lên ảnh đại diện');
+      }
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Có lỗi xảy ra khi tải ảnh lên');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   // Handler for Personal Info Save
-  const handleSavePersonalInfo = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSavePersonalInfo = async () => {
     if (!fullName.trim()) {
       message.error('Vui lòng nhập họ và tên');
       return;
@@ -186,6 +176,7 @@ export const ProfilePage: React.FC = () => {
 
     if (success) {
       message.success('Cập nhật thông tin cá nhân thành công!');
+      setIsEditModalOpen(false);
     } else {
       message.error('Không thể cập nhật thông tin cá nhân');
     }
@@ -203,626 +194,726 @@ export const ProfilePage: React.FC = () => {
     }
 
     try {
-      const payloadAnswers = Object.entries(answers).flatMap(([qId, oIds]) =>
-        oIds.map((oId) => ({
-          questionId: Number(qId),
-          optionId: Number(oId),
-        }))
-      );
+      const payloadAnswers = Object.entries(answers).map(([qId, oIds]) => ({
+        questionId: Number(qId),
+        optionId: oIds[0],
+        optionIds: oIds,
+      }));
 
       await saveProfile({ answers: payloadAnswers });
-      message.success('Đã lưu khảo sát thói quen sinh hoạt thành công!');
       await refetchProfile();
+      setIsSurveyModalOpen(false);
     } catch {
-      message.error('Có lỗi xảy ra khi lưu câu trả lời khảo sát');
+      // Handled in mutation hook
     }
   };
 
-  const presetAvatars = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=256',
-  ];
+  // Handler for Password Change
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      message.error('Vui lòng điền đầy đủ các thông tin mật khẩu');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      message.error('Mật khẩu mới phải có tối thiểu 6 ký tự');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      message.error('Mật khẩu xác nhận không khớp với mật khẩu mới');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    const success = await changePassword({ oldPassword, newPassword, confirmPassword });
+    setIsChangingPassword(false);
+    if (success) {
+      message.success('Đổi mật khẩu thành công!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsPasswordModalOpen(false);
+    } else {
+      message.error('Mật khẩu cũ không chính xác');
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    if (window.confirm('Bạn có chắc chắn muốn đăng xuất tài khoản khỏi tất cả các thiết bị?')) {
+      setIsLoggingOutAll(true);
+      await logoutAll();
+      setIsLoggingOutAll(false);
+      window.location.replace('/login');
+    }
+  };
+
+  const formatGender = (g?: string) => {
+    if (g === 'MALE') return 'Nam';
+    if (g === 'FEMALE') return 'Nữ';
+    return 'Khác';
+  };
+
+  const formatGenderPref = (pref?: string) => {
+    if (pref === 'MALE_ONLY') return 'Chỉ ở với Nam';
+    if (pref === 'FEMALE_ONLY') return 'Chỉ ở với Nữ';
+    return 'Linh hoạt';
+  };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
-      {/* MAIN TABS */}
-      <div className="bg-stay-card-bg rounded-xl border border-[#D7D7DB] dark:border-slate-700 p-4 sm:p-5 shadow-none">
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => setActiveTab(key)}
-          items={[
-            {
-              key: 'info',
-              label: (
-                <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold">
-                  <UserIcon className="w-4 h-4" />
-                  <span>Thông tin cá nhân & Tiêu chí</span>
-                </span>
-              ),
-              children: (
-                <form onSubmit={handleSavePersonalInfo} className="space-y-4 pt-2">
-                  {/* Compact Header Summary inside Form */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5 p-3.5 rounded-lg border border-stay-border bg-stay-bg-app/40">
-                    <div className="relative shrink-0">
-                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-stay-border bg-stay-bg-app flex items-center justify-center">
-                        {avatarUrl ? (
-                          <img
-                            src={avatarUrl}
-                            alt={fullName || 'Avatar'}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.username || 'user');
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-stay-primary flex items-center justify-center text-white text-xl font-bold">
-                            {fullName ? fullName.charAt(0).toUpperCase() : 'U'}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1 text-center sm:text-left space-y-1">
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                        <span className="text-base font-bold text-stay-text">
-                          {user?.fullName || 'Người dùng'}
-                        </span>
-                        <span className="px-2 py-0.5 bg-stay-primary/10 text-stay-primary text-xs font-semibold rounded-md border border-stay-primary/20">
-                          {user?.role === 'ROLE_LANDLORD'
-                            ? 'Chủ trọ'
-                            : user?.role === 'ROLE_ADMIN'
-                              ? 'Quản trị viên'
-                              : 'Người thuê'}
-                        </span>
-                        {user?.enabled && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Đã xác thực
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-stay-text-secondary text-xs flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                        <span>@{user?.username || 'username'}</span>
-                        <span>•</span>
-                        <span>{user?.email}</span>
-                        {user?.phone && (
-                          <>
-                            <span>•</span>
-                            <span>{user.phone}</span>
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
+    <div className="w-full flex-1 flex flex-col min-h-0 space-y-5 pb-10">
+      {/* Hidden file input for avatar upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleAvatarFileChange}
+        accept="image/*"
+        className="hidden"
+      />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Full Name */}
-                    <div>
-                      <label className="block text-xs font-medium text-stay-text mb-1">
-                        Họ và tên <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Nguyễn Văn A"
-                        className="w-full px-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text text-xs focus:outline-none focus:border-stay-primary"
-                        required
-                      />
-                    </div>
-
-                    {/* Username (Readonly) */}
-                    <div>
-                      <label className="block text-xs font-medium text-stay-text mb-1">
-                        Tên đăng nhập
-                      </label>
-                      <input
-                        type="text"
-                        value={user?.username || ''}
-                        disabled
-                        className="w-full px-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app/50 text-stay-text-muted text-xs cursor-not-allowed"
-                      />
-                    </div>
-
-                    {/* Email (Readonly) */}
-                    <div>
-                      <label className="block text-xs font-medium text-stay-text mb-1">
-                        Địa chỉ Email
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="email"
-                          value={user?.email || ''}
-                          disabled
-                          className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app/50 text-stay-text-muted text-xs cursor-not-allowed"
-                        />
-                        <Mail className="w-3.5 h-3.5 text-stay-text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      </div>
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <label className="block text-xs font-medium text-stay-text mb-1">
-                        Số điện thoại
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="0912 345 678"
-                          className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text text-xs focus:outline-none focus:border-stay-primary"
-                        />
-                        <Phone className="w-3.5 h-3.5 text-stay-text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      </div>
-                    </div>
-
-                    {/* Date of Birth */}
-                    <div>
-                      <label className="block text-xs font-medium text-stay-text mb-1">
-                        Ngày sinh
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          value={dateOfBirth}
-                          onChange={(e) => setDateOfBirth(e.target.value)}
-                          className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text text-xs focus:outline-none focus:border-stay-primary"
-                        />
-                        <Calendar className="w-3.5 h-3.5 text-stay-text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      </div>
-                    </div>
-
-                    {/* Gender */}
-                    <div>
-                      <label className="block text-xs font-medium text-stay-text mb-1">
-                        Giới tính
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { value: 'MALE', label: 'Nam' },
-                          { value: 'FEMALE', label: 'Nữ' },
-                          { value: 'OTHER', label: 'Khác' },
-                        ].map((g) => (
-                          <button
-                            key={g.value}
-                            type="button"
-                            onClick={() => setGender(g.value)}
-                            className={`py-1.5 px-3 rounded-lg border text-xs font-medium transition cursor-pointer ${gender === g.value
-                              ? 'bg-stay-primary text-white border-stay-primary font-semibold'
-                              : 'border-stay-border bg-stay-bg-app text-stay-text hover:text-stay-primary'
-                              }`}
-                          >
-                            {g.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Criteria / Dealbreakers */}
-                  <div className="p-3.5 rounded-lg border border-stay-border bg-stay-bg-app/40 space-y-3">
-                    <div className="flex items-center gap-2 pb-2 border-b border-stay-border">
-                      <ShieldCheck className="w-4 h-4 text-stay-primary" />
-                      <h4 className="text-xs font-bold text-stay-text">
-                        Tiêu chí phòng & bạn cùng phòng
-                      </h4>
-                    </div>
-
-                    {/* Gender Preference */}
-                    <div>
-                      <label className="block text-[11px] font-medium text-stay-text-secondary mb-1">
-                        Yêu cầu giới tính bạn cùng phòng
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        {[
-                          { value: 'ANY', label: 'Linh hoạt (Nam / Nữ)' },
-                          { value: 'MALE_ONLY', label: 'Chỉ ở với Nam' },
-                          { value: 'FEMALE_ONLY', label: 'Chỉ ở với Nữ' },
-                        ].map((item) => (
-                          <button
-                            key={item.value}
-                            type="button"
-                            onClick={() => setGenderPreference(item.value)}
-                            className={`p-2 rounded-lg border text-xs text-center transition cursor-pointer ${genderPreference === item.value
-                              ? 'bg-stay-primary text-white border-stay-primary font-semibold'
-                              : 'border-stay-border bg-stay-card-bg text-stay-text hover:bg-stay-bg-app'
-                              }`}
-                          >
-                            {item.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Smoking & Pets */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {/* Smoking */}
-                      <div className="p-2.5 rounded-lg border border-stay-border bg-stay-card-bg space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-stay-text flex items-center gap-1">
-                            <CigaretteOff className="w-3.5 h-3.5 text-stay-primary" /> Khói thuốc
-                          </span>
-                          <span className="text-[11px] text-stay-text-secondary">
-                            {smokes ? 'Có hút' : 'Không hút'} • {rejectsSmokers ? 'Cấm hút' : 'Không cấm'}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5 text-xs">
-                          <button
-                            type="button"
-                            onClick={() => setSmokes(!smokes)}
-                            className={`p-1.5 rounded border text-center transition cursor-pointer ${smokes
-                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 font-semibold'
-                              : 'border-stay-border bg-stay-bg-app text-stay-text'
-                              }`}
-                          >
-                            {smokes ? 'Bản thân: Hút' : 'Bản thân: Không'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setRejectsSmokers(!rejectsSmokers)}
-                            className={`p-1.5 rounded border text-center transition cursor-pointer ${rejectsSmokers
-                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 font-semibold'
-                              : 'border-stay-border bg-stay-bg-app text-stay-text'
-                              }`}
-                          >
-                            {rejectsSmokers ? 'Luật: Cấm hút' : 'Luật: Không cấm'}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Pets */}
-                      <div className="p-2.5 rounded-lg border border-stay-border bg-stay-card-bg space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-stay-text flex items-center gap-1">
-                            <HeartHandshake className="w-3.5 h-3.5 text-stay-primary" /> Thú cưng
-                          </span>
-                          <span className="text-[11px] text-stay-text-secondary">
-                            {hasPet ? 'Có pet' : 'Không pet'} • {rejectsPets ? 'Cấm pet' : 'Không cấm'}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5 text-xs">
-                          <button
-                            type="button"
-                            onClick={() => setHasPet(!hasPet)}
-                            className={`p-1.5 rounded border text-center transition cursor-pointer ${hasPet
-                              ? 'bg-stay-primary/10 border-stay-primary/30 text-stay-primary font-semibold'
-                              : 'border-stay-border bg-stay-bg-app text-stay-text'
-                              }`}
-                          >
-                            {hasPet ? 'Bản thân: Nuôi' : 'Bản thân: Không'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setRejectsPets(!rejectsPets)}
-                            className={`p-1.5 rounded border text-center transition cursor-pointer ${rejectsPets
-                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 font-semibold'
-                              : 'border-stay-border bg-stay-bg-app text-stay-text'
-                              }`}
-                          >
-                            {rejectsPets ? 'Luật: Cấm pet' : 'Luật: Không cấm'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div>
-                    <label className="block text-xs font-medium text-stay-text mb-1">
-                      Giới thiệu bản thân
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Mô tả ngắn về nghề nghiệp, thói quen sinh hoạt..."
-                      className="w-full px-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text text-xs focus:outline-none focus:border-stay-primary"
-                    />
-                  </div>
-
-                  {/* Avatar URL & Presets */}
-                  <div>
-                    <label className="block text-xs font-medium text-stay-text mb-1">
-                      Ảnh đại diện
-                    </label>
-                    <div className="flex items-center gap-2 mb-2">
-                      <input
-                        type="url"
-                        value={avatarUrl}
-                        onChange={(e) => setAvatarUrl(e.target.value)}
-                        placeholder="Dán link ảnh đại diện (URL)..."
-                        className="flex-1 px-3 py-1.5 rounded-lg border border-stay-border bg-stay-bg-app text-stay-text text-xs focus:outline-none focus:border-stay-primary"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-stay-text-muted">Gợi ý nhanh:</span>
-                      {presetAvatars.map((url, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setAvatarUrl(url)}
-                          className="w-6 h-6 rounded-full overflow-hidden border border-stay-border hover:border-stay-primary transition cursor-pointer"
-                        >
-                          <img src={url} alt={`Preset ${i}`} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Save Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={isUpdatingUser}
-                      className="px-5 py-2 rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white font-medium text-xs shadow-xs transition disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
-                    >
-                      {isUpdatingUser ? (
-                        <>
-                          <Spin size="small" />
-                          <span>Đang lưu...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-3.5 h-3.5" />
-                          <span>Lưu thông tin cá nhân</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              ),
-            },
-            {
-              key: 'lifestyle',
-              label: (
-                <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold">
-                  <Sliders className="w-4 h-4" />
-                  <span>Khảo sát thói quen sinh hoạt</span>
-                  <span
-                    className={`ml-1 px-1.5 py-0.2 rounded text-[11px] font-semibold ${percentComplete === 100
-                      ? 'bg-emerald-500/10 text-emerald-600'
-                      : 'bg-amber-500/10 text-amber-600'
-                      }`}
-                  >
-                    {answeredCount}/{totalQuestions}
+      {/* 1. HERO USER OVERVIEW CARD */}
+      <div className="w-full bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-5 relative z-10">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+            {/* Avatar with instant upload button */}
+            <div className="relative group shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-stay-border bg-stay-bg-app shadow-xs flex items-center justify-center">
+                {isUploadingAvatar ? (
+                  <Spin size="default" />
+                ) : user?.avatarUrl || avatarUrl ? (
+                  <img
+                    src={user?.avatarUrl || avatarUrl}
+                    alt={user?.fullName || 'Avatar'}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.username || 'user');
+                    }}
+                  />
+                ) : (
+                  <span className="text-3xl font-extrabold text-stay-primary">
+                    {(user?.fullName || user?.username || 'U').charAt(0).toUpperCase()}
                   </span>
-                </span>
-              ),
-              children: (
-                <div className="space-y-4 pt-2">
+                )}
+              </div>
 
-                  {isLoadingQuestions || isLoadingProfile ? (
-                    <div className="py-12 text-center">
-                      <Spin size="default" />
-                      <p className="text-xs text-stay-text-secondary mt-2">Đang tải câu hỏi khảo sát...</p>
-                    </div>
-                  ) : questions.length === 0 ? (
-                    <div className="py-8 text-center text-stay-text-secondary text-xs">
-                      Chưa có câu hỏi khảo sát nào.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {questions.map((q, idx) => {
-                        const selectedOptionIds = answers[q.id] || [];
-                        const isAnswered = selectedOptionIds.length > 0;
-                        const isMulti = q.qType === 'MULTI';
+              {/* Camera Upload Button Overlay */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-stay-primary text-white hover:bg-stay-primary-hover flex items-center justify-center shadow-md border-2 border-white dark:border-slate-800 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                title="Tải ảnh đại diện mới"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            </div>
 
-                        return (
-                          <div
-                            key={q.id}
-                            className={`p-3.5 rounded-lg border transition-all ${isAnswered
-                              ? 'bg-stay-card-bg border-stay-border shadow-2xs'
-                              : 'bg-stay-bg-app/40 border-stay-border'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between gap-2 mb-2.5">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className={`w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center shrink-0 border ${isAnswered
-                                    ? 'bg-stay-primary text-white border-stay-primary'
-                                    : 'bg-stay-bg-app text-stay-text-secondary border-stay-border'
-                                    }`}
-                                >
-                                  {isAnswered ? <Check className="w-3 h-3 stroke-[3]" /> : idx + 1}
-                                </span>
-                                <h5 className="font-semibold text-stay-text text-xs">
-                                  {q.label}
-                                </h5>
-                              </div>
+            {/* User Meta Information */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-stay-text m-0">
+                  {user?.fullName || 'Chưa đặt tên'}
+                </h2>
+              </div>
 
-                              <span className="text-[11px] text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border shrink-0">
-                                {isMulti ? 'Chọn nhiều' : 'Chọn 1'}
-                              </span>
-                            </div>
+              {user?.bio ? (
+                <p className="text-sm text-stay-text italic bg-stay-bg-app p-2.5 rounded-xl border border-stay-border max-w-xl m-0">
+                  "{user.bio}"
+                </p>
+              ) : (
+                <p className="text-xs text-stay-text-muted m-0">
+                  Chưa có lời giới thiệu bản thân. Bấm "Chỉnh sửa thông tin" để cập nhật.
+                </p>
+              )}
+            </div>
+          </div>
 
-                            {/* Options */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              {q.options?.map((opt) => {
-                                const isSelected = selectedOptionIds.includes(opt.id);
-                                return (
-                                  <button
-                                    key={opt.id}
-                                    type="button"
-                                    onClick={() => handleSelectOption(q, opt.id)}
-                                    className={`p-2.5 rounded-lg border text-left text-xs transition cursor-pointer flex items-center justify-between ${isSelected
-                                      ? 'bg-stay-primary text-white border-stay-primary font-medium'
-                                      : 'bg-stay-bg-app border-stay-border text-stay-text hover:border-stay-primary/50'
-                                      }`}
-                                  >
-                                    <span>{opt.label}</span>
-                                    {isSelected && <Check className="w-3.5 h-3.5 shrink-0 ml-1" />}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
+          {/* Action CTA Buttons */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 shrink-0 w-full sm:w-auto">
+            <Button
+              type="primary"
+              icon={<Edit3 className="w-4 h-4" />}
+              onClick={() => setIsEditModalOpen(true)}
+              className="bg-stay-primary hover:bg-stay-primary-hover h-[40px] px-5 rounded-xl font-medium text-sm"
+            >
+              Chỉnh sửa thông tin
+            </Button>
 
-                      {/* Save Survey Button */}
-                      <div className="pt-3">
-                        <button
-                          type="button"
-                          onClick={handleSaveLifestyle}
-                          disabled={isSavingProfile}
-                          className="px-5 py-2 rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white font-medium text-xs shadow-xs transition disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
-                        >
-                          {isSavingProfile ? (
-                            <>
-                              <Spin size="small" />
-                              <span>Đang lưu...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-3.5 h-3.5" />
-                              <span>Lưu khảo sát thói quen</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ),
-            },
-            {
-              key: 'account',
-              label: (
-                <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold">
-                  <Lock className="w-4 h-4" />
-                  <span>Bảo mật & Tài khoản</span>
-                </span>
-              ),
-              children: (
-                <div className="space-y-4 pt-2 text-xs">
-                  {/* Account overview */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div className="p-2.5 rounded-lg border border-stay-border bg-stay-bg-app">
-                      <span className="text-stay-text-muted text-[11px] block">Mã tài khoản</span>
-                      <span className="font-bold text-stay-text text-sm">#{user?.id}</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg border border-stay-border bg-stay-bg-app">
-                      <span className="text-stay-text-muted text-[11px] block">Vai trò</span>
-                      <span className="font-bold text-stay-primary text-sm">{user?.role}</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg border border-stay-border bg-stay-bg-app">
-                      <span className="text-stay-text-muted text-[11px] block">Trạng thái</span>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                        {user?.enabled ? 'Hoạt động' : 'Bị khóa'}
-                      </span>
-                    </div>
-                    <div className="p-2.5 rounded-lg border border-stay-border bg-stay-bg-app">
-                      <span className="text-stay-text-muted text-[11px] block">Ngày tham gia</span>
-                      <span className="font-semibold text-stay-text text-sm">
-                        {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : '—'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Change Password Card */}
-                  <div className="p-4 rounded-lg border border-stay-border bg-stay-card-bg space-y-3">
-                    <div className="flex items-center gap-1.5 pb-2 border-b border-stay-border">
-                      <Lock className="w-4 h-4 text-stay-primary" />
-                      <h4 className="font-semibold text-stay-text text-xs">Đổi mật khẩu</h4>
-                    </div>
-
-                    {passwordError && (
-                      <div className="p-2 bg-rose-500/10 border border-rose-500/20 rounded text-xs text-rose-600 flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{passwordError}</span>
-                      </div>
-                    )}
-
-                    {passwordSuccess && (
-                      <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-xs text-emerald-600 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                        <span>{passwordSuccess}</span>
-                      </div>
-                    )}
-
-                    <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
-                      <div>
-                        <label className="block text-[11px] font-medium text-stay-text mb-1">
-                          Mật khẩu hiện tại
-                        </label>
-                        <input
-                          type="password"
-                          required
-                          value={oldPassword}
-                          onChange={(e) => {
-                            setPasswordError('');
-                            setOldPassword(e.target.value);
-                          }}
-                          placeholder="Nhập mật khẩu hiện tại"
-                          className="w-full px-3 py-1.5 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text focus:outline-none focus:border-stay-primary"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-medium text-stay-text mb-1">
-                          Mật khẩu mới
-                        </label>
-                        <input
-                          type="password"
-                          required
-                          value={newPassword}
-                          onChange={(e) => {
-                            setPasswordError('');
-                            setNewPassword(e.target.value);
-                          }}
-                          placeholder="Tối thiểu 6 ký tự"
-                          className="w-full px-3 py-1.5 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text focus:outline-none focus:border-stay-primary"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-medium text-stay-text mb-1">
-                          Xác nhận mật khẩu mới
-                        </label>
-                        <input
-                          type="password"
-                          required
-                          value={confirmPassword}
-                          onChange={(e) => {
-                            setPasswordError('');
-                            setConfirmPassword(e.target.value);
-                          }}
-                          placeholder="Nhập lại mật khẩu mới"
-                          className="w-full px-3 py-1.5 bg-stay-bg-app border border-stay-border rounded-lg text-xs text-stay-text focus:outline-none focus:border-stay-primary"
-                        />
-                      </div>
-
-                      <div className="pt-1 flex items-center gap-2">
-                        <button
-                          type="submit"
-                          disabled={isChangingPassword}
-                          className="px-4 py-1.5 bg-stay-primary hover:bg-stay-primary-hover text-white text-xs font-semibold rounded-lg shadow-xs transition disabled:opacity-50 cursor-pointer"
-                        >
-                          {isChangingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleLogoutAll}
-                          disabled={isLoggingOutAll}
-                          className="px-3 py-1.5 border border-stay-border hover:border-rose-500/40 text-stay-text-secondary hover:text-rose-600 text-xs font-medium rounded-lg transition cursor-pointer inline-flex items-center gap-1"
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                          Đăng xuất mọi thiết bị
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              ),
-            },
-          ]}
-        />
+            <Button
+              icon={<Lock className="w-4 h-4" />}
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="h-[40px] px-4 rounded-xl border-stay-border text-stay-text hover:text-stay-primary"
+            >
+              Đổi mật khẩu
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {/* 2. MAIN CONTENT GRID (NO TABS) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-7 space-y-5">
+          <div className="bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-stay-border">
+              <div className="flex items-center gap-2">
+                <UserIcon className="w-5 h-5 text-stay-primary" />
+                <h3 className="text-base font-semibold text-stay-text m-0">
+                  Thông tin cá nhân
+                </h3>
+              </div>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => setIsEditModalOpen(true)}
+                className="text-stay-primary font-medium p-0"
+              >
+                Chỉnh sửa
+              </Button>
+            </div>
+
+            {/* Mục 1: Thông tin cơ bản (Có icon đầy đủ) */}
+            <div>
+              <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-3">
+                Thông tin cơ bản
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
+                  <UserIcon className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs text-stay-text-secondary block mb-0.5">Họ và tên</span>
+                    <span className="font-semibold text-sm text-stay-text">
+                      {user?.fullName || '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
+                  <AtSign className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs text-stay-text-secondary block mb-0.5">Tên đăng nhập</span>
+                    <span className="font-semibold text-sm text-stay-text">
+                      @{user?.username}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
+                  <Mail className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs text-stay-text-secondary block mb-0.5">Địa chỉ Email</span>
+                    <span className="font-semibold text-sm text-stay-text break-all">
+                      {user?.email || '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
+                  <Phone className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs text-stay-text-secondary block mb-0.5">Số điện thoại</span>
+                    <span className="font-semibold text-sm text-stay-text">
+                      {user?.phone || 'Chưa cập nhật'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
+                  <Calendar className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs text-stay-text-secondary block mb-0.5">Ngày sinh</span>
+                    <span className="font-semibold text-sm text-stay-text">
+                      {user?.dateOfBirth ? user.dateOfBirth.substring(0, 10) : 'Chưa cập nhật'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border flex items-start gap-2.5">
+                  <Users className="w-4 h-4 text-stay-text-secondary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-xs text-stay-text-secondary block mb-0.5">Giới tính</span>
+                    <span className="font-semibold text-sm text-stay-text">
+                      {formatGender(user?.gender)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mục 2: Tiêu chuẩn lọc bạn cùng phòng */}
+            <div className="pt-4 border-t border-stay-border">
+              <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-3">
+                Tiêu chuẩn lọc bạn cùng phòng
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border">
+                  <span className="font-semibold text-sm text-stay-text">
+                    {formatGenderPref(user?.genderPreference)}
+                  </span>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border">
+                  <span className="text-xs text-stay-text-secondary block mb-1">
+                    Thói quen hút thuốc
+                  </span>
+                  <div className="space-y-0.5 text-xs text-stay-text">
+                    <div>Bản thân: <span className="font-medium text-stay-text">{user?.smokes ? 'Có hút thuốc' : 'Không hút'}</span></div>
+                    <div>Yêu cầu: <span className="font-medium text-stay-text">{user?.rejectsSmokers ? 'Cấm hút thuốc' : 'Không yêu cầu'}</span></div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-stay-bg-app rounded-xl border border-stay-border">
+                  <span className="text-xs text-stay-text-secondary block mb-1">
+                    Nuôi thú cưng
+                  </span>
+                  <div className="space-y-0.5 text-xs text-stay-text">
+                    <div>Bản thân: <span className="font-medium text-stay-text">{user?.hasPet ? 'Có nuôi' : 'Không nuôi'}</span></div>
+                    <div>Yêu cầu: <span className="font-medium text-stay-text">{user?.rejectsPets ? 'Không nhận thú cưng' : 'Thoải mái'}</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: LIFESTYLE SURVEY & SECURITY (5 COLS) */}
+        <div className="lg:col-span-5 space-y-5">
+          {/* Card: Khảo sát thói quen sinh hoạt */}
+          <div className="bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stay-border">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-stay-primary" />
+                <h3 className="text-base font-semibold text-stay-text m-0">
+                  Khảo sát
+                </h3>
+              </div>
+              <Tag
+                color={answeredCount === totalQuestions ? 'success' : 'processing'}
+                className="rounded-full px-2.5 py-0.5 text-xs font-semibold m-0"
+              >
+                {answeredCount}/{totalQuestions} câu
+              </Tag>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="space-y-1.5 bg-stay-bg-app p-3.5 rounded-xl border border-stay-border">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-stay-text">Tiến độ hoàn thành</span>
+                <span className="font-bold text-stay-primary">{completionPercentage}%</span>
+              </div>
+              <Progress
+                percent={completionPercentage}
+                showInfo={false}
+                strokeColor="var(--stay-primary, #4F46E5)"
+                trailColor="var(--stay-border)"
+                className="m-0"
+              />
+              <span className="text-[11px] text-stay-text-secondary block">
+                {answeredCount === totalQuestions
+                  ? 'Đã hoàn thành đầy đủ 15 tiêu chí lối sống.'
+                  : `Còn ${totalQuestions - answeredCount} câu hỏi cần hoàn thành.`}
+              </span>
+            </div>
+
+            {/* Button Hoàn thành / Cập nhật khảo sát */}
+            <Button
+              type="primary"
+              size="large"
+              icon={<Sliders className="w-4 h-4" />}
+              onClick={() => setIsSurveyModalOpen(true)}
+              className="w-full h-[44px] rounded-xl font-semibold text-sm bg-stay-primary hover:bg-stay-primary-hover shadow-sm"
+            >
+              {answeredCount === totalQuestions
+                ? 'Cập nhật khảo sát lối sống'
+                : `Hoàn thành khảo sát`}
+            </Button>
+          </div>
+
+          {/* Card: Bảo mật & Tài khoản */}
+          <div className="bg-stay-card-bg rounded-2xl border border-stay-border p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-stay-border">
+              <Lock className="w-5 h-5 text-stay-text-secondary" />
+              <h3 className="text-base font-semibold text-stay-text m-0">
+                Bảo mật & Phiên đăng nhập
+              </h3>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-stay-bg-app rounded-xl border border-stay-border">
+              <div>
+                <span className="text-xs text-stay-text-secondary block">Mật khẩu tài khoản</span>
+                <span className="font-mono text-sm tracking-widest text-stay-text">••••••••••••</span>
+              </div>
+              <Button
+                size="small"
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="rounded-lg border-stay-border text-xs"
+              >
+                Đổi mật khẩu
+              </Button>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                danger
+                block
+                icon={<LogOut className="w-4 h-4" />}
+                onClick={handleLogoutAll}
+                loading={isLoggingOutAll}
+                className="h-[40px] rounded-xl font-medium text-xs"
+              >
+                Đăng xuất khỏi tất cả các thiết bị
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: CHỈNH SỬA THÔNG TIN CÁ NHÂN & DEALBREAKERS                       */}
+      {/* ========================================================================= */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 pb-2 border-b border-stay-border">
+            <Edit3 className="w-4 h-4 text-stay-primary" />
+            <span className="font-semibold text-stay-text">Chỉnh sửa thông tin cá nhân</span>
+          </div>
+        }
+        open={isEditModalOpen}
+        onCancel={() => setIsEditModalOpen(false)}
+        onOk={handleSavePersonalInfo}
+        confirmLoading={isUpdatingUser}
+        okText="Lưu thay đổi"
+        cancelText="Hủy bỏ"
+        width={680}
+        centered
+        destroyOnClose
+      >
+        <div className="pt-3 space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+          {/* Avatar upload in edit modal */}
+          <div className="flex items-center gap-4 p-3 bg-stay-bg-app rounded-xl border border-stay-border">
+            <div className="w-16 h-16 rounded-full overflow-hidden border border-stay-border bg-stay-card-bg shrink-0 flex items-center justify-center">
+              {isUploadingAvatar ? (
+                <Spin size="small" />
+              ) : avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-stay-primary">
+                  {(fullName || 'U').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-stay-text block mb-1">Ảnh đại diện</span>
+              <Button
+                size="small"
+                icon={<Camera className="w-3.5 h-3.5" />}
+                onClick={() => fileInputRef.current?.click()}
+                loading={isUploadingAvatar}
+                className="rounded-lg text-xs"
+              >
+                Tải ảnh lên
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-medium text-stay-text mb-1.5">
+                Họ và tên <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                size="large"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Nhập họ và tên"
+                className="h-[40px] rounded-xl"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-stay-text mb-1.5">
+                Số điện thoại
+              </label>
+              <Input
+                size="large"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Nhập số điện thoại"
+                className="h-[40px] rounded-xl"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-stay-text mb-1.5">
+                Ngày sinh
+              </label>
+              <Input
+                type="date"
+                size="large"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className="h-[40px] rounded-xl"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-stay-text mb-1.5">
+                Giới tính
+              </label>
+              <Select
+                size="large"
+                value={gender}
+                onChange={(val) => setGender(val)}
+                className="w-full h-[40px] rounded-xl"
+                options={[
+                  { value: 'MALE', label: 'Nam' },
+                  { value: 'FEMALE', label: 'Nữ' },
+                  { value: 'OTHER', label: 'Khác' },
+                ]}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-stay-text mb-1.5">
+                Giới thiệu bản thân
+              </label>
+              <Input.TextArea
+                rows={3}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Mô tả ngắn gọn về nghề nghiệp, thói quen sinh hoạt..."
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+
+          {/* Tiêu chí ở ghép (Dealbreakers) */}
+          <div className="pt-3 border-t border-stay-border space-y-3">
+            <span className="text-xs font-semibold text-stay-text block uppercase tracking-wider">
+              Tiêu chuẩn lọc cứng tìm bạn cùng phòng
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-stay-text-secondary mb-1">
+                  Yêu cầu giới tính bạn cùng phòng
+                </label>
+                <Select
+                  size="large"
+                  value={genderPreference}
+                  onChange={(val) => setGenderPreference(val)}
+                  className="w-full h-[40px] rounded-xl"
+                  options={[
+                    { value: 'ANY', label: 'Linh hoạt' },
+                    { value: 'MALE_ONLY', label: 'Chỉ ở với Nam' },
+                    { value: 'FEMALE_ONLY', label: 'Chỉ ở với Nữ' },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-stay-text-secondary mb-1">
+                  Thói quen hút thuốc của bạn
+                </label>
+                <Select
+                  size="large"
+                  value={smokes ? 'yes' : 'no'}
+                  onChange={(val) => setSmokes(val === 'yes')}
+                  className="w-full h-[40px] rounded-xl"
+                  options={[
+                    { value: 'no', label: 'Không hút thuốc' },
+                    { value: 'yes', label: 'Có hút thuốc' },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-stay-text-secondary mb-1">
+                  Quy định hút thuốc trong phòng
+                </label>
+                <Select
+                  size="large"
+                  value={rejectsSmokers ? 'reject' : 'accept'}
+                  onChange={(val) => setRejectsSmokers(val === 'reject')}
+                  className="w-full h-[40px] rounded-xl"
+                  options={[
+                    { value: 'accept', label: 'Không cấm' },
+                    { value: 'reject', label: 'Cấm hút thuốc' },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-stay-text-secondary mb-1">
+                  Nuôi thú cưng của bạn
+                </label>
+                <Select
+                  size="large"
+                  value={hasPet ? 'yes' : 'no'}
+                  onChange={(val) => setHasPet(val === 'yes')}
+                  className="w-full h-[40px] rounded-xl"
+                  options={[
+                    { value: 'no', label: 'Không nuôi' },
+                    { value: 'yes', label: 'Có nuôi' },
+                  ]}
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs text-stay-text-secondary mb-1">
+                  Quy định thú cưng trong phòng
+                </label>
+                <Select
+                  size="large"
+                  value={rejectsPets ? 'reject' : 'accept'}
+                  onChange={(val) => setRejectsPets(val === 'reject')}
+                  className="w-full h-[40px] rounded-xl"
+                  options={[
+                    { value: 'accept', label: 'Không cấm' },
+                    { value: 'reject', label: 'Cấm thú cưng' },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: KHẢO SÁT LỐI SỐNG 15 TIÊU CHUẨN                                   */}
+      {/* ========================================================================= */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 pb-2 border-b border-stay-border">
+            <Sliders className="w-5 h-5 text-stay-primary" />
+            <span className="font-semibold text-stay-text">
+              Khảo sát lối sống & Thói quen sinh hoạt (15 Tiêu chuẩn)
+            </span>
+          </div>
+        }
+        open={isSurveyModalOpen}
+        onCancel={() => setIsSurveyModalOpen(false)}
+        footer={
+          <div className="flex items-center justify-between pt-3 border-t border-stay-border">
+            <span className="text-xs text-stay-text-secondary hidden sm:inline">
+              * Dữ liệu khảo sát được dùng để tính điểm hòa hợp khi tìm bạn ở ghép.
+            </span>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setIsSurveyModalOpen(false)}>Hủy bỏ</Button>
+              <Button
+                type="primary"
+                onClick={handleSaveLifestyle}
+                loading={isSavingProfile}
+                className="bg-stay-primary hover:bg-stay-primary-hover px-6 font-semibold"
+              >
+                Lưu kết quả khảo sát
+              </Button>
+            </div>
+          </div>
+        }
+        width={880}
+        centered
+        destroyOnClose
+      >
+        <div className="pt-3 max-h-[75vh] overflow-y-auto pr-1">
+          {isLoadingQuestions || isLoadingProfile ? (
+            <div className="py-16 text-center">
+              <Spin size="default" />
+              <p className="text-stay-text-secondary text-sm mt-3">Đang tải bộ câu hỏi khảo sát...</p>
+            </div>
+          ) : questions.length === 0 ? (
+            <div className="py-12 text-center text-stay-text-secondary text-sm">
+              Chưa có câu hỏi khảo sát nào trên hệ thống.
+            </div>
+          ) : (
+            <LifestyleQuestionnaire
+              questions={questions}
+              answers={answers}
+              onAnswerChange={(qId, optIds) =>
+                setAnswers((prev) => ({ ...prev, [qId]: optIds }))
+              }
+            />
+          )}
+        </div>
+      </Modal>
+
+      {/* ========================================================================= */}
+      {/* MODAL 3: ĐỔI MẬT KHẨU                                                     */}
+      {/* ========================================================================= */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 pb-2 border-b border-stay-border">
+            <Lock className="w-4 h-4 text-stay-primary" />
+            <span className="font-semibold text-stay-text">Đổi mật khẩu tài khoản</span>
+          </div>
+        }
+        open={isPasswordModalOpen}
+        onCancel={() => setIsPasswordModalOpen(false)}
+        footer={null}
+        width={480}
+        centered
+        destroyOnClose
+      >
+        <form onSubmit={handleChangePassword} className="pt-3 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-stay-text mb-1.5">
+              Mật khẩu hiện tại <span className="text-rose-500">*</span>
+            </label>
+            <Input.Password
+              size="large"
+              required
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="Nhập mật khẩu hiện tại"
+              className="h-[40px] rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-stay-text mb-1.5">
+              Mật khẩu mới <span className="text-rose-500">*</span>
+            </label>
+            <Input.Password
+              size="large"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Tối thiểu 6 ký tự"
+              className="h-[40px] rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-stay-text mb-1.5">
+              Xác nhận mật khẩu mới <span className="text-rose-500">*</span>
+            </label>
+            <Input.Password
+              size="large"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Nhập lại mật khẩu mới"
+              className="h-[40px] rounded-xl"
+            />
+          </div>
+
+          <div className="pt-3 border-t border-stay-border flex items-center justify-end gap-2.5">
+            <Button onClick={() => setIsPasswordModalOpen(false)}>Hủy bỏ</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isChangingPassword}
+              className="bg-stay-primary hover:bg-stay-primary-hover px-5 rounded-xl font-medium"
+            >
+              Xác nhận đổi mật khẩu
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
+
+export default ProfilePage;

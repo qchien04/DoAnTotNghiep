@@ -34,72 +34,71 @@ export const Button: React.FC<ButtonProps> & {
   type,
   ...props
 }) => {
-  const isButtonLoading = isLoading ?? loading ?? false;
-  const leadingIcon = icon || leftIcon;
+    const isButtonLoading = isLoading ?? loading ?? false;
+    const leadingIcon = icon || leftIcon;
 
-  // Ánh xạ size Antd / Tailwind
-  const sizeMap: Record<string, string> = {
-    sm: 'text-xs px-3 py-1.5 rounded-lg gap-1.5 h-auto',
-    small: 'text-xs px-3 py-1.5 rounded-lg gap-1.5 h-auto',
-    md: 'text-sm px-4 py-2 rounded-xl gap-2 font-medium h-auto',
-    middle: 'text-sm px-4 py-2 rounded-xl gap-2 font-medium h-auto',
-    lg: 'text-base px-6 py-2.5 rounded-xl gap-2.5 font-semibold h-auto',
-    large: 'text-base px-6 py-2.5 rounded-xl gap-2.5 font-semibold h-auto',
-  };
+    // Ánh xạ size Antd / Tailwind
+    const sizeMap: Record<string, string> = {
+      sm: ' px-3 py-1.5 rounded-lg gap-1.5 h-auto',
+      small: ' px-3 py-1.5 rounded-lg gap-1.5 h-auto',
+      md: 'text-sm px-4 py-2 rounded-xl gap-2 font-medium h-auto',
+      middle: 'text-sm px-4 py-2 rounded-xl gap-2 font-medium h-auto',
+      lg: 'text-base px-6 py-2.5 rounded-xl gap-2.5 font-semibold h-auto',
+      large: 'text-base px-6 py-2.5 rounded-xl gap-2.5 font-semibold h-auto',
+    };
 
-  const isTextType = type === 'text' || type === 'link';
+    const isTextType = type === 'text' || type === 'link';
 
-  const resolvedVariant = isTextType
-    ? 'ghost'
-    : (
+    const resolvedVariant = isTextType
+      ? 'ghost'
+      : (
         type && ['primary', 'bright-blue', 'secondary', 'outline', 'ghost', 'danger'].includes(type as string)
           ? (type as ButtonVariant)
           : variant
       );
 
-  const antType = isTextType
-    ? 'text'
-    : (
+    const antType = isTextType
+      ? 'text'
+      : (
         resolvedVariant === 'primary' || resolvedVariant === 'bright-blue' || resolvedVariant === 'secondary' || resolvedVariant === 'danger'
           ? 'primary'
           : resolvedVariant === 'ghost'
-          ? 'text'
-          : (type as AntButtonProps['type']) || 'default'
+            ? 'text'
+            : (type as AntButtonProps['type']) || 'default'
       );
 
-  const variantClasses: Record<ButtonVariant, string> = {
-    primary:
-      '!bg-stay-primary hover:!bg-stay-primary-hover !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
-    'bright-blue':
-      '!bg-blue-600 hover:!bg-blue-700 !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
-    secondary:
-      '!bg-stay-secondary hover:!bg-stay-secondary-hover !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
-    danger:
-      '!bg-red-600 hover:!bg-red-700 !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
-    outline:
-      'bg-stay-card-bg hover:!bg-stay-bg-app text-stay-text border border-stay-border shadow-2xs active:scale-[0.99] transition-all',
-    ghost:
-      'bg-transparent text-stay-text border-none shadow-none active:scale-[0.99] transition-all',
+    const variantClasses: Record<ButtonVariant, string> = {
+      primary:
+        '!bg-stay-primary hover:!bg-stay-primary-hover !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      'bright-blue':
+        '!bg-blue-600 hover:!bg-blue-700 !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      secondary:
+        '!bg-stay-secondary hover:!bg-stay-secondary-hover !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      danger:
+        '!bg-red-600 hover:!bg-red-700 !text-white hover:!text-white border-none shadow-sm active:scale-[0.99] transition-all',
+      outline:
+        'bg-stay-card-bg hover:!bg-stay-bg-app text-stay-text border border-stay-border shadow-2xs active:scale-[0.99] transition-all',
+      ghost:
+        'bg-transparent text-stay-text border-none shadow-none active:scale-[0.99] transition-all',
+    };
+
+    const finalVariantClass = isTextType ? '' : variantClasses[resolvedVariant];
+
+    return (
+      <AntButton
+        type={antType}
+        loading={isButtonLoading}
+        block={fullWidth}
+        icon={leadingIcon}
+        className={`inline-flex items-center justify-center cursor-pointer transition-all ${sizeMap[size] || sizeMap.md
+          } ${finalVariantClass} ${className}`}
+        {...props}
+      >
+        {children}
+        {rightIcon && <span className="shrink-0 ml-1">{rightIcon}</span>}
+      </AntButton>
+    );
   };
-
-  const finalVariantClass = isTextType ? '' : variantClasses[resolvedVariant];
-
-  return (
-    <AntButton
-      type={antType}
-      loading={isButtonLoading}
-      block={fullWidth}
-      icon={leadingIcon}
-      className={`inline-flex items-center justify-center cursor-pointer transition-all ${
-        sizeMap[size] || sizeMap.md
-      } ${finalVariantClass} ${className}`}
-      {...props}
-    >
-      {children}
-      {rightIcon && <span className="shrink-0 ml-1">{rightIcon}</span>}
-    </AntButton>
-  );
-};
 
 Button.Group = AntButton.Group;
 

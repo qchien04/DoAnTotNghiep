@@ -89,8 +89,6 @@ export const getContractStatusLabel = (status?: string | null): string => {
   switch (status) {
     case 'ACTIVE':
       return 'Đang hiệu lực';
-    case 'EXPIRING_SOON':
-      return 'Sắp hết hạn';
     case 'TERMINATED':
       return 'Đã thanh lý';
     default:

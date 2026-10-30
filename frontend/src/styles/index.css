@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  /* StayConnect Dynamic Brand Color Tokens (Semantic) */
+  /* Roomi Dynamic Brand Color Tokens (Semantic) */
   --color-stay-primary: var(--stay-primary, #2563EB);
   --color-stay-primary-hover: var(--stay-primary-hover, #1D4ED8);
   --color-stay-primary-subtle: var(--stay-primary-subtle, #EFF6FF);
-  
+
   /* Verified Status & Secondary Green (Semantic) */
   --color-stay-secondary: var(--stay-secondary, #16A34A);
   --color-stay-secondary-hover: var(--stay-secondary-hover, #15803D);
@@ -110,12 +110,20 @@ html.dark,
 }
 
 @layer base {
+
+  *,
+  ::before,
+  ::after {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  }
+
   html {
     background-color: var(--stay-bg);
     color: var(--stay-text);
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-size: 15px;
   }
+
   body {
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     color: var(--stay-text);
@@ -125,6 +133,14 @@ html.dark,
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  input,
+  button,
+  select,
+  textarea,
+  optgroup {
+    font-family: inherit;
   }
 }
 
@@ -148,17 +164,21 @@ html.dark,
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
+
 .custom-modal-scroll::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+
 .custom-modal-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-modal-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(148, 163, 184, 0.4);
   border-radius: 9999px;
 }
+
 .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgba(148, 163, 184, 0.7);
 }
@@ -187,7 +207,7 @@ html.dark,
   margin-top: auto !important;
 }
 
-.ant-form-vertical .ant-form-item-label > label {
+.ant-form-vertical .ant-form-item-label>label {
   font-weight: 600 !important;
   color: var(--stay-text) !important;
   font-size: 13px !important;
@@ -198,7 +218,7 @@ html.dark,
 .ant-form-item .ant-form-item-control,
 .ant-form-item .ant-form-item-control-input,
 .ant-form-item .ant-form-item-control-input-content,
-.ant-form-item .ant-form-item-control-input-content > div,
+.ant-form-item .ant-form-item-control-input-content>div,
 .ant-form-item .ant-input,
 .ant-form-item .ant-input-affix-wrapper,
 .ant-form-item .ant-input-number,
@@ -245,7 +265,7 @@ html.dark,
 }
 
 /* Header row styling: light grey background (#F7F7F8), bold dark text (#242428), no vertical divider */
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background-color: #F7F7F8 !important;
   color: #242428 !important;
   font-weight: 600 !important;
@@ -258,27 +278,27 @@ html.dark,
   transition: background-color 0.2s ease;
 }
 
-.ant-table-thead > tr > th .ant-table-column-title {
+.ant-table-thead>tr>th .ant-table-column-title {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   max-width: 100% !important;
 }
 
-html.dark .ant-table-thead > tr > th,
-.dark .ant-table-thead > tr > th {
+html.dark .ant-table-thead>tr>th,
+.dark .ant-table-thead>tr>th {
   background-color: #1E293B !important;
   color: #F8FAFC !important;
   border-bottom: 1px solid #334155 !important;
 }
 
 /* Remove vertical dividers between table header columns */
-.ant-table-thead > tr > th::before {
+.ant-table-thead>tr>th::before {
   display: none !important;
 }
 
 /* Table body rows: crisp, visible dividers */
-.ant-table-tbody > tr > td {
+.ant-table-tbody>tr:not(.ant-table-measure-row)>td {
   padding: 12px 16px !important;
   font-size: 14px !important;
   color: #242428 !important;
@@ -287,14 +307,16 @@ html.dark .ant-table-thead > tr > th,
   transition: background-color 0.15s ease;
 }
 
-/* Critical Fix: remove padding/height on Ant Table measuring row to eliminate gap between header and first row */
-.ant-table-tbody > tr.ant-table-measure-row {
-  visibility: collapse !important;
+/* Eliminate Ant Table measuring row gap completely */
+.ant-table-tbody>tr.ant-table-measure-row {
+  visibility: hidden !important;
   height: 0 !important;
   line-height: 0 !important;
+  font-size: 0 !important;
+  border: none !important;
 }
 
-.ant-table-tbody > tr.ant-table-measure-row > td {
+.ant-table-tbody>tr.ant-table-measure-row>td {
   padding: 0 !important;
   height: 0 !important;
   font-size: 0 !important;
@@ -303,18 +325,18 @@ html.dark .ant-table-thead > tr > th,
   background: transparent !important;
 }
 
-html.dark .ant-table-tbody > tr > td,
-.dark .ant-table-tbody > tr > td {
+html.dark .ant-table-tbody>tr:not(.ant-table-measure-row)>td,
+.dark .ant-table-tbody>tr:not(.ant-table-measure-row)>td {
   color: #F1F5F9 !important;
   border-bottom: 1px solid #334155 !important;
 }
 
-.ant-table-tbody > tr:hover > td {
+.ant-table-tbody>tr:not(.ant-table-measure-row):hover>td {
   background-color: #F8FAFC !important;
 }
 
-html.dark .ant-table-tbody > tr:hover > td,
-.dark .ant-table-tbody > tr:hover > td {
+html.dark .ant-table-tbody>tr:not(.ant-table-measure-row):hover>td,
+.dark .ant-table-tbody>tr:not(.ant-table-measure-row):hover>td {
   background-color: rgba(51, 65, 85, 0.45) !important;
 }
 
@@ -353,16 +375,16 @@ html.dark .ant-table-tbody > tr:hover > td,
 }
 
 /* Force left-alignment across all table columns per user requirement */
-.ant-table-thead > tr > th,
-.ant-table-tbody > tr > td {
+.ant-table-thead>tr>th,
+.ant-table-tbody>tr>td {
   text-align: left !important;
 }
 
-.ant-table-tbody > tr.ant-table-placeholder > td {
+.ant-table-tbody>tr.ant-table-placeholder>td {
   text-align: center !important;
 }
 
-.ant-table-thead > tr > th .ant-table-column-title {
+.ant-table-thead>tr>th .ant-table-column-title {
   text-align: left !important;
 }
 
@@ -407,18 +429,32 @@ html.dark .ant-table-tbody > tr:hover > td,
   flex-direction: column !important;
   flex: 1 1 0% !important;
   min-height: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
 }
 
 .stay-table-fill-height .ant-table-header {
   flex-shrink: 0 !important;
 }
 
-.stay-table-fill-height .ant-table-body,
-.stay-table-fill-height .ant-table-content {
+.stay-table-fill-height .ant-table-body {
   flex: 1 1 0% !important;
   overflow-y: auto !important;
-  overflow-x: auto !important;
   min-height: 0 !important;
+}
+
+.stay-table-fill-height .ant-table-content {
+  flex: 1 1 0% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+  position: relative !important;
+}
+
+/* Sticky header for single table: header stays pinned while vertical rows scroll, scrolls synchronously with columns horizontally */
+.stay-table-fill-height .ant-table-thead>tr>th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
 }
 
 .stay-table-fill-height .ant-table-pagination.ant-pagination {
@@ -517,8 +553,22 @@ html.dark .ant-table-pagination.ant-pagination,
   color: #ffffff !important;
 }
 
-/* Table Action Buttons: Clean transparent ghost icon buttons with colored icons (Xem: Blue, Sửa: Amber, Xóa: Red) - NO BACKGROUND COLOR */
-.stay-action-btn {
+/* Ensure tables always occupy 100% available container width without white gaps on the right */
+.ant-table-wrapper,
+.ant-table,
+.ant-table-container {
+  width: 100% !important;
+}
+
+.ant-table-content table {
+  min-width: 100% !important;
+}
+
+/* Table Action Buttons: Clean uniform neutral icon buttons (Single unified color across all tables) */
+.stay-action-btn,
+.stay-action-btn-view,
+.stay-action-btn-edit,
+.stay-action-btn-delete {
   width: 32px !important;
   height: 32px !important;
   padding: 0 !important;
@@ -531,78 +581,56 @@ html.dark .ant-table-pagination.ant-pagination,
   border: none !important;
   box-shadow: none !important;
   cursor: pointer !important;
+  color: #475569 !important;
   transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease !important;
 }
 
-.stay-action-btn:hover {
+.stay-action-btn:hover,
+.stay-action-btn-view:hover,
+.stay-action-btn-edit:hover,
+.stay-action-btn-delete:hover {
   background: transparent !important;
   background-color: transparent !important;
   transform: scale(1.15) !important;
+  color: var(--stay-primary, #2563EB) !important;
 }
 
 .stay-action-btn:focus,
-.stay-action-btn:active {
+.stay-action-btn:active,
+.stay-action-btn-view:focus,
+.stay-action-btn-view:active,
+.stay-action-btn-edit:focus,
+.stay-action-btn-edit:active,
+.stay-action-btn-delete:focus,
+.stay-action-btn-delete:active {
   background: transparent !important;
   background-color: transparent !important;
   outline: none !important;
   box-shadow: none !important;
 }
 
-.stay-action-btn-view {
-  color: #2563EB !important;
-}
-.stay-action-btn-view:hover {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: #1D4ED8 !important;
-}
+.dark .stay-action-btn,
+html.dark .stay-action-btn,
 .dark .stay-action-btn-view,
-html.dark .stay-action-btn-view {
-  color: #60A5FA !important;
-}
-.dark .stay-action-btn-view:hover,
-html.dark .stay-action-btn-view:hover {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: #93C5FD !important;
-}
-
-.stay-action-btn-edit {
-  color: #D97706 !important;
-}
-.stay-action-btn-edit:hover {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: #B45309 !important;
-}
+html.dark .stay-action-btn-view,
 .dark .stay-action-btn-edit,
-html.dark .stay-action-btn-edit {
-  color: #FBBF24 !important;
-}
-.dark .stay-action-btn-edit:hover,
-html.dark .stay-action-btn-edit:hover {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: #FDE047 !important;
-}
-
-.stay-action-btn-delete {
-  color: #DC2626 !important;
-}
-.stay-action-btn-delete:hover {
-  background: transparent !important;
-  background-color: transparent !important;
-  color: #B91C1C !important;
-}
+html.dark .stay-action-btn-edit,
 .dark .stay-action-btn-delete,
 html.dark .stay-action-btn-delete {
-  color: #F87171 !important;
+  color: #94A3B8 !important;
 }
+
+.dark .stay-action-btn:hover,
+html.dark .stay-action-btn:hover,
+.dark .stay-action-btn-view:hover,
+html.dark .stay-action-btn-view:hover,
+.dark .stay-action-btn-edit:hover,
+html.dark .stay-action-btn-edit:hover,
 .dark .stay-action-btn-delete:hover,
 html.dark .stay-action-btn-delete:hover {
   background: transparent !important;
   background-color: transparent !important;
-  color: #FCA5A5 !important;
+  color: var(--stay-primary-hover, #60A5FA) !important;
 }
 
 /* Remove Ant Design menu default right border inside sidebars */
@@ -612,9 +640,3 @@ html.dark .stay-action-btn-delete:hover {
   border-inline-end: none !important;
   border-right: none !important;
 }
-
-
-
-
-
-
