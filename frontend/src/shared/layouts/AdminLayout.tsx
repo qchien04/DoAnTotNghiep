@@ -8,7 +8,6 @@ import {
   LogOut,
   Shield,
   User,
-  Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher, RoomiLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
