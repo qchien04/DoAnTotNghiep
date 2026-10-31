@@ -257,7 +257,7 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col min-h-0 space-y-5 pb-10">
+    <div className="w-full flex-1 flex flex-col min-h-0 space-y-4 pb-6">
       {/* Hidden file input for avatar upload */}
       <input
         type="file"
@@ -268,7 +268,7 @@ export const ProfilePage: React.FC = () => {
       />
 
       {/* PROFILE MASTER CARD */}
-      <div className="w-full max-w-4xl mx-auto bg-stay-card-bg rounded-2xl border border-stay-border p-6 sm:p-8 space-y-6 shadow-xs">
+      <div className="w-full bg-stay-card-bg rounded-2xl border border-stay-border p-6 sm:p-8 space-y-6 shadow-xs">
         {/* HEADER: Avatar, Name, Bio, and Action Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6 border-b border-stay-border">
           <div className="flex items-center gap-5">
@@ -341,7 +341,7 @@ export const ProfilePage: React.FC = () => {
             Thông tin cơ bản
           </span>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 text-[14px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 text-[14px]">
             <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
               <span className="text-stay-text-secondary">Họ và tên</span>
               <span className="text-stay-text font-medium">{user?.fullName || '—'}</span>
@@ -366,7 +366,7 @@ export const ProfilePage: React.FC = () => {
 
             <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
               <span className="text-stay-text-secondary">Địa chỉ Email</span>
-              <span className="text-stay-text font-medium truncate max-w-[220px]">{user?.email || '—'}</span>
+              <span className="text-stay-text font-medium truncate max-w-[280px]">{user?.email || '—'}</span>
             </div>
 
             <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
