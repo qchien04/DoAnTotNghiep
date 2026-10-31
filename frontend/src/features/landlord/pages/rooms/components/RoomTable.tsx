@@ -5,6 +5,7 @@ import { Tooltip } from 'antd';
 import { Room, RoomStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
 import { decodeAmenitiesMask } from '@/shared/constants/roomAmenities';
+import { formatFullAddress } from '@/shared/constants/vietnamLocations';
 
 interface RoomTableProps {
   pageInfo?: PageResponse<Room>;
@@ -77,7 +78,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
                 <p className="text-[12px] text-stay-text-muted truncate">{item.buildingName}</p>
               ) : (
                 <p className="text-[12px] text-stay-text-muted truncate">
-                  {item.addressDetail || (item.ward ? `${item.ward}, ${item.province || ''}` : 'Chưa có địa chỉ')}
+                  {item.fullAddress || formatFullAddress(item.addressDetail, item.wardId, item.provinceId) || 'Chưa có địa chỉ'}
                 </p>
               )}
             </div>

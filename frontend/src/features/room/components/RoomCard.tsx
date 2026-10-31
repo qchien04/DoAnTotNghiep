@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Maximize2, ShieldCheck, ArrowRight, User } from 'lucide-react';
 import { Room } from '@/shared/types/landlord';
+import { decodeAmenitiesMask } from '@/shared/constants/roomAmenities';
+import { formatFullAddress } from '@/shared/constants/vietnamLocations';
 
 export interface RoomCardProps {
   room: Room;
@@ -34,12 +36,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onViewDetail }) => {
 
   const addressText =
     room.fullAddress ||
+    formatFullAddress(room.addressDetail, room.wardId, room.provinceId) ||
     room.addressDetail ||
     (room.ward ? `${room.ward}, ${room.province || 'Hà Nội'}` : 'Hà Nội');
 
-  // Lấy danh sách tiện ích (hỗ trợ cả amenityDetails dạng Object và amenities dạng string)
+  // Lấy danh sách tiện ích (hỗ trợ bitmask amenitiesMask, amenityDetails, amenities dạng array)
   const displayAmenities: string[] = [];
-  if (room.amenityDetails && room.amenityDetails.length > 0) {
+  if (room.amenitiesMask) {
+    decodeAmenitiesMask(room.amenitiesMask).forEach((a) => displayAmenities.push(a));
+  } else if (room.amenityDetails && room.amenityDetails.length > 0) {
     room.amenityDetails.forEach((a) => displayAmenities.push(a.name));
   } else if (room.amenities && room.amenities.length > 0) {
     room.amenities.forEach((a) => {

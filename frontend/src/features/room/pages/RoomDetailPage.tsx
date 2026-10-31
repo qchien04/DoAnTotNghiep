@@ -17,6 +17,8 @@ import { message } from 'antd';
 import { authService } from '@/shared/services/authService';
 import { LeafletMap } from '@/shared/components/ui/LeafletMap';
 import { PublicRoomItem } from './RoomSearchPage';
+import { decodeAmenitiesMask } from '@/shared/constants/roomAmenities';
+import { formatFullAddress } from '@/shared/constants/vietnamLocations';
 
 const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
   '1': {
@@ -234,6 +236,7 @@ export const RoomDetailPage: React.FC = () => {
       const priceTxt = `${(priceNum / 1000000).toFixed(1)} tr/tháng`;
       const loc =
         found.fullAddress ||
+        formatFullAddress(found.addressDetail, found.wardId, found.provinceId) ||
         found.addressDetail ||
         (found.ward ? `${found.ward}, ${found.province || 'Hà Nội'}` : 'Hà Nội');
       const defaultImg =
@@ -258,7 +261,9 @@ export const RoomDetailPage: React.FC = () => {
         imageUrl: img,
         gallery: found.imageUrls && found.imageUrls.length > 0 ? found.imageUrls : [img],
         amenities:
-          Array.isArray(found.amenities) && found.amenities.length > 0
+          found.amenitiesMask
+            ? decodeAmenitiesMask(found.amenitiesMask)
+            : Array.isArray(found.amenities) && found.amenities.length > 0
             ? found.amenities
             : ['Điều hòa', 'Nóng lạnh', 'Wifi', 'Khép kín'],
         description:

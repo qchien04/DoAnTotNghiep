@@ -8,6 +8,7 @@ import { Room } from '@/shared/types/landlord';
 import { CircleZone, formatRadius } from '../types/roomSearch';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
 import { HOANG_SA_CENTER, TRUONG_SA_CENTER } from '@/shared/constants/vietnamIslands';
+import { formatFullAddress } from '@/shared/constants/vietnamLocations';
 
 export interface RoomBigMapProps {
   rooms: Room[];
@@ -204,7 +205,7 @@ export const RoomBigMap: React.FC<RoomBigMapProps> = ({
               ${room.name}
             </div>
             <div style="font-size: 11px; color: #64748B; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              ${room.fullAddress || room.addressDetail || 'Hà Nội'}
+              ${room.fullAddress || formatFullAddress(room.addressDetail, room.wardId, room.provinceId) || room.addressDetail || 'Hà Nội'}
             </div>
             <button id="view-room-${room.id}" style="
               width: 100%;

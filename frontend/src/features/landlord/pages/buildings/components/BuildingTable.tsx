@@ -4,6 +4,7 @@ import { Table, Popconfirm } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { Building } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
+import { formatFullAddress } from '@/shared/constants/vietnamLocations';
 
 interface BuildingTableProps {
   pageInfo?: PageResponse<Building>;
@@ -50,7 +51,9 @@ export const BuildingTable: React.FC<BuildingTableProps> = ({
             {val}
           </span>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[12px] text-stay-text-muted">{r.addressDetail || '—'}</span>
+            <span className="text-[12px] text-stay-text-muted">
+              {formatFullAddress(r.addressDetail, r.wardId, r.provinceId) || r.addressDetail || '—'}
+            </span>
           </div>
         </div>
       ),
