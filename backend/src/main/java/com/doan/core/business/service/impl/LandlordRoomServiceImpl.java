@@ -2,15 +2,12 @@ package com.doan.core.business.service.impl;
 
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
-import com.doan.core.business.entity.Amenity;
 import com.doan.core.business.entity.Building;
-import com.doan.core.business.enums.ContractStatus;
 import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.RoomImage;
 import com.doan.core.business.entity.User;
-import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.entity.UtilityService;
-import com.doan.core.business.repository.AmenityRepository;
+import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.repository.BuildingRepository;
 import com.doan.core.business.repository.ContractRepository;
 import com.doan.core.business.repository.RoomRepository;
@@ -42,7 +39,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     private final ContractRepository contractRepository;
     private final UtilityServiceRepository utilityServiceRepository;
     private final UserRepository userRepository;
-    private final AmenityRepository amenityRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -146,16 +142,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             amenitiesMask = com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities());
         }
 
-        List<Amenity> amenities = new ArrayList<>();
-        if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
-            amenities = amenityRepository.findAllById(request.getAmenityIds());
-        } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
-            for (String amName : request.getAmenities()) {
-                if (amName != null && !amName.isBlank()) {
-                    amenityRepository.findByNameIgnoreCase(amName.trim()).ifPresent(amenities::add);
-                }
-            }
-        }
+
 
         List<UtilityService> services = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
@@ -193,7 +180,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .maxCapacity(request.getMaxCapacity())
                 .currentOccupancy(0)
                 .furnishingLevel(request.getFurnishingLevel() != null ? request.getFurnishingLevel() : "BASIC")
-                .amenities(amenities)
                 .services(services)
                 .description(request.getDescription())
                 .status(RoomStatus.AVAILABLE)
@@ -312,19 +298,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             room.setAmenitiesMask(com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities()));
         }
 
-        if (request.getAmenityIds() != null) {
-            List<com.doan.core.business.entity.Amenity> updatedAmenities = amenityRepository
-                    .findAllById(request.getAmenityIds());
-            room.setAmenities(updatedAmenities);
-        } else if (request.getAmenities() != null) {
-            List<com.doan.core.business.entity.Amenity> updatedAmenities = new ArrayList<>();
-            for (String amName : request.getAmenities()) {
-                if (amName != null && !amName.isBlank()) {
-                    amenityRepository.findByNameIgnoreCase(amName.trim()).ifPresent(updatedAmenities::add);
-                }
-            }
-            room.setAmenities(updatedAmenities);
-        }
+
         if (request.getServiceIds() != null) {
             List<UtilityService> updatedServices = utilityServiceRepository
                     .findAllByIdInAndLandlordId(request.getServiceIds(), landlordId);

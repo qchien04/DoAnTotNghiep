@@ -73,18 +73,23 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
             parameters.put("maxArea", request.getMaxArea());
         }
 
-        // 6. Amenities filter (Bitmask matching or legacy relational matching)
+        // 6. Amenities filter (Bitmask matching)
+        int targetAmenitiesMask = 0;
         if (request.getAmenitiesMask() != null && request.getAmenitiesMask() > 0) {
-            fromAndWhere.append("AND (COALESCE(r.amenities_mask, 0) & :amenitiesMask) = :amenitiesMask ");
-            parameters.put("amenitiesMask", request.getAmenitiesMask());
+            targetAmenitiesMask = request.getAmenitiesMask();
         } else if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
-            fromAndWhere.append("AND r.id IN (")
-                        .append("SELECT ra.room_id FROM room_amenities ra ")
-                        .append("WHERE ra.amenity_id IN (:amenityIds) ")
-                        .append("GROUP BY ra.room_id ")
-                        .append("HAVING COUNT(DISTINCT ra.amenity_id) = :amenityCount) ");
-            parameters.put("amenityIds", request.getAmenityIds());
-            parameters.put("amenityCount", (long) request.getAmenityIds().size());
+            for (Long id : request.getAmenityIds()) {
+                if (id != null && id >= 1 && id <= 16) {
+                    targetAmenitiesMask |= (1 << (id - 1));
+                }
+            }
+        } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
+            targetAmenitiesMask = com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities());
+        }
+
+        if (targetAmenitiesMask > 0) {
+            fromAndWhere.append("AND (COALESCE(r.amenities_mask, 0) & :amenitiesMask) = :amenitiesMask ");
+            parameters.put("amenitiesMask", targetAmenitiesMask);
         }
 
         // 7. Spatial circular zones filter (Haversine formula OR-chained directly in Database)

@@ -76,22 +76,17 @@ public class RoomResponse {
                         images = List.of(cover);
                 }
 
-                Integer mask = room.getAmenitiesMask() != null ? room.getAmenitiesMask() : 0;
-                List<String> amenityList;
-                if (mask > 0) {
-                        amenityList = com.doan.core.common.constant.RoomAmenityConstants.decode(mask);
-                } else if (room.getAmenities() != null && !room.getAmenities().isEmpty()) {
-                        amenityList = room.getAmenities().stream().map(Amenity::getName).collect(Collectors.toList());
-                        mask = com.doan.core.common.constant.RoomAmenityConstants.encode(amenityList);
-                } else {
-                        amenityList = List.of();
-                }
+                final Integer mask = room.getAmenitiesMask() != null ? room.getAmenitiesMask() : 0;
+                List<String> amenityList = com.doan.core.common.constant.RoomAmenityConstants.decode(mask);
 
-                List<AmenityResponse> amenityDetails = room.getAmenities() != null
-                                ? room.getAmenities().stream()
-                                                .map(AmenityResponse::fromEntity)
-                                                .collect(Collectors.toList())
-                                : List.of();
+                List<AmenityResponse> amenityDetails = com.doan.core.common.constant.RoomAmenityConstants.ALL_AMENITIES.stream()
+                                .filter(a -> (mask & a.bitValue()) != 0)
+                                .map(a -> AmenityResponse.builder()
+                                                .id((long) (a.bitIndex() + 1))
+                                                .name(a.name())
+                                                .description(a.key())
+                                                .build())
+                                .collect(Collectors.toList());
 
                 List<Long> sIds = room.getServices() != null
                                 ? room.getServices().stream().map(com.doan.core.business.entity.UtilityService::getId)
