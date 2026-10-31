@@ -112,13 +112,11 @@ public class RoomResponse {
 
                 String prov = provId != null
                                 ? com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(provId)
-                                : (room.getProvince() != null ? room.getProvince()
-                                                : (room.getBuilding() != null ? room.getBuilding().getProvince() : null));
+                                : null;
 
                 String wrd = wrdId != null
                                 ? com.doan.core.common.constant.VietnamLocationConstants.getWardName(wrdId)
-                                : (room.getWard() != null ? room.getWard()
-                                                : (room.getBuilding() != null ? room.getBuilding().getWard() : null));
+                                : null;
 
                 String addr = room.getAddressDetail() != null ? room.getAddressDetail()
                                 : (room.getBuilding() != null ? room.getBuilding().getAddressDetail() : null);

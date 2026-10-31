@@ -106,8 +106,6 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
         Building building = Building.builder()
                 .landlord(landlord)
                 .name(request.getName().trim())
-                .province(request.getProvince())
-                .ward(request.getWard())
                 .provinceId(request.getProvinceId())
                 .wardId(request.getWardId())
                 .addressDetail(request.getAddressDetail().trim())
@@ -141,8 +139,6 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
                 .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
 
         building.setName(request.getName().trim());
-        building.setProvince(request.getProvince());
-        building.setWard(request.getWard());
         if (request.getProvinceId() != null) {
             building.setProvinceId(request.getProvinceId());
         }

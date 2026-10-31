@@ -37,11 +37,7 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
             fromAndWhere.append("AND (LOWER(r.name) LIKE :keyword ")
                         .append("OR (b.name IS NOT NULL AND LOWER(b.name) LIKE :keyword) ")
                         .append("OR (r.address_detail IS NOT NULL AND LOWER(r.address_detail) LIKE :keyword) ")
-                        .append("OR (b.address_detail IS NOT NULL AND LOWER(b.address_detail) LIKE :keyword) ")
-                        .append("OR (r.ward IS NOT NULL AND LOWER(r.ward) LIKE :keyword) ")
-                        .append("OR (b.ward IS NOT NULL AND LOWER(b.ward) LIKE :keyword) ")
-                        .append("OR (r.province IS NOT NULL AND LOWER(r.province) LIKE :keyword) ")
-                        .append("OR (b.province IS NOT NULL AND LOWER(b.province) LIKE :keyword)) ");
+                        .append("OR (b.address_detail IS NOT NULL AND LOWER(b.address_detail) LIKE :keyword)) ");
             parameters.put("keyword", "%" + request.getKeyword().trim().toLowerCase() + "%");
         }
 
@@ -49,19 +45,12 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
         if (request.getProvinceId() != null) {
             fromAndWhere.append("AND COALESCE(r.province_id, b.province_id) = :provinceId ");
             parameters.put("provinceId", request.getProvinceId());
-        } else if (request.getProvince() != null && !request.getProvince().trim().isEmpty()) {
-            fromAndWhere.append("AND (LOWER(COALESCE(r.province, b.province, '')) LIKE :province) ");
-            parameters.put("province", "%" + request.getProvince().trim().toLowerCase() + "%");
         }
 
-        // 3. District / Ward filter
+        // 3. Ward filter
         if (request.getWardId() != null) {
             fromAndWhere.append("AND COALESCE(r.ward_id, b.ward_id) = :wardId ");
             parameters.put("wardId", request.getWardId());
-        } else if (request.getDistrict() != null && !request.getDistrict().trim().isEmpty() && !"ALL".equalsIgnoreCase(request.getDistrict())) {
-            fromAndWhere.append("AND ((LOWER(COALESCE(r.ward, b.ward, '')) LIKE :district) ")
-                        .append("OR (LOWER(COALESCE(r.address_detail, b.address_detail, '')) LIKE :district)) ");
-            parameters.put("district", "%" + request.getDistrict().trim().toLowerCase() + "%");
         }
 
         // 4. Price range

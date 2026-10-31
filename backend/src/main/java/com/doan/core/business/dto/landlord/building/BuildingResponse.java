@@ -47,10 +47,10 @@ public class BuildingResponse {
 
         String provName = building.getProvinceId() != null 
                 ? com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(building.getProvinceId())
-                : building.getProvince();
+                : null;
         String wrdName = building.getWardId() != null
                 ? com.doan.core.common.constant.VietnamLocationConstants.getWardName(building.getWardId())
-                : building.getWard();
+                : null;
 
         return BuildingResponse.builder()
                 .id(building.getId())

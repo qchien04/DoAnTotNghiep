@@ -27,15 +27,11 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
     @Query(value = "SELECT b FROM Building b WHERE b.landlord.id = :landlordId AND (" +
            ":keyword IS NULL OR :keyword = '' OR " +
            "LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.addressDetail) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.ward) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.province) LIKE LOWER(CONCAT('%', :keyword, '%')))",
+           "LOWER(b.addressDetail) LIKE LOWER(CONCAT('%', :keyword, '%')))",
            countQuery = "SELECT COUNT(b) FROM Building b WHERE b.landlord.id = :landlordId AND (" +
            ":keyword IS NULL OR :keyword = '' OR " +
            "LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.addressDetail) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.ward) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.province) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+           "LOWER(b.addressDetail) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Building> filterBuildings(@Param("landlordId") Long landlordId,
                                    @Param("keyword") String keyword,
                                    Pageable pageable);

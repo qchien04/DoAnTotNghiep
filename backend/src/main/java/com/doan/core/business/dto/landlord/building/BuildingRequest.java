@@ -19,12 +19,6 @@ public class BuildingRequest {
     @Schema(description = "Tên tòa nhà", example = "Tòa nhà Ánh Dương")
     private String name;
 
-    @Schema(description = "Tỉnh / Thành phố", example = "Hà Nội")
-    private String province;
-
-    @Schema(description = "Phường / Xã", example = "Quan Hoa")
-    private String ward;
-
     @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
     private Integer provinceId;
 

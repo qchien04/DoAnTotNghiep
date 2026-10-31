@@ -20,12 +20,6 @@ public class PublicRoomSearchRequest {
     @Schema(description = "Từ khóa tìm kiếm (tên phòng, địa chỉ, tòa nhà)")
     private String keyword;
 
-    @Schema(description = "Tỉnh / Thành phố")
-    private String province;
-
-    @Schema(description = "Quận / Huyện / Phường / Xã")
-    private String district;
-
     @Schema(description = "Mã Tỉnh / Thành phố")
     private Integer provinceId;
 

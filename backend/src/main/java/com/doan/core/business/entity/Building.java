@@ -26,12 +26,6 @@ public class Building extends BaseEntity {
     @Column(name = "name", nullable = false, length = 150)
     private String name;
 
-    @Column(name = "province", length = 100)
-    private String province;
-
-    @Column(name = "ward", length = 100)
-    private String ward;
-
     @Column(name = "province_id")
     private Integer provinceId;
 

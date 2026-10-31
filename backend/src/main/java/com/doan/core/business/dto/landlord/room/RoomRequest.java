@@ -19,12 +19,6 @@ public class RoomRequest {
     @Schema(description = "ID tòa nhà chứa phòng (nếu có, để trống nếu là nhà/phòng trọ độc lập)", example = "1")
     private Long buildingId;
 
-    @Schema(description = "Tỉnh / Thành phố", example = "Thành phố Hà Nội")
-    private String province;
-
-    @Schema(description = "Phường / Xã", example = "Phường Bách Khoa")
-    private String ward;
-
     @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
     private Integer provinceId;
 

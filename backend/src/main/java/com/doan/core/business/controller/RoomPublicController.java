@@ -34,8 +34,9 @@ public class RoomPublicController {
     @Operation(summary = "Tìm kiếm phòng trọ cơ bản qua URL Query Parameters (GET)")
     public ResponseEntity<ResponseData<PageResponse<RoomResponse>>> searchRoomsGet(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String province,
-            @RequestParam(required = false) String district,
+            @RequestParam(required = false) Integer provinceId,
+            @RequestParam(required = false) Integer wardId,
+            @RequestParam(required = false) Integer amenitiesMask,
             @RequestParam(required = false) Long minPrice,
             @RequestParam(required = false) Long maxPrice,
             @RequestParam(required = false) BigDecimal minArea,
@@ -48,8 +49,9 @@ public class RoomPublicController {
 
         PublicRoomSearchRequest request = PublicRoomSearchRequest.builder()
                 .keyword(keyword)
-                .province(province)
-                .district(district)
+                .provinceId(provinceId)
+                .wardId(wardId)
+                .amenitiesMask(amenitiesMask)
                 .minPrice(minPrice)
                 .maxPrice(maxPrice)
                 .minArea(minArea)

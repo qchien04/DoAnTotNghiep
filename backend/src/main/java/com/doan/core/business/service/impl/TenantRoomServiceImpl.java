@@ -80,14 +80,8 @@ public class TenantRoomServiceImpl implements TenantRoomService {
 
             String buildingAddress = null;
             if (building != null) {
-                StringBuilder sb = new StringBuilder();
-                if (building.getAddressDetail() != null)
-                    sb.append(building.getAddressDetail());
-                if (building.getWard() != null && !building.getWard().isBlank())
-                    sb.append(", ").append(building.getWard());
-                if (building.getProvince() != null && !building.getProvince().isBlank())
-                    sb.append(", ").append(building.getProvince());
-                buildingAddress = sb.toString();
+                buildingAddress = com.doan.core.common.constant.VietnamLocationConstants.formatAddress(
+                        building.getAddressDetail(), building.getWardId(), building.getProvinceId());
             }
 
             TenantRoomResponse.LandlordDetailDto landlordDto = TenantRoomResponse.LandlordDetailDto.builder()
@@ -160,16 +154,9 @@ public class TenantRoomServiceImpl implements TenantRoomService {
 
             String addressStr = "";
             if (building != null) {
-                StringBuilder sb = new StringBuilder();
-                if (room != null)
-                    sb.append(room.getName()).append(", ");
-                if (building.getAddressDetail() != null)
-                    sb.append(building.getAddressDetail());
-                if (building.getWard() != null && !building.getWard().isBlank())
-                    sb.append(", ").append(building.getWard());
-                if (building.getProvince() != null && !building.getProvince().isBlank())
-                    sb.append(", ").append(building.getProvince());
-                addressStr = sb.toString();
+                String bAddr = com.doan.core.common.constant.VietnamLocationConstants.formatAddress(
+                        building.getAddressDetail(), building.getWardId(), building.getProvinceId());
+                addressStr = (room != null && room.getName() != null ? room.getName() + ", " : "") + bAddr;
             }
 
             boolean isRep = false;
@@ -341,14 +328,8 @@ public class TenantRoomServiceImpl implements TenantRoomService {
 
             String buildingAddress = null;
             if (building != null) {
-                StringBuilder sb = new StringBuilder();
-                if (building.getAddressDetail() != null)
-                    sb.append(building.getAddressDetail());
-                if (building.getWard() != null && !building.getWard().isBlank())
-                    sb.append(", ").append(building.getWard());
-                if (building.getProvince() != null && !building.getProvince().isBlank())
-                    sb.append(", ").append(building.getProvince());
-                buildingAddress = sb.toString();
+                buildingAddress = com.doan.core.common.constant.VietnamLocationConstants.formatAddress(
+                        building.getAddressDetail(), building.getWardId(), building.getProvinceId());
             }
 
             List<TenantRoomResponse.ContractServiceDto> contractServices = new ArrayList<>();

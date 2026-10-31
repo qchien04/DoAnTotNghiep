@@ -107,10 +107,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         }
 
         Building building = null;
-        String province = request.getProvince();
-        String ward = request.getWard();
         String addressDetail = request.getAddressDetail();
-
         Integer provinceId = request.getProvinceId();
         Integer wardId = request.getWardId();
 
@@ -123,12 +120,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
 
             // Tự động fill địa chỉ từ tòa nhà nếu phòng chưa có địa chỉ riêng
-            if (province == null || province.isBlank()) {
-                province = building.getProvince();
-            }
-            if (ward == null || ward.isBlank()) {
-                ward = building.getWard();
-            }
             if (addressDetail == null || addressDetail.isBlank()) {
                 addressDetail = building.getAddressDetail();
             }
@@ -190,8 +181,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         Room room = Room.builder()
                 .building(building)
                 .landlord(landlord)
-                .province(province)
-                .ward(ward)
                 .provinceId(provinceId)
                 .wardId(wardId)
                 .amenitiesMask(amenitiesMask)
@@ -296,28 +285,9 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
 
         if (provinceId != null) {
             room.setProvinceId(provinceId);
-            String pName = com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(provinceId);
-            if (pName != null) {
-                room.setProvince(pName);
-            }
-        } else if (request.getProvince() != null && !request.getProvince().isBlank()) {
-            room.setProvince(request.getProvince());
-        } else if (building != null) {
-            room.setProvince(building.getProvince());
-            room.setProvinceId(building.getProvinceId());
         }
-
         if (wardId != null) {
             room.setWardId(wardId);
-            String wName = com.doan.core.common.constant.VietnamLocationConstants.getWardName(wardId);
-            if (wName != null) {
-                room.setWard(wName);
-            }
-        } else if (request.getWard() != null && !request.getWard().isBlank()) {
-            room.setWard(request.getWard());
-        } else if (building != null) {
-            room.setWard(building.getWard());
-            room.setWardId(building.getWardId());
         }
 
         if (request.getAddressDetail() != null && !request.getAddressDetail().isBlank()) {

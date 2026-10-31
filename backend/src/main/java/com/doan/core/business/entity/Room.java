@@ -30,12 +30,6 @@ public class Room extends BaseEntity {
     @JoinColumn(name = "landlord_id", nullable = true)
     private User landlord;
 
-    @Column(name = "province", length = 100)
-    private String province;
-
-    @Column(name = "ward", length = 100)
-    private String ward;
-
     @Column(name = "province_id")
     private Integer provinceId;
 
