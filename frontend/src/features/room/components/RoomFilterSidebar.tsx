@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Input, Select, Slider, Button } from 'antd';
 import {
   Search,
@@ -8,17 +8,21 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { CircleZone } from '../types/roomSearch';
-import { amenityService } from '@/shared/services/amenityService';
-import { Amenity } from '@/shared/types/amenity';
+import { ROOM_AMENITIES } from '@/shared/constants/roomAmenities';
+import { AmenityIcon } from '@/shared/components/ui/AmenityBadge';
+import { getProvinces, getWardsByProvinceId } from '@/shared/constants/vietnamLocations';
 
 export interface RoomFilterValues {
   keyword: string;
   district: string;
+  provinceId?: number;
+  wardId?: number;
   minPrice: number;
   maxPrice: number;
   minArea: number;
   maxArea: number;
   amenityIds: number[];
+  amenitiesMask?: number;
   zones: CircleZone[];
 }
 
@@ -28,21 +32,6 @@ export interface RoomFilterSidebarProps {
   onReset: () => void;
   onOpenDrawModal: () => void;
 }
-
-const HANOI_DISTRICTS = [
-  { value: 'ALL', label: 'Tất cả quận/huyện' },
-  { value: 'Cầu Giấy', label: 'Quận Cầu Giấy' },
-  { value: 'Đống Đa', label: 'Quận Đống Đa' },
-  { value: 'Thanh Xuân', label: 'Quận Thanh Xuân' },
-  { value: 'Hai Bà Trưng', label: 'Quận Hai Bà Trưng' },
-  { value: 'Nam Từ Liêm', label: 'Quận Nam Từ Liêm' },
-  { value: 'Ba Đình', label: 'Quận Ba Đình' },
-  { value: 'Bắc Từ Liêm', label: 'Quận Bắc Từ Liêm' },
-  { value: 'Tây Hồ', label: 'Quận Tây Hồ' },
-  { value: 'Hoàng Mai', label: 'Quận Hoàng Mai' },
-  { value: 'Hà Đông', label: 'Quận Hà Đông' },
-  { value: 'Long Biên', label: 'Quận Long Biên' },
-];
 
 const PRICE_PRESETS = [
   { label: 'Tất cả', min: 0, max: 15000000 },
@@ -65,42 +54,14 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
   onReset,
   onOpenDrawModal,
 }) => {
-  const [availableAmenities, setAvailableAmenities] = useState<Amenity[]>([]);
+  const provinces = getProvinces();
+  const availableWards = values.provinceId ? getWardsByProvinceId(values.provinceId) : [];
 
-  // Tải danh mục tiện ích công khai từ Backend
-  useEffect(() => {
-    amenityService
-      .getAllPublicAmenities()
-      .then((res) => {
-        if (res?.data && Array.isArray(res.data)) {
-          setAvailableAmenities(res.data);
-        }
-      })
-      .catch(() => {
-        // Fallback danh mục mặc định nếu chưa có kết nối
-        setAvailableAmenities([
-          { id: 1, name: 'Điều hòa' },
-          { id: 2, name: 'Nóng lạnh' },
-          { id: 3, name: 'Tủ lạnh' },
-          { id: 4, name: 'Máy giặt' },
-          { id: 5, name: 'Giường nệm' },
-          { id: 6, name: 'Tủ quần áo' },
-          { id: 7, name: 'Wifi tốc độ cao' },
-          { id: 8, name: 'Bếp riêng' },
-          { id: 9, name: 'Ban công' },
-          { id: 10, name: 'Thang máy' },
-          { id: 11, name: 'Khóa vân tay' },
-          { id: 12, name: 'Bảo vệ 24/7' },
-        ]);
-      });
-  }, []);
-
-  const handleToggleAmenity = (id: number) => {
-    const current = values.amenityIds || [];
-    const updated = current.includes(id)
-      ? current.filter((x) => x !== id)
-      : [...current, id];
-    onChange({ amenityIds: updated });
+  const handleToggleAmenity = (bitValue: number) => {
+    const currentMask = values.amenitiesMask || 0;
+    const isChecked = (currentMask & bitValue) !== 0;
+    const newMask = isChecked ? (currentMask ^ bitValue) : (currentMask | bitValue);
+    onChange({ amenitiesMask: newMask });
   };
 
   return (
@@ -149,16 +110,38 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
         />
       </div>
 
-      {/* Khu vực quận/huyện */}
-      <div>
-        <label className="block text-xs font-bold text-stay-text mb-2">
-          Khu vực quận / huyện
+      {/* Khu vực Tỉnh / Thành phố & Phường / Xã */}
+      <div className="space-y-2">
+        <label className="block text-xs font-bold text-stay-text">
+          Tỉnh / Thành phố & Phường / Xã
         </label>
         <Select
-          value={values.district}
-          onChange={(val) => onChange({ district: val })}
-          options={HANOI_DISTRICTS}
-          className="w-full h-10"
+          showSearch
+          allowClear
+          placeholder="Chọn Tỉnh / TP"
+          optionFilterProp="label"
+          value={values.provinceId}
+          onChange={(val) =>
+            onChange({
+              provinceId: val,
+              wardId: undefined,
+              district: val ? provinces.find((p) => p.id === val)?.name || '' : '',
+            })
+          }
+          options={provinces.map((p) => ({ value: p.id, label: p.name }))}
+          className="w-full h-9"
+        />
+
+        <Select
+          showSearch
+          allowClear
+          disabled={!values.provinceId}
+          placeholder={values.provinceId ? 'Chọn Phường / Xã' : 'Chọn Tỉnh / TP trước'}
+          optionFilterProp="label"
+          value={values.wardId}
+          onChange={(val) => onChange({ wardId: val })}
+          options={availableWards.map((w) => ({ value: w.id, label: w.name }))}
+          className="w-full h-9"
         />
       </div>
 
@@ -252,34 +235,42 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
         </div>
       </div>
 
-      {/* Tiện ích phòng */}
+      {/* Tiện ích phòng (16 tiện ích chuẩn) */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
           <label className="text-xs font-bold text-stay-text flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-stay-primary" />
             Tiện ích phòng
           </label>
-          {values.amenityIds && values.amenityIds.length > 0 && (
+          {Boolean(values.amenitiesMask && values.amenitiesMask > 0) && (
             <span className="text-[11px] text-stay-primary font-semibold">
-              Đã chọn {values.amenityIds.length}
+              Đã lọc tiện ích
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap max-h-48 overflow-y-auto pr-1">
-          {availableAmenities.map((amenity) => {
-            const isChecked = values.amenityIds?.includes(amenity.id);
+        <div className="flex items-center gap-1.5 flex-wrap max-h-56 overflow-y-auto pr-1">
+          {ROOM_AMENITIES.map((amenity) => {
+            const isChecked = Boolean(
+              values.amenitiesMask && (values.amenitiesMask & amenity.bitValue) !== 0
+            );
             return (
               <button
-                key={amenity.id}
+                key={amenity.key}
                 type="button"
-                onClick={() => handleToggleAmenity(amenity.id)}
-                className={`text-xs px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${isChecked
-                  ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
-                  : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:bg-slate-100'
-                  }`}
+                onClick={() => handleToggleAmenity(amenity.bitValue)}
+                className={`text-xs px-2.5 py-1.5 rounded-lg border transition cursor-pointer font-medium flex items-center gap-1.5 ${
+                  isChecked
+                    ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
+                    : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:border-stay-primary/50'
+                }`}
               >
-                {amenity.name}
+                <AmenityIcon
+                  name={amenity.iconName}
+                  size={13}
+                  className={isChecked ? 'text-white' : 'text-stay-text-muted'}
+                />
+                <span>{amenity.name}</span>
               </button>
             );
           })}

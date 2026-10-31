@@ -7,10 +7,16 @@ import {
   Input,
   message,
 } from '@/shared/components';
-import { Tooltip, Spin } from 'antd';
+import { Tooltip, Spin, Select } from 'antd';
 import { HelpCircle, LocateFixed, Loader2 } from 'lucide-react';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import {
+  getProvinces,
+  getWardsByProvinceId,
+  getProvinceName,
+  getWardName,
+} from '@/shared/constants/vietnamLocations';
 
 // Fix default leaflet marker icon issue in Webpack/Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -72,6 +78,10 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
   });
   const [isGeolocating, setIsGeolocating] = useState(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+  const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(1);
+
+  const provinces = getProvinces();
+  const availableWards = selectedProvinceId ? getWardsByProvinceId(selectedProvinceId) : [];
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -93,15 +103,41 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         const data = await res.json();
         if (data && data.address) {
           const addr = data.address;
-          const foundProvince = addr.city || addr.state || addr.province || 'Thành phố Hà Nội';
-          const foundWard = addr.quarter || addr.suburb || addr.neighbourhood || addr.city_district || '';
           const fullDisplayName = data.display_name || '';
 
-          form.setFieldsValue({
-            province: foundProvince,
-            ward: foundWard,
-            addressDetail: fullDisplayName,
-          });
+          const allProvs = getProvinces();
+          const matchedProvince = allProvs.find(
+            (p) =>
+              (addr.city && addr.city.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.state && addr.state.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.province && addr.province.toLowerCase().includes(p.name.toLowerCase())) ||
+              p.name.toLowerCase().includes((addr.city || addr.state || addr.province || '').toLowerCase())
+          );
+
+          if (matchedProvince) {
+            setSelectedProvinceId(matchedProvince.id);
+            const wards = getWardsByProvinceId(matchedProvince.id);
+            const matchedWard = wards.find(
+              (w) =>
+                (addr.quarter && addr.quarter.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.suburb && addr.suburb.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.neighbourhood && addr.neighbourhood.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.city_district && addr.city_district.toLowerCase().includes(w.name.toLowerCase())) ||
+                w.name.toLowerCase().includes((addr.quarter || addr.suburb || addr.neighbourhood || '').toLowerCase())
+            );
+
+            form.setFieldsValue({
+              provinceId: matchedProvince.id,
+              province: matchedProvince.name,
+              wardId: matchedWard ? matchedWard.id : undefined,
+              ward: matchedWard ? matchedWard.name : '',
+              addressDetail: fullDisplayName,
+            });
+          } else {
+            form.setFieldsValue({
+              addressDetail: fullDisplayName,
+            });
+          }
         }
       }
     } catch {
@@ -121,10 +157,18 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
 
         setCurrentCoords(coords);
 
+        const allProvs = getProvinces();
+        const pId = editingBuilding.provinceId ?? (editingBuilding.province ? allProvs.find(p => p.name.toLowerCase() === editingBuilding.province?.toLowerCase())?.id : 1);
+        const wId = editingBuilding.wardId ?? (editingBuilding.ward && pId ? getWardsByProvinceId(pId).find(w => w.name.toLowerCase() === editingBuilding.ward?.toLowerCase())?.id : undefined);
+
+        setSelectedProvinceId(pId || 1);
+
         form.setFieldsValue({
           name: editingBuilding.name,
-          province: editingBuilding.province || 'Thành phố Hà Nội',
-          ward: editingBuilding.ward || '',
+          provinceId: pId || 1,
+          wardId: wId,
+          province: editingBuilding.province || getProvinceName(pId || 1),
+          ward: editingBuilding.ward || (wId ? getWardName(wId) : ''),
           addressDetail: editingBuilding.addressDetail || 'Hà Nội, Việt Nam',
           numFloors: editingBuilding.numFloors || 5,
           generalRules: editingBuilding.generalRules || '',
@@ -143,9 +187,12 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         const coords = { lat: defaultLat, lng: defaultLng };
 
         setCurrentCoords(coords);
+        setSelectedProvinceId(1);
 
         form.setFieldsValue({
-          province: 'Thành phố Hà Nội',
+          provinceId: 1,
+          wardId: undefined,
+          province: getProvinceName(1),
           ward: '',
           addressDetail: 'Hà Nội, Việt Nam',
           numFloors: 5,
@@ -281,7 +328,13 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
 
   const handleOk = async () => {
     const values = await form.validateFields();
-    await onSubmit(values as CreateBuildingDto);
+    const pName = getProvinceName(values.provinceId);
+    const wName = values.wardId ? getWardName(values.wardId) : values.ward;
+    await onSubmit({
+      ...values,
+      province: pName,
+      ward: wName,
+    } as CreateBuildingDto);
   };
 
   return (
@@ -371,19 +424,46 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
             <div className="lg:col-span-5 space-y-2.5">
               <Form.Item
                 label={<span className="font-semibold text-stay-text ">Tỉnh / Thành phố</span>}
-                name="province"
-                rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / TP' }]}
+                name="provinceId"
+                rules={[{ required: true, message: 'Vui lòng chọn Tỉnh / Thành phố' }]}
                 className="mb-2"
               >
-                <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 " />
+                <Select
+                  showSearch
+                  placeholder="Chọn Tỉnh / Thành phố"
+                  optionFilterProp="label"
+                  className="w-full h-9"
+                  options={provinces.map((p) => ({ value: p.id, label: p.name }))}
+                  onChange={(val) => {
+                    setSelectedProvinceId(val);
+                    form.setFieldsValue({
+                      wardId: undefined,
+                      province: getProvinceName(val),
+                      ward: '',
+                    });
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
                 label={<span className="font-semibold text-stay-text ">Phường / Xã</span>}
-                name="ward"
+                name="wardId"
                 className="mb-2"
               >
-                <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 " />
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder={selectedProvinceId ? 'Chọn Phường / Xã' : 'Vui lòng chọn Tỉnh / TP trước'}
+                  disabled={!selectedProvinceId}
+                  optionFilterProp="label"
+                  className="w-full h-9"
+                  options={availableWards.map((w) => ({ value: w.id, label: w.name }))}
+                  onChange={(val) => {
+                    form.setFieldsValue({
+                      ward: val ? getWardName(val) : '',
+                    });
+                  }}
+                />
               </Form.Item>
 
               <Form.Item

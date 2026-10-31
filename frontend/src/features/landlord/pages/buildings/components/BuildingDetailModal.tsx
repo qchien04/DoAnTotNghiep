@@ -4,6 +4,7 @@ import { Building } from '@/shared/types/landlord';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import { getProvinceName, getWardName } from '@/shared/constants/vietnamLocations';
 
 interface BuildingDetailModalProps {
   open: boolean;
@@ -210,7 +211,7 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
                   Tỉnh / Thành phố
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {building.province || '—'}
+                  {building.province || (building.provinceId ? getProvinceName(building.provinceId) : '—')}
                 </span>
               </div>
 
@@ -219,7 +220,7 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
                   Phường / Xã
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {building.ward || '—'}
+                  {building.ward || (building.wardId ? getWardName(building.wardId) : '—')}
                 </span>
               </div>
 

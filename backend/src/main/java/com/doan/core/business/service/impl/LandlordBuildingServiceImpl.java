@@ -108,6 +108,8 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
                 .name(request.getName().trim())
                 .province(request.getProvince())
                 .ward(request.getWard())
+                .provinceId(request.getProvinceId())
+                .wardId(request.getWardId())
                 .addressDetail(request.getAddressDetail().trim())
                 .numFloors(request.getNumFloors())
                 .generalRules(request.getGeneralRules())
@@ -141,6 +143,12 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
         building.setName(request.getName().trim());
         building.setProvince(request.getProvince());
         building.setWard(request.getWard());
+        if (request.getProvinceId() != null) {
+            building.setProvinceId(request.getProvinceId());
+        }
+        if (request.getWardId() != null) {
+            building.setWardId(request.getWardId());
+        }
         building.setAddressDetail(request.getAddressDetail().trim());
         building.setNumFloors(request.getNumFloors());
         building.setGeneralRules(request.getGeneralRules());

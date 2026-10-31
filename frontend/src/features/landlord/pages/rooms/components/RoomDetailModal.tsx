@@ -4,6 +4,12 @@ import { Room } from '@/shared/types/landlord';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import {
+  decodeAmenitiesDetails,
+  encodeAmenitiesMask,
+} from '@/shared/constants/roomAmenities';
+import { AmenityBadge } from '@/shared/components/ui/AmenityBadge';
+import { getProvinceName, getWardName } from '@/shared/constants/vietnamLocations';
 
 interface RoomDetailModalProps {
   open: boolean;
@@ -118,11 +124,15 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
   const images = room.imageUrls && room.imageUrls.length > 0 ? room.imageUrls : room.coverImageUrl ? [room.coverImageUrl] : [];
   const rawAmenities = room.amenities as any;
-  const amenityList: string[] = Array.isArray(rawAmenities)
+  const legacyAmenityList: string[] = Array.isArray(rawAmenities)
     ? rawAmenities
     : typeof rawAmenities === 'string' && rawAmenities
       ? rawAmenities.split(',').map((s: string) => s.trim()).filter(Boolean)
       : (room.amenityDetails?.map((a) => a.name) || []);
+
+  const amenitiesMask =
+    room.amenitiesMask || (legacyAmenityList.length ? encodeAmenitiesMask(legacyAmenityList) : 0);
+  const detailedAmenities = decodeAmenitiesDetails(amenitiesMask);
 
   return (
     <Modal
@@ -290,7 +300,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                   Tỉnh / Thành phố
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {room.province || '—'}
+                  {room.province || (room.provinceId ? getProvinceName(room.provinceId) : '—')}
                 </span>
               </div>
 
@@ -299,7 +309,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                   Phường / Xã
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {room.ward || '—'}
+                  {room.ward || (room.wardId ? getWardName(room.wardId) : '—')}
                 </span>
               </div>
 
@@ -316,19 +326,14 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         </div>
 
         {/* 3. TIỆN NGHI */}
-        {amenityList.length > 0 && (
+        {detailedAmenities.length > 0 && (
           <div className="space-y-2 pt-3.5 border-t border-stay-border-subtle">
             <span className="text-[13px] font-semibold text-stay-text-secondary block">
-              Tiện nghi phòng trọ
+              Tiện nghi phòng trọ ({detailedAmenities.length} tiện ích)
             </span>
             <div className="flex flex-wrap gap-2">
-              {amenityList.map((item, i) => (
-                <span
-                  key={i}
-                  className="px-2.5 py-1 rounded-md border border-stay-border bg-stay-bg-app text-stay-text font-medium text-xs"
-                >
-                  {item}
-                </span>
+              {detailedAmenities.map((item) => (
+                <AmenityBadge key={item.key} item={item} />
               ))}
             </div>
           </div>

@@ -12,11 +12,14 @@ export interface PublicRoomSearchRequest {
   keyword?: string;
   province?: string;
   district?: string;
+  provinceId?: number;
+  wardId?: number;
   minPrice?: number;
   maxPrice?: number;
   minArea?: number;
   maxArea?: number;
   amenityIds?: number[];
+  amenitiesMask?: number;
   zones?: GeoZone[];
   page?: number;
   size?: number;

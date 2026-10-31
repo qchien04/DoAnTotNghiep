@@ -213,10 +213,13 @@ export const RoomSearchPage: React.FC = () => {
     const req: PublicRoomSearchRequest = {
       keyword: filterValues.keyword.trim() || undefined,
       district: filterValues.district !== 'ALL' ? filterValues.district : undefined,
+      provinceId: filterValues.provinceId,
+      wardId: filterValues.wardId,
       minPrice: filterValues.minPrice > 0 ? filterValues.minPrice : undefined,
       maxPrice: filterValues.maxPrice < 15000000 ? filterValues.maxPrice : undefined,
       minArea: filterValues.minArea > 15 ? filterValues.minArea : undefined,
       maxArea: filterValues.maxArea < 80 ? filterValues.maxArea : undefined,
+      amenitiesMask: filterValues.amenitiesMask && filterValues.amenitiesMask > 0 ? filterValues.amenitiesMask : undefined,
       amenityIds: filterValues.amenityIds.length > 0 ? filterValues.amenityIds : undefined,
       zones:
         filterValues.zones.length > 0

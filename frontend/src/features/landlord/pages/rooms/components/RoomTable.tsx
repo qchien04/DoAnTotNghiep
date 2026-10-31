@@ -4,6 +4,7 @@ import { Table, Popconfirm, Tag, StatusBadge } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { Room, RoomStatus } from '@/shared/types/landlord';
 import { PageResponse } from '@/shared/types/api';
+import { decodeAmenitiesMask } from '@/shared/constants/roomAmenities';
 
 interface RoomTableProps {
   pageInfo?: PageResponse<Room>;
@@ -130,6 +131,25 @@ export const RoomTable: React.FC<RoomTableProps> = ({
         return (
           <span className="text-[14px] text-stay-text">
             {cap} người
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Tiện nghi',
+      key: 'amenities',
+      width: 130,
+      ellipsis: { showTitle: true },
+      render: (_: any, r: Room) => {
+        const item = r || (_ as Room) || {};
+        const count = item.amenitiesMask
+          ? decodeAmenitiesMask(item.amenitiesMask).length
+          : Array.isArray(item.amenities)
+          ? item.amenities.length
+          : 0;
+        return (
+          <span className="text-[13px] text-stay-text font-medium">
+            {count > 0 ? `${count} tiện ích` : 'Cơ bản'}
           </span>
         );
       },

@@ -26,13 +26,23 @@ import {
   useBuildingDetail,
   useServices,
   useUploadMultipleImages,
-  useAmenities,
 } from '@/shared/hooks';
 import {
   formatServicePriceWithUnit,
   getBillingMethodInfo,
 } from '@/shared/utils/serviceUtils';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import {
+  getProvinces,
+  getWardsByProvinceId,
+  getProvinceName,
+  getWardName,
+} from '@/shared/constants/vietnamLocations';
+import {
+  encodeAmenitiesMask,
+  decodeAmenitiesMask,
+} from '@/shared/constants/roomAmenities';
+import { AmenitySelectorGrid } from '@/shared/components/ui/AmenityBadge';
 
 // Fix default leaflet marker icon issue in Webpack/Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -93,7 +103,6 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
   const watchedBuildingId = Form.useWatch('buildingId', form);
   const { building: selectedBuilding } = useBuildingDetail(watchedBuildingId);
-  const { amenities: systemAmenities = [] } = useAmenities();
 
   // Room Images State
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -107,6 +116,10 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   });
   const [isGeolocating, setIsGeolocating] = useState(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+  const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(1);
+
+  const provinces = getProvinces();
+  const availableWards = selectedProvinceId ? getWardsByProvinceId(selectedProvinceId) : [];
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -128,15 +141,41 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         const data = await res.json();
         if (data && data.address) {
           const addr = data.address;
-          const foundProvince = addr.city || addr.state || addr.province || 'Thành phố Hà Nội';
-          const foundWard = addr.quarter || addr.suburb || addr.neighbourhood || addr.city_district || '';
           const fullDisplayName = data.display_name || '';
 
-          form.setFieldsValue({
-            province: foundProvince,
-            ward: foundWard,
-            addressDetail: fullDisplayName,
-          });
+          const allProvs = getProvinces();
+          const matchedProvince = allProvs.find(
+            (p) =>
+              (addr.city && addr.city.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.state && addr.state.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.province && addr.province.toLowerCase().includes(p.name.toLowerCase())) ||
+              p.name.toLowerCase().includes((addr.city || addr.state || addr.province || '').toLowerCase())
+          );
+
+          if (matchedProvince) {
+            setSelectedProvinceId(matchedProvince.id);
+            const wards = getWardsByProvinceId(matchedProvince.id);
+            const matchedWard = wards.find(
+              (w) =>
+                (addr.quarter && addr.quarter.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.suburb && addr.suburb.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.neighbourhood && addr.neighbourhood.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.city_district && addr.city_district.toLowerCase().includes(w.name.toLowerCase())) ||
+                w.name.toLowerCase().includes((addr.quarter || addr.suburb || addr.neighbourhood || '').toLowerCase())
+            );
+
+            form.setFieldsValue({
+              provinceId: matchedProvince.id,
+              province: matchedProvince.name,
+              wardId: matchedWard ? matchedWard.id : undefined,
+              ward: matchedWard ? matchedWard.name : '',
+              addressDetail: fullDisplayName,
+            });
+          } else {
+            form.setFieldsValue({
+              addressDetail: fullDisplayName,
+            });
+          }
         }
       }
     } catch {
@@ -163,12 +202,16 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             : [];
         setImageUrls(initialImages);
 
-        const rawAmenities = editingRoom.amenities as any;
-        const parsedAmenities: string[] = Array.isArray(rawAmenities)
-          ? rawAmenities
-          : typeof rawAmenities === 'string' && rawAmenities.trim()
-          ? rawAmenities.split(',').map((s: string) => s.trim())
-          : (editingRoom.amenityDetails?.map((a) => a.name) ?? []);
+        const mask =
+          editingRoom.amenitiesMask ||
+          (editingRoom.amenities
+            ? encodeAmenitiesMask(
+                Array.isArray(editingRoom.amenities)
+                  ? editingRoom.amenities
+                  : [String(editingRoom.amenities)]
+              )
+            : 0);
+        const parsedAmenities = decodeAmenitiesMask(mask);
 
         const roomServiceIds =
           editingRoom.serviceIds ||
@@ -176,10 +219,26 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             ? (editingRoom.services as any[]).map((s: any) => s.id)
             : []);
 
+        const allProvs = getProvinces();
+        const pId =
+          editingRoom.provinceId ??
+          (editingRoom.province
+            ? allProvs.find((p) => p.name.toLowerCase() === editingRoom.province?.toLowerCase())?.id
+            : 1);
+        const wId =
+          editingRoom.wardId ??
+          (editingRoom.ward && pId
+            ? getWardsByProvinceId(pId).find((w) => w.name.toLowerCase() === editingRoom.ward?.toLowerCase())?.id
+            : undefined);
+
+        setSelectedProvinceId(pId || 1);
+
         form.setFieldsValue({
           buildingId: editingRoom.buildingId || null,
-          province: editingRoom.province || 'Thành phố Hà Nội',
-          ward: editingRoom.ward || '',
+          provinceId: pId || 1,
+          wardId: wId,
+          province: editingRoom.province || getProvinceName(pId || 1),
+          ward: editingRoom.ward || (wId ? getWardName(wId) : ''),
           addressDetail: editingRoom.addressDetail || 'Hà Nội, Việt Nam',
           name: editingRoom.name,
           floor: editingRoom.floor ?? 1,
@@ -205,10 +264,13 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         setImageUrls([]);
         const initialCoords = { lat: 21.0285, lng: 105.8048 };
         setCurrentCoords(initialCoords);
+        setSelectedProvinceId(1);
 
         form.setFieldsValue({
           buildingId: null,
-          province: 'Thành phố Hà Nội',
+          provinceId: 1,
+          wardId: undefined,
+          province: getProvinceName(1),
           ward: '',
           addressDetail: 'Hà Nội, Việt Nam',
           latitude: 21.0285,
@@ -219,6 +281,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
           listedPrice: 3500000,
           standardDeposit: 3500000,
           isPublic: true,
+          amenities: ['Điều hòa', 'Nóng lạnh', 'Wi-Fi tốc độ cao'],
           serviceIds: services.map((s: any) => s.id),
         });
 
@@ -323,9 +386,27 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
       setCurrentCoords({ lat, lng });
 
+      const allProvs = getProvinces();
+      const pId =
+        selectedBuilding.provinceId ??
+        (selectedBuilding.province
+          ? allProvs.find((p) => p.name.toLowerCase() === selectedBuilding.province?.toLowerCase())?.id
+          : 1);
+      const wId =
+        selectedBuilding.wardId ??
+        (selectedBuilding.ward && pId
+          ? getWardsByProvinceId(pId).find((w) => w.name.toLowerCase() === selectedBuilding.ward?.toLowerCase())?.id
+          : undefined);
+
+      if (pId) {
+        setSelectedProvinceId(pId);
+      }
+
       form.setFieldsValue({
-        province: selectedBuilding.province || 'Thành phố Hà Nội',
-        ward: selectedBuilding.ward || '',
+        provinceId: pId,
+        wardId: wId,
+        province: selectedBuilding.province || (pId ? getProvinceName(pId) : 'Thành phố Hà Nội'),
+        ward: selectedBuilding.ward || (wId ? getWardName(wId) : ''),
         addressDetail: selectedBuilding.addressDetail || addr || 'Hà Nội, Việt Nam',
         latitude: lat,
         longitude: lng,
@@ -335,7 +416,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         mapInstanceRef.current.flyTo([lat, lng], 16, { duration: 1.0 });
         markerRef.current.setLatLng([lat, lng]);
       }
-      message.info(`Đã nạp vị trí từ tòa nhà: ${selectedBuilding.name}`);
+      message.info(`Đã nạp vị trí và địa chỉ từ tòa nhà: ${selectedBuilding.name}`);
     }
   }, [selectedBuilding]);
 
@@ -438,14 +519,24 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     const values = await form.validateFields();
     const coverImageUrl = imageUrls.length > 0 ? imageUrls[0] : undefined;
     const selectedAmenityNames: string[] = values.amenities || [];
-    const amenityIds = systemAmenities
-      .filter((a) => selectedAmenityNames.includes(a.name))
-      .map((a) => a.id);
+    const amenitiesMask = encodeAmenitiesMask(selectedAmenityNames);
+
+    const isInheritingBuilding = Boolean(watchedBuildingId && selectedBuilding);
+    const provinceId =
+      isInheritingBuilding && selectedBuilding?.provinceId ? selectedBuilding.provinceId : values.provinceId;
+    const wardId =
+      isInheritingBuilding && selectedBuilding?.wardId ? selectedBuilding.wardId : values.wardId;
+    const pName = getProvinceName(provinceId) || values.province;
+    const wName = wardId ? getWardName(wardId) : values.ward;
 
     await onSubmit({
       ...values,
+      provinceId,
+      wardId,
+      province: pName,
+      ward: wName,
       amenities: selectedAmenityNames,
-      amenityIds,
+      amenitiesMask,
       coverImageUrl,
       imageUrls,
     } as CreateRoomDto);
@@ -540,21 +631,55 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
 
                 {/* CỘT 2 (TỶ LỆ ~40%): CÁC Ô INPUT ĐỊA CHỈ */}
                 <div className="lg:col-span-5 space-y-2.5">
+                  {Boolean(watchedBuildingId) && (
+                    <div className="p-2 rounded-lg bg-stay-primary-subtle border border-stay-primary/20 text-stay-primary text-xs flex items-center gap-1.5 font-medium">
+                      <span>🏢 Địa chỉ được kế thừa từ tòa nhà</span>
+                    </div>
+                  )}
+
                   <Form.Item
                     label={<span className="font-semibold text-stay-text ">Tỉnh / Thành phố</span>}
-                    name="province"
-                    rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / TP' }]}
+                    name="provinceId"
+                    rules={[{ required: true, message: 'Vui lòng chọn Tỉnh / TP' }]}
                     className="mb-2"
                   >
-                    <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 " />
+                    <Select
+                      showSearch
+                      disabled={Boolean(watchedBuildingId)}
+                      placeholder="Chọn Tỉnh / Thành phố"
+                      optionFilterProp="label"
+                      className="w-full h-9"
+                      options={provinces.map((p) => ({ value: p.id, label: p.name }))}
+                      onChange={(val) => {
+                        setSelectedProvinceId(val);
+                        form.setFieldsValue({
+                          wardId: undefined,
+                          province: getProvinceName(val),
+                          ward: '',
+                        });
+                      }}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     label={<span className="font-semibold text-stay-text ">Phường / Xã</span>}
-                    name="ward"
+                    name="wardId"
                     className="mb-2"
                   >
-                    <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 " />
+                    <Select
+                      showSearch
+                      allowClear
+                      disabled={Boolean(watchedBuildingId) || !selectedProvinceId}
+                      placeholder={selectedProvinceId ? 'Chọn Phường / Xã' : 'Vui lòng chọn Tỉnh / TP trước'}
+                      optionFilterProp="label"
+                      className="w-full h-9"
+                      options={availableWards.map((w) => ({ value: w.id, label: w.name }))}
+                      onChange={(val) => {
+                        form.setFieldsValue({
+                          ward: val ? getWardName(val) : '',
+                        });
+                      }}
+                    />
                   </Form.Item>
 
                   <Form.Item
@@ -574,6 +699,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   >
                     <Input.TextArea
                       rows={3}
+                      disabled={Boolean(watchedBuildingId)}
                       placeholder="Số nhà, ngõ/ngách, tên đường..."
                       className="w-full p-2  rounded-lg"
                     />
@@ -694,14 +820,17 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
           <div className="space-y-4">
             <Form.Item
-              label={<span className="font-semibold text-stay-text text-sm">Tiện nghi có sẵn trong phòng</span>}
+              label={
+                <span className="font-semibold text-stay-text text-sm">
+                  Tiện nghi có sẵn trong phòng (16 tiện ích chuẩn)
+                </span>
+              }
               name="amenities"
+              className="mb-3"
             >
-              <Select
-                mode="tags"
-                className="w-full min-h-[40px]"
-                placeholder="Chọn hoặc nhập tiện nghi (Điều hòa, Nóng lạnh, Giường, Tủ...)"
-                options={systemAmenities.map((a) => ({ value: a.name, label: a.name }))}
+              <AmenitySelectorGrid
+                selectedNames={form.getFieldValue('amenities') || []}
+                onChange={(names) => form.setFieldsValue({ amenities: names })}
               />
             </Form.Item>
 

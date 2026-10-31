@@ -21,15 +21,13 @@ export const AdminLayout: React.FC = () => {
 
   const currentKey = location.pathname.startsWith('/admin/users')
     ? '/admin/users'
-    : location.pathname.startsWith('/admin/amenities')
-      ? '/admin/amenities'
-      : location.pathname.startsWith('/admin/master-data')
-        ? '/admin/master-data'
-        : location.pathname.startsWith('/admin/reports')
-          ? '/admin/reports'
-          : location.pathname.startsWith('/admin/profile')
-            ? '/admin/profile'
-            : '/admin';
+    : location.pathname.startsWith('/admin/master-data')
+      ? '/admin/master-data'
+      : location.pathname.startsWith('/admin/reports')
+        ? '/admin/reports'
+        : location.pathname.startsWith('/admin/profile')
+          ? '/admin/profile'
+          : '/admin';
 
   const adminMenuItems: MenuItemType[] = [
     {
@@ -41,11 +39,6 @@ export const AdminLayout: React.FC = () => {
       key: '/admin/users',
       icon: <Users2 className="w-4 h-4 shrink-0" />,
       label: <Link to="/admin/users">Quản lý Người dùng</Link>,
-    },
-    {
-      key: '/admin/amenities',
-      icon: <Sparkles className="w-4 h-4 shrink-0" />,
-      label: <Link to="/admin/amenities">Tiện ích Phòng Trọ</Link>,
     },
     {
       key: '/admin/master-data',
@@ -75,7 +68,6 @@ export const AdminLayout: React.FC = () => {
 
   const getPageTitle = (path: string) => {
     if (path.startsWith('/admin/users')) return 'Quản lý Người dùng';
-    if (path.startsWith('/admin/amenities')) return 'Quản lý Tiện ích Phòng Trọ';
     if (path.startsWith('/admin/master-data')) return 'Master Data Hệ thống';
     if (path.startsWith('/admin/reports')) return 'Báo cáo & Vi phạm sàn';
     if (path.startsWith('/admin/profile')) return 'Hồ sơ cá nhân';
