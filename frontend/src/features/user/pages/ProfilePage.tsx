@@ -342,35 +342,35 @@ export const ProfilePage: React.FC = () => {
           </span>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 text-[14px]">
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Họ và tên</span>
-              <span className="text-stay-text font-medium">{user?.fullName || '—'}</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Họ và tên:</span>
+              <span className="text-stay-text font-medium truncate">{user?.fullName || '—'}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Số điện thoại</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Số điện thoại:</span>
               <span className="text-stay-text font-medium">{user?.phone || 'Chưa cập nhật'}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Tên đăng nhập</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Tên đăng nhập:</span>
               <span className="text-stay-text font-medium">@{user?.username}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Ngày sinh</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Ngày sinh:</span>
               <span className="text-stay-text font-medium">
                 {user?.dateOfBirth ? user.dateOfBirth.substring(0, 10) : 'Chưa cập nhật'}
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Địa chỉ Email</span>
-              <span className="text-stay-text font-medium truncate max-w-[280px]">{user?.email || '—'}</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Địa chỉ Email:</span>
+              <span className="text-stay-text font-medium truncate">{user?.email || '—'}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Giới tính</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Giới tính:</span>
               <span className="text-stay-text font-medium">{formatGender(user?.gender)}</span>
             </div>
           </div>
@@ -383,20 +383,20 @@ export const ProfilePage: React.FC = () => {
           </span>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 text-[14px]">
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Yêu cầu bạn cùng phòng</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Yêu cầu bạn cùng phòng:</span>
               <span className="text-stay-text font-medium">{formatGenderPref(user?.genderPreference)}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Thói quen hút thuốc</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Thói quen hút thuốc:</span>
               <span className="text-stay-text font-medium">
                 {user?.smokes ? 'Có hút' : 'Không hút'} • {user?.rejectsSmokers ? 'Cấm hút' : 'Linh hoạt'}
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-2.5 border-b border-stay-border-subtle">
-              <span className="text-stay-text-secondary">Nuôi thú cưng</span>
+            <div className="flex items-center gap-2 py-2.5 border-b border-stay-border-subtle">
+              <span className="text-stay-text-secondary shrink-0">Nuôi thú cưng:</span>
               <span className="text-stay-text font-medium">
                 {user?.hasPet ? 'Có nuôi' : 'Không nuôi'} • {user?.rejectsPets ? 'Không nhận' : 'Thoải mái'}
               </span>
