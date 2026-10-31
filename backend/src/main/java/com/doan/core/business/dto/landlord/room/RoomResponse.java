@@ -44,6 +44,11 @@ public class RoomResponse {
         private RoomStatus status;
         private String province;
         private String ward;
+        private Integer provinceId;
+        private Integer wardId;
+        private String provinceName;
+        private String wardName;
+        private Integer amenitiesMask;
         private String addressDetail;
         private String fullAddress;
         private String coverImageUrl;
@@ -71,10 +76,16 @@ public class RoomResponse {
                         images = List.of(cover);
                 }
 
-                List<String> amenityList = room.getAmenities() != null
-                                ? room.getAmenities().stream().map(Amenity::getName)
-                                                .collect(Collectors.toList())
-                                : List.of();
+                Integer mask = room.getAmenitiesMask() != null ? room.getAmenitiesMask() : 0;
+                List<String> amenityList;
+                if (mask > 0) {
+                        amenityList = com.doan.core.common.constant.RoomAmenityConstants.decode(mask);
+                } else if (room.getAmenities() != null && !room.getAmenities().isEmpty()) {
+                        amenityList = room.getAmenities().stream().map(Amenity::getName).collect(Collectors.toList());
+                        mask = com.doan.core.common.constant.RoomAmenityConstants.encode(amenityList);
+                } else {
+                        amenityList = List.of();
+                }
 
                 List<AmenityResponse> amenityDetails = room.getAmenities() != null
                                 ? room.getAmenities().stream()
@@ -94,25 +105,37 @@ public class RoomResponse {
                                                                 .collect(Collectors.toList())
                                                 : List.of();
 
-                String prov = room.getProvince() != null ? room.getProvince()
-                                : (room.getBuilding() != null ? room.getBuilding().getProvince() : null);
-                String wrd = room.getWard() != null ? room.getWard()
-                                : (room.getBuilding() != null ? room.getBuilding().getWard() : null);
+                Integer provId = room.getProvinceId() != null ? room.getProvinceId()
+                                : (room.getBuilding() != null ? room.getBuilding().getProvinceId() : null);
+                Integer wrdId = room.getWardId() != null ? room.getWardId()
+                                : (room.getBuilding() != null ? room.getBuilding().getWardId() : null);
+
+                String prov = provId != null
+                                ? com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(provId)
+                                : (room.getProvince() != null ? room.getProvince()
+                                                : (room.getBuilding() != null ? room.getBuilding().getProvince() : null));
+
+                String wrd = wrdId != null
+                                ? com.doan.core.common.constant.VietnamLocationConstants.getWardName(wrdId)
+                                : (room.getWard() != null ? room.getWard()
+                                                : (room.getBuilding() != null ? room.getBuilding().getWard() : null));
+
                 String addr = room.getAddressDetail() != null ? room.getAddressDetail()
                                 : (room.getBuilding() != null ? room.getBuilding().getAddressDetail() : null);
 
-                StringBuilder sb = new StringBuilder();
-                if (addr != null && !addr.isBlank())
-                        sb.append(addr);
-                if (wrd != null && !wrd.isBlank()) {
-                        if (sb.length() > 0)
-                                sb.append(", ");
-                        sb.append(wrd);
-                }
-                if (prov != null && !prov.isBlank()) {
-                        if (sb.length() > 0)
-                                sb.append(", ");
-                        sb.append(prov);
+                String fullAddr = com.doan.core.common.constant.VietnamLocationConstants.formatAddress(addr, wrdId, provId);
+                if (fullAddr == null || fullAddr.isBlank()) {
+                        StringBuilder sb = new StringBuilder();
+                        if (addr != null && !addr.isBlank()) sb.append(addr);
+                        if (wrd != null && !wrd.isBlank()) {
+                                if (sb.length() > 0) sb.append(", ");
+                                sb.append(wrd);
+                        }
+                        if (prov != null && !prov.isBlank()) {
+                                if (sb.length() > 0) sb.append(", ");
+                                sb.append(prov);
+                        }
+                        fullAddr = sb.toString();
                 }
 
                 java.math.BigDecimal lat = room.getLatitude() != null ? room.getLatitude()
@@ -133,8 +156,13 @@ public class RoomResponse {
                                 .buildingName(room.getBuilding() != null ? room.getBuilding().getName() : null)
                                 .province(prov)
                                 .ward(wrd)
+                                .provinceId(provId)
+                                .wardId(wrdId)
+                                .provinceName(prov)
+                                .wardName(wrd)
+                                .amenitiesMask(mask)
                                 .addressDetail(addr)
-                                .fullAddress(sb.toString())
+                                .fullAddress(fullAddr)
                                 .name(room.getName())
                                 .floor(room.getFloor())
                                 .area(room.getArea())

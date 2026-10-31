@@ -25,6 +25,12 @@ public class BuildingRequest {
     @Schema(description = "Phường / Xã", example = "Quan Hoa")
     private String ward;
 
+    @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
+    private Integer provinceId;
+
+    @Schema(description = "Mã Phường / Xã", example = "101")
+    private Integer wardId;
+
     @NotBlank(message = "Địa chỉ chi tiết không được để trống")
     @Schema(description = "Địa chỉ chi tiết", example = "Số 12 Ngõ 80 Cầu Giấy, Hà Nội")
     private String addressDetail;

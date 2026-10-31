@@ -25,6 +25,15 @@ public class RoomRequest {
     @Schema(description = "Phường / Xã", example = "Phường Bách Khoa")
     private String ward;
 
+    @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
+    private Integer provinceId;
+
+    @Schema(description = "Mã Phường / Xã", example = "101")
+    private Integer wardId;
+
+    @Schema(description = "Bitmask 16-bit mã hóa tiện ích phòng trọ", example = "19")
+    private Integer amenitiesMask;
+
     @Schema(description = "Địa chỉ chi tiết (số nhà, ngõ/đường)", example = "Số 15 ngõ 20 Đại Cồ Việt")
     private String addressDetail;
 

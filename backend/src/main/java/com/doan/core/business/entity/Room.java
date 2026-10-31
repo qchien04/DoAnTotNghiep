@@ -36,6 +36,16 @@ public class Room extends BaseEntity {
     @Column(name = "ward", length = 100)
     private String ward;
 
+    @Column(name = "province_id")
+    private Integer provinceId;
+
+    @Column(name = "ward_id")
+    private Integer wardId;
+
+    @Column(name = "amenities_mask", nullable = false)
+    @Builder.Default
+    private Integer amenitiesMask = 0;
+
     @Column(name = "address_detail", columnDefinition = "TEXT")
     private String addressDetail;
 

@@ -21,6 +21,10 @@ export interface Building {
   name: string;
   province?: string;
   ward?: string;
+  provinceId?: number;
+  wardId?: number;
+  provinceName?: string;
+  wardName?: string;
   addressDetail?: string;
   numFloors?: number;
   generalRules?: string;
@@ -38,6 +42,8 @@ export interface CreateBuildingDto {
   name: string;
   province?: string;
   ward?: string;
+  provinceId?: number;
+  wardId?: number;
   addressDetail?: string;
   numFloors?: number;
   generalRules?: string;
@@ -71,6 +77,7 @@ export interface Room {
   currentOccupancy?: number;
   furnishingLevel?: string;
   amenities?: string[];
+  amenitiesMask?: number;
   amenityDetails?: Amenity[];
   serviceIds?: number[];
   services?: any[];
@@ -78,6 +85,10 @@ export interface Room {
   status: RoomStatus;
   province?: string;
   ward?: string;
+  provinceId?: number;
+  wardId?: number;
+  provinceName?: string;
+  wardName?: string;
   addressDetail?: string;
   fullAddress?: string;
   coverImageUrl?: string;
@@ -101,6 +112,7 @@ export interface CreateRoomDto {
   maxCapacity: number;
   furnishingLevel?: string;
   amenities?: string[];
+  amenitiesMask?: number;
   amenityIds?: number[];
   serviceIds?: (number | string)[];
   description?: string;
@@ -108,6 +120,8 @@ export interface CreateRoomDto {
   isPublic?: boolean;
   province?: string;
   ward?: string;
+  provinceId?: number;
+  wardId?: number;
   addressDetail?: string;
   coverImageUrl?: string;
   imageUrls?: string[];
@@ -122,6 +136,9 @@ export interface RoomFilterParams extends PagingParams {
   floor?: number;
   status?: RoomStatus | 'ALL';
   keyword?: string;
+  provinceId?: number;
+  wardId?: number;
+  amenitiesMask?: number;
 }
 
 // =========================================================================

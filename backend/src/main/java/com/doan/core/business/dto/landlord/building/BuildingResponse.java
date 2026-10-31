@@ -21,6 +21,10 @@ public class BuildingResponse {
     private String name;
     private String province;
     private String ward;
+    private Integer provinceId;
+    private Integer wardId;
+    private String provinceName;
+    private String wardName;
     private String addressDetail;
     private Integer numFloors;
     private String generalRules;
@@ -41,11 +45,22 @@ public class BuildingResponse {
     public static BuildingResponse fromEntity(Building building, long totalRooms, long occupiedRooms, long availableRooms) {
         if (building == null) return null;
 
+        String provName = building.getProvinceId() != null 
+                ? com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(building.getProvinceId())
+                : building.getProvince();
+        String wrdName = building.getWardId() != null
+                ? com.doan.core.common.constant.VietnamLocationConstants.getWardName(building.getWardId())
+                : building.getWard();
+
         return BuildingResponse.builder()
                 .id(building.getId())
                 .name(building.getName())
-                .province(building.getProvince())
-                .ward(building.getWard())
+                .province(provName)
+                .ward(wrdName)
+                .provinceId(building.getProvinceId())
+                .wardId(building.getWardId())
+                .provinceName(provName)
+                .wardName(wrdName)
                 .addressDetail(building.getAddressDetail())
                 .numFloors(building.getNumFloors())
                 .generalRules(building.getGeneralRules())

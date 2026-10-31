@@ -23,8 +23,17 @@ public class PublicRoomSearchRequest {
     @Schema(description = "Tỉnh / Thành phố")
     private String province;
 
-    @Schema(description = "Quận / Huyện")
+    @Schema(description = "Quận / Huyện / Phường / Xã")
     private String district;
+
+    @Schema(description = "Mã Tỉnh / Thành phố")
+    private Integer provinceId;
+
+    @Schema(description = "Mã Phường / Xã")
+    private Integer wardId;
+
+    @Schema(description = "Mã bitmask các tiện ích yêu cầu")
+    private Integer amenitiesMask;
 
     @Schema(description = "Giá thuê tối thiểu (VNĐ)")
     private Long minPrice;
