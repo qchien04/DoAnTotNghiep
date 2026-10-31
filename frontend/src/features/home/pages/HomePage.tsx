@@ -29,6 +29,7 @@ import {
   Map as MapIcon,
   LayoutGrid,
 } from 'lucide-react';
+import { formatFullAddress, getWardName, getProvinceName } from '@/shared/constants/vietnamLocations';
 
 const FEATURED_ROOMMATES: RoommateProfile[] = [
   {
@@ -316,8 +317,8 @@ export const HomePage: React.FC = () => {
           const mapped = res.data.map((r: any) => {
             const priceNum = Number(r.listedPrice || r.price || 3500000);
             const priceTxt = `${(priceNum / 1000000).toFixed(1)} tr/tháng`;
-            const loc = r.fullAddress || r.addressDetail || (r.ward ? `${r.ward}, ${r.province || 'Hà Nội'}` : 'Hà Nội');
-            let dist = 'Cầu Giấy';
+            const loc = formatFullAddress(r.addressDetail, r.wardId, r.provinceId) || r.addressDetail || 'Hà Nội';
+            let dist = getWardName(r.wardId) || getProvinceName(r.provinceId) || 'Cầu Giấy';
             const locLower = loc.toLowerCase();
             if (locLower.includes('đống đa')) dist = 'Đống Đa';
             else if (locLower.includes('hai bà trưng')) dist = 'Hai Bà Trưng';

@@ -13,31 +13,32 @@ def generate_sql():
     last_names_male = ["Dũng", "Hải", "Long", "Phong", "Sơn", "Thắng", "Nam", "Huy", "Hùng", "Cường", "Tuấn", "Kiên", "Bình", "Khoa", "Đạt", "Tùng", "Bách", "Trọng"]
     last_names_female = ["Linh", "Lan", "Mai", "Trang", "Hương", "Phương", "Thảo", "Nga", "Hà", "Ly", "Anh", "Vy", "Huyền", "Yến", "Dung", "Quỳnh", "Trúc"]
 
+    # Danh mục địa phương chuẩn hóa 2 cấp: province_id và ward_id theo VietnamLocationConstants.java
     locations = [
-        # Hà Nội
-        {"province": "Thành phố Hà Nội", "district": "Cầu Giấy", "ward": "Phường Dịch Vọng Hậu", "streets": ["Xuân Thủy", "Duy Tân", "Trần Thái Tông", "Trần Quốc Vượng"], "lat": 21.0360, "lng": 105.7850},
-        {"province": "Thành phố Hà Nội", "district": "Cầu Giấy", "ward": "Phường Quan Hoa", "streets": ["Cầu Giấy", "Nguyễn Khánh Toàn", "Quan Hoa", "Dương Quảng Hàm"], "lat": 21.0385, "lng": 105.7990},
-        {"province": "Thành phố Hà Nội", "district": "Cầu Giấy", "ward": "Phường Nghĩa Tân", "streets": ["Nghĩa Tân", "Tô Hiệu", "Hoàng Quốc Việt", "Trần Tử Bình"], "lat": 21.0450, "lng": 105.7920},
-        {"province": "Thành phố Hà Nội", "district": "Đống Đa", "ward": "Phường Láng Thượng", "streets": ["Chùa Láng", "Đường Láng", "Nguyễn Chí Thanh", "Huỳnh Thúc Kháng"], "lat": 21.0250, "lng": 105.8050},
-        {"province": "Thành phố Hà Nội", "district": "Đống Đa", "ward": "Phường Ô Chợ Dừa", "streets": ["Đê La Thành", "Xã Đàn", "Tôn Đức Thắng", "Hào Nam"], "lat": 21.0190, "lng": 105.8280},
-        {"province": "Thành phố Hà Nội", "district": "Thanh Xuân", "ward": "Phường Thanh Xuân Nam", "streets": ["Triều Khúc", "Nguyễn Trãi", "Lương Thế Vinh", "Nguyễn Xiển"], "lat": 20.9880, "lng": 105.7990},
-        {"province": "Thành phố Hà Nội", "district": "Thanh Xuân", "ward": "Phường Nhân Chính", "streets": ["Lê Văn Lương", "Ngụy Như Kon Tum", "Quan Nhân", "Hoàng Đạo Thúy"], "lat": 21.0050, "lng": 105.8030},
-        {"province": "Thành phố Hà Nội", "district": "Hai Bà Trưng", "ward": "Phường Bách Khoa", "streets": ["Tạ Quang Bửu", "Trần Đại Nghĩa", "Lê Thanh Nghị", "Đại Cồ Việt"], "lat": 21.0050, "lng": 105.8450},
-        {"province": "Thành phố Hà Nội", "district": "Hai Bà Trưng", "ward": "Phường Đồng Tâm", "streets": ["Trần Đại Nghĩa", "Vọng", "Giải Phóng", "Đại La"], "lat": 20.9990, "lng": 105.8420},
-        {"province": "Thành phố Hà Nội", "district": "Nam Từ Liêm", "ward": "Phường Mỹ Đình 1", "streets": ["Đình Thôn", "Mễ Trì Hạ", "Phạm Hùng", "Vũ Quỳnh"], "lat": 21.0180, "lng": 105.7740},
-        {"province": "Thành phố Hà Nội", "district": "Nam Từ Liêm", "ward": "Phường Mỹ Đình 2", "streets": ["Nguyễn Hoàng", "Lê Đức Thọ", "Trần Bình", "Mỹ Đình"], "lat": 21.0310, "lng": 105.7730},
-        {"province": "Thành phố Hà Nội", "district": "Bắc Từ Liêm", "ward": "Phường Cổ Nhuế 1", "streets": ["Trần Cung", "Phạm Văn Đồng", "Cổ Nhuế", "Hoàng Quốc Việt"], "lat": 21.0520, "lng": 105.7860},
-        {"province": "Thành phố Hà Nội", "district": "Hà Đông", "ward": "Phường Mộ Lao", "streets": ["Thanh Bình", "Nguyễn Văn Lộc", "Trần Phú", "Vũ Trọng Khánh"], "lat": 20.9830, "lng": 105.7850},
-        # TP. Hồ Chí Minh
-        {"province": "Thành phố Hồ Chí Minh", "district": "Bình Thạnh", "ward": "Phường 25", "streets": ["Điện Biên Phủ", "D2 (Nguyễn Gia Trí)", "D5", "Xô Viết Nghệ Tĩnh"], "lat": 10.8040, "lng": 106.7150},
-        {"province": "Thành phố Hồ Chí Minh", "district": "Bình Thạnh", "ward": "Phường 15", "streets": ["Bạch Đằng", "Đinh Bộ Lĩnh", "Phan Đăng Lưu", "Lê Quang Định"], "lat": 10.8010, "lng": 106.7020},
-        {"province": "Thành phố Hồ Chí Minh", "district": "Tân Bình", "ward": "Phường 2", "streets": ["Trường Sơn", "Bạch Đằng", "Hồng Hà", "Cửu Long"], "lat": 10.8120, "lng": 106.6650},
-        {"province": "Thành phố Hồ Chí Minh", "district": "Tân Bình", "ward": "Phường 13", "streets": ["Cộng Hòa", "Ấp Bắc", "Nhất Chi Mai", "Bình Giã"], "lat": 10.8020, "lng": 106.6430},
-        {"province": "Thành phố Hồ Chí Minh", "district": "Quận 10", "ward": "Phường 14", "streets": ["Tô Hiến Thành", "3 Tháng 2", "Lý Thường Kiệt", "Thành Thái"], "lat": 10.7710, "lng": 106.6610},
-        {"province": "Thành phố Hồ Chí Minh", "district": "Quận 7", "ward": "Phường Tân Phong", "streets": ["Lê Văn Lương", "Nguyễn Thị Thập", "Nguyễn Hữu Thọ", "Lâm Văn Bền"], "lat": 10.7420, "lng": 106.7030},
-        # Đà Nẵng
-        {"province": "Thành phố Đà Nẵng", "district": "Hải Châu", "ward": "Phường Hòa Cường Bắc", "streets": ["Tiểu La", "Núi Thành", "30 Tháng 4", "Lê Thanh Nghị"], "lat": 16.0460, "lng": 108.2160},
-        {"province": "Thành phố Đà Nẵng", "district": "Ngũ Hành Sơn", "ward": "Phường Mỹ An", "streets": ["An Thượng 2", "Châu Thị Vĩnh Tế", "Ngô Thì Sĩ", "Hoàng Kế Viêm"], "lat": 16.0520, "lng": 108.2410},
+        # Hà Nội (province_id: 1)
+        {"province_id": 1, "ward_id": 101, "district": "Cầu Giấy", "ward": "Phường Dịch Vọng Hậu", "streets": ["Xuân Thủy", "Duy Tân", "Trần Thái Tông", "Trần Quốc Vượng"], "lat": 21.0360, "lng": 105.7850},
+        {"province_id": 1, "ward_id": 102, "district": "Cầu Giấy", "ward": "Phường Quan Hoa", "streets": ["Cầu Giấy", "Nguyễn Khánh Toàn", "Quan Hoa", "Dương Quảng Hàm"], "lat": 21.0385, "lng": 105.7990},
+        {"province_id": 1, "ward_id": 103, "district": "Cầu Giấy", "ward": "Phường Nghĩa Tân", "streets": ["Nghĩa Tân", "Tô Hiệu", "Hoàng Quốc Việt", "Trần Tử Bình"], "lat": 21.0450, "lng": 105.7920},
+        {"province_id": 1, "ward_id": 106, "district": "Đống Đa", "ward": "Phường Láng Thượng", "streets": ["Chùa Láng", "Đường Láng", "Nguyễn Chí Thanh", "Huỳnh Thúc Kháng"], "lat": 21.0250, "lng": 105.8050},
+        {"province_id": 1, "ward_id": 108, "district": "Đống Đa", "ward": "Phường Ô Chợ Dừa", "streets": ["Đê La Thành", "Xã Đàn", "Tôn Đức Thắng", "Hào Nam"], "lat": 21.0190, "lng": 105.8280},
+        {"province_id": 1, "ward_id": 116, "district": "Thanh Xuân", "ward": "Phường Thanh Xuân Nam", "streets": ["Triều Khúc", "Nguyễn Trãi", "Lương Thế Vinh", "Nguyễn Xiển"], "lat": 20.9880, "lng": 105.7990},
+        {"province_id": 1, "ward_id": 117, "district": "Thanh Xuân", "ward": "Phường Nhân Chính", "streets": ["Lê Văn Lương", "Ngụy Như Kon Tum", "Quan Nhân", "Hoàng Đạo Thúy"], "lat": 21.0050, "lng": 105.8030},
+        {"province_id": 1, "ward_id": 111, "district": "Hai Bà Trưng", "ward": "Phường Bách Khoa", "streets": ["Tạ Quang Bửu", "Trần Đại Nghĩa", "Lê Thanh Nghị", "Đại Cồ Việt"], "lat": 21.0050, "lng": 105.8450},
+        {"province_id": 1, "ward_id": 112, "district": "Hai Bà Trưng", "ward": "Phường Đồng Tâm", "streets": ["Trần Đại Nghĩa", "Vọng", "Giải Phóng", "Đại La"], "lat": 20.9990, "lng": 105.8420},
+        {"province_id": 1, "ward_id": 119, "district": "Nam Từ Liêm", "ward": "Phường Mỹ Đình 1", "streets": ["Đình Thôn", "Mễ Trì Hạ", "Phạm Hùng", "Vũ Quỳnh"], "lat": 21.0180, "lng": 105.7740},
+        {"province_id": 1, "ward_id": 120, "district": "Nam Từ Liêm", "ward": "Phường Mỹ Đình 2", "streets": ["Nguyễn Hoàng", "Lê Đức Thọ", "Trần Bình", "Mỹ Đình"], "lat": 21.0310, "lng": 105.7730},
+        {"province_id": 1, "ward_id": 123, "district": "Bắc Từ Liêm", "ward": "Phường Cổ Nhuế 1", "streets": ["Trần Cung", "Phạm Văn Đồng", "Cổ Nhuế", "Hoàng Quốc Việt"], "lat": 21.0520, "lng": 105.7860},
+        {"province_id": 1, "ward_id": 127, "district": "Hà Đông", "ward": "Phường Mộ Lao", "streets": ["Thanh Bình", "Nguyễn Văn Lộc", "Trần Phú", "Vũ Trọng Khánh"], "lat": 20.9830, "lng": 105.7850},
+        # TP. Hồ Chí Minh (province_id: 79)
+        {"province_id": 79, "ward_id": 7908, "district": "Bình Thạnh", "ward": "Phường 25 (Bình Thạnh)", "streets": ["Điện Biên Phủ", "D2 (Nguyễn Gia Trí)", "D5", "Xô Viết Nghệ Tĩnh"], "lat": 10.8040, "lng": 106.7150},
+        {"province_id": 79, "ward_id": 7909, "district": "Bình Thạnh", "ward": "Phường 15 (Bình Thạnh)", "streets": ["Bạch Đằng", "Đinh Bộ Lĩnh", "Phan Đăng Lưu", "Lê Quang Định"], "lat": 10.8010, "lng": 106.7020},
+        {"province_id": 79, "ward_id": 7911, "district": "Tân Bình", "ward": "Phường 2 (Tân Bình)", "streets": ["Trường Sơn", "Bạch Đằng", "Hồng Hà", "Cửu Long"], "lat": 10.8120, "lng": 106.6650},
+        {"province_id": 79, "ward_id": 7912, "district": "Tân Bình", "ward": "Phường 13 (Tân Bình)", "streets": ["Cộng Hòa", "Ấp Bắc", "Nhất Chi Mai", "Bình Giã"], "lat": 10.8020, "lng": 106.6430},
+        {"province_id": 79, "ward_id": 7914, "district": "Quận 10", "ward": "Phường 14 (Quận 10)", "streets": ["Tô Hiến Thành", "3 Tháng 2", "Lý Thường Kiệt", "Thành Thái"], "lat": 10.7710, "lng": 106.6610},
+        {"province_id": 79, "ward_id": 7917, "district": "Quận 7", "ward": "Phường Tân Phong (Quận 7)", "streets": ["Lê Văn Lương", "Nguyễn Thị Thập", "Nguyễn Hữu Thọ", "Lâm Văn Bền"], "lat": 10.7420, "lng": 106.7030},
+        # Đà Nẵng (province_id: 48)
+        {"province_id": 48, "ward_id": 4801, "district": "Hải Châu", "ward": "Phường Hòa Cường Bắc", "streets": ["Tiểu La", "Núi Thành", "30 Tháng 4", "Lê Thanh Nghị"], "lat": 16.0460, "lng": 108.2160},
+        {"province_id": 48, "ward_id": 4805, "district": "Ngũ Hành Sơn", "ward": "Phường Mỹ An", "streets": ["An Thượng 2", "Châu Thị Vĩnh Tế", "Ngô Thì Sĩ", "Hoàng Kế Viêm"], "lat": 16.0520, "lng": 108.2410},
     ]
 
     room_photo_urls = [
@@ -76,11 +77,24 @@ def generate_sql():
         "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150"
     ]
 
-    room_amenities_pool = [
-        "Điều hòa Inverter", "Bình nóng lạnh", "Tủ lạnh 2 cánh", "Máy giặt riêng", 
-        "Giường đệm cao cấp", "Tủ quần áo 3 cánh", "Bếp từ đôi", "Hút mùi", 
-        "Bàn làm việc", "Wifi cáp quang riêng", "Khóa cửa vân tay", "Thang máy", 
-        "Ban công phơi đồ", "Gác xép kiên cố", "Cửa sổ thoáng mát", "Camera an ninh 24/7"
+    # 16 tiện ích phòng trọ chuẩn hóa theo RoomAmenityConstants.java (16-bit bitmask)
+    amenities_pool = [
+        (0, "AIR_CONDITIONER", "Điều hòa"),
+        (1, "WATER_HEATER", "Nóng lạnh"),
+        (2, "REFRIGERATOR", "Tủ lạnh"),
+        (3, "WASHING_MACHINE", "Máy giặt"),
+        (4, "BED_MATTRESS", "Giường nệm"),
+        (5, "WARDROBE", "Tủ quần áo"),
+        (6, "KITCHEN", "Kệ bếp / Bếp nấu"),
+        (7, "BALCONY_WINDOW", "Ban công / Cửa sổ"),
+        (8, "PRIVATE_BATHROOM", "Vệ sinh khép kín"),
+        (9, "WIFI", "Wi-Fi tốc độ cao"),
+        (10, "PARKING", "Chỗ để xe"),
+        (11, "ELEVATOR", "Thang máy"),
+        (12, "FINGERPRINT_LOCK", "Khóa vân tay / Camera"),
+        (13, "NO_CURFEW", "Giờ giấc tự do"),
+        (14, "PET_FRIENDLY", "Cho nuôi thú cưng"),
+        (15, "MEZZANINE", "Gác xép")
     ]
 
     building_prefixes = [
@@ -152,12 +166,13 @@ def generate_sql():
     lines.append("-- -----------------------------------------------------------------------------")
     lines.append("-- 2. TẠO TÒA NHÀ CHO CÁC CHỦ TRỌ (BUILDINGS: id 101 -> 250)")
     lines.append("-- -----------------------------------------------------------------------------")
-    lines.append("INSERT INTO buildings (id, landlord_id, name, province, ward, address_detail, num_floors, general_rules, latitude, longitude, is_active, created_at, updated_at)")
+    lines.append("INSERT INTO buildings (id, landlord_id, name, province_id, ward_id, address_detail, num_floors, general_rules, latitude, longitude, is_active, created_at, updated_at)")
     lines.append("VALUES")
 
     building_values = []
     building_id_counter = 101
     landlord_buildings = {}  # landlord_id -> list of building_ids
+    building_info = {}       # building_id -> {province_id, ward_id, address_detail, lat, lng}
 
     for lid in landlord_ids:
         num_blds = random.choices([1, 2], weights=[60, 40])[0]
@@ -182,8 +197,16 @@ def generate_sql():
             lat = round(loc["lat"] + random.uniform(-0.006, 0.006), 7)
             lng = round(loc["lng"] + random.uniform(-0.006, 0.006), 7)
 
+            building_info[bid] = {
+                "province_id": loc["province_id"],
+                "ward_id": loc["ward_id"],
+                "address_detail": address_detail,
+                "lat": lat,
+                "lng": lng
+            }
+
             building_values.append(
-                f"  ({bid}, {lid}, '{b_name}', '{loc['province']}', '{loc['ward']}', '{address_detail}', "
+                f"  ({bid}, {lid}, '{b_name}', {loc['province_id']}, {loc['ward_id']}, '{address_detail}', "
                 f"{num_floors}, '{rules}', {lat}, {lng}, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
             )
 
@@ -250,7 +273,7 @@ def generate_sql():
     lines.append("-- -----------------------------------------------------------------------------")
     lines.append("-- 4. TẠO ĐÚNG 1000 PHÒNG TRỌ (ROOMS: id 101 -> 1100)")
     lines.append("-- -----------------------------------------------------------------------------")
-    lines.append("INSERT INTO rooms (id, building_id, landlord_id, name, province, ward, address_detail, floor, area, listed_price, standard_deposit, max_capacity, current_occupancy, furnishing_level, amenities, description, status, cover_image_url, latitude, longitude, is_public, created_at, updated_at)")
+    lines.append("INSERT INTO rooms (id, building_id, landlord_id, name, province_id, ward_id, amenities_mask, address_detail, floor, area, listed_price, standard_deposit, max_capacity, current_occupancy, furnishing_level, description, status, cover_image_url, latitude, longitude, is_public, created_at, updated_at)")
     lines.append("VALUES")
 
     room_values = []
@@ -281,12 +304,22 @@ def generate_sql():
             room_num = f"{floor}0{(r_index % 3) + 1}"
             room_name = f"Phòng {room_num} - {random.choice(room_adjectives)}"
 
-            loc = random.choice(locations)
-            street = random.choice(loc["streets"])
-            house_no = f"Số {random.randint(3, 199)} ngõ {random.randint(10, 160)}"
-            address_detail = f"{house_no} {street}"
-            lat = round(loc["lat"] + random.uniform(-0.007, 0.007), 7)
-            lng = round(loc["lng"] + random.uniform(-0.007, 0.007), 7)
+            if is_in_building:
+                b_info = building_info[building_id_val]
+                prov_id = b_info["province_id"]
+                w_id = b_info["ward_id"]
+                address_detail = b_info["address_detail"]
+                lat = b_info["lat"]
+                lng = b_info["lng"]
+            else:
+                loc = random.choice(locations)
+                prov_id = loc["province_id"]
+                w_id = loc["ward_id"]
+                street = random.choice(loc["streets"])
+                house_no = f"Số {random.randint(3, 199)} ngõ {random.randint(10, 160)}"
+                address_detail = f"{house_no} {street}"
+                lat = round(loc["lat"] + random.uniform(-0.007, 0.007), 7)
+                lng = round(loc["lng"] + random.uniform(-0.007, 0.007), 7)
 
             area = round(random.uniform(18.0, 48.0), 1)
             # Giá niêm yết: 2.500.000 đến 6.800.000 (làm tròn trăm nghìn)
@@ -308,10 +341,10 @@ def generate_sql():
 
             furnishing_level = random.choices(["BASIC", "FULL", "EMPTY"], weights=[55, 40, 5])[0]
 
-            # Amenities
-            k_amenities = random.randint(4, 9)
-            amenities_sample = random.sample(room_amenities_pool, k_amenities)
-            amenities_str = ", ".join(amenities_sample)
+            # Tiện ích 16-bit Bitmask chuẩn hóa theo RoomAmenityConstants.java
+            k_amenities = random.randint(4, 10)
+            selected_amenities = random.sample(amenities_pool, k_amenities)
+            amenities_mask = sum(1 << item[0] for item in selected_amenities)
 
             desc = f"Phòng trọ {room_name.lower()}, không gian thoáng mát sạch sẽ, an ninh tuyệt đối camera 24/7. Khu vực dân trí cao, thuận tiện đi lại học tập và làm việc. Giờ giấc tự do thoải mái."
             cover_img = random.choice(room_photo_urls)
@@ -319,9 +352,9 @@ def generate_sql():
             b_id_str = f"{building_id_val}" if building_id_val != "NULL" else "NULL"
 
             room_values.append(
-                f"  ({cur_room_id}, {b_id_str}, {lid}, '{room_name}', '{loc['province']}', '{loc['ward']}', "
-                f"'{address_detail}', {floor}, {area}, {listed_price}, {standard_deposit}, {max_capacity}, "
-                f"{current_occupancy}, '{furnishing_level}', '{amenities_str}', '{desc}', '{status}', "
+                f"  ({cur_room_id}, {b_id_str}, {lid}, '{room_name}', {prov_id}, {w_id}, "
+                f"{amenities_mask}, '{address_detail}', {floor}, {area}, {listed_price}, {standard_deposit}, {max_capacity}, "
+                f"{current_occupancy}, '{furnishing_level}', '{desc}', '{status}', "
                 f"'{cover_img}', {lat}, {lng}, TRUE, CURRENT_TIMESTAMP - INTERVAL '{random.randint(1, 90)} days', CURRENT_TIMESTAMP)"
             )
 

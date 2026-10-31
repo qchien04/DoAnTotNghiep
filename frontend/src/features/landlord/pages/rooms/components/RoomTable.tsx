@@ -78,7 +78,7 @@ export const RoomTable: React.FC<RoomTableProps> = ({
                 <p className="text-[12px] text-stay-text-muted truncate">{item.buildingName}</p>
               ) : (
                 <p className="text-[12px] text-stay-text-muted truncate">
-                  {item.fullAddress || formatFullAddress(item.addressDetail, item.wardId, item.provinceId) || 'Chưa có địa chỉ'}
+                  {formatFullAddress(item.addressDetail, item.wardId, item.provinceId) || item.addressDetail || 'Chưa có địa chỉ'}
                 </p>
               )}
             </div>

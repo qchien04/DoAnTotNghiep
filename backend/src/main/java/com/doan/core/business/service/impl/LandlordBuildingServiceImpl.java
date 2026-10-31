@@ -9,6 +9,7 @@ import com.doan.core.business.repository.BuildingRepository;
 import com.doan.core.business.repository.RoomRepository;
 import com.doan.core.business.repository.UserRepository;
 import com.doan.core.business.service.LandlordBuildingService;
+import com.doan.core.common.constant.VietnamLocationConstants;
 import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.exception.BaseException;
 import com.doan.core.common.exception.ErrorCode;
@@ -100,6 +101,8 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
             throw new BaseException(ErrorCode.BAD_REQUEST, "Số tầng tòa nhà phải lớn hơn 0");
         }
 
+        VietnamLocationConstants.validateLocation(request.getProvinceId(), request.getWardId());
+
         User landlord = userRepository.findById(landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
@@ -138,13 +141,11 @@ public class LandlordBuildingServiceImpl implements LandlordBuildingService {
         Building building = buildingRepository.findByIdAndLandlordId(buildingId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
 
+        VietnamLocationConstants.validateLocation(request.getProvinceId(), request.getWardId());
+
         building.setName(request.getName().trim());
-        if (request.getProvinceId() != null) {
-            building.setProvinceId(request.getProvinceId());
-        }
-        if (request.getWardId() != null) {
-            building.setWardId(request.getWardId());
-        }
+        building.setProvinceId(request.getProvinceId());
+        building.setWardId(request.getWardId());
         building.setAddressDetail(request.getAddressDetail().trim());
         building.setNumFloors(request.getNumFloors());
         building.setGeneralRules(request.getGeneralRules());

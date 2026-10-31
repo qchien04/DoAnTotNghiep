@@ -9,7 +9,7 @@ import {
   encodeAmenitiesMask,
 } from '@/shared/constants/roomAmenities';
 import { AmenityBadge } from '@/shared/components/ui/AmenityBadge';
-import { getProvinceName, getWardName } from '@/shared/constants/vietnamLocations';
+import { formatFullAddress, getProvinceName, getWardName } from '@/shared/constants/vietnamLocations';
 
 interface RoomDetailModalProps {
   open: boolean;
@@ -100,7 +100,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         <div style="font-family: inherit; font-size: 13px; padding: 2px;">
           <strong>Phòng: ${room.name}</strong><br/>
           ${room.buildingName ? `<span style="color: #4F46E5; font-size: 12px; font-weight: 500;">Tòa nhà: ${room.buildingName}</span><br/>` : ''}
-          <span style="color: #666; font-size: 12px;">${room.fullAddress || room.addressDetail || 'Chưa cập nhật địa chỉ'}</span>
+          <span style="color: #666; font-size: 12px;">${formatFullAddress(room.addressDetail, room.wardId, room.provinceId) || room.addressDetail || 'Chưa cập nhật địa chỉ'}</span>
         </div>
       `).openPopup();
 
@@ -300,7 +300,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                   Tỉnh / Thành phố
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {room.province || (room.provinceId ? getProvinceName(room.provinceId) : '—')}
+                  {room.provinceId ? getProvinceName(room.provinceId) : '—'}
                 </span>
               </div>
 
@@ -309,7 +309,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                   Phường / Xã
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {room.ward || (room.wardId ? getWardName(room.wardId) : '—')}
+                  {room.wardId ? getWardName(room.wardId) : '—'}
                 </span>
               </div>
 
@@ -318,7 +318,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                   Địa chỉ chi tiết
                 </span>
                 <span className="text-stay-text text-[14px] font-medium leading-relaxed">
-                  {room.addressDetail || room.fullAddress || '—'}
+                  {room.addressDetail || '—'}
                 </span>
               </div>
             </div>

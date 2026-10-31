@@ -41,9 +41,7 @@ public class PublicRoomSearchRequest {
     @Schema(description = "Diện tích tối đa (m2)")
     private BigDecimal maxArea;
 
-    @Schema(description = "Danh sách ID tiện ích yêu cầu")
-    @Builder.Default
-    private List<Long> amenityIds = new ArrayList<>();
+
 
     @Schema(description = "Danh sách các vùng tròn khoanh trên bản đồ")
     @Builder.Default

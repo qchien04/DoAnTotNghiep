@@ -7,6 +7,7 @@ import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.RoomImage;
 import com.doan.core.business.entity.User;
 import com.doan.core.business.entity.UtilityService;
+import com.doan.core.business.enums.ContractStatus;
 import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.repository.BuildingRepository;
 import com.doan.core.business.repository.ContractRepository;
@@ -14,6 +15,7 @@ import com.doan.core.business.repository.RoomRepository;
 import com.doan.core.business.repository.UserRepository;
 import com.doan.core.business.repository.UtilityServiceRepository;
 import com.doan.core.business.service.LandlordRoomService;
+import com.doan.core.common.constant.VietnamLocationConstants;
 import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.exception.BaseException;
 import com.doan.core.common.exception.ErrorCode;
@@ -132,6 +134,8 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
+        VietnamLocationConstants.validateLocation(provinceId, wardId);
+
         User landlord = userRepository.findById(landlordId)
                 .orElse(building != null ? building.getLandlord() : null);
 
@@ -141,8 +145,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
             amenitiesMask = com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities());
         }
-
-
 
         List<UtilityService> services = new ArrayList<>();
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
@@ -269,6 +271,10 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
+        Integer targetProvinceId = provinceId != null ? provinceId : room.getProvinceId();
+        Integer targetWardId = wardId != null ? wardId : room.getWardId();
+        VietnamLocationConstants.validateLocation(targetProvinceId, targetWardId);
+
         if (provinceId != null) {
             room.setProvinceId(provinceId);
         }
@@ -297,7 +303,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
             room.setAmenitiesMask(com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities()));
         }
-
 
         if (request.getServiceIds() != null) {
             List<UtilityService> updatedServices = utilityServiceRepository

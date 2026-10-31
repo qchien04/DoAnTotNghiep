@@ -67,9 +67,6 @@ public class RoomRequest {
     @Schema(description = "Danh sách tiện nghi phòng (Điều hòa, Nóng lạnh, Giường, Ban công...)", example = "[\"Điều hòa\", \"Nóng lạnh\"]")
     private List<String> amenities;
 
-    @Schema(description = "Danh sách ID các tiện ích chọn từ danh mục chuẩn", example = "[1, 2, 3]")
-    private List<Long> amenityIds;
-
     @Schema(description = "Danh sách ID các dịch vụ áp dụng cho phòng (Điện, nước, internet, gửi xe...)", example = "[1, 2, 3]")
     private List<Long> serviceIds;
 

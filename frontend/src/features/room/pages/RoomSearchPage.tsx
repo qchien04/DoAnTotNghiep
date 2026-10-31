@@ -24,10 +24,9 @@ const FALLBACK_ROOMS: Room[] = [
     standardDeposit: 4200000,
     maxCapacity: 2,
     status: 'AVAILABLE',
-    province: 'Hà Nội',
-    ward: 'Dịch Vọng Hậu',
+    provinceId: 1,
+    wardId: 101,
     addressDetail: 'Số 18 Ngõ 68 Trần Thái Tông',
-    fullAddress: 'Số 18 Ngõ 68 Trần Thái Tông, Cầu Giấy, Hà Nội',
     coverImageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
     imageUrls: ['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80'],
     amenities: ['Điều hòa', 'Wifi', 'Nóng lạnh', 'Ban công thoáng', 'Khóa vân tay'],
@@ -46,10 +45,9 @@ const FALLBACK_ROOMS: Room[] = [
     standardDeposit: 4800000,
     maxCapacity: 2,
     status: 'AVAILABLE',
-    province: 'Hà Nội',
-    ward: 'Dịch Vọng Hậu',
+    provinceId: 1,
+    wardId: 101,
     addressDetail: 'Ngõ 72 Phố Duy Tân',
-    fullAddress: 'Ngõ 72 Phố Duy Tân, Cầu Giấy, Hà Nội',
     coverImageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
     imageUrls: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80'],
     amenities: ['Điều hòa', 'Bếp riêng', 'Thang máy', 'Tủ lạnh', 'Máy giặt chung'],
@@ -68,10 +66,9 @@ const FALLBACK_ROOMS: Room[] = [
     standardDeposit: 3800000,
     maxCapacity: 2,
     status: 'AVAILABLE',
-    province: 'Hà Nội',
-    ward: 'Láng Thượng',
+    provinceId: 1,
+    wardId: 106,
     addressDetail: 'Ngõ 91 Chùa Láng',
-    fullAddress: 'Ngõ 91 Chùa Láng, Đống Đa, Hà Nội',
     coverImageUrl: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80',
     imageUrls: ['https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80'],
     amenities: ['Điều hòa', 'Nóng lạnh', 'Wifi', 'Ban công', 'Không chung chủ'],
@@ -90,10 +87,9 @@ const FALLBACK_ROOMS: Room[] = [
     standardDeposit: 5500000,
     maxCapacity: 4,
     status: 'AVAILABLE',
-    province: 'Hà Nội',
-    ward: 'Mỹ Đình 1',
+    provinceId: 1,
+    wardId: 111,
     addressDetail: 'Đường Đình Thôn',
-    fullAddress: 'Đường Đình Thôn, Nam Từ Liêm, Hà Nội',
     coverImageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
     imageUrls: ['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80'],
     amenities: ['2 Điều hòa', 'Tủ bếp', 'Chỗ để xe máy', 'Bảo vệ 24/7'],
@@ -112,10 +108,9 @@ const FALLBACK_ROOMS: Room[] = [
     standardDeposit: 2800000,
     maxCapacity: 2,
     status: 'AVAILABLE',
-    province: 'Hà Nội',
-    ward: 'Bách Khoa',
+    provinceId: 1,
+    wardId: 104,
     addressDetail: 'Số 45 Tạ Quang Bửu',
-    fullAddress: 'Số 45 Tạ Quang Bửu, Hai Bà Trưng, Hà Nội',
     coverImageUrl: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80',
     imageUrls: ['https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80'],
     amenities: ['Điều hòa', 'Nóng lạnh', 'Wifi', 'Khép kín'],
@@ -134,10 +129,9 @@ const FALLBACK_ROOMS: Room[] = [
     standardDeposit: 3500000,
     maxCapacity: 2,
     status: 'AVAILABLE',
-    province: 'Hà Nội',
-    ward: 'Thanh Xuân Nam',
+    provinceId: 1,
+    wardId: 108,
     addressDetail: 'Ngõ 88 Triều Khúc',
-    fullAddress: 'Ngõ 88 Triều Khúc, Thanh Xuân, Hà Nội',
     coverImageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
     imageUrls: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80'],
     amenities: ['Điều hòa', 'Máy giặt', 'Nóng lạnh', 'Tủ quần áo lớn', 'Cửa sổ thoáng'],
@@ -155,7 +149,6 @@ const DEFAULT_FILTER_VALUES: RoomFilterValues = {
   maxPrice: 15000000,
   minArea: 15,
   maxArea: 80,
-  amenityIds: [],
   zones: [],
 };
 
@@ -220,7 +213,6 @@ export const RoomSearchPage: React.FC = () => {
       minArea: filterValues.minArea > 15 ? filterValues.minArea : undefined,
       maxArea: filterValues.maxArea < 80 ? filterValues.maxArea : undefined,
       amenitiesMask: filterValues.amenitiesMask && filterValues.amenitiesMask > 0 ? filterValues.amenitiesMask : undefined,
-      amenityIds: filterValues.amenityIds.length > 0 ? filterValues.amenityIds : undefined,
       zones:
         filterValues.zones.length > 0
           ? circleZonesToGeoZones(filterValues.zones)
@@ -244,7 +236,7 @@ export const RoomSearchPage: React.FC = () => {
           !filterValues.keyword &&
           filterValues.district === 'ALL' &&
           filterValues.zones.length === 0 &&
-          filterValues.amenityIds.length === 0 &&
+          (!filterValues.amenitiesMask || filterValues.amenitiesMask === 0) &&
           filterValues.minPrice === 0 &&
           filterValues.maxPrice >= 15000000
         ) {
@@ -346,7 +338,7 @@ export const RoomSearchPage: React.FC = () => {
         {/* Bố cục 2 Cột: Cột trái (Sidebar Bộ lọc) + Cột phải (Kết quả / Bản đồ) */}
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Cột trái: Sidebar bộ lọc */}
-          <div className="w-full lg:w-[340px] xl:w-[360px] shrink-0 sticky top-4">
+          <div className="w-full lg:w-[340px] xl:w-[360px] shrink-0 lg:sticky lg:top-20 z-10">
             <RoomFilterSidebar
               values={filterValues}
               onChange={handleFilterChange}

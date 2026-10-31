@@ -42,10 +42,10 @@ VALUES
 -- =============================================================================
 -- 2. TÒA NHÀ / KHU TRỌ (BUILDINGS)
 -- =============================================================================
-INSERT INTO buildings (id, landlord_id, name, province, ward, address_detail, num_floors, general_rules, latitude, longitude, is_active, created_at, updated_at)
+INSERT INTO buildings (id, landlord_id, name, province_id, ward_id, address_detail, num_floors, general_rules, latitude, longitude, is_active, created_at, updated_at)
 VALUES
-    (1, 2, 'Tòa nhà Ánh Dương', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 5, 'Giữ gìn vệ sinh chung, không làm ồn sau 23h, khóa cổng cẩn thận.', 20.98520000, 105.79810000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (2, 2, 'Chung cư Mini Cầu Giấy', 'Thành phố Hà Nội', 'Phường Dịch Vọng Hậu', 'Ngõ 175 Xuân Thủy', 7, 'Thang máy quẹt thẻ, khóa vân tay, để xe đúng vị trí quy định.', 21.03710000, 105.78320000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (1, 2, 'Tòa nhà Ánh Dương', 1, 116, 'Số 15 ngõ 68 Triều Khúc', 5, 'Giữ gìn vệ sinh chung, không làm ồn sau 23h, khóa cổng cẩn thận.', 20.98520000, 105.79810000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (2, 2, 'Chung cư Mini Cầu Giấy', 1, 101, 'Ngõ 175 Xuân Thủy', 7, 'Thang máy quẹt thẻ, khóa vân tay, để xe đúng vị trí quy định.', 21.03710000, 105.78320000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =============================================================================
 -- 3. DỊCH VỤ TIỆN ÍCH CHỦ TRỌ (SERVICES)
@@ -63,13 +63,13 @@ VALUES
 -- Phòng 4 thuộc Tòa nhà 2 (CCMN Cầu Giấy)
 -- Phòng 5: Nhà trọ độc lập (building_id = NULL) có địa chỉ & tọa độ GPS riêng
 -- =============================================================================
-INSERT INTO rooms (id, building_id, landlord_id, name, province, ward, address_detail, floor, area, listed_price, standard_deposit, max_capacity, current_occupancy, furnishing_level, amenities, description, status, cover_image_url, latitude, longitude, is_public, created_at, updated_at)
+INSERT INTO rooms (id, building_id, landlord_id, name, province_id, ward_id, amenities_mask, address_detail, floor, area, listed_price, standard_deposit, max_capacity, current_occupancy, furnishing_level, description, status, cover_image_url, latitude, longitude, is_public, created_at, updated_at)
 VALUES
-    (1, 1, 2, 'Phòng 101 - Ban công thoáng', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 1, 28.50, 3500000, 3500000, 2, 0, 'FULL', 'Điều hòa, Bình nóng lạnh, Tủ lạnh, Giường đệm, Tủ quần áo', 'Phòng tầng 1 thoáng mát có ban công, cửa sổ đón gió tự nhiên.', 'AVAILABLE', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 20.98520000, 105.79810000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (2, 1, 2, 'Phòng 102 - Khép kín cao cấp', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 1, 32.00, 3800000, 3800000, 3, 2, 'FULL', 'Điều hòa Daikin, Nóng lạnh, Tủ lạnh 2 cánh, Máy giặt riêng, Wifi tốc độ cao', 'Phòng tầng 1 khép kín, có gác xép kiên cố, để xe miễn phí.', 'OCCUPIED', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 20.98525000, 105.79820000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (3, 1, 2, 'Phòng 201 - View phố thoáng đãng', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 2, 35.00, 4200000, 4200000, 3, 0, 'FULL', 'Điều hòa, Nóng lạnh, Tủ bếp riêng, Tủ lạnh, Bàn học', 'Phòng tầng 2 view thoáng mát, bếp nấu ăn riêng biệt.', 'AVAILABLE', 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800', 20.98530000, 105.79830000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (4, 2, 2, 'Phòng 302 - Studio Xuân Thủy', 'Thành phố Hà Nội', 'Phường Dịch Vọng Hậu', 'Ngõ 175 Xuân Thủy', 3, 30.00, 4400000, 4400000, 2, 1, 'FULL', 'Thang máy, Khóa vân tay, Điều hòa Inverter, Tủ lạnh side by side', 'Gần ĐH Sư Phạm, ĐH Quốc Gia, full nội thất cao cấp.', 'OCCUPIED', 'https://images.unsplash.com/photo-1502005229762-ee1b2da94088?w=800', 21.03710000, 105.78320000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (5, NULL, 2, 'Nhà trọ độc lập Bách Khoa', 'Thành phố Hà Nội', 'Phường Bách Khoa', 'Số 25 ngõ 40 Tạ Quang Bửu', 1, 25.00, 3200000, 3200000, 2, 0, 'BASIC', 'Điều hòa, Nóng lạnh, Kệ bếp', 'Nhà trọ riêng độc lập không chung chủ, giờ giấc tự do, gần ĐHBK Hà Nội.', 'AVAILABLE', 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800', 21.00560000, 105.84330000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (1, 1, 2, 'Phòng 101 - Ban công thoáng', 1, 116, 183, 'Số 15 ngõ 68 Triều Khúc', 1, 28.50, 3500000, 3500000, 2, 0, 'FULL', 'Phòng tầng 1 thoáng mát có ban công, cửa sổ đón gió tự nhiên.', 'AVAILABLE', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 20.98520000, 105.79810000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (2, 1, 2, 'Phòng 102 - Khép kín cao cấp', 1, 116, 783, 'Số 15 ngõ 68 Triều Khúc', 1, 32.00, 3800000, 3800000, 3, 2, 'FULL', 'Phòng tầng 1 khép kín, có gác xép kiên cố, để xe miễn phí.', 'OCCUPIED', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 20.98525000, 105.79820000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (3, 1, 2, 'Phòng 201 - View phố thoáng đãng', 1, 116, 71, 'Số 15 ngõ 68 Triều Khúc', 2, 35.00, 4200000, 4200000, 3, 0, 'FULL', 'Phòng tầng 2 view thoáng mát, bếp nấu ăn riêng biệt.', 'AVAILABLE', 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800', 20.98530000, 105.79830000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (4, 2, 2, 'Phòng 302 - Studio Xuân Thủy', 1, 101, 6149, 'Ngõ 175 Xuân Thủy', 3, 30.00, 4400000, 4400000, 2, 1, 'FULL', 'Gần ĐH Sư Phạm, ĐH Quốc Gia, full nội thất cao cấp.', 'OCCUPIED', 'https://images.unsplash.com/photo-1502005229762-ee1b2da94088?w=800', 21.03710000, 105.78320000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (5, NULL, 2, 'Nhà trọ độc lập Bách Khoa', 1, 111, 67, 'Số 25 ngõ 40 Tạ Quang Bửu', 1, 25.00, 3200000, 3200000, 2, 0, 'BASIC', 'Nhà trọ riêng độc lập không chung chủ, giờ giấc tự do, gần ĐHBK Hà Nội.', 'AVAILABLE', 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800', 21.00560000, 105.84330000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =============================================================================
 -- 5. BẢNG ẢNH PHÒNG TRỌ (ROOM_IMAGES)

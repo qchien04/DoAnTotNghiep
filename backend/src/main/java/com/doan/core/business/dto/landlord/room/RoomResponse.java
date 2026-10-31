@@ -42,15 +42,10 @@ public class RoomResponse {
         private List<UtilityServiceResponse> services;
         private String description;
         private RoomStatus status;
-        private String province;
-        private String ward;
         private Integer provinceId;
         private Integer wardId;
-        private String provinceName;
-        private String wardName;
         private Integer amenitiesMask;
         private String addressDetail;
-        private String fullAddress;
         private String coverImageUrl;
         private List<String> imageUrls;
         private BigDecimal latitude;
@@ -105,31 +100,8 @@ public class RoomResponse {
                 Integer wrdId = room.getWardId() != null ? room.getWardId()
                                 : (room.getBuilding() != null ? room.getBuilding().getWardId() : null);
 
-                String prov = provId != null
-                                ? com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(provId)
-                                : null;
-
-                String wrd = wrdId != null
-                                ? com.doan.core.common.constant.VietnamLocationConstants.getWardName(wrdId)
-                                : null;
-
                 String addr = room.getAddressDetail() != null ? room.getAddressDetail()
                                 : (room.getBuilding() != null ? room.getBuilding().getAddressDetail() : null);
-
-                String fullAddr = com.doan.core.common.constant.VietnamLocationConstants.formatAddress(addr, wrdId, provId);
-                if (fullAddr == null || fullAddr.isBlank()) {
-                        StringBuilder sb = new StringBuilder();
-                        if (addr != null && !addr.isBlank()) sb.append(addr);
-                        if (wrd != null && !wrd.isBlank()) {
-                                if (sb.length() > 0) sb.append(", ");
-                                sb.append(wrd);
-                        }
-                        if (prov != null && !prov.isBlank()) {
-                                if (sb.length() > 0) sb.append(", ");
-                                sb.append(prov);
-                        }
-                        fullAddr = sb.toString();
-                }
 
                 java.math.BigDecimal lat = room.getLatitude() != null ? room.getLatitude()
                                 : (room.getBuilding() != null ? room.getBuilding().getLatitude() : null);
@@ -147,15 +119,10 @@ public class RoomResponse {
                                 .id(room.getId())
                                 .buildingId(room.getBuilding() != null ? room.getBuilding().getId() : null)
                                 .buildingName(room.getBuilding() != null ? room.getBuilding().getName() : null)
-                                .province(prov)
-                                .ward(wrd)
                                 .provinceId(provId)
                                 .wardId(wrdId)
-                                .provinceName(prov)
-                                .wardName(wrd)
                                 .amenitiesMask(mask)
                                 .addressDetail(addr)
-                                .fullAddress(fullAddr)
                                 .name(room.getName())
                                 .floor(room.getFloor())
                                 .area(room.getArea())

@@ -219,17 +219,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
             ? (editingRoom.services as any[]).map((s: any) => s.id)
             : []);
 
-        const allProvs = getProvinces();
-        const pId =
-          editingRoom.provinceId ??
-          (editingRoom.province
-            ? allProvs.find((p) => p.name.toLowerCase() === editingRoom.province?.toLowerCase())?.id
-            : 1);
-        const wId =
-          editingRoom.wardId ??
-          (editingRoom.ward && pId
-            ? getWardsByProvinceId(pId).find((w) => w.name.toLowerCase() === editingRoom.ward?.toLowerCase())?.id
-            : undefined);
+        const pId = editingRoom.provinceId ?? 1;
+        const wId = editingRoom.wardId;
 
         setSelectedProvinceId(pId || 1);
 
@@ -237,8 +228,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
           buildingId: editingRoom.buildingId || null,
           provinceId: pId || 1,
           wardId: wId,
-          province: editingRoom.province || getProvinceName(pId || 1),
-          ward: editingRoom.ward || (wId ? getWardName(wId) : ''),
+          province: getProvinceName(pId || 1),
+          ward: wId ? getWardName(wId) : '',
           addressDetail: editingRoom.addressDetail || 'Hà Nội, Việt Nam',
           name: editingRoom.name,
           floor: editingRoom.floor ?? 1,
@@ -380,23 +371,11 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     if (selectedBuilding) {
       const lat = selectedBuilding.latitude ? Number(selectedBuilding.latitude) : currentCoords.lat;
       const lng = selectedBuilding.longitude ? Number(selectedBuilding.longitude) : currentCoords.lng;
-      const addr =
-        selectedBuilding.addressDetail ||
-        `${selectedBuilding.ward ? selectedBuilding.ward + ', ' : ''}${selectedBuilding.province || ''}`;
 
       setCurrentCoords({ lat, lng });
 
-      const allProvs = getProvinces();
-      const pId =
-        selectedBuilding.provinceId ??
-        (selectedBuilding.province
-          ? allProvs.find((p) => p.name.toLowerCase() === selectedBuilding.province?.toLowerCase())?.id
-          : 1);
-      const wId =
-        selectedBuilding.wardId ??
-        (selectedBuilding.ward && pId
-          ? getWardsByProvinceId(pId).find((w) => w.name.toLowerCase() === selectedBuilding.ward?.toLowerCase())?.id
-          : undefined);
+      const pId = selectedBuilding.provinceId ?? 1;
+      const wId = selectedBuilding.wardId;
 
       if (pId) {
         setSelectedProvinceId(pId);
@@ -405,9 +384,9 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
       form.setFieldsValue({
         provinceId: pId,
         wardId: wId,
-        province: selectedBuilding.province || (pId ? getProvinceName(pId) : 'Thành phố Hà Nội'),
-        ward: selectedBuilding.ward || (wId ? getWardName(wId) : ''),
-        addressDetail: selectedBuilding.addressDetail || addr || 'Hà Nội, Việt Nam',
+        province: getProvinceName(pId),
+        ward: wId ? getWardName(wId) : '',
+        addressDetail: selectedBuilding.addressDetail || 'Hà Nội, Việt Nam',
         latitude: lat,
         longitude: lng,
       });
@@ -526,15 +505,10 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
       isInheritingBuilding && selectedBuilding?.provinceId ? selectedBuilding.provinceId : values.provinceId;
     const wardId =
       isInheritingBuilding && selectedBuilding?.wardId ? selectedBuilding.wardId : values.wardId;
-    const pName = getProvinceName(provinceId) || values.province;
-    const wName = wardId ? getWardName(wardId) : values.ward;
-
     await onSubmit({
       ...values,
       provinceId,
       wardId,
-      province: pName,
-      ward: wName,
       amenities: selectedAmenityNames,
       amenitiesMask,
       coverImageUrl,

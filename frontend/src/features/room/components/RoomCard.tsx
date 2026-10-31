@@ -35,10 +35,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onViewDetail }) => {
       : `${priceNum.toLocaleString('vi-VN')} đ/tháng`;
 
   const addressText =
-    room.fullAddress ||
     formatFullAddress(room.addressDetail, room.wardId, room.provinceId) ||
     room.addressDetail ||
-    (room.ward ? `${room.ward}, ${room.province || 'Hà Nội'}` : 'Hà Nội');
+    'Chưa cập nhật địa chỉ';
 
   // Lấy danh sách tiện ích (hỗ trợ bitmask amenitiesMask, amenityDetails, amenities dạng array)
   const displayAmenities: string[] = [];

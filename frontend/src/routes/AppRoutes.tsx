@@ -112,7 +112,6 @@ export const AppRoutes: React.FC = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
-          <Route path="amenities" element={<Navigate to="/admin" replace />} />
           <Route path="master-data" element={<AdminMasterDataPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
           <Route path="profile" element={<ProfilePage />} />

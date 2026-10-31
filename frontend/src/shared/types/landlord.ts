@@ -19,12 +19,8 @@ import { Amenity } from './amenity';
 export interface Building {
   id: number | string;
   name: string;
-  province?: string;
-  ward?: string;
   provinceId?: number;
   wardId?: number;
-  provinceName?: string;
-  wardName?: string;
   addressDetail?: string;
   numFloors?: number;
   generalRules?: string;
@@ -40,8 +36,6 @@ export interface Building {
 // --- 1.B. REQUEST OBJECTS (Frontend gửi lên) ---
 export interface CreateBuildingDto {
   name: string;
-  province?: string;
-  ward?: string;
   provinceId?: number;
   wardId?: number;
   addressDetail?: string;
@@ -83,14 +77,9 @@ export interface Room {
   services?: any[];
   description?: string;
   status: RoomStatus;
-  province?: string;
-  ward?: string;
   provinceId?: number;
   wardId?: number;
-  provinceName?: string;
-  wardName?: string;
   addressDetail?: string;
-  fullAddress?: string;
   coverImageUrl?: string;
   imageUrls?: string[];
   latitude?: number;
@@ -113,13 +102,10 @@ export interface CreateRoomDto {
   furnishingLevel?: string;
   amenities?: string[];
   amenitiesMask?: number;
-  amenityIds?: number[];
   serviceIds?: (number | string)[];
   description?: string;
   status?: RoomStatus;
   isPublic?: boolean;
-  province?: string;
-  ward?: string;
   provinceId?: number;
   wardId?: number;
   addressDetail?: string;

@@ -211,7 +211,7 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
                   Tỉnh / Thành phố
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {building.province || (building.provinceId ? getProvinceName(building.provinceId) : '—')}
+                  {building.provinceId ? getProvinceName(building.provinceId) : '—'}
                 </span>
               </div>
 
@@ -220,7 +220,7 @@ export const BuildingDetailModal: React.FC<BuildingDetailModalProps> = ({
                   Phường / Xã
                 </span>
                 <span className="text-stay-text text-[14px] font-medium">
-                  {building.ward || (building.wardId ? getWardName(building.wardId) : '—')}
+                  {building.wardId ? getWardName(building.wardId) : '—'}
                 </span>
               </div>
 

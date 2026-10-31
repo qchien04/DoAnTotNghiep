@@ -157,9 +157,8 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
 
         setCurrentCoords(coords);
 
-        const allProvs = getProvinces();
-        const pId = editingBuilding.provinceId ?? (editingBuilding.province ? allProvs.find(p => p.name.toLowerCase() === editingBuilding.province?.toLowerCase())?.id : 1);
-        const wId = editingBuilding.wardId ?? (editingBuilding.ward && pId ? getWardsByProvinceId(pId).find(w => w.name.toLowerCase() === editingBuilding.ward?.toLowerCase())?.id : undefined);
+        const pId = editingBuilding.provinceId ?? 1;
+        const wId = editingBuilding.wardId;
 
         setSelectedProvinceId(pId || 1);
 
@@ -167,8 +166,8 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
           name: editingBuilding.name,
           provinceId: pId || 1,
           wardId: wId,
-          province: editingBuilding.province || getProvinceName(pId || 1),
-          ward: editingBuilding.ward || (wId ? getWardName(wId) : ''),
+          province: getProvinceName(pId || 1),
+          ward: wId ? getWardName(wId) : '',
           addressDetail: editingBuilding.addressDetail || 'Hà Nội, Việt Nam',
           numFloors: editingBuilding.numFloors || 5,
           generalRules: editingBuilding.generalRules || '',
@@ -328,13 +327,7 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
 
   const handleOk = async () => {
     const values = await form.validateFields();
-    const pName = getProvinceName(values.provinceId);
-    const wName = values.wardId ? getWardName(values.wardId) : values.ward;
-    await onSubmit({
-      ...values,
-      province: pName,
-      ward: wName,
-    } as CreateBuildingDto);
+    await onSubmit(values as CreateBuildingDto);
   };
 
   return (

@@ -205,7 +205,7 @@ export const RoomBigMap: React.FC<RoomBigMapProps> = ({
               ${room.name}
             </div>
             <div style="font-size: 11px; color: #64748B; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              ${room.fullAddress || formatFullAddress(room.addressDetail, room.wardId, room.provinceId) || room.addressDetail || 'Hà Nội'}
+              ${formatFullAddress(room.addressDetail, room.wardId, room.provinceId) || room.addressDetail || 'Hà Nội'}
             </div>
             <button id="view-room-${room.id}" style="
               width: 100%;

@@ -41,7 +41,6 @@ public class RoomPublicController {
             @RequestParam(required = false) Long maxPrice,
             @RequestParam(required = false) BigDecimal minArea,
             @RequestParam(required = false) BigDecimal maxArea,
-            @RequestParam(required = false) List<Long> amenityIds,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "12") int size,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
@@ -56,7 +55,6 @@ public class RoomPublicController {
                 .maxPrice(maxPrice)
                 .minArea(minArea)
                 .maxArea(maxArea)
-                .amenityIds(amenityIds)
                 .page(page)
                 .size(size)
                 .sortBy(sortBy)

@@ -10,7 +10,6 @@ export interface GeoZone {
 
 export interface PublicRoomSearchRequest {
   keyword?: string;
-  province?: string;
   district?: string;
   provinceId?: number;
   wardId?: number;
@@ -18,7 +17,6 @@ export interface PublicRoomSearchRequest {
   maxPrice?: number;
   minArea?: number;
   maxArea?: number;
-  amenityIds?: number[];
   amenitiesMask?: number;
   zones?: GeoZone[];
   page?: number;

@@ -18,7 +18,7 @@ import { authService } from '@/shared/services/authService';
 import { LeafletMap } from '@/shared/components/ui/LeafletMap';
 import { PublicRoomItem } from './RoomSearchPage';
 import { decodeAmenitiesMask } from '@/shared/constants/roomAmenities';
-import { formatFullAddress } from '@/shared/constants/vietnamLocations';
+import { formatFullAddress, getProvinceName, getWardName } from '@/shared/constants/vietnamLocations';
 
 const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
   '1': {
@@ -235,10 +235,9 @@ export const RoomDetailPage: React.FC = () => {
       const priceNum = Number(found.listedPrice || found.price || 3500000);
       const priceTxt = `${(priceNum / 1000000).toFixed(1)} tr/tháng`;
       const loc =
-        found.fullAddress ||
         formatFullAddress(found.addressDetail, found.wardId, found.provinceId) ||
         found.addressDetail ||
-        (found.ward ? `${found.ward}, ${found.province || 'Hà Nội'}` : 'Hà Nội');
+        'Chưa cập nhật địa chỉ';
       const defaultImg =
         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80';
       const img =
@@ -254,7 +253,7 @@ export const RoomDetailPage: React.FC = () => {
         price: priceNum,
         priceDisplay: priceTxt,
         location: loc,
-        district: found.ward || 'Hà Nội',
+        district: getWardName(found.wardId) || getProvinceName(found.provinceId) || 'Hà Nội',
         latitude: found.latitude ? Number(found.latitude) : 21.0285,
         longitude: found.longitude ? Number(found.longitude) : 105.8048,
         area: Number(found.area || 25),

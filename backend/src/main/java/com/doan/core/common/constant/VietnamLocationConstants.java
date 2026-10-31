@@ -2,17 +2,23 @@ package com.doan.core.common.constant;
 
 import java.util.*;
 
+import com.doan.core.common.exception.BaseException;
+import com.doan.core.common.exception.ErrorCode;
+
 /**
  * Danh mục Địa chính 2 cấp (Tỉnh / Thành phố và Phường / Xã) của Việt Nam
  * Cố định và chuẩn hóa mã định danh số nguyên (provinceId, wardId)
  */
 public final class VietnamLocationConstants {
 
-    private VietnamLocationConstants() {}
+    private VietnamLocationConstants() {
+    }
 
-    public record ProvinceItem(int id, String name, String code) {}
+    public record ProvinceItem(int id, String name, String code) {
+    }
 
-    public record WardItem(int id, int provinceId, String name) {}
+    public record WardItem(int id, int provinceId, String name) {
+    }
 
     public static final Map<Integer, ProvinceItem> PROVINCES = new LinkedHashMap<>();
     public static final Map<Integer, WardItem> WARDS = new LinkedHashMap<>();
@@ -478,20 +484,67 @@ public final class VietnamLocationConstants {
     }
 
     public static String getProvinceName(Integer provinceId) {
-        if (provinceId == null) return null;
+        if (provinceId == null)
+            return null;
         ProvinceItem p = PROVINCES.get(provinceId);
         return p != null ? p.name() : null;
     }
 
     public static String getWardName(Integer wardId) {
-        if (wardId == null) return null;
+        if (wardId == null)
+            return null;
         WardItem w = WARDS.get(wardId);
         return w != null ? w.name() : null;
     }
 
     public static List<WardItem> getWardsByProvince(Integer provinceId) {
-        if (provinceId == null) return Collections.emptyList();
+        if (provinceId == null)
+            return Collections.emptyList();
         return WARDS_BY_PROVINCE.getOrDefault(provinceId, Collections.emptyList());
+    }
+
+    public static boolean isValidProvince(Integer provinceId) {
+        if (provinceId == null)
+            return false;
+        return PROVINCES.containsKey(provinceId);
+    }
+
+    public static boolean isValidWard(Integer wardId) {
+        if (wardId == null)
+            return false;
+        return WARDS.containsKey(wardId);
+    }
+
+    public static boolean isValidWardOfProvince(Integer wardId, Integer provinceId) {
+        if (wardId == null)
+            return false;
+        WardItem ward = WARDS.get(wardId);
+        if (ward == null)
+            return false;
+        if (provinceId != null && ward.provinceId() != provinceId) {
+            return false;
+        }
+        return true;
+    }
+
+    public static void validateLocation(Integer provinceId, Integer wardId) {
+        if (provinceId != null && !isValidProvince(provinceId)) {
+            throw new BaseException(
+                    ErrorCode.BAD_REQUEST,
+                    "Mã tỉnh/thành phố không hợp lệ: " + provinceId);
+        }
+        if (wardId != null) {
+            if (!isValidWard(wardId)) {
+                throw new BaseException(
+                        ErrorCode.BAD_REQUEST,
+                        "Mã phường/xã không hợp lệ: " + wardId);
+            }
+            if (provinceId != null && !isValidWardOfProvince(wardId, provinceId)) {
+                throw new BaseException(
+                        ErrorCode.BAD_REQUEST,
+                        "Mã phường/xã (" + wardId + ") không thuộc tỉnh/thành phố (" + provinceId + ")");
+            }
+        }
     }
 
     public static String formatAddress(String addressDetail, Integer wardId, Integer provinceId) {
@@ -501,12 +554,14 @@ public final class VietnamLocationConstants {
         }
         String ward = getWardName(wardId);
         if (ward != null && !ward.isBlank()) {
-            if (sb.length() > 0) sb.append(", ");
+            if (sb.length() > 0)
+                sb.append(", ");
             sb.append(ward);
         }
         String prov = getProvinceName(provinceId);
         if (prov != null && !prov.isBlank()) {
-            if (sb.length() > 0) sb.append(", ");
+            if (sb.length() > 0)
+                sb.append(", ");
             sb.append(prov);
         }
         return sb.toString();

@@ -74,22 +74,9 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
         }
 
         // 6. Amenities filter (Bitmask matching)
-        int targetAmenitiesMask = 0;
         if (request.getAmenitiesMask() != null && request.getAmenitiesMask() > 0) {
-            targetAmenitiesMask = request.getAmenitiesMask();
-        } else if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
-            for (Long id : request.getAmenityIds()) {
-                if (id != null && id >= 1 && id <= 16) {
-                    targetAmenitiesMask |= (1 << (id - 1));
-                }
-            }
-        } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
-            targetAmenitiesMask = com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities());
-        }
-
-        if (targetAmenitiesMask > 0) {
             fromAndWhere.append("AND (COALESCE(r.amenities_mask, 0) & :amenitiesMask) = :amenitiesMask ");
-            parameters.put("amenitiesMask", targetAmenitiesMask);
+            parameters.put("amenitiesMask", request.getAmenitiesMask());
         }
 
         // 7. Spatial circular zones filter (Haversine formula OR-chained directly in Database)

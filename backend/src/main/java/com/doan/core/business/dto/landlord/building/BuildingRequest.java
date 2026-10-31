@@ -19,9 +19,11 @@ public class BuildingRequest {
     @Schema(description = "Tên tòa nhà", example = "Tòa nhà Ánh Dương")
     private String name;
 
+    @NotNull(message = "Tỉnh / Thành phố không được để trống")
     @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
     private Integer provinceId;
 
+    @NotNull(message = "Phường / Xã không được để trống")
     @Schema(description = "Mã Phường / Xã", example = "101")
     private Integer wardId;
 
