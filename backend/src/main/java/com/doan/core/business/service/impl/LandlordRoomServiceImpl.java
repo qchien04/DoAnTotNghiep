@@ -111,6 +111,9 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         String ward = request.getWard();
         String addressDetail = request.getAddressDetail();
 
+        Integer provinceId = request.getProvinceId();
+        Integer wardId = request.getWardId();
+
         if (request.getBuildingId() != null) {
             building = buildingRepository.findByIdAndLandlordId(request.getBuildingId(), landlordId)
                     .orElseThrow(() -> new BaseException(ErrorCode.BUILDING_NOT_FOUND));
@@ -129,6 +132,12 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             if (addressDetail == null || addressDetail.isBlank()) {
                 addressDetail = building.getAddressDetail();
             }
+            if (provinceId == null) {
+                provinceId = building.getProvinceId();
+            }
+            if (wardId == null) {
+                wardId = building.getWardId();
+            }
         } else {
             // Phòng trọ độc lập
             if (roomRepository.existsByBuildingIsNullAndLandlordIdAndName(landlordId, request.getName().trim())) {
@@ -138,6 +147,13 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
 
         User landlord = userRepository.findById(landlordId)
                 .orElse(building != null ? building.getLandlord() : null);
+
+        int amenitiesMask = 0;
+        if (request.getAmenitiesMask() != null) {
+            amenitiesMask = request.getAmenitiesMask();
+        } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
+            amenitiesMask = com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities());
+        }
 
         List<Amenity> amenities = new ArrayList<>();
         if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
@@ -176,6 +192,9 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .landlord(landlord)
                 .province(province)
                 .ward(ward)
+                .provinceId(provinceId)
+                .wardId(wardId)
+                .amenitiesMask(amenitiesMask)
                 .addressDetail(addressDetail)
                 .name(request.getName().trim())
                 .floor(request.getFloor() != null ? request.getFloor() : 1)
@@ -263,16 +282,42 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         }
 
         room.setBuilding(building);
-        if (request.getProvince() != null && !request.getProvince().isBlank()) {
+
+        Integer provinceId = request.getProvinceId();
+        Integer wardId = request.getWardId();
+        if (building != null) {
+            if (provinceId == null) {
+                provinceId = building.getProvinceId();
+            }
+            if (wardId == null) {
+                wardId = building.getWardId();
+            }
+        }
+
+        if (provinceId != null) {
+            room.setProvinceId(provinceId);
+            String pName = com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(provinceId);
+            if (pName != null) {
+                room.setProvince(pName);
+            }
+        } else if (request.getProvince() != null && !request.getProvince().isBlank()) {
             room.setProvince(request.getProvince());
         } else if (building != null) {
             room.setProvince(building.getProvince());
+            room.setProvinceId(building.getProvinceId());
         }
 
-        if (request.getWard() != null && !request.getWard().isBlank()) {
+        if (wardId != null) {
+            room.setWardId(wardId);
+            String wName = com.doan.core.common.constant.VietnamLocationConstants.getWardName(wardId);
+            if (wName != null) {
+                room.setWard(wName);
+            }
+        } else if (request.getWard() != null && !request.getWard().isBlank()) {
             room.setWard(request.getWard());
         } else if (building != null) {
             room.setWard(building.getWard());
+            room.setWardId(building.getWardId());
         }
 
         if (request.getAddressDetail() != null && !request.getAddressDetail().isBlank()) {
@@ -290,6 +335,13 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         if (request.getFurnishingLevel() != null) {
             room.setFurnishingLevel(request.getFurnishingLevel());
         }
+
+        if (request.getAmenitiesMask() != null) {
+            room.setAmenitiesMask(request.getAmenitiesMask());
+        } else if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
+            room.setAmenitiesMask(com.doan.core.common.constant.RoomAmenityConstants.encode(request.getAmenities()));
+        }
+
         if (request.getAmenityIds() != null) {
             List<com.doan.core.business.entity.Amenity> updatedAmenities = amenityRepository
                     .findAllById(request.getAmenityIds());
