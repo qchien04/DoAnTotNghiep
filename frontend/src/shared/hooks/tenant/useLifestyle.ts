@@ -44,10 +44,10 @@ export const useSaveLifestyleProfile = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lifestyle', 'profile'] });
       queryClient.invalidateQueries({ queryKey: ['tenant', 'posts'] });
-      message.success('Lưu thông tin khảo sát lối sống thành công!');
+      message.success('Lưu thông tin khảo sát sinh hoạt thành công!');
     },
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || err?.message || 'Có lỗi xảy ra khi lưu khảo sát lối sống');
+      message.error(err?.response?.data?.message || err?.message || 'Có lỗi xảy ra khi lưu khảo sát sinh hoạt');
     },
   });
 

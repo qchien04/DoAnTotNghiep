@@ -429,8 +429,8 @@ export const HomePage: React.FC = () => {
               type="button"
               onClick={() => setSelectedFilter(f.id)}
               className={`px-3.5 py-1.5 rounded-full  font-semibold shrink-0 transition-all cursor-pointer border ${selectedFilter === f.id
-                  ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
-                  : 'bg-stay-card-bg text-stay-text hover:border-stay-primary/50 border-stay-border'
+                ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
+                : 'bg-stay-card-bg text-stay-text hover:border-stay-primary/50 border-stay-border'
                 }`}
             >
               {f.label}
@@ -463,8 +463,8 @@ export const HomePage: React.FC = () => {
                   type="button"
                   onClick={() => setViewMode('list')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg  font-semibold transition-all cursor-pointer ${viewMode === 'list'
-                      ? 'bg-stay-primary text-white shadow-xs'
-                      : 'text-stay-text-secondary hover:text-stay-text'
+                    ? 'bg-stay-primary text-white shadow-xs'
+                    : 'text-stay-text-secondary hover:text-stay-text'
                     }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -474,8 +474,8 @@ export const HomePage: React.FC = () => {
                   type="button"
                   onClick={() => setViewMode('map')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg  font-semibold transition-all cursor-pointer ${viewMode === 'map'
-                      ? 'bg-stay-primary text-white shadow-xs'
-                      : 'text-stay-text-secondary hover:text-stay-text'
+                    ? 'bg-stay-primary text-white shadow-xs'
+                    : 'text-stay-text-secondary hover:text-stay-text'
                     }`}
                 >
                   <MapIcon className="w-3.5 h-3.5" />
@@ -559,7 +559,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Ghép đôi theo lối sống (Lifestyle Match) */}
+      {/* 4. Ghép đôi theo sinh hoạt (Lifestyle Match) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2 border-b border-stay-border pb-3">
           <div>
@@ -608,7 +608,7 @@ export const HomePage: React.FC = () => {
               Bạn đang tìm phòng hay tìm bạn ở cùng?
             </h3>
             <p className="text-white/80  sm:text-sm leading-relaxed">
-              Tạo hồ sơ lối sống miễn phí ngay hôm nay để nhận thông báo khi có bạn cùng phòng hoặc căn phòng phù hợp nhất với bạn.
+              Tạo hồ sơ sinh hoạt miễn phí ngay hôm nay để nhận thông báo khi có bạn cùng phòng hoặc căn phòng phù hợp nhất với bạn.
             </p>
           </div>
 

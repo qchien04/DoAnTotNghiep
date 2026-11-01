@@ -47,9 +47,13 @@ public class GlobalExceptionHandler {
         }
         log.warn("Validation failed: {}", errors);
 
+        String firstErrorMessage = errors.isEmpty()
+                ? ErrorCode.BAD_REQUEST.getMessage()
+                : errors.values().iterator().next();
+
         ResponseData<Map<String, String>> response = ResponseData.<Map<String, String>>builder()
                 .code(ErrorCode.BAD_REQUEST.getCode())
-                .message(ErrorCode.BAD_REQUEST.getMessage())
+                .message(firstErrorMessage)
                 .errorDesc("Dữ liệu đầu vào không hợp lệ")
                 .data(errors)
                 .build();

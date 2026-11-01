@@ -13,7 +13,7 @@
 
 ### Các Đối Tượng Người Dùng (Actors)
 - **`Guest` (Khách vãng lai)**: Tìm kiếm bài đăng, xem thông tin phòng/bán kính bản đồ, đăng ký tài khoản.
-- **`User` (Người dùng cơ bản)**: Đăng nhập, đăng xuất, đổi mật khẩu, quản lý hồ sơ cá nhân và khảo sát lối sống gốc 15 chiều.
+- **`User` (Người dùng cơ bản)**: Đăng nhập, đăng xuất, đổi mật khẩu, quản lý hồ sơ cá nhân và khảo sát sinh hoạt gốc 15 chiều.
 - **`Tenant` (Người thuê trọ - Kế thừa User)**: Tìm kiếm ở ghép, đăng tin tìm bạn ghép phòng, ứng tuyển vào phòng, liên kết phòng với chủ trọ, xem hợp đồng/hóa đơn, quét VietQR thanh toán, gửi khiếu nại báo hỏng.
 - **`Landlord` (Chủ trọ - Kế thừa User)**: Quản lý tòa nhà, phòng, dịch vụ, hợp đồng, lập hóa đơn, xử lý sự cố, theo dõi doanh thu và công nợ.
 - **`Admin` (Quản trị viên hệ thống)**: Quản lý tài khoản toàn sàn, quản lý Master Data, kiểm duyệt vi phạm và xem thống kê tổng thể.
@@ -66,7 +66,7 @@
 
 ## 🧠 3. THUẬT TOÁN GHÉP ĐÔI AI VECTOR 15 CHIỀU & MULTI-SELECT BITMASK
 
-Hệ thống mã hóa và tính điểm tương thích lối sống theo chuẩn mực tuyệt đối giữa Python AI Service (`stayconnect_ai_engine.py`), Java Spring Boot (`LifestyleVectorHelper.java`) và React Frontend (`LifestyleQuestionnaire.tsx`):
+Hệ thống mã hóa và tính điểm tương thích sinh hoạt theo chuẩn mực tuyệt đối giữa Python AI Service (`stayconnect_ai_engine.py`), Java Spring Boot (`LifestyleVectorHelper.java`) và React Frontend (`LifestyleQuestionnaire.tsx`):
 
 ### A. Phân Loại 15 Câu Hỏi Lối Sống
 1. **10 Câu hỏi chọn 1 (Single-select - `SINGLE`)**:

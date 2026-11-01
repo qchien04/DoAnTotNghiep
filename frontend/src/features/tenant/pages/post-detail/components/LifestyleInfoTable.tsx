@@ -85,11 +85,8 @@ export const LifestyleInfoTable: React.FC<LifestyleInfoTableProps> = ({ post }) 
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-stay-text">
-          Tiêu chuẩn lối sống & Thói quen sinh hoạt
+          Thói quen sinh hoạt
         </h3>
-        <span className=" text-stay-text-secondary">
-          Khảo sát lối sống 8 chiều
-        </span>
       </div>
 
       <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">

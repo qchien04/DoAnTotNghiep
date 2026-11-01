@@ -11,7 +11,7 @@ import java.util.*;
 public class LifestyleVectorHelper {
 
     /**
-     * Sinh chuỗi vector lối sống 15 chiều từ danh sách các lựa chọn được chọn,
+     * Sinh chuỗi vector sinh hoạt 15 chiều từ danh sách các lựa chọn được chọn,
      * tự động áp dụng danh mục 15 câu hỏi chuẩn hóa trong LifestyleConstants.
      */
     public String buildVectorFromOptionMap(Map<Long, List<LifestyleOptionResponse>> selectedOptionsByQuestionId) {
@@ -19,10 +19,13 @@ public class LifestyleVectorHelper {
         List<String> values = new ArrayList<>();
 
         for (LifestyleQuestionResponse q : questions) {
-            List<LifestyleOptionResponse> opts = selectedOptionsByQuestionId != null ? selectedOptionsByQuestionId.get(q.getId()) : null;
+            List<LifestyleOptionResponse> opts = selectedOptionsByQuestionId != null
+                    ? selectedOptionsByQuestionId.get(q.getId())
+                    : null;
             if (opts != null && !opts.isEmpty()) {
                 if ("MULTI".equalsIgnoreCase(q.getQType())) {
-                    // Mã hóa bitmask bảo toàn nguyên vẹn mọi lựa chọn cho các câu hỏi đa lựa chọn (SETS & NOISE)
+                    // Mã hóa bitmask bảo toàn nguyên vẹn mọi lựa chọn cho các câu hỏi đa lựa chọn
+                    // (SETS & NOISE)
                     int bitmask = 0;
                     for (LifestyleOptionResponse opt : opts) {
                         if (opt != null && opt.getSortOrder() != null) {
@@ -47,7 +50,7 @@ public class LifestyleVectorHelper {
     }
 
     /**
-     * Sinh vector lối sống từ Map questionId -> optionId
+     * Sinh vector sinh hoạt từ Map questionId -> optionId
      */
     public String buildVectorFromSingleOptionMap(Map<Long, LifestyleOptionResponse> selectedOptionsByQuestionId) {
         Map<Long, List<LifestyleOptionResponse>> multiMap = new HashMap<>();
@@ -62,9 +65,10 @@ public class LifestyleVectorHelper {
     }
 
     /**
-     * Tính điểm tương thích Compatibility Score (0 -> 100%) giữa 2 vector lối sống
+     * Tính điểm tương thích Compatibility Score (0 -> 100%) giữa 2 vector sinh hoạt
      * sử dụng danh mục 15 câu hỏi chuẩn hóa và trọng số trong LifestyleConstants.
-     * Áp dụng nguyên tắc: Không tạo độ giống giả, an toàn với NaN và Bayesian Shrinkage.
+     * Áp dụng nguyên tắc: Không tạo độ giống giả, an toàn với NaN và Bayesian
+     * Shrinkage.
      * Với câu hỏi MULTI (SETS & NOISE), so khớp bằng khoảng cách Jaccard.
      */
     public int calculateCompatibilityScore(String vectorA, String vectorB) {
@@ -75,7 +79,8 @@ public class LifestyleVectorHelper {
         String[] partsA = vectorA.split(",");
         String[] partsB = vectorB.split(",");
         int length = Math.min(partsA.length, partsB.length);
-        if (length == 0) return 0;
+        if (length == 0)
+            return 0;
 
         List<LifestyleQuestionResponse> questions = LifestyleConstants.QUESTIONS;
         double weightedDiffSum = 0.0;
@@ -138,7 +143,8 @@ public class LifestyleVectorHelper {
 
         double rawCompatibility = 1.0 - (weightedDiffSum / answeredWeight); // [0.0, 1.0]
 
-        // Bayesian Shrinkage: kéo về prior 0.60 theo mức độ khuyết thiếu dữ liệu (1 - coverage)
+        // Bayesian Shrinkage: kéo về prior 0.60 theo mức độ khuyết thiếu dữ liệu (1 -
+        // coverage)
         double coverage = totalQuestionnaireWeight > 0 ? answeredWeight / totalQuestionnaireWeight : 1.0;
         double kEff = 2.5 * Math.max(0.0, 1.0 - coverage);
         double shrunkScore = (rawCompatibility * answeredWeight + kEff * 0.60) / (answeredWeight + kEff);
@@ -154,7 +160,8 @@ public class LifestyleVectorHelper {
 
     /**
      * Giải mã chuỗi vector 15 chiều thành danh sách UserLifestyleAnswerDto.
-     * Đối với câu hỏi MULTI: giải mã bitmask để phục hồi toàn bộ các lựa chọn được chọn.
+     * Đối với câu hỏi MULTI: giải mã bitmask để phục hồi toàn bộ các lựa chọn được
+     * chọn.
      * Đối với câu hỏi SINGLE: lấy option có value gần nhất với giá trị vector.
      */
     public List<UserLifestyleAnswerDto> decodeVectorToAnswers(String vector) {
@@ -168,7 +175,8 @@ public class LifestyleVectorHelper {
 
         for (int i = 0; i < Math.min(parts.length, questions.size()); i++) {
             LifestyleQuestionResponse q = questions.get(i);
-            if (q.getOptions() == null || q.getOptions().isEmpty()) continue;
+            if (q.getOptions() == null || q.getOptions().isEmpty())
+                continue;
 
             String s = parts[i].trim();
             if (s.equalsIgnoreCase("nan") || s.isBlank()) {
@@ -177,7 +185,8 @@ public class LifestyleVectorHelper {
 
             try {
                 double targetVal = Double.parseDouble(s);
-                if (Double.isNaN(targetVal)) continue;
+                if (Double.isNaN(targetVal))
+                    continue;
 
                 boolean isMulti = "MULTI".equalsIgnoreCase(q.getQType());
                 if (isMulti && targetVal >= 1.0) {
@@ -228,5 +237,3 @@ public class LifestyleVectorHelper {
         return result;
     }
 }
-
-

@@ -406,11 +406,11 @@ export const ProfilePage: React.FC = () => {
 
         {/* SECTION 3: KHẢO SÁT LỐI SỐNG & BẢO MẬT */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-stay-border text-[14px]">
-          {/* Khảo sát lối sống */}
+          {/* Khảo sát sinh hoạt */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
-                Khảo sát lối sống
+                Khảo sát sinh hoạt
               </span>
               <span className="text-xs text-stay-text-secondary">
                 {answeredCount}/{totalQuestions} câu ({completionPercentage}%)
@@ -695,7 +695,7 @@ export const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-2 pb-2 border-b border-stay-border">
             <Sliders className="w-5 h-5 text-stay-primary" />
             <span className="font-semibold text-stay-text">
-              Khảo sát lối sống & Thói quen sinh hoạt (15 Tiêu chuẩn)
+              Khảo sát sinh hoạt & Thói quen sinh hoạt (15 Tiêu chuẩn)
             </span>
           </div>
         }

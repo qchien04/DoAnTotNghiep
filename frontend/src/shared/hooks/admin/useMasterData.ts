@@ -30,10 +30,10 @@ export const useCreateCriterion = () => {
     mutationFn: (dto: CreateLifestyleCriterionDto) => adminService.createCriterion(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
-      message.success('Thêm tiêu chí lối sống thành công!');
+      message.success('Thêm tiêu chí sinh hoạt thành công!');
     },
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || err?.message || 'Không thể tạo tiêu chí lối sống');
+      message.error(err?.response?.data?.message || err?.message || 'Không thể tạo tiêu chí sinh hoạt');
     },
   });
 
@@ -51,10 +51,10 @@ export const useUpdateCriterion = () => {
       adminService.updateCriterion(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
-      message.success('Cập nhật tiêu chí lối sống thành công!');
+      message.success('Cập nhật tiêu chí sinh hoạt thành công!');
     },
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật tiêu chí lối sống');
+      message.error(err?.response?.data?.message || err?.message || 'Không thể cập nhật tiêu chí sinh hoạt');
     },
   });
 
@@ -71,10 +71,10 @@ export const useDeleteCriterion = () => {
     mutationFn: (id: string) => adminService.deleteCriterion(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.masterData() });
-      message.success('Xóa tiêu chí lối sống thành công!');
+      message.success('Xóa tiêu chí sinh hoạt thành công!');
     },
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || err?.message || 'Không thể xóa tiêu chí lối sống');
+      message.error(err?.response?.data?.message || err?.message || 'Không thể xóa tiêu chí sinh hoạt');
     },
   });
 

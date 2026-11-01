@@ -32,7 +32,7 @@ public class TenantRoommateController {
     private final TenantRoommateService roommateService;
 
     @GetMapping("/lifestyle/questions")
-    @Operation(summary = "Lấy danh mục câu hỏi và lựa chọn khảo sát lối sống", description = "Dùng để render bảng khảo sát lối sống ở Frontend")
+    @Operation(summary = "Lấy danh mục câu hỏi và lựa chọn khảo sát sinh hoạt", description = "Dùng để render bảng khảo sát sinh hoạt ở Frontend")
     public ResponseEntity<ResponseData<List<LifestyleQuestionResponse>>> getLifestyleQuestions() {
         List<LifestyleQuestionResponse> list = roommateService.getLifestyleQuestions();
         return ResponseEntity.ok(ResponseData.success(list));
@@ -41,7 +41,7 @@ public class TenantRoommateController {
     @GetMapping("/lifestyle/profile")
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Lấy hồ sơ lối sống gốc của người dùng", description = "Lấy các câu trả lời gốc và vector lối sống của tài khoản hiện tại")
+    @Operation(summary = "Lấy hồ sơ sinh hoạt gốc của người dùng", description = "Lấy các câu trả lời gốc và vector sinh hoạt của tài khoản hiện tại")
     public ResponseEntity<ResponseData<UserLifestyleProfileResponse>> getUserLifestyleProfile(
             @AuthenticationPrincipal UserPrincipal principal) {
         UserLifestyleProfileResponse response = roommateService.getUserLifestyleProfile(principal.getId());
@@ -51,16 +51,16 @@ public class TenantRoommateController {
     @PutMapping("/lifestyle/profile")
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Lưu / Cập nhật hồ sơ lối sống gốc", description = "Cập nhật câu trả lời gốc và tự động tái tính toán users.lifestyle_vector")
+    @Operation(summary = "Lưu / Cập nhật hồ sơ sinh hoạt gốc", description = "Cập nhật câu trả lời gốc và tự động tái tính toán users.lifestyle_vector")
     public ResponseEntity<ResponseData<UserLifestyleProfileResponse>> saveUserLifestyleProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody SaveLifestyleAnswersRequest request) {
         UserLifestyleProfileResponse response = roommateService.saveUserLifestyleProfile(principal.getId(), request);
-        return ResponseEntity.ok(ResponseData.success("Cập nhật hồ sơ lối sống thành công!", response));
+        return ResponseEntity.ok(ResponseData.success("Cập nhật hồ sơ sinh hoạt thành công!", response));
     }
 
     @GetMapping("/posts/search")
-    @Operation(summary = "UC 11: Tìm kiếm phòng trọ & bài đăng ở ghép", description = "Tìm kiếm theo từ khóa khu vực, khoảng giá và các tiêu chí lối sống sinh hoạt (tính độ khớp dựa trên vector)")
+    @Operation(summary = "UC 11: Tìm kiếm phòng trọ & bài đăng ở ghép", description = "Tìm kiếm theo từ khóa khu vực, khoảng giá và các tiêu chí sinh hoạt sinh hoạt (tính độ khớp dựa trên vector)")
     public ResponseEntity<ResponseData<PageResponse<RoommatePostResponse>>> searchPosts(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) String keyword,
@@ -80,7 +80,7 @@ public class TenantRoommateController {
     }
 
     @GetMapping("/posts/{id}")
-    @Operation(summary = "Xem chi tiết bài đăng ở ghép", description = "Lấy toàn bộ thông tin bài đăng, album ảnh và bảng khảo sát lối sống")
+    @Operation(summary = "Xem chi tiết bài đăng ở ghép", description = "Lấy toàn bộ thông tin bài đăng, album ảnh và bảng khảo sát sinh hoạt")
     public ResponseEntity<ResponseData<RoommatePostResponse>> getPostById(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal principal) {
@@ -114,6 +114,9 @@ public class TenantRoommateController {
     public ResponseEntity<ResponseData<RoommatePostResponse>> createPostWithRoom(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody RoommatePostRequest request) {
+        if (request.getPostType() == null) {
+            request.setPostType(RoommatePostType.HAS_ROOM);
+        }
         RoommatePostResponse response = roommateService.createPostWithRoom(principal.getId(), request);
         return ResponseEntity.ok(ResponseData.success("Đăng bài tìm bạn ở ghép thành công!", response));
     }
@@ -125,6 +128,9 @@ public class TenantRoommateController {
     public ResponseEntity<ResponseData<RoommatePostResponse>> createPostWithoutRoom(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody RoommatePostRequest request) {
+        if (request.getPostType() == null) {
+            request.setPostType(RoommatePostType.SEARCHING_ROOM);
+        }
         RoommatePostResponse response = roommateService.createPostWithoutRoom(principal.getId(), request);
         return ResponseEntity.ok(ResponseData.success("Đăng bài tìm nhóm thành công!", response));
     }
@@ -155,7 +161,7 @@ public class TenantRoommateController {
     @PostMapping("/applications")
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "UC 14: Xin gia nhập nhóm ở ghép", description = "Gửi đơn ứng tuyển kèm bảng trả lời khảo sát lối sống để tính Matching Score")
+    @Operation(summary = "UC 14: Xin gia nhập nhóm ở ghép", description = "Gửi đơn ứng tuyển kèm bảng trả lời khảo sát sinh hoạt để tính Matching Score")
     public ResponseEntity<ResponseData<RoommateApplicationResponse>> applyToGroup(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody RoommateApplicationRequest request) {
@@ -166,7 +172,7 @@ public class TenantRoommateController {
     @GetMapping("/posts/{id}/applications")
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "UC 15: Xem danh sách ứng viên chờ duyệt", description = "Chủ phòng xem danh sách các đơn ứng tuyển và điểm tương thích lối sống")
+    @Operation(summary = "UC 15: Xem danh sách ứng viên chờ duyệt", description = "Chủ phòng xem danh sách các đơn ứng tuyển và điểm tương thích sinh hoạt")
     public ResponseEntity<ResponseData<List<RoommateApplicationResponse>>> getPostApplications(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long id) {
@@ -177,7 +183,7 @@ public class TenantRoommateController {
     @RequestMapping(value = { "/applications/{id}/approve" }, method = { RequestMethod.PUT, RequestMethod.POST })
     @SecurityRequirement(name = "BearerAuth")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "UC 15: Duyệt ứng viên vào nhóm", description = "Chấp thuận ứng viên phù hợp tiêu chí lối sống vào nhóm chính thức")
+    @Operation(summary = "UC 15: Duyệt ứng viên vào nhóm", description = "Chấp thuận ứng viên phù hợp tiêu chí sinh hoạt vào nhóm chính thức")
     public ResponseEntity<ResponseData<Void>> approveApplication(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long id) {

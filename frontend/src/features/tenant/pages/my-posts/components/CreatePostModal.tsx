@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Select, Segmented, Radio } from 'antd';
 import { useCreatePostWithRoom, useCreatePostWithoutRoom, useLifestyleQuestions, useUserLifestyleProfile } from '@/shared/hooks';
-import { Home, Search, Users, Sparkles, Sliders } from 'lucide-react';
+import { Home, Search, Users, Sliders } from 'lucide-react';
 import { LifestyleQuestionnaire } from '@/shared/components';
 
 interface CreatePostModalProps {
@@ -79,15 +79,16 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       const lifestyleAnswers =
         surveyMode === 'CUSTOM'
           ? Object.entries(surveyAnswers).map(([qId, optIds]) => ({
-              questionId: Number(qId),
-              optionIds: optIds,
-              optionId: optIds[0] || null,
-            }))
+            questionId: Number(qId),
+            optionIds: optIds,
+            optionId: optIds[0] || null,
+          }))
           : undefined;
 
       const payload = {
         title: values.title,
         description: values.description,
+        postType: postType,
         roomAddress: values.roomAddress,
         district: values.district,
         city: 'Hà Nội',
@@ -302,7 +303,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             </Form.Item>
           </div>
 
-          {/* Tiêu chí lối sống cơ bản & AI Matching */}
+          {/* Tiêu chí sinh hoạt cơ bản & AI Matching */}
           <div className="space-y-3 pt-3 border-t border-stay-border-subtle">
             <div>
               <span className="font-semibold text-stay-text text-sm block">
@@ -379,7 +380,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 <div className="flex items-center gap-2">
                   <Sliders className="w-4 h-4 text-stay-primary" />
                   <span className="font-semibold text-xs text-stay-text">
-                    Khảo sát lối sống 15 chiều Roomi
+                    Khảo sát sinh hoạt 15 chiều Roomi
                   </span>
                 </div>
                 <Radio.Group
@@ -394,12 +395,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               </div>
 
               {surveyMode === 'PROFILE' ? (
-                <div className="flex items-start gap-2.5 text-xs text-stay-text-secondary bg-stay-card-bg p-3 rounded-lg border border-stay-border">
-                  <Sparkles className="w-4 h-4 text-stay-primary shrink-0 mt-0.5" />
-                  <span>
-                    Bài đăng này sẽ tự động kế thừa trọn bộ 15 tiêu chí lối sống từ hồ sơ cá nhân của bạn (sạch sẽ, giờ giấc, tiếng ồn, làm việc, sở thích...). Chuyển sang <strong>Tùy chỉnh riêng cho bài này</strong> nếu bạn muốn thiết lập tiêu chí riêng biệt.
-                  </span>
-                </div>
+                <></>
               ) : (
                 <div className="pt-2">
                   <LifestyleQuestionnaire

@@ -50,7 +50,7 @@ export const LifestyleSurveyTable: React.FC<LifestyleSurveyTableProps> = ({
     return (
       <div className="py-8 text-center bg-stay-card-bg border border-stay-border rounded-xl">
         <Spin size="default" />
-        <p className="text-stay-text-secondary text-xs mt-2">Đang tải bộ khảo sát lối sống 15 chiều Roomi...</p>
+        <p className="text-stay-text-secondary text-xs mt-2">Đang tải bộ khảo sát sinh hoạt 15 chiều Roomi...</p>
       </div>
     );
   }
@@ -59,7 +59,7 @@ export const LifestyleSurveyTable: React.FC<LifestyleSurveyTableProps> = ({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="font-semibold text-stay-text-secondary uppercase tracking-wider block text-xs">
-          Khảo sát lối sống & Thói quen sinh hoạt Roomi
+          Khảo sát sinh hoạt & Thói quen sinh hoạt Roomi
         </label>
       </div>
       <LifestyleQuestionnaire

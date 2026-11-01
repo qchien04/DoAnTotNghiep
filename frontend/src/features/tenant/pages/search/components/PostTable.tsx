@@ -75,7 +75,7 @@ export const PostTable: React.FC<PostTableProps> = ({
       ),
     },
     {
-      title: 'Độ khớp lối sống',
+      title: 'Độ khớp sinh hoạt',
       dataIndex: 'matchPercentage',
       key: 'matchPercentage',
       width: 160,

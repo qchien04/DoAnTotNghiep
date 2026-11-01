@@ -331,7 +331,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 -- =============================================================================
 -- Module tìm kiếm ghép trọ
--- (Câu hỏi & Lựa chọn lối sống 15 chiều được chuẩn hóa cố định trong code BE: LifestyleConstants)
+-- (Câu hỏi & Lựa chọn sinh hoạt 15 chiều được chuẩn hóa cố định trong code BE: LifestyleConstants)
 -- =============================================================================
 
 -- 1. Tin đăng tìm bạn ở ghép (Roommate Posts)

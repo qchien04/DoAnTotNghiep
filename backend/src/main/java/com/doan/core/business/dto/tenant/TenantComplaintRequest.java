@@ -24,4 +24,15 @@ public class TenantComplaintRequest {
     private ComplaintSeverity urgency; // LOW, MEDIUM, HIGH, URGENT
 
     private String images;
+
+    @com.fasterxml.jackson.annotation.JsonSetter("images")
+    public void setImagesFromJson(Object imagesObj) {
+        if (imagesObj == null) {
+            this.images = null;
+        } else if (imagesObj instanceof java.util.List<?> list) {
+            this.images = list.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(","));
+        } else {
+            this.images = imagesObj.toString();
+        }
+    }
 }

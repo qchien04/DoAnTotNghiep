@@ -175,7 +175,7 @@ VALUES
 
 -- =============================================================================
 -- 13. TIN ĐĂNG TÌM BẠN Ở GHÉP (ROOMMATE_POSTS - UC 11 - UC 13)
--- (Câu hỏi & Lựa chọn lối sống 15 chiều được chuẩn hóa cố định trong code BE: LifestyleConstants)
+-- (Câu hỏi & Lựa chọn sinh hoạt 15 chiều được chuẩn hóa cố định trong code BE: LifestyleConstants)
 -- =============================================================================
 INSERT INTO roommate_posts (id, author_id, room_id, title, description, post_type, area_name, district, city, share_price, total_room_price, needed_roommates, current_roommates, latitude, longitude, radius_km, gender_preference, is_no_smoking, is_pet_friendly, lifestyle_vector, status, created_at, updated_at)
 VALUES

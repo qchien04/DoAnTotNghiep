@@ -7,7 +7,7 @@ import {
   Input,
   message,
 } from '@/shared/components';
-import { Tooltip, Spin, Select } from 'antd';
+import { Tooltip, Spin, Select, InputNumber } from 'antd';
 import { HelpCircle, LocateFixed, Loader2 } from 'lucide-react';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
@@ -361,7 +361,7 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
             initialValue={5}
             className="mb-0"
           >
-            <Input type="number" min={1} className="h-10" />
+            <InputNumber min={1} className="w-full h-10" />
           </Form.Item>
         </div>
 

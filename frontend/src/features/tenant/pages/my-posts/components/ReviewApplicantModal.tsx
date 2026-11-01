@@ -59,7 +59,7 @@ export const ReviewApplicantModal: React.FC<ReviewApplicantModalProps> = ({
           )}
         </div>
 
-        {/* Bảng đối chiếu trực quan từng tiêu chí lối sống (Chuẩn UC15) */}
+        {/* Bảng đối chiếu trực quan từng tiêu chí sinh hoạt (Chuẩn UC15) */}
         <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
           <label className="font-semibold text-stay-text text-sm block">
             Bảng đối chiếu từng tiêu chí sinh hoạt

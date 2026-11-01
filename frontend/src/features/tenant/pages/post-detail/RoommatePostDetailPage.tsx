@@ -139,7 +139,7 @@ export const RoommatePostDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Tiêu chuẩn lối sống & Thói quen sinh hoạt */}
+            {/* Thói quen sinh hoạt */}
             <div className="p-5 sm:p-6 rounded-xl bg-stay-card-bg border border-stay-border shadow-xs">
               <LifestyleInfoTable post={post} />
             </div>
@@ -194,14 +194,13 @@ export const RoommatePostDetailPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Điểm tương thích lối sống */}
+              {/* Điểm tương thích sinh hoạt */}
               {post.matchPercentage !== undefined && (
                 <div className="p-3 rounded-lg bg-stay-primary-subtle border border-stay-primary/20 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-stay-primary shrink-0" />
                     <div>
-                      <p className=" font-bold text-stay-primary">Độ hòa hợp lối sống</p>
-                      <p className="text-[11px] text-stay-text-secondary">Theo thuật toán AI 8 chiều</p>
+                      <p className=" font-bold text-stay-primary">Độ hòa hợp sinh hoạt</p>
                     </div>
                   </div>
                   <span className="text-base font-bold text-stay-primary">

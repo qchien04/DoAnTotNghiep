@@ -46,7 +46,7 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
       setFullName(user?.fullName || profile?.fullName || '');
       setPhone(user?.phone || '');
       setIntroMessage(
-        'Chào bạn, mình xem thông tin phòng thấy rất phù hợp với lối sống và sinh hoạt của mình. Rất mong muốn được trao đổi thêm để vào ở ghép cùng phòng!'
+        'Chào bạn, mình xem thông tin phòng thấy rất phù hợp với sinh hoạt và sinh hoạt của mình. Rất mong muốn được trao đổi thêm để vào ở ghép cùng phòng!'
       );
 
       // Clone các câu trả lời gốc từ user profile (nhóm theo questionId)
@@ -170,12 +170,12 @@ export const ApplyRoommateModal: React.FC<ApplyRoommateModalProps> = ({
           </div>
         </div>
 
-        {/* Section 2: Tiêu chí lối sống */}
+        {/* Section 2: Tiêu chí sinh hoạt */}
         <div className="space-y-2 pt-4 border-t border-stay-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
-                Tiêu chí lối sống (Đối chiếu hòa hợp)
+                Tiêu chí sinh hoạt (Đối chiếu hòa hợp)
               </span>
               <Tooltip title="Đã sao chép từ hồ sơ gốc của bạn. Bạn có thể tinh chỉnh các lựa chọn riêng cho đơn này mà không làm đổi hồ sơ gốc.">
                 <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />

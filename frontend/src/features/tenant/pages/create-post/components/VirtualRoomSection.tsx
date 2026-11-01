@@ -132,7 +132,7 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
       {/* Section 3: Bảng tiêu chuẩn mong muốn cá nhân (UC13) */}
       <div className="space-y-2">
         <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
-          4. Bảng tiêu chuẩn lối sống cá nhân
+          4. Bảng tiêu chuẩn sinh hoạt cá nhân
         </label>
         <div className="bg-stay-card-bg border border-stay-border rounded-xl overflow-hidden shadow-2xs">
           <table className="w-full text-left  border-collapse">

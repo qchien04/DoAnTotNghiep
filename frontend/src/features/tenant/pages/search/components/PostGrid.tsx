@@ -41,7 +41,7 @@ export const PostGrid: React.FC<PostGridProps> = ({ posts }) => {
               </span>
               {post.matchPercentage && (
                 <span className=" text-stay-text-secondary">
-                  Độ tương thích lối sống: <strong>{post.matchPercentage}%</strong>
+                  Độ tương thích sinh hoạt: <strong>{post.matchPercentage}%</strong>
                 </span>
               )}
             </div>

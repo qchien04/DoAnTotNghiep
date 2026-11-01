@@ -36,7 +36,7 @@ Tenant (Người thuê):
 
 Quản lý (thêm, sửa, đóng/xóa) bài đăng ở ghép,
 
-Quản lý nhóm ở ghép, duyệt thành viên nhóm và cập nhật lối sống chung,
+Quản lý nhóm ở ghép, duyệt thành viên nhóm và cập nhật sinh hoạt chung,
 
 Xác nhận liên kết phòng trọ với chủ trọ,
 
@@ -60,11 +60,11 @@ Mô tả các use case như sau:
 
 • Login (Đăng nhập): Use case này cho phép người dùng (Chủ trọ, Người thuê hoặc Quản trị viên) đăng nhập vào hệ thống bằng tên đăng nhập/email và mật khẩu. Hệ thống xác thực danh tính qua cơ chế Spring Security kết hợp JSON Web Token (JWT) stateless claims-based (chứa userId, username, email, role, fullName) và tự động điều hướng người dùng về đúng không gian làm việc theo vai trò (Chủ trọ về Dashboard quản lý trọ, Quản trị viên về Cổng admin, Người thuê về Trang tìm kiếm phòng và ở ghép).
 
-• Profile management (Quản lý thông tin cá nhân & Lối sống gốc): Use case này cho phép người dùng cập nhật thông tin cá nhân (họ tên, số điện thoại, CCCD/CMND, ảnh đại diện avatar), thực hiện đổi mật khẩu bảo mật (mã hóa băm BCrypt) và làm khảo sát lối sống gốc 8 chiều (giờ giấc, hút thuốc, thú cưng, nấu ăn, sạch sẽ, dẫn bạn bè, tính cách...). Vector lối sống chuẩn hóa này được lưu trữ trong cơ sở dữ liệu làm dữ liệu nền tảng để tự động sao chép khi người dùng tạo bài đăng hoặc nộp đơn ở ghép. Đồng thời, cho phép người dùng đăng xuất khỏi hệ thống để xóa bỏ phiên làm việc.
+• Profile management (Quản lý thông tin cá nhân & Lối sống gốc): Use case này cho phép người dùng cập nhật thông tin cá nhân (họ tên, số điện thoại, CCCD/CMND, ảnh đại diện avatar), thực hiện đổi mật khẩu bảo mật (mã hóa băm BCrypt) và làm khảo sát sinh hoạt gốc 8 chiều (giờ giấc, hút thuốc, thú cưng, nấu ăn, sạch sẽ, dẫn bạn bè, tính cách...). Vector sinh hoạt chuẩn hóa này được lưu trữ trong cơ sở dữ liệu làm dữ liệu nền tảng để tự động sao chép khi người dùng tạo bài đăng hoặc nộp đơn ở ghép. Đồng thời, cho phép người dùng đăng xuất khỏi hệ thống để xóa bỏ phiên làm việc.
 
 • Search room (Tìm kiếm phòng trọ): Use case này cho phép người dùng tìm kiếm và xem danh sách các phòng trọ đang còn trống (trạng thái AVAILABLE và is_public = true) dựa trên từ khóa, khu vực hành chính (Tỉnh/Thành phố, Phường/Xã), khoảng giá thuê, diện tích và tiện ích đi kèm. Kết quả được hiển thị đồng bộ hai chiều giữa danh sách thẻ phòng và bản đồ số Leaflet OpenStreetMap với các marker vị trí thực tế, cho phép nhấp xem chi tiết phòng, bảng giá dịch vụ và liên hệ chủ nhà.
 
-• Search post find roommate (Tìm kiếm bài đăng ở ghép & Đối chiếu lối sống AI): Use case này cho phép người thuê tìm kiếm các bài đăng tìm bạn ở ghép theo 2 mô hình thực tế: Đã có phòng trọ (HAS_ROOM) hoặc Chưa có phòng trọ theo tọa độ bản đồ và bán kính tìm kiếm (SEARCHING_ROOM). Hệ thống tự động so khớp vector lối sống của người tìm kiếm với vector của bài đăng bằng thuật toán khoảng cách Manhattan có trọng số và ràng buộc tiêu chí cứng (nếu hút thuốc khác biệt >= 0.8, điểm tối đa chỉ đạt 50%) để hiển thị tỷ lệ phần trăm hòa hợp (% Matching Score) trực quan, giúp người thuê nhanh chóng tìm được bạn cùng phòng phù hợp.
+• Search post find roommate (Tìm kiếm bài đăng ở ghép & Đối chiếu sinh hoạt AI): Use case này cho phép người thuê tìm kiếm các bài đăng tìm bạn ở ghép theo 2 mô hình thực tế: Đã có phòng trọ (HAS_ROOM) hoặc Chưa có phòng trọ theo tọa độ bản đồ và bán kính tìm kiếm (SEARCHING_ROOM). Hệ thống tự động so khớp vector sinh hoạt của người tìm kiếm với vector của bài đăng bằng thuật toán khoảng cách Manhattan có trọng số và ràng buộc tiêu chí cứng (nếu hút thuốc khác biệt >= 0.8, điểm tối đa chỉ đạt 50%) để hiển thị tỷ lệ phần trăm hòa hợp (% Matching Score) trực quan, giúp người thuê nhanh chóng tìm được bạn cùng phòng phù hợp.
 
 2. Nhóm Use case cho Tác nhân Landlord (Chủ trọ)
 
@@ -86,9 +86,9 @@ Mô tả các use case như sau:
 
 3. Nhóm Use case cho Tác nhân Tenant (Người thuê)
 
-• Post find roommate management (Quản lý bài đăng ở ghép): Use case này cho phép người thuê tạo bài đăng tìm bạn cùng phòng theo 2 hình thức: Đã có phòng trọ thực tế (HAS_ROOM - chọn phòng đang thuê, số người cần tìm, giá share mỗi người, hình ảnh phòng) hoặc Chưa có phòng (SEARCHING_ROOM - chọn tọa độ và bán kính bản đồ tìm kiếm, ngân sách dự kiến). Người thuê có thể thiết lập tiêu chí lối sống riêng cho từng bài đăng mà không làm ảnh hưởng hồ sơ cá nhân gốc, chỉnh sửa nội dung bài viết và đóng bài đăng (CLOSED) khi đã tìm đủ người.
+• Post find roommate management (Quản lý bài đăng ở ghép): Use case này cho phép người thuê tạo bài đăng tìm bạn cùng phòng theo 2 hình thức: Đã có phòng trọ thực tế (HAS_ROOM - chọn phòng đang thuê, số người cần tìm, giá share mỗi người, hình ảnh phòng) hoặc Chưa có phòng (SEARCHING_ROOM - chọn tọa độ và bán kính bản đồ tìm kiếm, ngân sách dự kiến). Người thuê có thể thiết lập tiêu chí sinh hoạt riêng cho từng bài đăng mà không làm ảnh hưởng hồ sơ cá nhân gốc, chỉnh sửa nội dung bài viết và đóng bài đăng (CLOSED) khi đã tìm đủ người.
 
-• Group find roommate management (Quản lý nhóm ở ghép & Duyệt thành viên): Use case này cho phép ứng viên nộp đơn xin gia nhập nhóm ở ghép (có thể tùy chỉnh đáp án lối sống cho phù hợp). Chủ bài đăng xem xét danh sách ứng viên được xếp hạng theo điểm hòa hợp lối sống AI, mở biểu đồ Radar đối chiếu chi tiết 8 tiêu chí sinh hoạt, bấm duyệt ứng viên vào nhóm (hệ thống tự động tính toán lại vector lối sống trung bình đại diện cho cả nhóm) hoặc từ chối đơn; và bấm chốt nhóm hoàn thành (COMPLETED) để đóng bài đăng khi đã đủ thành viên.
+• Group find roommate management (Quản lý nhóm ở ghép & Duyệt thành viên): Use case này cho phép ứng viên nộp đơn xin gia nhập nhóm ở ghép (có thể tùy chỉnh đáp án sinh hoạt cho phù hợp). Chủ bài đăng xem xét danh sách ứng viên được xếp hạng theo điểm hòa hợp sinh hoạt AI, mở biểu đồ Radar đối chiếu chi tiết 8 tiêu chí sinh hoạt, bấm duyệt ứng viên vào nhóm (hệ thống tự động tính toán lại vector sinh hoạt trung bình đại diện cho cả nhóm) hoặc từ chối đơn; và bấm chốt nhóm hoàn thành (COMPLETED) để đóng bài đăng khi đã đủ thành viên.
 
 • Link tenant (Xác nhận liên kết phòng trọ - Phía Người thuê): Use case này cho phép người thuê nhận thông báo lời mời liên kết phòng từ chủ nhà, xem thông tin chi tiết phòng trọ/chủ nhà và bấm xác nhận đồng ý để kích hoạt các tính năng quản lý phòng trọ (xem hợp đồng điện tử, nhận hóa đơn tiền phòng và gửi báo hỏng thiết bị).
 

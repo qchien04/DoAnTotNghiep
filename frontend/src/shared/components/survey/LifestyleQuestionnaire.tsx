@@ -43,7 +43,7 @@ const CATEGORY_META: Record<
   ALL: {
     label: 'Tất cả câu hỏi',
     icon: Layers,
-    description: 'Trọn bộ 15 tiêu chí lối sống theo thuật toán Roomi Pairwise Matching',
+    description: 'Trọn bộ 15 tiêu chí sinh hoạt theo thuật toán Roomi Pairwise Matching',
   },
   LIVING: {
     label: 'Sinh hoạt chung',
@@ -110,7 +110,7 @@ export const LifestyleQuestionnaire: React.FC<LifestyleQuestionnaireProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stay-primary-subtle text-stay-primary border border-stay-primary/20 flex items-center gap-1">
-                <Sliders className="w-3 h-3" /> Khảo sát lối sống
+                <Sliders className="w-3 h-3" /> Khảo sát sinh hoạt
               </span>
               <span className="text-[13px] font-semibold text-stay-text">
                 15 tiêu chuẩn thói quen sinh hoạt
@@ -150,18 +150,16 @@ export const LifestyleQuestionnaire: React.FC<LifestyleQuestionnaireProps> = ({
                 key={key}
                 type="button"
                 onClick={() => setActiveCategory(key)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 cursor-pointer border ${
-                  isActive
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 cursor-pointer border ${isActive
                     ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
                     : 'bg-stay-card-bg text-stay-text border-stay-border hover:border-stay-primary/40'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{meta.label}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-stay-bg-app text-stay-text-muted'
-                  }`}
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-stay-bg-app text-stay-text-muted'
+                    }`}
                 >
                   {count}
                 </span>
@@ -204,11 +202,10 @@ export const LifestyleQuestionnaire: React.FC<LifestyleQuestionnaireProps> = ({
                     type="button"
                     disabled={readOnly}
                     onClick={() => onDealbreakerChange('genderPreference', item.value)}
-                    className={`py-1.5 text-xs font-semibold rounded-lg border text-center transition cursor-pointer ${
-                      dealbreakers.genderPreference === item.value
+                    className={`py-1.5 text-xs font-semibold rounded-lg border text-center transition cursor-pointer ${dealbreakers.genderPreference === item.value
                         ? 'bg-stay-primary text-white border-stay-primary'
                         : 'bg-stay-card-bg text-stay-text border-stay-border hover:border-stay-primary/40'
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </button>
@@ -289,21 +286,19 @@ export const LifestyleQuestionnaire: React.FC<LifestyleQuestionnaireProps> = ({
           return (
             <div
               key={q.id}
-              className={`rounded-2xl border transition-all duration-200 p-5 ${
-                isAnswered
+              className={`rounded-2xl border transition-all duration-200 p-5 ${isAnswered
                   ? 'bg-stay-card-bg border-stay-border shadow-xs'
                   : 'bg-stay-card-bg/60 border-stay-border/80 hover:border-stay-primary/40'
-              }`}
+                }`}
             >
               {/* Question Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-stay-border-subtle">
                 <div className="flex items-center gap-2.5">
                   <span
-                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
-                      isAnswered
+                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${isAnswered
                         ? 'bg-stay-primary text-white'
                         : 'bg-stay-bg-app text-stay-text-secondary border border-stay-border'
-                    }`}
+                      }`}
                   >
                     {q.sortOrder || q.id}
                   </span>
@@ -351,33 +346,29 @@ export const LifestyleQuestionnaire: React.FC<LifestyleQuestionnaireProps> = ({
                     <div
                       key={opt.id}
                       onClick={() => handleToggleOption(q, opt.id)}
-                      className={`p-3.5 rounded-xl border text-left text-xs sm:text-sm font-medium transition-all flex items-center justify-between gap-3 ${
-                        readOnly ? 'cursor-default' : 'cursor-pointer active:scale-[0.99]'
-                      } ${
-                        isSelected
+                      className={`p-3.5 rounded-xl border text-left text-xs sm:text-sm font-medium transition-all flex items-center justify-between gap-3 ${readOnly ? 'cursor-default' : 'cursor-pointer active:scale-[0.99]'
+                        } ${isSelected
                           ? 'bg-stay-primary/10 border-stay-primary text-stay-primary ring-1 ring-stay-primary/30 shadow-xs'
                           : 'bg-stay-bg-app border-stay-border text-stay-text hover:border-stay-primary/40 hover:bg-stay-bg-app/80'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {/* Selector Indicator Icon */}
                         {isMulti ? (
                           <div
-                            className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected
+                            className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${isSelected
                                 ? 'bg-stay-primary border-stay-primary text-white'
                                 : 'border-[#D7D7DB] dark:border-slate-600 bg-stay-card-bg'
-                            }`}
+                              }`}
                           >
                             {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                           </div>
                         ) : (
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
                                 ? 'border-stay-primary'
                                 : 'border-[#D7D7DB] dark:border-slate-600 bg-stay-card-bg'
-                            }`}
+                              }`}
                           >
                             {isSelected && <div className="w-2 h-2 rounded-full bg-stay-primary" />}
                           </div>

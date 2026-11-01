@@ -341,7 +341,7 @@ export const RoommateSearchPage: React.FC = () => {
               Tìm Bạn Ở Ghép & Nhóm Thuê Phòng
             </h1>
             <p className=" text-stay-text-secondary mt-1">
-              Khám phá bạn cùng phòng và các bài đăng ghép trọ phù hợp với ngân sách và lối sống của bạn.
+              Khám phá bạn cùng phòng và các bài đăng ghép trọ phù hợp với ngân sách và sinh hoạt của bạn.
             </p>
           </div>
 
@@ -503,8 +503,8 @@ export const RoommateSearchPage: React.FC = () => {
                       <div className="absolute top-2.5 left-2.5">
                         <span
                           className={`px-2 py-0.5 rounded-md text-[11px] font-semibold backdrop-blur-xs ${isHasRoom
-                              ? 'bg-stay-primary text-white'
-                              : 'bg-emerald-600 text-white'
+                            ? 'bg-stay-primary text-white'
+                            : 'bg-emerald-600 text-white'
                             }`}
                         >
                           {isHasRoom ? 'Đã có phòng' : 'Tìm bạn cùng thuê'}

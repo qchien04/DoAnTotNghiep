@@ -18,7 +18,7 @@ import {
 import { InvoiceResponse, Complaint } from '@/shared/types/landlord';
 
 export const tenantService = {
-  // 0. Khảo sát lối sống & Vector Profile
+  // 0. Khảo sát sinh hoạt & Vector Profile
   getLifestyleQuestions: async (): Promise<ResponseData<LifestyleQuestionResponse[]>> => {
     const res = await apiClient.get<ResponseData<LifestyleQuestionResponse[]>>('/api/v1/tenant/lifestyle/questions');
     return res.data;

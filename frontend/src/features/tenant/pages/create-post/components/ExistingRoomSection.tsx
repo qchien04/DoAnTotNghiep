@@ -71,8 +71,8 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
           <div
             onClick={() => onRoomOptionChange('CURRENT_ROOM')}
             className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 ${roomOption === 'CURRENT_ROOM'
-                ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
-                : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
+              ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
+              : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
               }`}
           >
             <div className="flex items-center justify-between">
@@ -93,8 +93,8 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
           <div
             onClick={() => onRoomOptionChange('NEW_ROOM')}
             className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 ${roomOption === 'NEW_ROOM'
-                ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
-                : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
+              ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
+              : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
               }`}
           >
             <div className="flex items-center justify-between">
@@ -292,7 +292,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
         </div>
       </div>
 
-      {/* Bảng khảo sát lối sống */}
+      {/* Bảng khảo sát sinh hoạt */}
       <LifestyleSurveyTable values={lifestyleValues} onChange={onLifestyleChange} />
     </div>
   );

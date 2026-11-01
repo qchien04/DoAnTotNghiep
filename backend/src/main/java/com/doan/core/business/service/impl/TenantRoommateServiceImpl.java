@@ -86,12 +86,12 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
             }
         }
 
-        // Sinh vector lối sống của người dùng và lưu trực tiếp vào
+        // Sinh vector sinh hoạt của người dùng và lưu trực tiếp vào
         // users.lifestyle_vector
         String vector = vectorHelper.buildVectorFromOptionMap(selectedOptionsMap);
         user.setLifestyleVector(vector);
         userRepository.save(user);
-        log.info("Cập nhật hồ sơ lối sống User id={}, vector={}", user.getId(), vector);
+        log.info("Cập nhật hồ sơ sinh hoạt User id={}, vector={}", user.getId(), vector);
 
         return getUserLifestyleProfile(userId);
     }
@@ -119,7 +119,7 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
                     "Khoảng giá không hợp lệ (Giá tối thiểu lớn hơn giá tối đa)");
         }
 
-        // Lấy vector lối sống của người đang tìm kiếm (nếu đã đăng nhập)
+        // Lấy vector sinh hoạt của người đang tìm kiếm (nếu đã đăng nhập)
         String userVector = null;
         if (currentUserId != null) {
             userVector = userRepository.findById(currentUserId)
@@ -274,7 +274,7 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
 
         RoommatePost saved = postRepository.save(post);
 
-        // Lưu câu trả lời lối sống riêng cho bài đăng và tính post.lifestyleVector
+        // Lưu câu trả lời sinh hoạt riêng cho bài đăng và tính post.lifestyleVector
         savePostLifestyleAnswersAndVector(saved, author, request.getLifestyleAnswers());
 
         log.info("Tạo bài đăng ở ghép có phòng thành công: id={}, vector={}", saved.getId(),
@@ -314,7 +314,7 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
 
         RoommatePost saved = postRepository.save(post);
 
-        // Lưu câu trả lời lối sống riêng cho bài đăng và tính post.lifestyleVector
+        // Lưu câu trả lời sinh hoạt riêng cho bài đăng và tính post.lifestyleVector
         savePostLifestyleAnswersAndVector(saved, author, request.getLifestyleAnswers());
 
         log.info("Tạo bài đăng ở ghép chưa có phòng thành công: id={}, vector={}", saved.getId(),
@@ -353,7 +353,7 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
             // khảo sát)
             if (author.getLifestyleVector() == null || author.getLifestyleVector().isBlank()) {
                 throw new BaseException(ErrorCode.BAD_REQUEST,
-                        "Bạn chưa hoàn thành khảo sát lối sống trong hồ sơ cá nhân. Vui lòng hoàn thành khảo sát trước khi đăng bài ở ghép");
+                        "Bạn chưa hoàn thành khảo sát sinh hoạt trong hồ sơ cá nhân. Vui lòng hoàn thành khảo sát trước khi đăng bài ở ghép");
             }
             vector = author.getLifestyleVector();
         }
@@ -439,7 +439,7 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
             // sát)
             if (applicant.getLifestyleVector() == null || applicant.getLifestyleVector().isBlank()) {
                 throw new BaseException(ErrorCode.BAD_REQUEST,
-                        "Bạn chưa hoàn thành khảo sát lối sống trong hồ sơ cá nhân. Vui lòng hoàn thành khảo sát hoặc trả lời câu hỏi khi nộp đơn");
+                        "Bạn chưa hoàn thành khảo sát sinh hoạt trong hồ sơ cá nhân. Vui lòng hoàn thành khảo sát hoặc trả lời câu hỏi khi nộp đơn");
             }
             appVector = applicant.getLifestyleVector();
         }

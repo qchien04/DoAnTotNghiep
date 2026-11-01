@@ -12,7 +12,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,17 +26,17 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
     public Page<Room> searchPublicRooms(PublicRoomSearchRequest request, Pageable pageable) {
         StringBuilder fromAndWhere = new StringBuilder();
         fromAndWhere.append("FROM rooms r ")
-                    .append("LEFT JOIN buildings b ON r.building_id = b.id ")
-                    .append("WHERE r.status = 'AVAILABLE' AND r.is_public = true ");
+                .append("LEFT JOIN buildings b ON r.building_id = b.id ")
+                .append("WHERE r.status = 'AVAILABLE' AND r.is_public = true ");
 
         Map<String, Object> parameters = new HashMap<>();
 
         // 1. Keyword search (room name, building name, address)
         if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
             fromAndWhere.append("AND (LOWER(r.name) LIKE :keyword ")
-                        .append("OR (b.name IS NOT NULL AND LOWER(b.name) LIKE :keyword) ")
-                        .append("OR (r.address_detail IS NOT NULL AND LOWER(r.address_detail) LIKE :keyword) ")
-                        .append("OR (b.address_detail IS NOT NULL AND LOWER(b.address_detail) LIKE :keyword)) ");
+                    .append("OR (b.name IS NOT NULL AND LOWER(b.name) LIKE :keyword) ")
+                    .append("OR (r.address_detail IS NOT NULL AND LOWER(r.address_detail) LIKE :keyword) ")
+                    .append("OR (b.address_detail IS NOT NULL AND LOWER(b.address_detail) LIKE :keyword)) ");
             parameters.put("keyword", "%" + request.getKeyword().trim().toLowerCase() + "%");
         }
 
@@ -79,15 +78,18 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
             parameters.put("amenitiesMask", request.getAmenitiesMask());
         }
 
-        // 7. Spatial circular zones filter (Haversine formula OR-chained directly in Database)
+        // 7. Spatial circular zones filter (Haversine formula OR-chained directly in
+        // Database)
         List<CircleZoneDto> validZones = (request.getZones() != null)
                 ? request.getZones().stream()
-                        .filter(z -> z.getLatitude() != null && z.getLongitude() != null && z.getRadiusInMeters() != null && z.getRadiusInMeters() > 0)
+                        .filter(z -> z.getLatitude() != null && z.getLongitude() != null
+                                && z.getRadiusInMeters() != null && z.getRadiusInMeters() > 0)
                         .collect(Collectors.toList())
                 : Collections.emptyList();
 
         if (!validZones.isEmpty()) {
-            fromAndWhere.append("AND (COALESCE(r.latitude, b.latitude) IS NOT NULL AND COALESCE(r.longitude, b.longitude) IS NOT NULL AND (");
+            fromAndWhere.append(
+                    "AND (COALESCE(r.latitude, b.latitude) IS NOT NULL AND COALESCE(r.longitude, b.longitude) IS NOT NULL AND (");
             for (int i = 0; i < validZones.size(); i++) {
                 if (i > 0) {
                     fromAndWhere.append(" OR ");
@@ -98,10 +100,13 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
                 String radParam = "zRad_" + i;
 
                 fromAndWhere.append("(6371000.0 * 2.0 * ASIN(SQRT(")
-                            .append("POWER(SIN(RADIANS(COALESCE(r.latitude, b.latitude) - :").append(latParam).append(") / 2.0), 2.0) + ")
-                            .append("COS(RADIANS(:").append(latParam).append(")) * COS(RADIANS(COALESCE(r.latitude, b.latitude))) * ")
-                            .append("POWER(SIN(RADIANS(COALESCE(r.longitude, b.longitude) - :").append(lngParam).append(") / 2.0), 2.0)")
-                            .append(")) <= :").append(radParam).append(")");
+                        .append("POWER(SIN(RADIANS(COALESCE(r.latitude, b.latitude) - :").append(latParam)
+                        .append(") / 2.0), 2.0) + ")
+                        .append("COS(RADIANS(:").append(latParam)
+                        .append(")) * COS(RADIANS(COALESCE(r.latitude, b.latitude))) * ")
+                        .append("POWER(SIN(RADIANS(COALESCE(r.longitude, b.longitude) - :").append(lngParam)
+                        .append(") / 2.0), 2.0)")
+                        .append(")) <= :").append(radParam).append(")");
 
                 parameters.put(latParam, zone.getLatitude());
                 parameters.put(lngParam, zone.getLongitude());
@@ -140,7 +145,8 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
             direction = "ASC";
         }
 
-        String dataSql = "SELECT DISTINCT r.id, " + sortColumn + " " + fromAndWhere + " ORDER BY " + sortColumn + " " + direction + ", r.id DESC";
+        String dataSql = "SELECT DISTINCT r.id, " + sortColumn + " " + fromAndWhere + " ORDER BY " + sortColumn + " "
+                + direction + ", r.id DESC";
         Query dataQuery = entityManager.createNativeQuery(dataSql);
         parameters.forEach(dataQuery::setParameter);
         dataQuery.setFirstResult((int) pageable.getOffset());
@@ -161,12 +167,13 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
             return new PageImpl<>(Collections.emptyList(), pageable, total);
         }
 
-        // Fetch Room entities with building and amenities by the ordered IDs
+        // Fetch Room entities with building and landlord by the ordered IDs
         List<Room> rooms = entityManager.createQuery(
                 "SELECT DISTINCT r FROM Room r " +
-                "LEFT JOIN FETCH r.building b " +
-                "LEFT JOIN FETCH r.amenities a " +
-                "WHERE r.id IN (:ids)", Room.class)
+                        "LEFT JOIN FETCH r.building b " +
+                        "LEFT JOIN FETCH b.landlord l " +
+                        "WHERE r.id IN (:ids)",
+                Room.class)
                 .setParameter("ids", orderedIds)
                 .getResultList();
 

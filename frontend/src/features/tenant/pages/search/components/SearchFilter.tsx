@@ -63,8 +63,8 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           type="button"
           onClick={() => onSearchModeChange('ROOMMATE')}
           className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${searchMode === 'ROOMMATE'
-              ? 'bg-stay-primary text-white'
-              : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
+            ? 'bg-stay-primary text-white'
+            : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
             }`}
         >
           Tìm người ở ghép
@@ -73,8 +73,8 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           type="button"
           onClick={() => onSearchModeChange('WHOLE_ROOM')}
           className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${searchMode === 'WHOLE_ROOM'
-              ? 'bg-stay-primary text-white'
-              : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
+            ? 'bg-stay-primary text-white'
+            : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
             }`}
         >
           Tìm phòng trọ nguyên căn
@@ -158,7 +158,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       {/* Row 2: Lifestyle Filters (UC11) */}
       <div className="pt-3 border-t border-stay-border">
         <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2.5">
-          Tiêu chí lối sống & sinh hoạt:
+          Tiêu chí sinh hoạt & sinh hoạt:
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

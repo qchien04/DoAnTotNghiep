@@ -18,9 +18,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping({"/api/admin/master-data", "/api/v1/admin/master-data"})
+@RequestMapping({ "/api/admin/master-data", "/api/v1/admin/master-data" })
 @RequiredArgsConstructor
-@Tag(name = "15. Quản trị viên - Cấu hình Tiêu chí Lối sống (UC 54)", description = "Quản lý câu hỏi khảo sát và tiêu chí lối sống do Admin tạo")
+@Tag(name = "15. Quản trị viên - Cấu hình Tiêu chí Lối sống (UC 54)", description = "Quản lý câu hỏi khảo sát và tiêu chí sinh hoạt do Admin tạo")
 public class AdminMasterDataController {
 
     private final List<LifestyleCriterionDto> criteriaCache = new CopyOnWriteArrayList<>();
@@ -89,15 +89,16 @@ public class AdminMasterDataController {
     }
 
     @GetMapping
-    @Operation(summary = "Lấy danh sách các câu hỏi / tiêu chí lối sống chuẩn hóa 15 chiều")
+    @Operation(summary = "Lấy danh sách các câu hỏi / tiêu chí sinh hoạt chuẩn hóa 15 chiều")
     public ResponseEntity<ResponseData<List<LifestyleCriterionDto>>> getMasterData() {
         return ResponseEntity.ok(ResponseData.success(new ArrayList<>(criteriaCache)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Admin tạo câu hỏi / tiêu chí lối sống mới")
-    public ResponseEntity<ResponseData<LifestyleCriterionDto>> createCriterion(@RequestBody CreateCriterionRequest request) {
+    @Operation(summary = "Admin tạo câu hỏi / tiêu chí sinh hoạt mới")
+    public ResponseEntity<ResponseData<LifestyleCriterionDto>> createCriterion(
+            @RequestBody CreateCriterionRequest request) {
         String code = request.getCode() != null && !request.getCode().isBlank()
                 ? request.getCode().trim().toUpperCase()
                 : "CRIT_" + System.currentTimeMillis();
@@ -107,9 +108,12 @@ public class AdminMasterDataController {
                 .code(code)
                 .name(request.getName() != null ? request.getName().trim() : "Tiêu chí mới")
                 .category(request.getCategory() != null ? request.getCategory() : "HABIT")
-                .qType(request.getQType() != null && !request.getQType().isBlank() ? request.getQType().trim().toUpperCase() : "SINGLE")
+                .qType(request.getQType() != null && !request.getQType().isBlank()
+                        ? request.getQType().trim().toUpperCase()
+                        : "SINGLE")
                 .algorithmWeight(request.getAlgorithmWeight() != null ? request.getAlgorithmWeight() : 10)
-                .options(request.getOptions() != null && !request.getOptions().isEmpty() ? request.getOptions() : List.of("Không", "Có"))
+                .options(request.getOptions() != null && !request.getOptions().isEmpty() ? request.getOptions()
+                        : List.of("Không", "Có"))
                 .status("ACTIVE")
                 .build();
 
@@ -119,7 +123,7 @@ public class AdminMasterDataController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Admin cập nhật câu hỏi / tiêu chí lối sống")
+    @Operation(summary = "Admin cập nhật câu hỏi / tiêu chí sinh hoạt")
     public ResponseEntity<ResponseData<LifestyleCriterionDto>> updateCriterion(
             @PathVariable Long id,
             @RequestBody UpdateCriterionRequest request) {
@@ -127,12 +131,18 @@ public class AdminMasterDataController {
         for (int i = 0; i < criteriaCache.size(); i++) {
             LifestyleCriterionDto item = criteriaCache.get(i);
             if (idStr.equals(item.getId())) {
-                if (request.getName() != null && !request.getName().isBlank()) item.setName(request.getName().trim());
-                if (request.getCategory() != null) item.setCategory(request.getCategory());
-                if (request.getQType() != null && !request.getQType().isBlank()) item.setQType(request.getQType().trim().toUpperCase());
-                if (request.getAlgorithmWeight() != null) item.setAlgorithmWeight(request.getAlgorithmWeight());
-                if (request.getStatus() != null) item.setStatus(request.getStatus());
-                if (request.getOptions() != null && !request.getOptions().isEmpty()) item.setOptions(request.getOptions());
+                if (request.getName() != null && !request.getName().isBlank())
+                    item.setName(request.getName().trim());
+                if (request.getCategory() != null)
+                    item.setCategory(request.getCategory());
+                if (request.getQType() != null && !request.getQType().isBlank())
+                    item.setQType(request.getQType().trim().toUpperCase());
+                if (request.getAlgorithmWeight() != null)
+                    item.setAlgorithmWeight(request.getAlgorithmWeight());
+                if (request.getStatus() != null)
+                    item.setStatus(request.getStatus());
+                if (request.getOptions() != null && !request.getOptions().isEmpty())
+                    item.setOptions(request.getOptions());
                 return ResponseEntity.ok(ResponseData.success("Cập nhật tiêu chí thành công!", item));
             }
         }
@@ -142,7 +152,7 @@ public class AdminMasterDataController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Admin vô hiệu hóa câu hỏi / tiêu chí lối sống")
+    @Operation(summary = "Admin vô hiệu hóa câu hỏi / tiêu chí sinh hoạt")
     public ResponseEntity<ResponseData<Void>> deleteCriterion(@PathVariable Long id) {
         String idStr = String.valueOf(id);
         for (LifestyleCriterionDto item : criteriaCache) {
@@ -154,4 +164,3 @@ public class AdminMasterDataController {
         return ResponseEntity.ok(ResponseData.success("Đã vô hiệu hóa tiêu chí thành công!", null));
     }
 }
-

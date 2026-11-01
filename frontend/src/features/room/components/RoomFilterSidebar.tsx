@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Input, InputNumber, Select, Slider, Button, Tooltip } from 'antd';
+import { Input, InputNumber, Select, Button, Tooltip } from 'antd';
 import {
   Search,
   RotateCcw,
@@ -16,8 +16,6 @@ import { AmenityIcon } from '@/shared/components/ui/AmenityBadge';
 import {
   getProvinces,
   getWardsByProvinceId,
-  getProvinceName,
-  getWardName,
 } from '@/shared/constants/vietnamLocations';
 
 export interface RoomFilterValues {
@@ -46,15 +44,6 @@ const PRICE_PRESETS = [
   { label: '3 - 5 tr', min: 3000000, max: 5000000 },
   { label: '5 - 8 tr', min: 5000000, max: 8000000 },
   { label: '8 - 12 tr', min: 8000000, max: 12000000 },
-  { label: '> 12 tr', min: 12000000, max: 15000000 },
-];
-
-const AREA_PRESETS = [
-  { label: 'Tất cả', min: 15, max: 80 },
-  { label: '< 20 m²', min: 15, max: 20 },
-  { label: '20 - 30 m²', min: 20, max: 30 },
-  { label: '30 - 45 m²', min: 30, max: 45 },
-  { label: '> 45 m²', min: 45, max: 80 },
 ];
 
 const POPULAR_PROVINCES = [
@@ -75,74 +64,18 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
     [values.provinceId]
   );
 
-  // Tính số lượng bộ lọc đang hoạt động
-  const activeFilters = useMemo(() => {
-    const list: { key: string; label: string; onRemove: () => void }[] = [];
-
-    if (values.keyword?.trim()) {
-      list.push({
-        key: 'keyword',
-        label: `Từ khóa: "${values.keyword.trim()}"`,
-        onRemove: () => onChange({ keyword: '' }),
-      });
-    }
-
-    if (values.provinceId) {
-      const pName = getProvinceName(values.provinceId) || 'Tỉnh / TP';
-      list.push({
-        key: 'province',
-        label: pName,
-        onRemove: () => onChange({ provinceId: undefined, wardId: undefined }),
-      });
-    }
-
-    if (values.wardId) {
-      const wName = getWardName(values.wardId) || 'Phường / Xã';
-      list.push({
-        key: 'ward',
-        label: wName,
-        onRemove: () => onChange({ wardId: undefined }),
-      });
-    }
-
-    if (values.minPrice > 0 || values.maxPrice < 15000000) {
-      const minText = (values.minPrice / 1000000).toFixed(1);
-      const maxText = (values.maxPrice / 1000000).toFixed(1);
-      list.push({
-        key: 'price',
-        label: `${minText} - ${maxText} tr`,
-        onRemove: () => onChange({ minPrice: 0, maxPrice: 15000000 }),
-      });
-    }
-
-    if (values.minArea > 15 || values.maxArea < 80) {
-      list.push({
-        key: 'area',
-        label: `${values.minArea} - ${values.maxArea} m²`,
-        onRemove: () => onChange({ minArea: 15, maxArea: 80 }),
-      });
-    }
-
-    if (values.zones && values.zones.length > 0) {
-      list.push({
-        key: 'zones',
-        label: `${values.zones.length} vùng bản đồ`,
-        onRemove: () => onChange({ zones: [] }),
-      });
-    }
-
-    const mask = values.amenitiesMask || 0;
-    if (mask > 0) {
-      const count = ROOM_AMENITIES.filter((a) => (mask & a.bitValue) !== 0).length;
-      list.push({
-        key: 'amenities',
-        label: `${count} tiện ích`,
-        onRemove: () => onChange({ amenitiesMask: 0 }),
-      });
-    }
-
-    return list;
-  }, [values, onChange]);
+  // Đếm nhanh số tiêu chí đang lọc để hiển thị badge & nút Đặt lại
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (values.keyword?.trim()) count++;
+    if (values.provinceId) count++;
+    if (values.wardId) count++;
+    if (values.minPrice > 0 || (values.maxPrice && values.maxPrice < 15000000)) count++;
+    if (values.minArea > 15 || (values.maxArea && values.maxArea < 80)) count++;
+    if (values.zones && values.zones.length > 0) count++;
+    if (values.amenitiesMask && values.amenitiesMask > 0) count++;
+    return count;
+  }, [values]);
 
   const selectedAmenityCount = useMemo(() => {
     const mask = values.amenitiesMask || 0;
@@ -178,9 +111,9 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
             <div>
               <h2 className="text-sm sm:text-base font-bold text-stay-text m-0 flex items-center gap-2">
                 Bộ Lọc Tìm Kiếm
-                {activeFilters.length > 0 && (
+                {activeFilterCount > 0 && (
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
-                    {activeFilters.length}
+                    {activeFilterCount}
                   </span>
                 )}
               </h2>
@@ -190,8 +123,8 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
           <button
             type="button"
             onClick={onReset}
-            disabled={activeFilters.length === 0}
-            className={`text-xs flex items-center gap-1.5 transition font-medium cursor-pointer ${activeFilters.length > 0
+            disabled={activeFilterCount === 0}
+            className={`text-xs flex items-center gap-1.5 transition font-medium cursor-pointer ${activeFilterCount > 0
               ? 'text-stay-text-secondary hover:text-stay-primary'
               : 'text-stay-text-muted cursor-not-allowed opacity-50'
               }`}
@@ -202,10 +135,10 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
         </div>
       </div>
 
-      {/* 2. Thân Sidebar - Cuộn linh hoạt bên trong khi dài quá */}
-      <div className="p-4 sm:p-5 space-y-5 overflow-y-auto flex-1 custom-sidebar-scroll">
+      {/* 2. Thân Sidebar - Cuộn mượt mà khi dài quá */}
+      <div className="p-4 sm:p-5 space-y-4.5 overflow-y-auto flex-1 custom-sidebar-scroll">
         {/* Widget Khoanh Vùng Bản Đồ Không Gian (Spatial Mini-Map Widget) */}
-        <div className="rounded-xl border border-stay-border bg-stay-bg-app p-3.5 relative overflow-hidden transition-colors">
+        <div className="rounded-xl border border-stay-border bg-stay-bg-app p-3 relative overflow-hidden transition-colors">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-stay-primary" />
@@ -222,7 +155,7 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
               type="primary"
               icon={<Pencil className="w-3.5 h-3.5" />}
               onClick={onOpenDrawModal}
-              className="flex-1 h-9 text-xs font-semibold rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white shadow-sm flex items-center justify-center gap-1.5"
+              className="flex-1 h-8.5 text-xs font-semibold rounded-lg bg-stay-primary hover:bg-stay-primary-hover text-white shadow-sm flex items-center justify-center gap-1.5"
             >
               {values.zones && values.zones.length > 0 ? 'Chỉnh sửa vùng vẽ' : 'Vẽ vùng trên bản đồ'}
             </Button>
@@ -232,7 +165,7 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
                   danger
                   icon={<X className="w-3.5 h-3.5" />}
                   onClick={() => onChange({ zones: [] })}
-                  className="h-9 px-3 rounded-lg"
+                  className="h-8.5 px-3 rounded-lg"
                 />
               </Tooltip>
             )}
@@ -255,12 +188,10 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
         </div>
 
         {/* Khu vực Tỉnh / Thành phố & Phường / Xã */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-stay-text">
-              Tỉnh / Thành phố & Phường / Xã
-            </label>
-          </div>
+        <div className="space-y-2">
+          <label className="block text-xs font-bold text-stay-text">
+            Tỉnh / Thành phố & Phường / Xã
+          </label>
 
           {/* Quick city chips */}
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -320,63 +251,39 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
 
         {/* Khoảng giá thuê */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-bold text-stay-text">Khoảng giá thuê</label>
-            <span className="text-xs font-bold text-stay-primary">
-              {values.minPrice === 0 && values.maxPrice >= 15000000
-                ? 'Tất cả mức giá'
-                : `${(values.minPrice / 1000000).toFixed(1)} - ${(values.maxPrice / 1000000).toFixed(1)} tr/tháng`}
-            </span>
-          </div>
+          <label className="block text-xs font-bold text-stay-text mb-1.5">
+            Khoảng giá thuê
+          </label>
 
           {/* Ô nhập khoảng giá trực tiếp */}
-          <div className="grid grid-cols-2 gap-2 mb-2.5">
-            <div>
-              <span className="text-[11px] text-stay-text-secondary block mb-1 font-medium">Giá tối thiểu</span>
-              <InputNumber
-                min={0}
-                max={values.maxPrice || 50000000}
-                step={500000}
-                value={values.minPrice}
-                formatter={(val) => `${val ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(val) => (val ? Number(val.replace(/\$\s?|(,*)/g, '')) : 0)}
-                onChange={(val) => onChange({ minPrice: val ?? 0 })}
-                placeholder="Từ (VNĐ)"
-                suffix={<span className="text-[11px] text-stay-text-muted">đ</span>}
-                className="w-full !rounded-lg h-8 text-xs border-stay-border"
-              />
-            </div>
-            <div>
-              <span className="text-[11px] text-stay-text-secondary block mb-1 font-medium">Giá tối đa</span>
-              <InputNumber
-                min={values.minPrice || 0}
-                max={50000000}
-                step={500000}
-                value={values.maxPrice}
-                formatter={(val) => `${val ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(val) => (val ? Number(val.replace(/\$\s?|(,*)/g, '')) : 15000000)}
-                onChange={(val) => onChange({ maxPrice: val ?? 15000000 })}
-                placeholder="Đến (VNĐ)"
-                suffix={<span className="text-[11px] text-stay-text-muted">đ</span>}
-                className="w-full !rounded-lg h-8 text-xs border-stay-border"
-              />
-            </div>
+          <div className="flex items-center gap-2 mb-2">
+            <InputNumber
+              min={0}
+              step={500000}
+              value={values.minPrice > 0 ? values.minPrice : undefined}
+              formatter={(val) => `${val ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(val) => (val ? Number(val.replace(/\$\s?|(,*)/g, '')) : 0)}
+              onChange={(val) => onChange({ minPrice: val ?? 0 })}
+              placeholder="Từ giá"
+              suffix={<span className="text-[11px] text-stay-text-muted">đ</span>}
+              className="w-full !rounded-lg h-8.5 text-xs border-stay-border"
+            />
+            <span className="text-stay-text-muted text-xs shrink-0">—</span>
+            <InputNumber
+              min={values.minPrice || 0}
+              step={500000}
+              value={values.maxPrice < 15000000 ? values.maxPrice : undefined}
+              formatter={(val) => `${val ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(val) => (val ? Number(val.replace(/\$\s?|(,*)/g, '')) : 15000000)}
+              onChange={(val) => onChange({ maxPrice: val ?? 15000000 })}
+              placeholder="Đến giá"
+              suffix={<span className="text-[11px] text-stay-text-muted">đ</span>}
+              className="w-full !rounded-lg h-8.5 text-xs border-stay-border"
+            />
           </div>
 
-          <Slider
-            range
-            min={0}
-            max={15000000}
-            step={500000}
-            value={[values.minPrice, Math.min(values.maxPrice, 15000000)]}
-            onChange={(val) => onChange({ minPrice: val[0], maxPrice: val[1] })}
-            tooltip={{
-              formatter: (v) => `${((v || 0) / 1000000).toFixed(1)} tr`,
-            }}
-          />
-
           {/* Chips preset mức giá */}
-          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {PRICE_PRESETS.map((p, i) => {
               const isSelected =
                 values.minPrice === p.min && values.maxPrice === p.max;
@@ -399,76 +306,33 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
 
         {/* Diện tích */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-bold text-stay-text">Diện tích phòng</label>
-            <span className="text-xs font-bold text-stay-primary">
-              {values.minArea <= 15 && values.maxArea >= 80
-                ? 'Tất cả diện tích'
-                : `${values.minArea} - ${values.maxArea} m²`}
-            </span>
-          </div>
+          <label className="block text-xs font-bold text-stay-text mb-1.5">
+            Diện tích phòng
+          </label>
 
           {/* Ô nhập diện tích trực tiếp */}
-          <div className="grid grid-cols-2 gap-2 mb-2.5">
-            <div>
-              <span className="text-[11px] text-stay-text-secondary block mb-1 font-medium">Từ (m²)</span>
-              <InputNumber
-                min={0}
-                max={values.maxArea || 200}
-                step={1}
-                value={values.minArea}
-                onChange={(val) => onChange({ minArea: val ?? 15 })}
-                placeholder="15"
-                suffix={<span className="text-[11px] text-stay-text-muted">m²</span>}
-                className="w-full !rounded-lg h-8 text-xs border-stay-border"
-              />
-            </div>
-            <div>
-              <span className="text-[11px] text-stay-text-secondary block mb-1 font-medium">Đến (m²)</span>
-              <InputNumber
-                min={values.minArea || 0}
-                max={300}
-                step={1}
-                value={values.maxArea}
-                onChange={(val) => onChange({ maxArea: val ?? 80 })}
-                placeholder="80"
-                suffix={<span className="text-[11px] text-stay-text-muted">m²</span>}
-                className="w-full !rounded-lg h-8 text-xs border-stay-border"
-              />
-            </div>
-          </div>
-
-          <Slider
-            range
-            min={15}
-            max={80}
-            step={1}
-            value={[Math.max(15, values.minArea), Math.min(values.maxArea, 80)]}
-            onChange={(val) => onChange({ minArea: val[0], maxArea: val[1] })}
-            tooltip={{
-              formatter: (v) => `${v} m²`,
-            }}
-          />
-
-          {/* Chips preset diện tích */}
-          <div className="flex items-center gap-1.5 flex-wrap mt-2">
-            {AREA_PRESETS.map((a, i) => {
-              const isSelected =
-                values.minArea === a.min && values.maxArea === a.max;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => onChange({ minArea: a.min, maxArea: a.max })}
-                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition cursor-pointer font-medium ${isSelected
-                    ? 'bg-stay-primary text-white border-stay-primary shadow-xs'
-                    : 'bg-stay-bg-app text-stay-text-secondary border-stay-border hover:border-stay-primary/50'
-                    }`}
-                >
-                  {a.label}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2 mb-2">
+            <InputNumber
+              min={0}
+              max={values.maxArea || 200}
+              step={1}
+              value={values.minArea > 15 ? values.minArea : undefined}
+              onChange={(val) => onChange({ minArea: val ?? 15 })}
+              placeholder="Từ diện tích"
+              suffix={<span className="text-[11px] text-stay-text-muted">m²</span>}
+              className="w-full !rounded-lg h-8.5 text-xs border-stay-border"
+            />
+            <span className="text-stay-text-muted text-xs shrink-0">—</span>
+            <InputNumber
+              min={values.minArea || 0}
+              max={300}
+              step={1}
+              value={values.maxArea < 80 ? values.maxArea : undefined}
+              onChange={(val) => onChange({ maxArea: val ?? 80 })}
+              placeholder="Đến diện tích"
+              suffix={<span className="text-[11px] text-stay-text-muted">m²</span>}
+              className="w-full !rounded-lg h-8.5 text-xs border-stay-border"
+            />
           </div>
         </div>
 
@@ -539,22 +403,6 @@ export const RoomFilterSidebar: React.FC<RoomFilterSidebarProps> = ({
             })}
           </div>
         </div>
-      </div>
-
-      {/* 3. Footer cố định dưới đáy Sidebar */}
-      <div className="p-3.5 px-4 sm:px-5 border-t border-stay-border shrink-0 bg-stay-bg-app/60 flex items-center justify-between text-xs">
-        <span className="text-stay-text-secondary text-[11px]">
-          Tự động lọc kết quả
-        </span>
-        {activeFilters.length > 0 && (
-          <button
-            type="button"
-            onClick={onReset}
-            className="text-[11px] text-stay-primary hover:underline font-semibold cursor-pointer"
-          >
-            Xóa tất cả bộ lọc ({activeFilters.length})
-          </button>
-        )}
       </div>
     </div>
   );

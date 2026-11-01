@@ -17,7 +17,6 @@ import lombok.*;
 @Table(name = "roommate_applications")
 public class RoommateApplication extends BaseEntity {
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private RoommatePost post;
@@ -41,7 +40,7 @@ public class RoommateApplication extends BaseEntity {
     @Builder.Default
     private Boolean isPet = false;
 
-    // Điểm tương thích lối sống tính tự động (UC14: 94%, 72%...)
+    // Điểm tương thích sinh hoạt tính tự động (UC14: 94%, 72%...)
     @Column(name = "compatibility_score")
     @Builder.Default
     private Integer compatibilityScore = 0;

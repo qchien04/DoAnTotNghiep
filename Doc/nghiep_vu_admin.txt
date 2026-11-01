@@ -82,13 +82,13 @@ Header 2: 51. Chức năng xem danh mục Master Data
 Use case: View Master Data (Xem danh mục dữ liệu tham chiếu dùng chung toàn hệ thống)
 Actor: Admin
 Tiền điều kiện: Quản trị viên đăng nhập với quyền Admin.
-Hậu điều kiện: Danh mục tiện ích phòng, danh mục tiêu chí lối sống và địa bàn quận huyện được hiển thị chi tiết.
+Hậu điều kiện: Danh mục tiện ích phòng, danh mục tiêu chí sinh hoạt và địa bàn quận huyện được hiển thị chi tiết.
 Kịch bản chính:
   1. Quản trị viên truy cập mục 'Cấu hình hệ thống' -> 'Master Data'.
-  2. Hệ thống hiển thị các tab danh mục dữ liệu dùng chung: (1) Tiện ích phòng trọ, (2) Bộ tiêu chí khảo sát lối sống ở ghép, (3) Địa bàn Quận/Huyện.
-  3. Quản trị viên chọn tab 'Bộ tiêu chí khảo sát lối sống ở ghép'.
+  2. Hệ thống hiển thị các tab danh mục dữ liệu dùng chung: (1) Tiện ích phòng trọ, (2) Bộ tiêu chí khảo sát sinh hoạt ở ghép, (3) Địa bàn Quận/Huyện.
+  3. Quản trị viên chọn tab 'Bộ tiêu chí khảo sát sinh hoạt ở ghép'.
   4. Hệ thống hiển thị bảng danh mục các tiêu chí đang áp dụng cho thuật toán ghép phòng:
-  Mã TC | Tên tiêu chí lối sống | Nhóm phân loại | Trọng số thuật toán | Trạng thái | Thao tác
+  Mã TC | Tên tiêu chí sinh hoạt | Nhóm phân loại | Trọng số thuật toán | Trạng thái | Thao tác
   --- | --- | --- | --- | --- | ---
   TC01 | Thói quen hút thuốc lá | Thói quen cá nhân | 25% | Đang kích hoạt | Sửa | Tạm dừng
   TC02 | Giờ giấc đi ngủ ban đêm | Sinh hoạt giờ giấc | 20% | Đang kích hoạt | Sửa | Tạm dừng
@@ -102,12 +102,12 @@ Ngoại lệ:
 
 Header 2: 52. Chức năng thêm mới dữ liệu Master Data
 ------------------------------------------------------------
-Use case: Add Master Data (Bổ sung tiện ích hoặc tiêu chí lối sống mới)
+Use case: Add Master Data (Bổ sung tiện ích hoặc tiêu chí sinh hoạt mới)
 Actor: Admin
 Tiền điều kiện: Quản trị viên đăng nhập với quyền Admin.
 Hậu điều kiện: Bản ghi Master Data mới được lưu trữ và tự động đồng bộ vào các form khảo sát của người dùng.
 Kịch bản chính:
-  1. Tại tab Bộ tiêu chí lối sống, quản trị viên bấm nút 'Thêm tiêu chí mới'.
+  1. Tại tab Bộ tiêu chí sinh hoạt, quản trị viên bấm nút 'Thêm tiêu chí mới'.
   2. Hệ thống hiển thị Form thêm tiêu chí gồm: Mã tiêu chí , Tên tiêu chí , Nhóm phân loại , Các đáp án lựa chọn, Trọng số (%), Trạng thái kích hoạt.
   3. Quản trị viên nhập: Mã TC06, Tên: 'Mức độ giao tiếp / Hướng nội - Hướng ngoại', Nhóm: Thói quen cá nhân, Trọng số: 10%, Đáp án: 'Thích yên tĩnh đọc sách' và 'Thích trò chuyện bạn bè'.
   4. Quản trị viên bấm 'Lưu tiêu chí'.

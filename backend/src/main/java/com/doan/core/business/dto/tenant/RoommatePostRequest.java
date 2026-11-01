@@ -20,8 +20,7 @@ public class RoommatePostRequest {
 
     private String description;
 
-    @NotNull(message = "Loại hình đăng bài không được để trống!")
-    private RoommatePostType postType; // HAS_ROOM, SEARCHING_ROOM
+    private RoommatePostType postType; // HAS_ROOM, SEARCHING_ROOM (tự động suy ra từ endpoint nếu null)
 
     private Long roomId; // ID phòng liên kết nếu chọn Lựa chọn A
 

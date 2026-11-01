@@ -205,7 +205,7 @@ export const ApplicantDrawer: React.FC<ApplicantDrawerProps> = ({
               Đơn xin gia nhập ({applications.length})
             </span>
             <span className="text-[11px] text-stay-text-secondary">
-              Xem chi tiết hồ sơ để đối chiếu lối sống và xét duyệt
+              Xem chi tiết hồ sơ để đối chiếu sinh hoạt và xét duyệt
             </span>
           </div>
 
