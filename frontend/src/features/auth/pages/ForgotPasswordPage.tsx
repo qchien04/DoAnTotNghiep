@@ -40,11 +40,15 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       const res = await authService.sendForgotPasswordOtp(email.trim());
       if (res.code === '00') {
-        setOtpSentMsg('Mã OTP 6 số đã được gửi đến email. Vui lòng kiểm tra hộp thư!');
+        setOtpSentMsg(res.message || 'Mã OTP 6 số đã được gửi đến email. Vui lòng kiểm tra hộp thư!');
+        if (res.data) {
+          setOtpCode(String(res.data));
+        }
         setCountdown(60);
       } else {
         setError(res.message || 'Không thể gửi mã OTP đặt lại mật khẩu');
       }
+
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Không tìm thấy tài khoản với email này';
       setError(msg);

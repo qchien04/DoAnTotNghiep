@@ -86,6 +86,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Xử lý lỗi dung lượng file tải lên vượt quá giới hạn cấu hình
+     */
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ResponseData<Void>> handleMaxUploadSizeExceededException(
+            org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+        log.warn("Max upload size exceeded: {}", ex.getMessage());
+        ResponseData<Void> response = ResponseData.error(
+                ErrorCode.FILE_SIZE_EXCEEDED.getCode(),
+                ErrorCode.FILE_SIZE_EXCEEDED.getMessage(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
      * Bắt tất cả các lỗi chưa được định nghĩa khác (500 Internal Server Error)
      */
     @ExceptionHandler(Exception.class)

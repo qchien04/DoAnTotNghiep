@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Home,
   LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
@@ -26,6 +27,24 @@ export const LandlordLayout: React.FC = () => {
       key: '/landlord',
       icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
       label: <Link to="/landlord">Tổng quan</Link>,
+    },
+    {
+      key: '/landlord/verification',
+      icon: <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-500" />,
+      label: (
+        <Link to="/landlord/verification" className="flex items-center justify-between">
+          <span>Xác minh chủ trọ</span>
+          {user?.landlordVerified ? (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold">
+              Đã duyệt
+            </span>
+          ) : user?.landlordVerificationStatus === 'PENDING' ? (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold">
+              Chờ duyệt
+            </span>
+          ) : null}
+        </Link>
+      ),
     },
     {
       key: '/landlord/buildings',

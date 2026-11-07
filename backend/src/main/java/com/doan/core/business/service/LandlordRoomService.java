@@ -1,7 +1,9 @@
 package com.doan.core.business.service;
 
+import com.doan.core.business.dto.landlord.room.RoomImageUploadResponse;
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,4 +18,6 @@ public interface LandlordRoomService {
     RoomResponse updateRoom(Long landlordId, Long roomId, RoomRequest request);
 
     void deleteRoom(Long landlordId, Long roomId);
+
+    List<RoomImageUploadResponse> uploadRoomImages(Long landlordId, MultipartFile[] files);
 }

@@ -47,8 +47,10 @@ public class RoommateApplicationLifestyleAnswer {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RoommateApplicationLifestyleAnswerId implements Serializable {
+        private static final long serialVersionUID = 1L;
         private Long applicationId;
         private Long questionId;
         private Long optionId;
     }
 }
+

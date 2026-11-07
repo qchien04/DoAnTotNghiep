@@ -37,13 +37,15 @@ DELETE FROM users;
 -- 1. TÀI KHOẢN NGƯỜI DÙNG (USERS)
 -- Hash BCrypt chuẩn cho mật khẩu '123456': $2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve
 -- =============================================================================
-INSERT INTO users (id, username, password_hash, full_name, email, phone, role, status, avatar_url, lifestyle_vector, enabled, created_at, updated_at)
+INSERT INTO users (id, username, password_hash, full_name, email, phone, role, status, avatar_url, lifestyle_vector, enabled, landlord_verified, landlord_verification_status, landlord_rejection_reason, landlord_verified_at, landlord_verified_by, created_at, updated_at)
 VALUES
-(1, 'admin', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Quản Trị Viên Hệ Thống', 'admin@stayhub.vn', '0900000001', 'ROLE_ADMIN', 'ACTIVE', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'landlord', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Nguyễn Văn Thành', 'landlord@stayhub.vn', '0912345678', 'ROLE_LANDLORD', 'ACTIVE', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 'tenant', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Trần Quang Chiến', 'tenant@stayhub.vn', '0987654321', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150', '0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, 'tenant2', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Lê Thị Mai', 'tenant2@stayhub.vn', '0934567890', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '1.000,0.000,0.000,0.000,0.500,1.000,0.000,0.500', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(5, 'tenant3', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Hoàng Đức Anh', 'ducanh@stayhub.vn', '0912888999', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '0.000,0.500,0.000,0.000,1.000,0.500,0.500,0.500', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'admin', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Quản Trị Viên Hệ Thống', 'admin@stayhub.vn', '0900000001', 'ROLE_ADMIN', 'ACTIVE', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', NULL, TRUE, FALSE, 'UNVERIFIED', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'landlord', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Nguyễn Văn Thành', 'landlord@stayhub.vn', '0912345678', 'ROLE_LANDLORD', 'ACTIVE', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', NULL, TRUE, TRUE, 'VERIFIED', NULL, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'tenant', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Trần Quang Chiến', 'tenant@stayhub.vn', '0987654321', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150', '0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500', TRUE, FALSE, 'UNVERIFIED', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'tenant2', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Lê Thị Mai', 'tenant2@stayhub.vn', '0934567890', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '1.000,0.000,0.000,0.000,0.500,1.000,0.000,0.500', TRUE, FALSE, 'UNVERIFIED', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 'tenant3', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Hoàng Đức Anh', 'ducanh@stayhub.vn', '0912888999', 'ROLE_TENANT', 'ACTIVE', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '0.000,0.500,0.000,0.000,1.000,0.500,0.500,0.500', TRUE, FALSE, 'UNVERIFIED', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 'landlord_pending', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Hoàng Trọng Minh', 'minhlandlord@stayhub.vn', '0912111222', 'ROLE_LANDLORD', 'ACTIVE', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', NULL, TRUE, FALSE, 'PENDING', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 'landlord_rejected', '$2a$10$PYpjCqa.Ha48Olk1.ko3zOIB8pNx.qco52BtGMZBFyU0kmnaJEeve', 'Vũ Quốc Toàn', 'toanlandlord@stayhub.vn', '0912333444', 'ROLE_LANDLORD', 'ACTIVE', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150', NULL, TRUE, FALSE, 'REJECTED', 'Ảnh chụp giấy tờ bị mờ số hiệu và thiếu dấu giáp lai công chứng. Vui lòng chụp lại rõ nét hơn.', NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 
 -- =============================================================================
@@ -70,24 +72,26 @@ VALUES
 -- Phòng 4 thuộc Tòa nhà 2 (CCMN Cầu Giấy)
 -- Phòng 5: Nhà trọ độc lập (building_id = NULL) có địa chỉ & tọa độ GPS riêng
 -- =============================================================================
-INSERT INTO rooms (id, building_id, landlord_id, name, province, ward, address_detail, floor, area, listed_price, standard_deposit, max_capacity, current_occupancy, furnishing_level, amenities, description, status, latitude, longitude, is_public, created_at, updated_at)
+INSERT INTO rooms (id, building_id, landlord_id, name, province, ward, address_detail, floor, area, listed_price, standard_deposit, electricity_price, water_price, risk_score, moderation_status, max_capacity, current_occupancy, furnishing_level, amenities, description, status, latitude, longitude, is_public, created_at, updated_at)
 VALUES
-(1, 1, 2, 'Phòng 101 - Ban công thoáng', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 1, 28.50, 3500000, 3500000, 2, 0, 'FULL', 'Điều hòa, Bình nóng lạnh, Tủ lạnh, Giường đệm, Tủ quần áo', 'Phòng tầng 1 thoáng mát có ban công, cửa sổ đón gió tự nhiên.', 'AVAILABLE', 20.98520000, 105.79810000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 1, 2, 'Phòng 102 - Khép kín cao cấp', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 1, 32.00, 3800000, 3800000, 3, 2, 'FULL', 'Điều hòa Daikin, Nóng lạnh, Tủ lạnh 2 cánh, Máy giặt riêng, Wifi tốc độ cao', 'Phòng tầng 1 khép kín, có gác xép kiên cố, để xe miễn phí.', 'OCCUPIED', 20.98525000, 105.79820000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 1, 2, 'Phòng 201 - View phố thoáng đãng', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 2, 35.00, 4200000, 4200000, 3, 0, 'FULL', 'Điều hòa, Nóng lạnh, Tủ bếp riêng, Tủ lạnh, Bàn học', 'Phòng tầng 2 view thoáng mát, bếp nấu ăn riêng biệt.', 'AVAILABLE', 20.98530000, 105.79830000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, 2, 2, 'Phòng 302 - Studio Xuân Thủy', 'Thành phố Hà Nội', 'Phường Dịch Vọng Hậu', 'Ngõ 175 Xuân Thủy', 3, 30.00, 4400000, 4400000, 2, 1, 'FULL', 'Thang máy, Khóa vân tay, Điều hòa Inverter, Tủ lạnh side by side', 'Gần ĐH Sư Phạm, ĐH Quốc Gia, full nội thất cao cấp.', 'OCCUPIED', 21.03710000, 105.78320000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(5, NULL, 2, 'Nhà trọ độc lập Bách Khoa', 'Thành phố Hà Nội', 'Phường Bách Khoa', 'Số 25 ngõ 40 Tạ Quang Bửu', 1, 25.00, 3200000, 3200000, 2, 0, 'BASIC', 'Điều hòa, Nóng lạnh, Kệ bếp', 'Nhà trọ riêng độc lập không chung chủ, giờ giấc tự do, gần ĐHBK Hà Nội.', 'AVAILABLE', 21.00560000, 105.84330000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 1, 2, 'Phòng 101 - Ban công thoáng', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 1, 28.50, 3500000, 3500000, 3800, 30000, 0, 'APPROVED', 2, 0, 'FULL', 'Điều hòa, Bình nóng lạnh, Tủ lạnh, Giường đệm, Tủ quần áo', 'Phòng tầng 1 thoáng mát có ban công, cửa sổ đón gió tự nhiên.', 'AVAILABLE', 20.98520000, 105.79810000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 1, 2, 'Phòng 102 - Khép kín cao cấp', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 1, 32.00, 3800000, 3800000, 3800, 30000, 0, 'APPROVED', 3, 2, 'FULL', 'Điều hòa Daikin, Nóng lạnh, Tủ lạnh 2 cánh, Máy giặt riêng, Wifi tốc độ cao', 'Phòng tầng 1 khép kín, có gác xép kiên cố, để xe miễn phí.', 'OCCUPIED', 20.98525000, 105.79820000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 1, 2, 'Phòng 201 - View phố thoáng đãng', 'Thành phố Hà Nội', 'Phường Thanh Xuân Nam', 'Số 15 ngõ 68 Triều Khúc', 2, 35.00, 4200000, 4200000, 3800, 30000, 0, 'APPROVED', 3, 0, 'FULL', 'Điều hòa, Nóng lạnh, Tủ bếp riêng, Tủ lạnh, Bàn học', 'Phòng tầng 2 view thoáng mát, bếp nấu ăn riêng biệt.', 'AVAILABLE', 20.98530000, 105.79830000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 2, 2, 'Phòng 302 - Studio Xuân Thủy', 'Thành phố Hà Nội', 'Phường Dịch Vọng Hậu', 'Ngõ 175 Xuân Thủy', 3, 30.00, 4400000, 4400000, 4000, 35000, 0, 'APPROVED', 2, 1, 'FULL', 'Thang máy, Khóa vân tay, Điều hòa Inverter, Tủ lạnh side by side', 'Gần ĐH Sư Phạm, ĐH Quốc Gia, full nội thất cao cấp.', 'OCCUPIED', 21.03710000, 105.78320000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, NULL, 2, 'Nhà trọ độc lập Bách Khoa', 'Thành phố Hà Nội', 'Phường Bách Khoa', 'Số 25 ngõ 40 Tạ Quang Bửu', 1, 25.00, 3200000, 3200000, 3500, 25000, 0, 'APPROVED', 2, 0, 'BASIC', 'Điều hòa, Nóng lạnh, Kệ bếp', 'Nhà trọ riêng độc lập không chung chủ, giờ giấc tự do, gần ĐHBK Hà Nội.', 'AVAILABLE', 21.00560000, 105.84330000, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =============================================================================
 -- 5. BẢNG ẢNH PHÒNG TRỌ (ROOM_IMAGES)
 -- =============================================================================
-INSERT INTO room_images (id, room_id, image_url, display_order, created_at)
+INSERT INTO room_images (id, room_id, image_url, display_order, image_hash, created_at)
 VALUES
-(1, 1, 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 0, CURRENT_TIMESTAMP),
-(2, 2, 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 0, CURRENT_TIMESTAMP),
-(3, 2, 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800', 1, CURRENT_TIMESTAMP),
-(4, 4, 'https://images.unsplash.com/photo-1502005229762-ee1b2da94088?w=800', 0, CURRENT_TIMESTAMP),
-(5, 5, 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800', 0, CURRENT_TIMESTAMP);
+(1, 1, 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 0, 'f0e1d2c3b4a59687', CURRENT_TIMESTAMP),
+(2, 1, 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 1, '1234567890abcdef', CURRENT_TIMESTAMP),
+(3, 1, 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800', 2, 'fedcba0987654321', CURRENT_TIMESTAMP),
+(4, 2, 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 0, '1234567890abcdef', CURRENT_TIMESTAMP),
+(5, 2, 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800', 1, 'fedcba0987654321', CURRENT_TIMESTAMP),
+(6, 4, 'https://images.unsplash.com/photo-1502005229762-ee1b2da94088?w=800', 0, 'aabbccddeeff0011', CURRENT_TIMESTAMP),
+(7, 5, 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800', 0, '1122334455667788', CURRENT_TIMESTAMP);
 
 -- =============================================================================
 -- 6. LIÊN KẾT PHÒNG - DỊCH VỤ (ROOM_SERVICES)
@@ -286,7 +290,34 @@ VALUES
 (1, 8, 23, TRUE);
 
 -- =============================================================================
--- 17. ĐỒNG BỘ AUTO-INCREMENT SEQUENCES CHO POSTGRESQL
+-- 17. HỒ SƠ XÁC MINH CHỦ TRỌ MẪU
+-- =============================================================================
+INSERT INTO landlord_verifications (id, user_id, verification_type, property_address, document_number, notes, status, rejection_reason, verified_at, verified_by, created_at, updated_at)
+VALUES
+(1, 2, 'OWNERSHIP_CERTIFICATE', 'Số 15 ngõ 68 Triều Khúc, Thanh Xuân Nam, Hà Nội', 'GCN-HN-2023-8899', 'Hồ sơ sổ đỏ chính chủ đầy đủ 4 trang bản scan rõ nét.', 'VERIFIED', NULL, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 6, 'OWNERSHIP_CERTIFICATE', 'Số 22 ngách 45/12 ngõ Chợ Khâm Thiên, Đống Đa, Hà Nội', 'GCN-DD-2022-4412', 'Tôi là chủ nhà trọ gồm 8 phòng cho thuê, xin xác minh để đăng bài.', 'PENDING', NULL, NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 7, 'AUTHORIZATION_CONTRACT', 'Số 88 đường Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội', 'UQ-CG-2024-0019', 'Hợp đồng ủy quyền quản lý nhà trọ từ chủ hộ.', 'REJECTED', 'Ảnh chụp giấy tờ bị mờ số hiệu và thiếu dấu giáp lai công chứng. Vui lòng chụp lại rõ nét hơn.', NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO landlord_verification_documents (id, verification_id, file_key, original_filename, stored_filename, storage_path, content_type, file_size, created_at)
+VALUES
+(1, 1, 'demo-sodo-1', 'so_do_mat_truoc.jpg', 'demo-sodo-1.jpg', 'demo/so_do_1.jpg', 'image/jpeg', 1048576, CURRENT_TIMESTAMP),
+(2, 1, 'demo-sodo-2', 'so_do_so_do_nha.jpg', 'demo-sodo-2.jpg', 'demo/so_do_2.jpg', 'image/jpeg', 1572864, CURRENT_TIMESTAMP),
+(3, 2, 'demo-sodo-minh-1', 'giay_chung_nhan_nha_dat_trang1.jpg', 'demo-sodo-minh-1.jpg', 'demo/so_do_minh_1.jpg', 'image/jpeg', 1234567, CURRENT_TIMESTAMP),
+(4, 2, 'demo-sodo-minh-2', 'giay_chung_nhan_nha_dat_trang2.jpg', 'demo-sodo-minh-2.jpg', 'demo/so_do_minh_2.jpg', 'image/jpeg', 1345678, CURRENT_TIMESTAMP),
+(5, 3, 'demo-hopdong-uq-1', 'hop_dong_uy_quyen_trang1.jpg', 'demo-hopdong-uq-1.jpg', 'demo/hopdong_1.jpg', 'image/jpeg', 987654, CURRENT_TIMESTAMP);
+
+-- =============================================================================
+-- 17b. NHẬT KÝ KIỂM DUYỆT & LỊCH SỬ CHỈNH SỬA PHÒNG TRỌ (ROOM_AUDIT_LOGS)
+-- =============================================================================
+INSERT INTO room_audit_logs (id, room_id, actor_id, action, old_status, new_status, old_moderation_status, new_moderation_status, risk_score, reason, changed_summary, created_at)
+VALUES
+(1, 1, 2, 'CREATED', NULL, 'AVAILABLE', NULL, 'APPROVED', 0, 'Chủ trọ đăng tin mới', 'Khởi tạo phòng P101 - Studio Ban Công Bách Khoa, giá 3.500.000đ, điện 3.500đ, nước 25.000đ', CURRENT_TIMESTAMP - INTERVAL '5 DAY'),
+(2, 1, 2, 'UPDATED', 'AVAILABLE', 'AVAILABLE', 'APPROVED', 'APPROVED', 0, 'Cập nhật giá và tiện nghi', 'Điều chỉnh giá niêm yết từ 3.200.000đ lên 3.500.000đ; bổ sung tiện nghi Điều hòa', CURRENT_TIMESTAMP - INTERVAL '3 DAY'),
+(3, 1, 1, 'MODERATION_APPROVED', 'AVAILABLE', 'AVAILABLE', 'PENDING_REVIEW', 'APPROVED', 0, 'Tin đăng đầy đủ thông tin, đạt chuẩn hiển thị', 'Quản trị viên đã phê duyệt công khai tin đăng', CURRENT_TIMESTAMP - INTERVAL '2 DAY'),
+(4, 3, 2, 'CREATED', NULL, 'AVAILABLE', NULL, 'PENDING_REVIEW', 45, 'Chủ trọ đăng tin mới', 'Khởi tạo phòng P201 Studio; phát hiện SĐT liên hệ ngoài sàn (Điểm rủi ro: 45/100)', CURRENT_TIMESTAMP - INTERVAL '1 DAY');
+
+-- =============================================================================
+-- 18. ĐỒNG BỘ AUTO-INCREMENT SEQUENCES CHO POSTGRESQL
 -- =============================================================================
 SELECT setval('users_id_seq', COALESCE((SELECT MAX(id) FROM users), 1));
 SELECT setval('buildings_id_seq', COALESCE((SELECT MAX(id) FROM buildings), 1));
@@ -304,4 +335,8 @@ SELECT setval('lifestyle_questions_id_seq', COALESCE((SELECT MAX(id) FROM lifest
 SELECT setval('lifestyle_options_id_seq', COALESCE((SELECT MAX(id) FROM lifestyle_options), 1));
 SELECT setval('roommate_posts_id_seq', COALESCE((SELECT MAX(id) FROM roommate_posts), 1));
 SELECT setval('roommate_applications_id_seq', COALESCE((SELECT MAX(id) FROM roommate_applications), 1));
+SELECT setval('kyc_documents_id_seq', COALESCE((SELECT MAX(id) FROM kyc_documents), 1));
+SELECT setval('landlord_verifications_id_seq', COALESCE((SELECT MAX(id) FROM landlord_verifications), 1));
+SELECT setval('landlord_verification_documents_id_seq', COALESCE((SELECT MAX(id) FROM landlord_verification_documents), 1));
+SELECT setval('room_audit_logs_id_seq', COALESCE((SELECT MAX(id) FROM room_audit_logs), 1));
 

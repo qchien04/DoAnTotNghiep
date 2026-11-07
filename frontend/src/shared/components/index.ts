@@ -46,6 +46,7 @@ export * from './LifestyleMatchCard';
 export * from './VerifiedRoomCard';
 export * from './LandlordDashboardPromoCard';
 export * from './ThemeSwitcher';
+export * from './VerifiedLandlordBadge';
 
 // Base Layout Components
 export * from './Header';

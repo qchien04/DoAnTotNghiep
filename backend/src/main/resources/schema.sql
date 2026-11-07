@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS kyc_documents CASCADE;
+DROP TABLE IF EXISTS landlord_verification_documents CASCADE;
+DROP TABLE IF EXISTS landlord_verifications CASCADE;
 DROP TABLE IF EXISTS notifications CASCADE;
 DROP TABLE IF EXISTS roommate_application_lifestyle_answers CASCADE;
 DROP TABLE IF EXISTS roommate_applications CASCADE;
@@ -41,13 +44,22 @@ CREATE TABLE IF NOT EXISTS users (
     locked_reason VARCHAR(255),
     locked_until TIMESTAMP WITH TIME ZONE,
     avatar_url VARCHAR(500),
+    id_card_number VARCHAR(30) UNIQUE,
     date_of_birth DATE,
     gender VARCHAR(10),
     bio TEXT,
     lifestyle_vector VARCHAR(255),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    id_card_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    face_embedding TEXT,
+    landlord_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    landlord_verification_status VARCHAR(30) NOT NULL DEFAULT 'UNVERIFIED',
+    landlord_rejection_reason VARCHAR(500),
+    landlord_verified_at TIMESTAMP WITH TIME ZONE,
+    landlord_verified_by BIGINT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_users_landlord_verifier FOREIGN KEY (landlord_verified_by) REFERENCES users (id) ON DELETE SET NULL
 );
 
 -- 2. Bảng quản lý Refresh Token xác thực JWT
@@ -101,10 +113,19 @@ CREATE TABLE IF NOT EXISTS rooms (
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
     is_public BOOLEAN NOT NULL DEFAULT TRUE,
+    electricity_price BIGINT,
+    water_price BIGINT,
+    risk_score INT NOT NULL DEFAULT 0,
+    risk_evaluation_details TEXT,
+    moderation_status VARCHAR(50) NOT NULL DEFAULT 'APPROVED',
+    moderation_reason VARCHAR(500),
+    moderated_at TIMESTAMP WITH TIME ZONE,
+    moderated_by BIGINT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_rooms_building FOREIGN KEY (building_id) REFERENCES buildings (id) ON DELETE CASCADE,
-    CONSTRAINT fk_rooms_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT
+    CONSTRAINT fk_rooms_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_rooms_moderator FOREIGN KEY (moderated_by) REFERENCES users (id) ON DELETE SET NULL
 );
 
 
@@ -114,9 +135,31 @@ CREATE TABLE IF NOT EXISTS room_images (
     room_id BIGINT NOT NULL,
     image_url VARCHAR(500) NOT NULL,
     display_order INT NOT NULL DEFAULT 0,
+    image_hash VARCHAR(64),
+    storage_path VARCHAR(500),
+    file_key VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_room_images_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+);
+
+-- 5b. Bảng Lịch sử chỉnh sửa & Nhật ký kiểm duyệt phòng trọ (Audit Logs)
+CREATE TABLE IF NOT EXISTS room_audit_logs (
+    id BIGSERIAL PRIMARY KEY,
+    room_id BIGINT NOT NULL,
+    actor_id BIGINT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    old_status VARCHAR(50),
+    new_status VARCHAR(50),
+    old_moderation_status VARCHAR(50),
+    new_moderation_status VARCHAR(50),
+    risk_score INT DEFAULT 0,
+    reason VARCHAR(500),
+    changed_summary TEXT,
+    snapshot_json TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_audit_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
+    CONSTRAINT fk_audit_actor FOREIGN KEY (actor_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- 6. Bảng Dịch vụ tiện ích (Điện, nước, internet, rác, gửi xe...)
@@ -291,8 +334,67 @@ CREATE TABLE IF NOT EXISTS notifications (
     related_entity_id BIGINT,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- 16. Bảng Tài liệu xác thực KYC (CCCD + Selfie lưu vùng an toàn riêng biệt)
+CREATE TABLE IF NOT EXISTS kyc_documents (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    document_type VARCHAR(50) NOT NULL,
+    file_key VARCHAR(100) NOT NULL UNIQUE,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(500) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    id_card_number VARCHAR(30),
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    decision_tier VARCHAR(50),
+    similarity_distance NUMERIC(6,4),
+    liveness_score NUMERIC(5,2),
+    face_embedding TEXT,
+    rejection_reason VARCHAR(255),
+    verified_at TIMESTAMP WITH TIME ZONE,
+    verified_by BIGINT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_kyc_documents_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_kyc_documents_verifier FOREIGN KEY (verified_by) REFERENCES users (id) ON DELETE SET NULL
+);
+
+-- 17. Bảng Hồ sơ Xác minh Chủ trọ (Giấy tờ nhà/đất hoặc Hợp đồng ủy quyền)
+CREATE TABLE IF NOT EXISTS landlord_verifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    verification_type VARCHAR(50) NOT NULL,
+    property_address VARCHAR(255),
+    document_number VARCHAR(100),
+    notes TEXT,
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    rejection_reason VARCHAR(500),
+    verified_at TIMESTAMP WITH TIME ZONE,
+    verified_by BIGINT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_landlord_verifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_landlord_verifications_verifier FOREIGN KEY (verified_by) REFERENCES users (id) ON DELETE SET NULL
+);
+
+-- 18. Bảng Tệp tin/Hình ảnh Đính kèm của Hồ sơ Xác minh Chủ trọ (Lưu vùng an toàn riêng biệt)
+CREATE TABLE IF NOT EXISTS landlord_verification_documents (
+    id BIGSERIAL PRIMARY KEY,
+    verification_id BIGINT NOT NULL,
+    file_key VARCHAR(100) NOT NULL UNIQUE,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(500) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_landlord_verification_docs_ver FOREIGN KEY (verification_id) REFERENCES landlord_verifications (id) ON DELETE CASCADE
 );
 
 -- =============================================================================
@@ -461,4 +563,22 @@ CREATE INDEX IF NOT EXISTS idx_rma_status ON roommate_applications (status);
 CREATE INDEX IF NOT EXISTS idx_rala_app_id ON roommate_application_lifestyle_answers (application_id);
 CREATE INDEX IF NOT EXISTS idx_rpla_post_id ON roommate_post_lifestyle_answers (post_id);
 CREATE INDEX IF NOT EXISTS idx_ula_user_id ON user_lifestyle_answers (user_id);
+CREATE INDEX IF NOT EXISTS idx_kyc_documents_user_id ON kyc_documents (user_id);
+CREATE INDEX IF NOT EXISTS idx_kyc_documents_file_key ON kyc_documents (file_key);
+CREATE INDEX IF NOT EXISTS idx_kyc_documents_status ON kyc_documents (status);
+CREATE INDEX IF NOT EXISTS idx_users_id_card_number ON users (id_card_number);
+CREATE INDEX IF NOT EXISTS idx_kyc_documents_id_card_number ON kyc_documents (id_card_number);
+
+CREATE INDEX IF NOT EXISTS idx_landlord_verifications_user_id ON landlord_verifications (user_id);
+CREATE INDEX IF NOT EXISTS idx_landlord_verifications_status ON landlord_verifications (status);
+CREATE INDEX IF NOT EXISTS idx_landlord_verification_docs_ver_id ON landlord_verification_documents (verification_id);
+CREATE INDEX IF NOT EXISTS idx_landlord_verification_docs_file_key ON landlord_verification_documents (file_key);
+
+CREATE INDEX IF NOT EXISTS idx_rooms_moderation_status ON rooms (moderation_status);
+CREATE INDEX IF NOT EXISTS idx_rooms_risk_score ON rooms (risk_score);
+CREATE INDEX IF NOT EXISTS idx_room_images_image_hash ON room_images (image_hash);
+CREATE INDEX IF NOT EXISTS idx_room_images_file_key ON room_images (file_key);
+CREATE INDEX IF NOT EXISTS idx_room_audit_logs_room_id ON room_audit_logs (room_id);
+CREATE INDEX IF NOT EXISTS idx_room_audit_logs_actor_id ON room_audit_logs (actor_id);
+CREATE INDEX IF NOT EXISTS idx_room_audit_logs_created_at ON room_audit_logs (created_at DESC);
 

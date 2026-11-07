@@ -1,21 +1,32 @@
 package com.doan.core.business.service.impl;
 
+import com.doan.core.business.dto.landlord.room.RoomImageUploadResponse;
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
+import com.doan.core.business.dto.kyc.StoredFileInfo;
+import com.doan.core.business.dto.room.RoomRiskEvaluationResult;
 import com.doan.core.business.entity.Building;
 import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.RoomImage;
 import com.doan.core.business.repository.BuildingRepository;
 import com.doan.core.business.repository.ContractRepository;
+import com.doan.core.business.repository.RoomImageRepository;
 import com.doan.core.business.repository.RoomRepository;
 import com.doan.core.business.service.LandlordRoomService;
+import com.doan.core.business.service.RoomRiskScoringService;
+import com.doan.core.business.service.SecureStorageService;
 import com.doan.core.common.exception.BaseException;
 import com.doan.core.common.exception.ErrorCode;
+import com.doan.core.common.util.ImageHashUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +41,11 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     private final ContractRepository contractRepository;
     private final com.doan.core.business.repository.UtilityServiceRepository utilityServiceRepository;
     private final com.doan.core.business.repository.UserRepository userRepository;
+    private final RoomImageRepository roomImageRepository;
+    private final RoomRiskScoringService roomRiskScoringService;
+    private final SecureStorageService secureStorageService;
+    private final ObjectMapper objectMapper;
+    private final com.doan.core.business.service.RoomAuditLogService roomAuditLogService;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,6 +80,14 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
     public RoomResponse createRoom(Long landlordId, RoomRequest request) {
         log.info("Tạo mới phòng trọ: {} tại tòa: {} cho chủ trọ: {}", request.getName(), request.getBuildingId(), landlordId);
 
+        com.doan.core.business.entity.User landlord = userRepository.findById(landlordId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        if (!Boolean.TRUE.equals(landlord.getLandlordVerified())) {
+            log.warn("Chủ trọ ID [{}] chưa được xác minh tài liệu nhà đất/ủy quyền, từ chối tạo phòng", landlordId);
+            throw new BaseException(ErrorCode.LANDLORD_NOT_VERIFIED);
+        }
+
         Building building = null;
         String province = request.getProvince();
         String ward = request.getWard();
@@ -94,9 +118,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
-        com.doan.core.business.entity.User landlord = userRepository.findById(landlordId)
-                .orElse(building != null ? building.getLandlord() : null);
-
         String amenitiesStr = (request.getAmenities() != null && !request.getAmenities().isEmpty())
                 ? String.join(", ", request.getAmenities())
                 : null;
@@ -117,6 +138,16 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             }
         }
 
+        // Đánh giá điểm rủi ro tin đăng phòng trọ (Rule-based risk score & đối soát dHash trộm ảnh)
+        RoomRiskEvaluationResult riskResult = roomRiskScoringService.evaluateRoomRisk(landlordId, null, request);
+
+        String riskDetailsJson = null;
+        try {
+            riskDetailsJson = objectMapper.writeValueAsString(riskResult);
+        } catch (Exception e) {
+            log.error("Không thể tuần tự hóa kết quả đánh giá rủi ro", e);
+        }
+
         Room room = Room.builder()
                 .building(building)
                 .landlord(landlord)
@@ -128,31 +159,88 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 .area(request.getArea())
                 .listedPrice(request.getListedPrice())
                 .standardDeposit(request.getStandardDeposit())
+                .electricityPrice(request.getElectricityPrice())
+                .waterPrice(request.getWaterPrice())
+                .riskScore(riskResult.getTotalRiskScore())
+                .riskEvaluationDetails(riskDetailsJson)
+                .moderationStatus(riskResult.getModerationAction())
+                .moderationReason(riskResult.getModerationReason())
                 .maxCapacity(request.getMaxCapacity())
                 .currentOccupancy(0)
                 .furnishingLevel(request.getFurnishingLevel() != null ? request.getFurnishingLevel() : "BASIC")
                 .amenities(amenitiesStr)
                 .services(services)
                 .description(request.getDescription())
-                .status("AVAILABLE")
+                .status(riskResult.getRoomStatus())
                 .latitude(lat)
                 .longitude(lng)
-                .isPublic(request.getIsPublic() == null || Boolean.TRUE.equals(request.getIsPublic()))
+                .isPublic(riskResult.isPublic())
                 .build();
 
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             List<RoomImage> images = new ArrayList<>();
-            for (int i = 0; i < request.getImageUrls().size(); i++) {
+            List<String> urls = request.getImageUrls();
+            List<String> hashes = request.getImageHashes();
+
+            for (int i = 0; i < urls.size(); i++) {
+                String imgUrl = urls.get(i);
+                String hash = (hashes != null && i < hashes.size()) ? hashes.get(i) : null;
+                String fileKey = null;
+                String storagePath = null;
+
+                if (imgUrl.contains("/rooms/images/file/")) {
+                    int start = imgUrl.indexOf("/rooms/images/file/") + "/rooms/images/file/".length();
+                    int end = imgUrl.indexOf("/watermarked", start);
+                    if (end > start) {
+                        fileKey = imgUrl.substring(start, end);
+                        storagePath = "rooms/" + fileKey + ".jpg";
+                    }
+                }
+
                 images.add(RoomImage.builder()
                         .room(room)
-                        .imageUrl(request.getImageUrls().get(i))
+                        .imageUrl(imgUrl)
                         .displayOrder(i)
+                        .imageHash(hash)
+                        .fileKey(fileKey)
+                        .storagePath(storagePath)
                         .build());
             }
             room.setImages(images);
         }
 
         Room saved = roomRepository.save(room);
+
+        // Ghi Audit Log khởi tạo tin đăng
+        String createSummary = String.format("Khởi tạo phòng %s: Giá thuê %s đ, Điện %s đ, Nước %s đ, Cọc %s đ (%d ảnh)",
+                saved.getName(), saved.getListedPrice(), saved.getElectricityPrice(), saved.getWaterPrice(), saved.getStandardDeposit(),
+                request.getImageUrls() != null ? request.getImageUrls().size() : 0);
+        roomAuditLogService.logAction(
+                saved,
+                landlord,
+                "CREATED",
+                null,
+                saved.getStatus(),
+                null,
+                saved.getModerationStatus(),
+                saved.getRiskScore(),
+                saved.getModerationReason(),
+                createSummary,
+                riskDetailsJson
+        );
+
+        // Trường hợp phát hiện trộm ảnh chủ trọ khác: Khóa tin B ngay lập tức và ném lỗi 403 Forbidden
+        if (riskResult.isHasStolenImages()) {
+            log.warn("KHÓA TIN ĐĂNG B DO TRỘM ẢNH: RoomId={}, LandlordId={}", saved.getId(), landlordId);
+            throw new BaseException(ErrorCode.ROOM_STOLEN_IMAGES_DETECTED, riskResult.getModerationReason());
+        }
+
+        // Trường hợp điểm rủi ro quá cao (> 60 điểm): Từ chối duyệt và thông báo lỗi
+        if (riskResult.getTotalRiskScore() > 60) {
+            log.warn("TỪ CHỐI TIN ĐĂNG DO ĐIỂM RỦI RO CAO: RoomId={}, Score={}", saved.getId(), riskResult.getTotalRiskScore());
+            throw new BaseException(ErrorCode.ROOM_CONTENT_RISK_REJECTED, riskResult.getModerationReason());
+        }
+
         return RoomResponse.fromEntity(saved);
     }
 
@@ -163,6 +251,27 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
 
         Room room = roomRepository.findByIdAndBuildingLandlordId(roomId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
+
+        String oldStatus = room.getStatus();
+        String oldModStatus = room.getModerationStatus();
+        Long oldPrice = room.getListedPrice();
+        String oldName = room.getName();
+
+        // Kiểm tra nếu phòng bị khóa do trộm ảnh vi phạm bản quyền
+        if ("LOCKED_STOLEN_IMAGES".equalsIgnoreCase(room.getModerationStatus())) {
+            log.warn("Chủ trọ ID [{}] cố gắng chỉnh sửa phòng bị khóa vi phạm bản quyền ID [{}]", landlordId, roomId);
+            throw new BaseException(ErrorCode.ROOM_LOCKED_MODERATION,
+                    "Phòng trọ này đang bị khóa do vi phạm sao chép ảnh của chủ trọ khác. Vui lòng liên hệ Quản trị viên để được hỗ trợ.");
+        }
+
+        // Đánh giá lại rủi ro khi cập nhật thông tin phòng
+        RoomRiskEvaluationResult riskResult = roomRiskScoringService.evaluateRoomRisk(landlordId, roomId, request);
+        String riskDetailsJson = null;
+        try {
+            riskDetailsJson = objectMapper.writeValueAsString(riskResult);
+        } catch (Exception e) {
+            log.error("Không thể tuần tự hóa kết quả đánh giá rủi ro", e);
+        }
 
         Building building = null;
         if (request.getBuildingId() != null) {
@@ -210,6 +319,12 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         room.setArea(request.getArea());
         room.setListedPrice(request.getListedPrice());
         room.setStandardDeposit(request.getStandardDeposit());
+        room.setElectricityPrice(request.getElectricityPrice());
+        room.setWaterPrice(request.getWaterPrice());
+        room.setRiskScore(riskResult.getTotalRiskScore());
+        room.setRiskEvaluationDetails(riskDetailsJson);
+        room.setModerationStatus(riskResult.getModerationAction());
+        room.setModerationReason(riskResult.getModerationReason());
         room.setMaxCapacity(request.getMaxCapacity());
         if (request.getFurnishingLevel() != null) {
             room.setFurnishingLevel(request.getFurnishingLevel());
@@ -222,9 +337,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             room.setServices(updatedServices);
         }
         room.setDescription(request.getDescription());
-        if (request.getStatus() != null) {
-            room.setStatus(request.getStatus());
-        }
+        room.setStatus(riskResult.getRoomStatus());
         if (request.getLatitude() != null) {
             room.setLatitude(request.getLatitude());
         } else if (building != null && room.getLatitude() == null) {
@@ -237,23 +350,136 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
             room.setLongitude(building.getLongitude());
         }
 
-        if (request.getIsPublic() != null) {
-            room.setIsPublic(request.getIsPublic());
-        }
+        room.setIsPublic(riskResult.isPublic());
 
         if (request.getImageUrls() != null) {
             room.getImages().clear();
-            for (int i = 0; i < request.getImageUrls().size(); i++) {
+            List<String> urls = request.getImageUrls();
+            List<String> hashes = request.getImageHashes();
+
+            for (int i = 0; i < urls.size(); i++) {
+                String imgUrl = urls.get(i);
+                String hash = (hashes != null && i < hashes.size()) ? hashes.get(i) : null;
+                String fileKey = null;
+                String storagePath = null;
+
+                if (imgUrl.contains("/rooms/images/file/")) {
+                    int start = imgUrl.indexOf("/rooms/images/file/") + "/rooms/images/file/".length();
+                    int end = imgUrl.indexOf("/watermarked", start);
+                    if (end > start) {
+                        fileKey = imgUrl.substring(start, end);
+                        storagePath = "rooms/" + fileKey + ".jpg";
+                    }
+                }
+
                 room.getImages().add(RoomImage.builder()
                         .room(room)
-                        .imageUrl(request.getImageUrls().get(i))
+                        .imageUrl(imgUrl)
                         .displayOrder(i)
+                        .imageHash(hash)
+                        .fileKey(fileKey)
+                        .storagePath(storagePath)
                         .build());
             }
         }
 
         Room updated = roomRepository.save(room);
+
+        // Ghi Audit Log cập nhật tin đăng
+        com.doan.core.business.entity.User actor = userRepository.findById(landlordId).orElse(null);
+        String updateSummary = String.format("Chỉnh sửa phòng %s (Giá cũ: %s đ -> Mới: %s đ, Điện: %s đ, Nước: %s đ, Cọc: %s đ)",
+                oldName, oldPrice, updated.getListedPrice(), updated.getElectricityPrice(), updated.getWaterPrice(), updated.getStandardDeposit());
+        if (actor != null) {
+            roomAuditLogService.logAction(
+                    updated,
+                    actor,
+                    "UPDATED",
+                    oldStatus,
+                    updated.getStatus(),
+                    oldModStatus,
+                    updated.getModerationStatus(),
+                    updated.getRiskScore(),
+                    updated.getModerationReason(),
+                    updateSummary,
+                    riskDetailsJson
+            );
+        }
+
+        // Trường hợp phát hiện trộm ảnh chủ trọ khác: Khóa tin B ngay lập tức và ném lỗi 403 Forbidden
+        if (riskResult.isHasStolenImages()) {
+            log.warn("CẬP NHẬT: KHÓA TIN ĐĂNG B DO TRỘM ẢNH: RoomId={}, LandlordId={}", updated.getId(), landlordId);
+            throw new BaseException(ErrorCode.ROOM_STOLEN_IMAGES_DETECTED, riskResult.getModerationReason());
+        }
+
+        // Trường hợp điểm rủi ro quá cao (> 60 điểm): Từ chối duyệt và thông báo lỗi
+        if (riskResult.getTotalRiskScore() > 60) {
+            log.warn("CẬP NHẬT: TỪ CHỐI TIN ĐĂNG DO ĐIỂM RỦI RO CAO: RoomId={}, Score={}", updated.getId(), riskResult.getTotalRiskScore());
+            throw new BaseException(ErrorCode.ROOM_CONTENT_RISK_REJECTED, riskResult.getModerationReason());
+        }
+
         return RoomResponse.fromEntity(updated);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomImageUploadResponse> uploadRoomImages(Long landlordId, MultipartFile[] files) {
+        log.info("Xử lý tải lên {} ảnh phòng trọ cho chủ trọ ID: {}", files != null ? files.length : 0, landlordId);
+
+        if (files == null || files.length == 0) {
+            throw new BaseException(ErrorCode.FILE_EMPTY, "Vui lòng chọn ít nhất một hình ảnh để tải lên");
+        }
+
+        List<RoomImageUploadResponse> results = new ArrayList<>();
+        List<RoomImage> otherLandlordImages = roomImageRepository.findImagesOfOtherLandlords(landlordId);
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+
+            // 1. Tính mã băm dHash (Difference Hash) 64-bit
+            String dHash = null;
+            try (InputStream is = file.getInputStream()) {
+                dHash = ImageHashUtil.computeDHash(is);
+            } catch (IOException e) {
+                log.error("Không thể đọc tệp để tính dHash: {}", file.getOriginalFilename(), e);
+            }
+
+            // 2. Lưu trữ file an toàn vào private secure storage
+            StoredFileInfo fileInfo = secureStorageService.storeSecureFile(file, "rooms");
+
+            // 3. Đối soát dHash chống trộm ảnh của các chủ trọ khác
+            boolean isDuplicate = false;
+            String warningMsg = null;
+            if (dHash != null) {
+                for (RoomImage otherImg : otherLandlordImages) {
+                    if (otherImg.getImageHash() == null) continue;
+                    int distance = ImageHashUtil.calculateHammingDistance(dHash, otherImg.getImageHash());
+                    if (distance <= ImageHashUtil.DUPLICATE_HAMMING_THRESHOLD) {
+                        isDuplicate = true;
+                        String owner = (otherImg.getRoom() != null && otherImg.getRoom().getLandlord() != null)
+                                ? otherImg.getRoom().getLandlord().getFullName() : "Chủ trọ khác";
+                        warningMsg = String.format("CẢNH BÁO: Hình ảnh trùng khớp với tin của %s (Hamming: %d). Nếu đăng tin, bài sẽ bị khóa do vi phạm bản quyền!",
+                                owner, distance);
+                        log.warn("Upload ảnh trùng lặp: file={}, hash={}, duplicateWithImgId={}",
+                                file.getOriginalFilename(), dHash, otherImg.getId());
+                        break;
+                    }
+                }
+            }
+
+            String watermarkedUrl = "/api/v1/public/rooms/images/file/" + fileInfo.getFileKey() + "/watermarked";
+
+            results.add(RoomImageUploadResponse.builder()
+                    .fileKey(fileInfo.getFileKey())
+                    .originalFilename(fileInfo.getOriginalFilename())
+                    .storagePath(fileInfo.getStoragePath())
+                    .watermarkedUrl(watermarkedUrl)
+                    .imageHash(dHash)
+                    .duplicateWithOtherLandlord(isDuplicate)
+                    .duplicateWarningMessage(warningMsg)
+                    .build());
+        }
+
+        return results;
     }
 
     @Override

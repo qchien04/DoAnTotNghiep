@@ -8,13 +8,19 @@ export interface User {
   email: string;
   phone?: string;
   avatarUrl?: string;
+  idCardNumber?: string;
   dateOfBirth?: string;
+
   gender?: string;
   bio?: string;
   lifestyleVector?: string;
   role: Role;
   status?: string;
   enabled: boolean;
+  landlordVerified?: boolean;
+  landlordVerificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+  landlordRejectionReason?: string | null;
+  landlordVerifiedAt?: string | null;
   createdAt?: string;
 }
 

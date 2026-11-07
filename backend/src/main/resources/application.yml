@@ -7,11 +7,17 @@ spring:
   application:
     name: graduation-project-core
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 50MB
+
   datasource:
     url: jdbc:postgresql://localhost:5432/rental_room_management
     driverClassName: org.postgresql.Driver
-    username: chien
-    password: 140704
+    username: bac
+    password: 123456
 
   jpa:
     hibernate:
@@ -31,7 +37,25 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
+  # Cấu hình Spring Mail SMTP (Gmail)
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:stayconnect.system@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:ytih juoq cjjl yzca}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 # Cấu hình JWT (Access Token + Refresh Token)
+
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
   expiration: 86400000
@@ -54,3 +78,8 @@ app:
     title: "Hệ Thống Quản Lý Nhà Trọ - Đồ Án Tốt Nghiệp"
     version: "1.0.0"
     author: "Sinh Viên Thực Hiện"
+  storage:
+    secure-dir: uploads/secure
+  ai-service:
+    url: ${AI_SERVICE_URL:http://localhost:8001}
+

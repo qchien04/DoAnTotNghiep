@@ -201,6 +201,11 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
+        // Ràng buộc eKYC: Bắt buộc người tìm ở ghép phải hoàn tất xác thực danh tính (eKYC) trước khi đăng tin
+        if (!Boolean.TRUE.equals(author.getIdCardVerified()) && (author.getIdCardNumber() == null || author.getIdCardNumber().isBlank())) {
+            throw new BaseException(ErrorCode.KYC_REQUIRED, "Bạn cần hoàn tất xác thực danh tính điện tử (eKYC) trước khi đăng tin tìm người ở ghép để đảm bảo an toàn và uy tín trong cộng đồng!");
+        }
+
         if (request.getTotalRoomPrice() != null && request.getSharePrice().compareTo(request.getTotalRoomPrice()) > 0) {
             throw new BaseException(ErrorCode.BAD_REQUEST, "Giá đóng góp mỗi người không được vượt quá tổng tiền thuê phòng gốc!");
         }
@@ -247,6 +252,11 @@ public class TenantRoommateServiceImpl implements TenantRoommateService {
     public RoommatePostResponse createPostWithoutRoom(Long userId, RoommatePostRequest request) {
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        // Ràng buộc eKYC: Bắt buộc người tìm ở ghép phải hoàn tất xác thực danh tính (eKYC) trước khi đăng tin
+        if (!Boolean.TRUE.equals(author.getIdCardVerified()) && (author.getIdCardNumber() == null || author.getIdCardNumber().isBlank())) {
+            throw new BaseException(ErrorCode.KYC_REQUIRED, "Bạn cần hoàn tất xác thực danh tính điện tử (eKYC) trước khi đăng tin tìm người ở ghép để đảm bảo an toàn và uy tín trong cộng đồng!");
+        }
 
         RoommatePost post = RoommatePost.builder()
                 .author(author)

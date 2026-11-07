@@ -58,6 +58,18 @@ public class UserDto {
     @Schema(description = "Vector lối sống của người dùng", example = "0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500")
     private String lifestyleVector;
 
+    @Schema(description = "Chủ trọ đã xác minh giấy tờ chưa")
+    private Boolean landlordVerified;
+
+    @Schema(description = "Trạng thái xác minh chủ trọ (UNVERIFIED, PENDING, VERIFIED, REJECTED)")
+    private String landlordVerificationStatus;
+
+    @Schema(description = "Lý do từ chối xác minh (nếu có)")
+    private String landlordRejectionReason;
+
+    @Schema(description = "Thời gian xác minh")
+    private LocalDateTime landlordVerifiedAt;
+
     @Schema(description = "Thời điểm tạo tài khoản")
     private LocalDateTime createdAt;
 
@@ -74,6 +86,10 @@ public class UserDto {
                 .gender(user.getGender())
                 .bio(user.getBio())
                 .lifestyleVector(user.getLifestyleVector())
+                .landlordVerified(user.getLandlordVerified())
+                .landlordVerificationStatus(user.getLandlordVerificationStatus())
+                .landlordRejectionReason(user.getLandlordRejectionReason())
+                .landlordVerifiedAt(user.getLandlordVerifiedAt())
                 .role(user.getRole())
                 .status(user.getStatus())
                 .enabled(user.getEnabled())

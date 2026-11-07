@@ -8,8 +8,8 @@ export const authService = {
     return res.data;
   },
 
-  sendRegisterOtp: async (email: string): Promise<ResponseData<void>> => {
-    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/otp/send-register', { email });
+  sendRegisterOtp: async (email: string): Promise<ResponseData<string | null>> => {
+    const res = await apiClient.post<ResponseData<string | null>>('/api/v1/auth/otp/send-register', { email });
     return res.data;
   },
 
@@ -42,8 +42,8 @@ export const authService = {
     return res.data;
   },
 
-  sendForgotPasswordOtp: async (email: string): Promise<ResponseData<void>> => {
-    const res = await apiClient.post<ResponseData<void>>('/api/v1/auth/forgot-password/send-otp', { email });
+  sendForgotPasswordOtp: async (email: string): Promise<ResponseData<string | null>> => {
+    const res = await apiClient.post<ResponseData<string | null>>('/api/v1/auth/forgot-password/send-otp', { email });
     return res.data;
   },
 

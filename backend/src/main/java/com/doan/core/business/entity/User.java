@@ -37,6 +37,9 @@ public class User extends BaseEntity {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "id_card_number", unique = true, length = 30)
+    private String idCardNumber;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
@@ -67,4 +70,29 @@ public class User extends BaseEntity {
     @Column(name = "enabled", nullable = false)
     @Builder.Default
     private Boolean enabled = true;
+
+    @Column(name = "id_card_verified", nullable = false)
+    @Builder.Default
+    private Boolean idCardVerified = false;
+
+    @Column(name = "face_embedding", columnDefinition = "TEXT")
+    private String faceEmbedding;
+
+    @Column(name = "landlord_verified", nullable = false)
+    @Builder.Default
+    private Boolean landlordVerified = false;
+
+    @Column(name = "landlord_verification_status", length = 30)
+    @Builder.Default
+    private String landlordVerificationStatus = "UNVERIFIED";
+
+    @Column(name = "landlord_rejection_reason", length = 500)
+    private String landlordRejectionReason;
+
+    @Column(name = "landlord_verified_at")
+    private java.time.LocalDateTime landlordVerifiedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "landlord_verified_by")
+    private User landlordVerifiedBy;
 }

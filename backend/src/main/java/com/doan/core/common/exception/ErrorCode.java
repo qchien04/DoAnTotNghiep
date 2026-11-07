@@ -73,7 +73,32 @@ public enum ErrorCode {
     INVALID_METER_READING("INV_004", "Chỉ số mới không được nhỏ hơn chỉ số cũ", HttpStatus.BAD_REQUEST),
 
     // Lỗi Nghiệp Vụ - Khiếu nại (Complaint)
-    COMPLAINT_NOT_FOUND("CMP_001", "Không tìm thấy thông tin khiếu nại báo hỏng", HttpStatus.NOT_FOUND);
+    COMPLAINT_NOT_FOUND("CMP_001", "Không tìm thấy thông tin khiếu nại báo hỏng", HttpStatus.NOT_FOUND),
+
+    // Lỗi Nghiệp Vụ - File & Secure Storage
+    FILE_NOT_FOUND("FILE_001", "Không tìm thấy tệp tin yêu cầu", HttpStatus.NOT_FOUND),
+    FILE_STORAGE_ERROR("FILE_002", "Lỗi trong quá trình lưu trữ tệp tin an toàn", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_FILE_TYPE("FILE_003", "Định dạng tệp không được hỗ trợ. Chỉ chấp nhận định dạng ảnh JPG, JPEG, PNG, WEBP", HttpStatus.BAD_REQUEST),
+    FILE_SIZE_EXCEEDED("FILE_004", "Kích thước tệp vượt quá giới hạn cho phép (tối đa 15MB)", HttpStatus.BAD_REQUEST),
+    FILE_EMPTY("FILE_005", "Tệp tải lên không được để trống", HttpStatus.BAD_REQUEST),
+
+    // Lỗi Nghiệp Vụ - KYC & CCCD
+    KYC_DOCUMENT_NOT_FOUND("KYC_001", "Không tìm thấy tài liệu xác thực danh tính", HttpStatus.NOT_FOUND),
+    KYC_ACCESS_DENIED("KYC_002", "Bạn không có quyền truy cập vào tài liệu xác thực này", HttpStatus.FORBIDDEN),
+    KYC_BUNDLE_INCOMPLETE("KYC_003", "Vui lòng tải lên đầy đủ ảnh mặt trước, mặt sau CCCD và ảnh selfie", HttpStatus.BAD_REQUEST),
+    ID_CARD_ALREADY_EXISTS("KYC_004", "Số Căn cước công dân (CCCD) này đã được liên kết với một tài khoản khác trong hệ thống", HttpStatus.CONFLICT),
+    KYC_REQUIRED("KYC_005", "Tài khoản cần hoàn tất xác thực danh tính điện tử (eKYC) trước khi đăng tin tìm người ở ghép để đảm bảo an toàn cho cộng đồng.", HttpStatus.FORBIDDEN),
+
+    // Lỗi Nghiệp Vụ - Xác minh Chủ trọ (Landlord Verification)
+    LANDLORD_NOT_VERIFIED("LANDLORD_001", "Chủ trọ chưa được xác minh tài liệu nhà/đất hoặc hợp đồng ủy quyền. Vui lòng hoàn tất xác minh trước khi đăng tin phòng.", HttpStatus.FORBIDDEN),
+    LANDLORD_VERIFICATION_NOT_FOUND("LANDLORD_002", "Không tìm thấy hồ sơ xác minh chủ trọ", HttpStatus.NOT_FOUND),
+    LANDLORD_VERIFICATION_PENDING_EXISTS("LANDLORD_003", "Bạn đã có một hồ sơ xác minh đang chờ quản trị viên xét duyệt. Vui lòng kiên nhẫn chờ phản hồi.", HttpStatus.CONFLICT),
+
+    // Lỗi Nghiệp Vụ - Đánh giá rủi ro & Bản quyền hình ảnh phòng trọ (Room Moderation & Copyright)
+    ROOM_MIN_IMAGES_REQUIRED("ROOM_006", "Cần tải lên tối thiểu 3 ảnh thực tế của phòng trọ", HttpStatus.BAD_REQUEST),
+    ROOM_STOLEN_IMAGES_DETECTED("ROOM_007", "Phát hiện hình ảnh trùng khớp với tin đăng của chủ trọ khác. Tin đăng đã bị khóa vĩnh viễn do vi phạm bản quyền hình ảnh.", HttpStatus.FORBIDDEN),
+    ROOM_CONTENT_RISK_REJECTED("ROOM_008", "Nội dung bài đăng chứa thông tin rủi ro cao (SĐT, liên kết ngoài hoặc tài khoản thanh toán trái phép). Tin bị từ chối duyệt.", HttpStatus.BAD_REQUEST),
+    ROOM_LOCKED_MODERATION("ROOM_009", "Phòng trọ đang bị khóa do vi phạm chính sách kiểm duyệt, không thể thao tác.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;

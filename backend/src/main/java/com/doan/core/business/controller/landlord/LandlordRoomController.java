@@ -56,6 +56,15 @@ public class LandlordRoomController {
         return ResponseEntity.ok(ResponseData.success("Tạo phòng " + created.getName() + " thành công!", created));
     }
 
+    @PostMapping(value = "/upload-images", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Tải lên ảnh phòng trọ (Tự động tính dHash và phát hiện trùng lặp ảnh)", description = "Lưu trữ ảnh riêng tư an toàn, tính mã băm perceptual hash và kiểm tra đối soát ảnh trùng với chủ trọ khác")
+    public ResponseEntity<ResponseData<List<com.doan.core.business.dto.landlord.room.RoomImageUploadResponse>>> uploadImages(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam("files") org.springframework.web.multipart.MultipartFile[] files) {
+        List<com.doan.core.business.dto.landlord.room.RoomImageUploadResponse> responses = roomService.uploadRoomImages(principal.getId(), files);
+        return ResponseEntity.ok(ResponseData.success("Tải lên và xử lý kiểm tra ảnh thành công!", responses));
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "UC 07: Cập nhật thông tin phòng trọ", description = "Sửa đổi diện tích, giá thuê, tiện nghi, hoặc cập nhật trạng thái phòng")
     public ResponseEntity<ResponseData<RoomResponse>> updateRoom(

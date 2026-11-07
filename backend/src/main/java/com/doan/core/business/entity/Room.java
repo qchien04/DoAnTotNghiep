@@ -84,6 +84,33 @@ public class Room extends BaseEntity {
     @Builder.Default
     private Boolean isPublic = true;
 
+    @Column(name = "electricity_price")
+    private Long electricityPrice;
+
+    @Column(name = "water_price")
+    private Long waterPrice;
+
+    @Column(name = "risk_score", nullable = false)
+    @Builder.Default
+    private Integer riskScore = 0;
+
+    @Column(name = "risk_evaluation_details", columnDefinition = "TEXT")
+    private String riskEvaluationDetails;
+
+    @Column(name = "moderation_status", nullable = false, length = 50)
+    @Builder.Default
+    private String moderationStatus = "APPROVED"; // APPROVED, PENDING_REVIEW, REJECTED, LOCKED_STOLEN_IMAGES
+
+    @Column(name = "moderation_reason", length = 500)
+    private String moderationReason;
+
+    @Column(name = "moderated_at")
+    private java.time.LocalDateTime moderatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moderated_by")
+    private User moderatedBy;
+
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Tag, Button, Typography, Space } from 'antd';
 import {
-  SafetyCertificateFilled,
   HeartFilled,
   HeartOutlined,
   EnvironmentOutlined,
@@ -9,6 +8,7 @@ import {
   ClockCircleOutlined,
   ArrowRightOutlined,
 } from '@ant-design/icons';
+import { VerifiedLandlordBadge } from './VerifiedLandlordBadge';
 
 const { Text } = Typography;
 
@@ -80,16 +80,10 @@ export const VerifiedRoomCard: React.FC<VerifiedRoomCardProps> = ({
             loading="lazy"
           />
 
-          {/* Top-left: Antd Tag Đã xác minh */}
+          {/* Top-left: Huy hiệu Chủ trọ xác minh */}
           {room.verified && (
-            <div className="absolute top-3 left-3">
-              <Tag
-                color="#16A34A"
-                icon={<SafetyCertificateFilled />}
-                className="font-semibold px-2.5 py-0.5 rounded-full border-none shadow-xs m-0"
-              >
-                Đã xác minh
-              </Tag>
+            <div className="absolute top-3 left-3 shadow-sm">
+              <VerifiedLandlordBadge size="sm" />
             </div>
           )}
 

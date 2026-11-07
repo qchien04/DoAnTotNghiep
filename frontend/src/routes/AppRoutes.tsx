@@ -10,7 +10,9 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage';
 import { UserListPage } from '@/features/user/pages/UserListPage';
 import { ProfilePage } from '@/features/user/pages/ProfilePage';
+import { KycVerificationPage } from '@/features/user/pages/KycVerificationPage';
 import { ComponentShowcase } from '@/features/showcase/pages/ComponentShowcase';
+
 
 // Landlord Pages (UC 01 - 29)
 import { LandlordDashboardPage } from '@/features/landlord/pages/LandlordDashboardPage';
@@ -21,6 +23,7 @@ import { TenantListPage } from '@/features/landlord/pages/TenantListPage';
 import { ContractListPage } from '@/features/landlord/pages/ContractListPage';
 import { BillListPage } from '@/features/landlord/pages/BillListPage';
 import { ComplaintListPage } from '@/features/landlord/pages/ComplaintListPage';
+import { LandlordVerificationPage } from '@/features/landlord/pages/verification/LandlordVerificationPage';
 
 // Tenant Pages (UC 30 - 46)
 import { RoommateSearchPage } from '@/features/tenant/pages/RoommateSearchPage';
@@ -36,6 +39,11 @@ import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage';
 import { AdminUsersPage } from '@/features/admin/pages/AdminUsersPage';
 import { AdminMasterDataPage } from '@/features/admin/pages/AdminMasterDataPage';
 import { AdminReportsPage } from '@/features/admin/pages/AdminReportsPage';
+import { AdminVerificationsPage } from '@/features/admin/pages/AdminVerificationsPage';
+import { AdminRoomModerationPage } from '@/features/admin/pages/AdminRoomModerationPage';
+
+// Chat Feature
+import { ChatPage } from '@/features/chat/pages/ChatPage';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -55,9 +63,16 @@ export const AppRoutes: React.FC = () => {
 
         {/* Protected Feature Routes */}
         <Route element={<ProtectedRoute />}>
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:conversationId" element={<ChatPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/verify" element={<KycVerificationPage />} />
+          <Route path="/kyc" element={<KycVerificationPage />} />
+          <Route path="/profile/kyc" element={<KycVerificationPage />} />
           <Route path="/users" element={<UserListPage />} />
         </Route>
+
+
       </Route>
 
       {/* 2. Tenant Management Layout (Sidebar UI) */}
@@ -77,6 +92,7 @@ export const AppRoutes: React.FC = () => {
       <Route element={<ProtectedRoute allowedRoles={['ROLE_LANDLORD', 'ROLE_ADMIN']} />}>
         <Route path="/landlord" element={<LandlordLayout />}>
           <Route index element={<LandlordDashboardPage />} />
+          <Route path="verification" element={<LandlordVerificationPage />} />
           <Route path="buildings" element={<BuildingListPage />} />
           <Route path="rooms" element={<RoomListPage />} />
           <Route path="services" element={<ServiceConfigPage />} />
@@ -91,6 +107,8 @@ export const AppRoutes: React.FC = () => {
       <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
+          <Route path="rooms/moderation" element={<AdminRoomModerationPage />} />
+          <Route path="verifications" element={<AdminVerificationsPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="master-data" element={<AdminMasterDataPage />} />
           <Route path="reports" element={<AdminReportsPage />} />

@@ -60,11 +60,15 @@ export const RegisterPage: React.FC = () => {
     try {
       const res = await authService.sendRegisterOtp(formData.email.trim());
       if (res.code === '00') {
-        setOtpInfoMsg('Mã OTP 6 số đã được gửi đến email. Vui lòng kiểm tra hộp thư!');
+        setOtpInfoMsg(res.message || 'Mã OTP 6 số đã được gửi đến email. Vui lòng kiểm tra hộp thư!');
+        if (res.data) {
+          setFormData((prev) => ({ ...prev, otpCode: String(res.data) }));
+        }
         setCountdown(60);
       } else {
         alert(res.message || 'Không thể gửi mã OTP');
       }
+
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Không thể gửi mã OTP. Vui lòng thử lại sau';
       alert(msg);

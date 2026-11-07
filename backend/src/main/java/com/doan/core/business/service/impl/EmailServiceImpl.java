@@ -21,6 +21,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username:no-reply@stayconnect.vn}")
     private String fromEmail;
 
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
     @Override
     public void sendRegistrationOtp(String toEmail, String otpCode) {
         log.info("\n" +
@@ -32,7 +35,8 @@ public class EmailServiceImpl implements EmailService {
                 "========================================================================================",
                 toEmail, otpCode);
 
-        if (mailSender != null) {
+        if (mailSender != null && mailPassword != null && !mailPassword.isBlank()) {
+
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
@@ -81,7 +85,8 @@ public class EmailServiceImpl implements EmailService {
                 "========================================================================================",
                 toEmail, otpCode);
 
-        if (mailSender != null) {
+        if (mailSender != null && mailPassword != null && !mailPassword.isBlank()) {
+
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());

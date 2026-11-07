@@ -26,19 +26,35 @@ public class AuthController {
     private final AuthService authService;
     private final com.doan.core.business.service.OtpService otpService;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.password:}")
+    private String mailPassword;
+
     @PostMapping("/otp/send-register")
     @Operation(summary = "Gửi mã OTP xác thực email đăng ký", description = "Gửi mã OTP 6 số đến email đăng ký tài khoản")
-    public ResponseEntity<ResponseData<Void>> sendRegisterOtp(@Valid @RequestBody com.doan.core.business.dto.request.SendOtpRequest request) {
-        otpService.sendRegistrationOtp(request.getEmail());
-        return ResponseEntity.ok(ResponseData.success("Mã xác thực OTP đã được gửi đến email của bạn", null));
+    public ResponseEntity<ResponseData<String>> sendRegisterOtp(@Valid @RequestBody com.doan.core.business.dto.request.SendOtpRequest request) {
+        String otp = otpService.sendRegistrationOtp(request.getEmail());
+        String msg = "Mã xác thực OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!";
+        String devOtp = null;
+        if (mailPassword == null || mailPassword.isBlank()) {
+            msg += " (Chế độ Dev: Mã OTP là " + otp + ")";
+            devOtp = otp;
+        }
+        return ResponseEntity.ok(ResponseData.success(msg, devOtp));
     }
 
     @PostMapping("/forgot-password/send-otp")
     @Operation(summary = "Gửi mã OTP đặt lại mật khẩu", description = "Gửi mã OTP 6 số đến email để khôi phục mật khẩu tài khoản")
-    public ResponseEntity<ResponseData<Void>> sendForgotPasswordOtp(@Valid @RequestBody com.doan.core.business.dto.request.SendOtpRequest request) {
-        otpService.sendForgotPasswordOtp(request.getEmail());
-        return ResponseEntity.ok(ResponseData.success("Mã xác thực đặt lại mật khẩu đã được gửi đến email của bạn", null));
+    public ResponseEntity<ResponseData<String>> sendForgotPasswordOtp(@Valid @RequestBody com.doan.core.business.dto.request.SendOtpRequest request) {
+        String otp = otpService.sendForgotPasswordOtp(request.getEmail());
+        String msg = "Mã xác thực đặt lại mật khẩu đã được gửi đến email của bạn";
+        String devOtp = null;
+        if (mailPassword == null || mailPassword.isBlank()) {
+            msg += " (Chế độ Dev: Mã OTP là " + otp + ")";
+            devOtp = otp;
+        }
+        return ResponseEntity.ok(ResponseData.success(msg, devOtp));
     }
+
 
     @PostMapping("/forgot-password/reset")
     @Operation(summary = "Đặt lại mật khẩu bằng mã OTP", description = "Xác nhận mã OTP và cập nhật mật khẩu mới cho tài khoản")

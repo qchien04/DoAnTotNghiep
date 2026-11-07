@@ -52,6 +52,17 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "((b IS NOT NULL AND b.landlord.id = :landlordId) OR (r.landlord IS NOT NULL AND r.landlord.id = :landlordId))")
     long countByBuildingLandlordId(@org.springframework.data.repository.query.Param("landlordId") Long landlordId);
 
-    @Query("SELECT r FROM Room r LEFT JOIN FETCH r.building b WHERE r.isPublic = true AND (:status IS NULL OR r.status = :status) ORDER BY r.id DESC")
+    @Query("SELECT r FROM Room r LEFT JOIN FETCH r.building b " +
+           "WHERE r.isPublic = true " +
+           "AND (:status IS NULL OR r.status = :status) " +
+           "AND (r.moderationStatus = 'APPROVED' OR r.moderationStatus IS NULL) " +
+           "ORDER BY r.id DESC")
     List<Room> findPublicRooms(@org.springframework.data.repository.query.Param("status") String status);
+
+    @Query("SELECT r FROM Room r LEFT JOIN FETCH r.building b " +
+           "WHERE (:moderationStatus IS NULL OR r.moderationStatus = :moderationStatus) " +
+           "AND (:minRiskScore IS NULL OR r.riskScore >= :minRiskScore) " +
+           "ORDER BY r.riskScore DESC, r.id DESC")
+    List<Room> findModerationRooms(@org.springframework.data.repository.query.Param("moderationStatus") String moderationStatus,
+                                  @org.springframework.data.repository.query.Param("minRiskScore") Integer minRiskScore);
 }

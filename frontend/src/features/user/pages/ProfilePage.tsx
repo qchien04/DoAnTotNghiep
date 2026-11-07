@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
 import {
   User as UserIcon,
   Mail,
@@ -224,8 +226,16 @@ export const ProfilePage: React.FC = () => {
         <div className="bg-stay-card-bg rounded-2xl shadow-sm border border-stay-border p-6 md:p-8 relative overflow-hidden transition-colors duration-200">
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-stay-primary/10 via-stay-match/5 to-transparent rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
-          {/* Quick Theme Switcher Button at top right */}
+          {/* Quick Actions at top right */}
           <div className="absolute top-5 right-5 z-20 flex items-center gap-2">
+            <Link
+              to="/kyc"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stay-primary-subtle text-stay-primary hover:bg-stay-primary hover:text-white border border-stay-primary/30 text-xs font-semibold shadow-xs transition"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Xác thực CCCD & Khuôn mặt</span>
+            </Link>
+
             <Tooltip title="Đổi bảng màu / Chế độ Sáng - Tối">
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stay-bg-app border border-stay-border shadow-xs hover:border-stay-primary/50 transition">
                 <Palette className="w-4 h-4 text-stay-primary" />
@@ -233,6 +243,7 @@ export const ProfilePage: React.FC = () => {
               </div>
             </Tooltip>
           </div>
+
 
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* Avatar with status indicator */}

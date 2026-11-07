@@ -53,7 +53,7 @@ public class InMemoryOtpServiceImpl implements OtpService {
     }
 
     @Override
-    public void sendRegistrationOtp(String email) {
+    public String sendRegistrationOtp(String email) {
         String cleanEmail = email.trim().toLowerCase();
 
         // 1. Kiểm tra nếu Email đã được tài khoản khác sử dụng
@@ -87,7 +87,9 @@ public class InMemoryOtpServiceImpl implements OtpService {
 
         // 5. Gửi mã qua Email
         emailService.sendRegistrationOtp(cleanEmail, otpCode);
+        return otpCode;
     }
+
 
     @Override
     public void verifyRegistrationOtp(String email, String otpCode) {
@@ -120,7 +122,7 @@ public class InMemoryOtpServiceImpl implements OtpService {
     }
 
     @Override
-    public void sendForgotPasswordOtp(String email) {
+    public String sendForgotPasswordOtp(String email) {
         String cleanEmail = email.trim().toLowerCase();
 
         // 1. Phải tồn tại tài khoản với Email này trong hệ thống
@@ -156,7 +158,9 @@ public class InMemoryOtpServiceImpl implements OtpService {
 
         // 5. Gửi mã qua Email
         emailService.sendForgotPasswordOtp(cleanEmail, otpCode);
+        return otpCode;
     }
+
 
     @Override
     public void verifyForgotPasswordOtp(String email, String otpCode) {

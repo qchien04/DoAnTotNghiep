@@ -9,6 +9,7 @@ import {
   Home,
   LogOut,
   Shield,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher, StayConnectLogo, Sidebar, NotificationDropdown, type MenuItemType } from '@/shared/components';
@@ -19,7 +20,11 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuthStore();
 
-  const currentKey = location.pathname.startsWith('/admin/users')
+  const currentKey = location.pathname.startsWith('/admin/rooms/moderation')
+    ? '/admin/rooms/moderation'
+    : location.pathname.startsWith('/admin/verifications')
+    ? '/admin/verifications'
+    : location.pathname.startsWith('/admin/users')
     ? '/admin/users'
     : location.pathname.startsWith('/admin/master-data')
     ? '/admin/master-data'
@@ -32,6 +37,16 @@ export const AdminLayout: React.FC = () => {
       key: '/admin',
       icon: <BarChart3 className="w-4 h-4 shrink-0" />,
       label: <Link to="/admin">Dashboard Quản trị</Link>,
+    },
+    {
+      key: '/admin/rooms/moderation',
+      icon: <ShieldAlert className="w-4 h-4 shrink-0 text-rose-500" />,
+      label: <Link to="/admin/rooms/moderation">Kiểm duyệt phòng trọ</Link>,
+    },
+    {
+      key: '/admin/verifications',
+      icon: <ShieldCheck className="w-4 h-4 shrink-0 text-amber-500" />,
+      label: <Link to="/admin/verifications">Duyệt xác minh chủ trọ</Link>,
     },
     {
       key: '/admin/users',

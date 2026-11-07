@@ -2,9 +2,11 @@ package com.doan.core.business.dto.landlord.room;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -71,8 +73,25 @@ public class RoomRequest {
     @Schema(description = "Trạng thái phòng (AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED)", example = "AVAILABLE")
     private String status;
 
-    @Schema(description = "Danh sách đường dẫn ảnh phòng")
+    @NotNull(message = "Giá điện không được để trống")
+    @Min(value = 1000, message = "Giá điện tối thiểu 1.000 VNĐ/kWh")
+    @Max(value = 15000, message = "Giá điện tối đa 15.000 VNĐ/kWh")
+    @Schema(description = "Giá điện (VNĐ/kWh hoặc VNĐ/người/tháng)", example = "3500")
+    private Long electricityPrice;
+
+    @NotNull(message = "Giá nước không được để trống")
+    @Min(value = 1000, message = "Giá nước tối thiểu 1.000 VNĐ")
+    @Max(value = 200000, message = "Giá nước tối đa 200.000 VNĐ")
+    @Schema(description = "Giá nước (VNĐ/m3 hoặc VNĐ/người/tháng)", example = "25000")
+    private Long waterPrice;
+
+    @NotNull(message = "Danh sách ảnh phòng không được để trống")
+    @Size(min = 3, message = "Cần tải lên tối thiểu 3 ảnh thực tế của phòng trọ")
+    @Schema(description = "Danh sách đường dẫn ảnh phòng (tối thiểu 3 ảnh)")
     private List<String> imageUrls;
+
+    @Schema(description = "Danh sách mã băm dHash của ảnh tải lên phục vụ phát hiện trùng lặp")
+    private List<String> imageHashes;
 
     @Schema(description = "Vĩ độ vị trí địa lý (Latitude)", example = "21.033333")
     private BigDecimal latitude;

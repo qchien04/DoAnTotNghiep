@@ -6,8 +6,9 @@ public interface OtpService {
      * Gửi mã OTP xác thực đăng ký đến Email
      *
      * @param email Địa chỉ email đăng ký
+     * @return Mã OTP 6 chữ số đã sinh
      */
-    void sendRegistrationOtp(String email);
+    String sendRegistrationOtp(String email);
 
     /**
      * Kiểm tra tính hợp lệ của mã OTP đã lưu trong bộ nhớ RAM
@@ -21,8 +22,10 @@ public interface OtpService {
      * Gửi mã OTP xác thực đặt lại mật khẩu đến Email
      *
      * @param email Địa chỉ email tài khoản
+     * @return Mã OTP 6 chữ số đã sinh
      */
-    void sendForgotPasswordOtp(String email);
+    String sendForgotPasswordOtp(String email);
+
 
     /**
      * Kiểm tra tính hợp lệ của mã OTP đặt lại mật khẩu

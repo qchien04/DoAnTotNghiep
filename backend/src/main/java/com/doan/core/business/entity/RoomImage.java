@@ -32,6 +32,15 @@ public class RoomImage {
     @Builder.Default
     private Integer displayOrder = 0;
 
+    @Column(name = "image_hash", length = 64)
+    private String imageHash;
+
+    @Column(name = "storage_path", length = 500)
+    private String storagePath;
+
+    @Column(name = "file_key", length = 100)
+    private String fileKey;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();

@@ -16,6 +16,7 @@ import {
   Compass,
   Receipt,
   Wrench,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -177,6 +178,11 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
       icon: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
       label: <Link to="/verify">Xác thực danh tính</Link>,
     },
+    {
+      key: 'chat',
+      icon: <MessageSquare className="w-4 h-4 text-stay-primary" />,
+      label: <Link to="/chat">Trò chuyện trực tuyến</Link>,
+    },
     { type: 'divider' },
 
     // Role-specific sections
@@ -307,6 +313,18 @@ export const StayConnectHeader: React.FC<StayConnectHeaderProps> = ({
             viewAllLink={role === 'ROLE_LANDLORD' ? '/landlord/complaints' : '/tenant/my-room'}
             viewAllText="Xem tất cả thông báo"
           />
+
+          {/* Quick Chat Link */}
+          {isAuthenticated && (
+            <Link
+              to="/chat"
+              className="p-2 rounded-xl border border-stay-border hover:bg-stay-bg-app text-stay-text transition-colors relative flex items-center justify-center"
+              title="Trò chuyện trực tuyến"
+            >
+              <MessageSquare className="w-4 h-4 text-stay-text" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 absolute top-1.5 right-1.5 ring-2 ring-stay-card-bg" />
+            </Link>
+          )}
 
           {/* Auth State Button / Profile Dropdown */}
           {isAuthenticated && user ? (

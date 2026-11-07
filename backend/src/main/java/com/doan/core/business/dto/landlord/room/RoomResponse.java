@@ -40,10 +40,24 @@ public class RoomResponse {
     private String ward;
     private String addressDetail;
     private String fullAddress;
+    private Long electricityPrice;
+    private Long waterPrice;
+    private Integer riskScore;
+    private String riskEvaluationDetails;
+    private String moderationStatus;
+    private String moderationReason;
+    private LocalDateTime moderatedAt;
+    private String moderatedByName;
     private List<String> imageUrls;
+    private List<String> watermarkedImageUrls;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Boolean isPublic;
+    private Long landlordId;
+    private String landlordName;
+    private String landlordPhone;
+    private String landlordAvatarUrl;
+    private Boolean landlordVerified;
     private LocalDateTime createdAt;
 
     public static RoomResponse fromEntity(Room room) {
@@ -51,6 +65,18 @@ public class RoomResponse {
 
         List<String> images = room.getImages() != null
                 ? room.getImages().stream().map(RoomImage::getImageUrl).collect(Collectors.toList())
+                : List.of();
+
+        List<String> watermarkedImages = room.getImages() != null
+                ? room.getImages().stream().map(img -> {
+                    if (img.getId() != null) {
+                        return "/api/v1/public/rooms/images/" + img.getId() + "/watermarked";
+                    }
+                    if (img.getFileKey() != null) {
+                        return "/api/v1/public/rooms/images/file/" + img.getFileKey() + "/watermarked";
+                    }
+                    return img.getImageUrl();
+                }).collect(Collectors.toList())
                 : List.of();
 
         List<String> amenityList = (room.getAmenities() != null && !room.getAmenities().isBlank())
@@ -86,6 +112,8 @@ public class RoomResponse {
         java.math.BigDecimal lat = room.getLatitude() != null ? room.getLatitude() : (room.getBuilding() != null ? room.getBuilding().getLatitude() : null);
         java.math.BigDecimal lng = room.getLongitude() != null ? room.getLongitude() : (room.getBuilding() != null ? room.getBuilding().getLongitude() : null);
 
+        com.doan.core.business.entity.User landlord = room.getBuilding() != null ? room.getBuilding().getLandlord() : room.getLandlord();
+
         return RoomResponse.builder()
                 .id(room.getId())
                 .buildingId(room.getBuilding() != null ? room.getBuilding().getId() : null)
@@ -99,6 +127,14 @@ public class RoomResponse {
                 .area(room.getArea())
                 .listedPrice(room.getListedPrice())
                 .standardDeposit(room.getStandardDeposit())
+                .electricityPrice(room.getElectricityPrice())
+                .waterPrice(room.getWaterPrice())
+                .riskScore(room.getRiskScore())
+                .riskEvaluationDetails(room.getRiskEvaluationDetails())
+                .moderationStatus(room.getModerationStatus())
+                .moderationReason(room.getModerationReason())
+                .moderatedAt(room.getModeratedAt())
+                .moderatedByName(room.getModeratedBy() != null ? room.getModeratedBy().getFullName() : null)
                 .maxCapacity(room.getMaxCapacity())
                 .currentOccupancy(room.getCurrentOccupancy())
                 .furnishingLevel(room.getFurnishingLevel())
@@ -108,9 +144,15 @@ public class RoomResponse {
                 .description(room.getDescription())
                 .status(room.getStatus())
                 .imageUrls(images)
+                .watermarkedImageUrls(watermarkedImages)
                 .latitude(lat)
                 .longitude(lng)
                 .isPublic(room.getIsPublic() != null ? room.getIsPublic() : true)
+                .landlordId(landlord != null ? landlord.getId() : null)
+                .landlordName(landlord != null ? landlord.getFullName() : null)
+                .landlordPhone(landlord != null ? landlord.getPhone() : null)
+                .landlordAvatarUrl(landlord != null ? landlord.getAvatarUrl() : null)
+                .landlordVerified(landlord != null ? Boolean.TRUE.equals(landlord.getLandlordVerified()) : false)
                 .createdAt(room.getCreatedAt())
                 .build();
     }
