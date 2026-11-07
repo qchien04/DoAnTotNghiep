@@ -2,9 +2,10 @@ package com.doan.core.business.dto.tenant;
 
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.doan.core.business.enums.InvoiceStatus;
 
 @Data
 @Builder
@@ -17,19 +18,14 @@ public class TenantInvoiceResponse {
     private String roomName;
     private String buildingName;
 
-    private Integer electricityUsage;
-    private Integer waterUsage;
-
-    private BigDecimal roomRent;
-    private BigDecimal electricityAmount;
-    private BigDecimal waterAmount;
-    private BigDecimal serviceAmount;
-    private BigDecimal totalAmount;
-    private BigDecimal paidAmount;
-    private BigDecimal remainingAmount;
+    private Long roomRent;
+    private Long serviceAmount;
+    private Long totalAmount;
+    private Long paidAmount;
+    private Long remainingAmount;
 
     private LocalDate dueDate;
-    private String status; // PENDING, PAID, OVERDUE
+    private InvoiceStatus status;
 
     private List<InvoiceItemDto> items;
 
@@ -39,8 +35,8 @@ public class TenantInvoiceResponse {
     @AllArgsConstructor
     public static class InvoiceItemDto {
         private String serviceName;
-        private Double quantity;
-        private BigDecimal unitPrice;
-        private BigDecimal totalAmount;
+        private Integer quantity;
+        private Long unitPrice;
+        private Long totalAmount;
     }
 }

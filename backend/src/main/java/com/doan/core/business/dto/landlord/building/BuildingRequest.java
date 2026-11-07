@@ -19,11 +19,13 @@ public class BuildingRequest {
     @Schema(description = "Tên tòa nhà", example = "Tòa nhà Ánh Dương")
     private String name;
 
-    @Schema(description = "Tỉnh / Thành phố", example = "Hà Nội")
-    private String province;
+    @NotNull(message = "Tỉnh / Thành phố không được để trống")
+    @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
+    private Integer provinceId;
 
-    @Schema(description = "Phường / Xã", example = "Quan Hoa")
-    private String ward;
+    @NotNull(message = "Phường / Xã không được để trống")
+    @Schema(description = "Mã Phường / Xã", example = "101")
+    private Integer wardId;
 
     @NotBlank(message = "Địa chỉ chi tiết không được để trống")
     @Schema(description = "Địa chỉ chi tiết", example = "Số 12 Ngõ 80 Cầu Giấy, Hà Nội")

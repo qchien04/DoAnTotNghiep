@@ -66,7 +66,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   return (
     <div className={`space-y-1.5 ${fullWidth ? 'w-full' : ''}`}>
       {label && (
-        <label className="block text-xs font-semibold text-stay-text">
+        <label className="block  font-semibold text-stay-text">
           {label}
           {props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -92,7 +92,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         tagRender={({ label: tagLabel, closable, onClose, value: tagVal }) => {
           const opt = options.find((o) => o.value === tagVal);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-stay-primary-subtle border border-stay-border text-stay-primary text-xs font-semibold m-0.5 shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-stay-primary-subtle border border-stay-border text-stay-primary  font-semibold m-0.5 shadow-2xs">
               {opt?.emoji && <span>{opt.emoji}</span>}
               <span>{opt?.label || tagLabel}</span>
               {closable && (

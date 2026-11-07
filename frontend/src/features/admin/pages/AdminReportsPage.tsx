@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useReports } from '@/shared/hooks';
+import { useReports, useEnforceReportAction } from '@/shared/hooks';
 import {
-  Card,
-  Button,
   Table,
   Input,
   Select,
@@ -10,16 +8,17 @@ import {
   Form,
   Tag,
   Badge,
+  StatusBadge,
 } from '@/shared/components';
 import {
-  CheckCircle,
   Gavel,
 } from 'lucide-react';
-import { message } from 'antd';
+import { Tooltip } from 'antd';
 import { DisputeReport, EnforceReportDto, DisputeReportStatus, DisputeReportType } from '@/shared/types/admin';
 
 export const AdminReportsPage: React.FC = () => {
-  const { reports, isLoading, enforceReportAction, isEnforcing } = useReports();
+  const { reports, isLoading } = useReports();
+  const { enforceReportAction, isEnforcing } = useEnforceReportAction();
 
   // Enforce Modal State (UC 56)
   const [enforceModalOpen, setEnforceModalOpen] = useState(false);
@@ -49,28 +48,20 @@ export const AdminReportsPage: React.FC = () => {
           conclusionNote: values.conclusionNote,
         } as EnforceReportDto,
       });
-      message.success('Đã thực thi biện pháp xử lý kỷ luật và đóng hồ sơ khiếu nại thành công!');
       setEnforceModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
   const columns = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: DisputeReport) => <span className="font-bold text-stay-primary">#{r.id}</span>,
-    },
     {
       title: 'Người báo cáo',
       dataIndex: 'reporterName',
       key: 'reporterName',
       render: (val: string, r: DisputeReport) => (
         <div>
-          <p className="font-semibold text-stay-text text-xs sm:text-sm">{val}</p>
+          <p className="font-semibold text-stay-text  sm:text-sm">{val}</p>
           <p className="text-[11px] text-slate-400">Mã UID: {r.reporterId}</p>
         </div>
       ),
@@ -81,7 +72,7 @@ export const AdminReportsPage: React.FC = () => {
       key: 'targetName',
       render: (val: string, r: DisputeReport) => (
         <div>
-          <span className="text-xs font-bold text-red-600 dark:text-red-400">{val}</span>
+          <span className=" font-bold text-red-600 dark:text-red-400">{val}</span>
           <span className="text-[10px] text-slate-400 block">Loại: {r.targetType === 'POST' ? 'Bài đăng' : 'Tài khoản'}</span>
         </div>
       ),
@@ -107,46 +98,53 @@ export const AdminReportsPage: React.FC = () => {
       dataIndex: 'summary',
       key: 'summary',
       render: (val: string) => (
-        <span className="text-xs text-stay-text line-clamp-2 max-w-xs">{val}</span>
+        <span className="text-stay-text line-clamp-2">{val}</span>
       ),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
+      width: 140,
       render: (st: DisputeReportStatus) => {
-        if (st === 'RESOLVED') return <Tag status="available">Đã xử lý</Tag>;
-        if (st === 'MEDIATING') return <Tag status="verified">Đang hòa giải</Tag>;
-        if (st === 'REJECTED') return <Tag status="rented">Đã bác bỏ</Tag>;
-        return <Tag status="pending">Chờ xác minh</Tag>;
+        if (st === 'RESOLVED') return <StatusBadge status="RESOLVED" label="Đã xử lý" />;
+        if (st === 'MEDIATING') return <StatusBadge status="PROCESSING" label="Đang hòa giải" />;
+        if (st === 'REJECTED') return <StatusBadge status="REJECTED" label="Đã bác bỏ" />;
+        return <StatusBadge status="PENDING" label="Chờ xác minh" />;
       },
     },
     {
       title: 'Thao tác',
       key: 'action',
+      width: 90,
+      fixed: 'right' as const,
       render: (_: any, r: DisputeReport) => (
         r.status === 'PENDING' || r.status === 'MEDIATING' ? (
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Gavel className="w-3.5 h-3.5" />}
-            onClick={() => handleOpenEnforce(r)}
-            className="shadow-xs font-semibold"
-          >
-            Xử lý kỷ luật
-          </Button>
+          <div className="flex items-center justify-start">
+            <Tooltip title="Xử lý kỷ luật & chế tài">
+              <button
+                type="button"
+                className="stay-action-btn"
+                onClick={() => handleOpenEnforce(r)}
+              >
+                <Gavel className="w-4 h-4" />
+              </button>
+            </Tooltip>
+          </div>
         ) : (
-          <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
-            <CheckCircle className="w-3.5 h-3.5 text-stay-secondary" /> Đã hoàn tất
+          <span className="text-slate-400 font-medium">
+            Đã xong
           </span>
         )
       ),
     },
   ];
 
+
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-h-0 space-y-4">
       {/* Header */}
+
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Badge variant="primary">Kiểm Duyệt & Kỷ Luật Sàn</Badge>
@@ -160,18 +158,15 @@ export const AdminReportsPage: React.FC = () => {
       </div>
 
       {/* Reports Table */}
-      <Card>
-        <div className="p-6">
-          <Table
-            dataSource={reports}
-            columns={columns}
-            rowKey="id"
-            loading={isLoading}
-            pagination={{ pageSize: 10 }}
-            className="overflow-x-auto"
-          />
-        </div>
-      </Card>
+      <Table
+        dataSource={reports}
+        columns={columns}
+        rowKey="id"
+        loading={isLoading}
+        scroll={{ x: 'max-content' }}
+        className="overflow-x-auto"
+      />
+
 
       {/* Enforce Modal */}
       <Modal
@@ -191,22 +186,23 @@ export const AdminReportsPage: React.FC = () => {
       >
         <div className="space-y-4 py-2">
           {selectedReport && (
-            <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border text-xs space-y-1">
+            <div className="space-y-1 pb-1 text-sm text-stay-text">
               <p>
                 <strong>Hồ sơ:</strong> {selectedReport.code} • <strong>Đối tượng:</strong> {selectedReport.targetName}
               </p>
-              <p>
+              <p className="text-stay-text-secondary">
                 <strong>Nội dung tố cáo:</strong> "{selectedReport.summary}"
               </p>
             </div>
           )}
 
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="action"
-              label="Biện pháp chế tài áp dụng"
-              rules={[{ required: true }]}
-            >
+          <div className="pt-3 border-t border-stay-border-subtle">
+            <Form form={form} layout="vertical">
+              <Form.Item
+                name="action"
+                label="Biện pháp chế tài áp dụng"
+                rules={[{ required: true }]}
+              >
               <Select
                 options={[
                   { label: 'Gỡ bỏ bài đăng vi phạm & Khóa tài khoản', value: 'REMOVE_POST_AND_BAN' },
@@ -225,6 +221,7 @@ export const AdminReportsPage: React.FC = () => {
               <Input.TextArea rows={4} placeholder="Ghi rõ căn cứ và hình thức xử lý..." />
             </Form.Item>
           </Form>
+          </div>
         </div>
       </Modal>
     </div>

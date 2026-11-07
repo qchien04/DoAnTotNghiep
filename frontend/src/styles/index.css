@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  /* StayConnect Dynamic Brand Color Tokens (Semantic) */
+  /* Roomi Dynamic Brand Color Tokens (Semantic) */
   --color-stay-primary: var(--stay-primary, #2563EB);
   --color-stay-primary-hover: var(--stay-primary-hover, #1D4ED8);
   --color-stay-primary-subtle: var(--stay-primary-subtle, #EFF6FF);
-  
+
   /* Verified Status & Secondary Green (Semantic) */
   --color-stay-secondary: var(--stay-secondary, #16A34A);
   --color-stay-secondary-hover: var(--stay-secondary-hover, #15803D);
@@ -31,6 +31,9 @@
   --color-stay-bg-app: var(--stay-bg-app, #F8FAFC);
   --color-stay-bg: var(--stay-bg-app, #F8FAFC);
   --color-stay-card-bg: var(--stay-card-bg, #FFFFFF);
+
+  /* Typography (YouTube Roboto Font) */
+  --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 }
 
 :root {
@@ -107,15 +110,37 @@ html.dark,
 }
 
 @layer base {
+
+  *,
+  ::before,
+  ::after {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  }
+
   html {
     background-color: var(--stay-bg);
     color: var(--stay-text);
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 15px;
   }
+
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     color: var(--stay-text);
     background-color: var(--stay-bg);
     min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  input,
+  button,
+  select,
+  textarea,
+  optgroup {
+    font-family: inherit;
   }
 }
 
@@ -139,17 +164,21 @@ html.dark,
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
+
 .custom-modal-scroll::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+
 .custom-modal-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-modal-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(148, 163, 184, 0.4);
   border-radius: 9999px;
 }
+
 .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgba(148, 163, 184, 0.7);
 }
@@ -178,7 +207,7 @@ html.dark,
   margin-top: auto !important;
 }
 
-.ant-form-vertical .ant-form-item-label > label {
+.ant-form-vertical .ant-form-item-label>label {
   font-weight: 600 !important;
   color: var(--stay-text) !important;
   font-size: 13px !important;
@@ -189,7 +218,7 @@ html.dark,
 .ant-form-item .ant-form-item-control,
 .ant-form-item .ant-form-item-control-input,
 .ant-form-item .ant-form-item-control-input-content,
-.ant-form-item .ant-form-item-control-input-content > div,
+.ant-form-item .ant-form-item-control-input-content>div,
 .ant-form-item .ant-input,
 .ant-form-item .ant-input-affix-wrapper,
 .ant-form-item .ant-input-number,
@@ -201,7 +230,7 @@ html.dark,
 
 .ant-input-number {
   width: 100% !important;
-  border-radius: 0.75rem !important;
+  border-radius: 8px !important;
 }
 
 .ant-input-number .ant-input-number-input {
@@ -210,10 +239,490 @@ html.dark,
 }
 
 .ant-select-single .ant-select-selector {
-  border-radius: 0.75rem !important;
+  border-radius: 8px !important;
 }
 
 .ant-input {
-  border-radius: 0.75rem !important;
+  border-radius: 8px !important;
 }
 
+/* ==========================================================================
+   Enterprise Table & Filter Toolbar Styling (Clean, Professional, Viettel/YouTube Standard)
+   ========================================================================== */
+.ant-table-wrapper {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.ant-table,
+.ant-table-container,
+.ant-table-content {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
+  font-size: 14px !important;
+  background: var(--stay-card-bg) !important;
+  color: var(--stay-text) !important;
+  box-shadow: none !important;
+}
+
+/* Header row styling: light grey background (#F7F7F8), bold dark text (#242428), no vertical divider */
+.ant-table-thead>tr>th {
+  background-color: #F7F7F8 !important;
+  color: #242428 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #D7D7DB !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: background-color 0.2s ease;
+}
+
+.ant-table-thead>tr>th .ant-table-column-title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+
+html.dark .ant-table-thead>tr>th,
+.dark .ant-table-thead>tr>th {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+/* Remove vertical dividers between table header columns */
+.ant-table-thead>tr>th::before {
+  display: none !important;
+}
+
+/* Table body rows: crisp, visible dividers */
+.ant-table-tbody>tr:not(.ant-table-measure-row)>td {
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  color: #242428 !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  background: var(--stay-card-bg) !important;
+  transition: background-color 0.15s ease;
+}
+
+/* Eliminate Ant Table measuring row gap completely */
+.ant-table-tbody>tr.ant-table-measure-row {
+  visibility: hidden !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  border: none !important;
+}
+
+.ant-table-tbody>tr.ant-table-measure-row>td {
+  padding: 0 !important;
+  height: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+html.dark .ant-table-tbody>tr:not(.ant-table-measure-row)>td,
+.dark .ant-table-tbody>tr:not(.ant-table-measure-row)>td {
+  color: #F1F5F9 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.ant-table-tbody>tr:not(.ant-table-measure-row):hover>td {
+  background-color: #F8FAFC !important;
+}
+
+html.dark .ant-table-tbody>tr:not(.ant-table-measure-row):hover>td,
+.dark .ant-table-tbody>tr:not(.ant-table-measure-row):hover>td {
+  background-color: rgba(51, 65, 85, 0.45) !important;
+}
+
+/* Sorter icon styling */
+.ant-table-column-sorter {
+  color: #8C8C8C !important;
+}
+
+/* Checkbox column width and padding */
+.ant-table-selection-column {
+  padding-left: 16px !important;
+  padding-right: 8px !important;
+  width: 48px !important;
+}
+
+/* Enterprise Filter Toolbar Inputs & Selects */
+.stay-filter-input {
+  height: 40px !important;
+  border-radius: 8px !important;
+  border-color: #D7D7DB !important;
+  font-size: 14.5px !important;
+}
+
+.stay-filter-select .ant-select-selector {
+  height: 40px !important;
+  border-radius: 8px !important;
+  border-color: #D7D7DB !important;
+  font-size: 14.5px !important;
+}
+
+.stay-filter-btn {
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Force left-alignment across all table columns per user requirement */
+.ant-table-thead>tr>th,
+.ant-table-tbody>tr>td {
+  text-align: left !important;
+}
+
+.ant-table-tbody>tr.ant-table-placeholder>td {
+  text-align: center !important;
+}
+
+.ant-table-thead>tr>th .ant-table-column-title {
+  text-align: left !important;
+}
+
+/* ==========================================================================
+   Full Height Table & Enterprise Scroll & Clean Pagination Bar
+   ========================================================================== */
+.stay-table-fill-height {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.stay-table-fill-height .ant-table-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.stay-table-fill-height .ant-spin-nested-loading,
+.stay-table-fill-height .ant-spin,
+.stay-table-fill-height .ant-spin-container {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.stay-table-fill-height .ant-table {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+.stay-table-fill-height .ant-table-container {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.stay-table-fill-height .ant-table-header {
+  flex-shrink: 0 !important;
+}
+
+.stay-table-fill-height .ant-table-body {
+  flex: 1 1 0% !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+}
+
+.stay-table-fill-height .ant-table-content {
+  flex: 1 1 0% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+  position: relative !important;
+}
+
+/* Sticky header for single table: header stays pinned while vertical rows scroll, scrolls synchronously with columns horizontally */
+.stay-table-fill-height .ant-table-thead>tr>th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}
+
+.stay-table-fill-height .ant-table-pagination.ant-pagination {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* Clean Enterprise Pagination Bar with Page Size Selector */
+.ant-table-pagination.ant-pagination {
+  margin: 0 !important;
+  padding: 10px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  border-top: 1px solid #E2E8F0 !important;
+  background-color: var(--stay-card-bg) !important;
+}
+
+html.dark .ant-table-pagination.ant-pagination,
+.dark .ant-table-pagination.ant-pagination {
+  border-top: 1px solid #334155 !important;
+}
+
+.ant-table-pagination .ant-pagination-total-text {
+  margin-right: auto !important;
+  font-size: 13.5px !important;
+  color: var(--stay-text-secondary, #64748B) !important;
+}
+
+.ant-table-pagination .ant-pagination-options {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-left: 12px !important;
+}
+
+.ant-table-pagination .ant-pagination-options-size-changer {
+  height: 32px !important;
+  border-radius: 6px !important;
+}
+
+.ant-table-pagination .ant-pagination-options-size-changer .ant-select-selector {
+  height: 32px !important;
+  border-radius: 6px !important;
+  border-color: #D7D7DB !important;
+  font-size: 13px !important;
+}
+
+.ant-table-pagination .ant-pagination-item {
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  line-height: 30px !important;
+}
+
+.ant-table-pagination .ant-pagination-item-active {
+  background-color: var(--stay-primary) !important;
+  border-color: var(--stay-primary) !important;
+}
+
+.ant-table-pagination .ant-pagination-item-active a {
+  color: #ffffff !important;
+}
+
+.ant-table-pagination .ant-pagination-prev .ant-pagination-item-link,
+.ant-table-pagination .ant-pagination-next .ant-pagination-item-link {
+  border-radius: 6px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+
+/* Primary Button Styling - Strict Brand Color and White Text */
+.ant-btn.bg-stay-primary,
+.ant-btn-primary:not(.ant-btn-text):not(.ant-btn-link) {
+  background-color: var(--stay-primary) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.ant-btn.bg-stay-primary:hover,
+.ant-btn.bg-stay-primary:focus,
+.ant-btn-primary:not(.ant-btn-text):not(.ant-btn-link):hover,
+.ant-btn-primary:not(.ant-btn-text):not(.ant-btn-link):focus {
+  background-color: var(--stay-primary-hover) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.ant-btn.bg-stay-primary *,
+.ant-btn-primary:not(.ant-btn-text):not(.ant-btn-link) * {
+  color: #ffffff !important;
+}
+
+/* Ensure tables always occupy 100% available container width without white gaps on the right */
+.ant-table-wrapper,
+.ant-table,
+.ant-table-container {
+  width: 100% !important;
+}
+
+.ant-table-content table {
+  min-width: 100% !important;
+}
+
+/* Table Action Buttons: Clean uniform neutral icon buttons (Single unified color across all tables) */
+.stay-action-btn,
+.stay-action-btn-view,
+.stay-action-btn-edit,
+.stay-action-btn-delete {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  color: #475569 !important;
+  transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease !important;
+}
+
+.stay-action-btn:hover,
+.stay-action-btn-view:hover,
+.stay-action-btn-edit:hover,
+.stay-action-btn-delete:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  transform: scale(1.15) !important;
+  color: var(--stay-primary, #2563EB) !important;
+}
+
+.stay-action-btn:focus,
+.stay-action-btn:active,
+.stay-action-btn-view:focus,
+.stay-action-btn-view:active,
+.stay-action-btn-edit:focus,
+.stay-action-btn-edit:active,
+.stay-action-btn-delete:focus,
+.stay-action-btn-delete:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dark .stay-action-btn,
+html.dark .stay-action-btn,
+.dark .stay-action-btn-view,
+html.dark .stay-action-btn-view,
+.dark .stay-action-btn-edit,
+html.dark .stay-action-btn-edit,
+.dark .stay-action-btn-delete,
+html.dark .stay-action-btn-delete {
+  color: #94A3B8 !important;
+}
+
+.dark .stay-action-btn:hover,
+html.dark .stay-action-btn:hover,
+.dark .stay-action-btn-view:hover,
+html.dark .stay-action-btn-view:hover,
+.dark .stay-action-btn-edit:hover,
+html.dark .stay-action-btn-edit:hover,
+.dark .stay-action-btn-delete:hover,
+html.dark .stay-action-btn-delete:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--stay-primary-hover, #60A5FA) !important;
+}
+
+/* Remove Ant Design menu default right border inside sidebars */
+.ant-menu-inline,
+.ant-menu-vertical,
+.custom-stay-menu {
+  border-inline-end: none !important;
+  border-right: none !important;
+}
+
+/* ==========================================================================
+   Roomi Leaflet Map & Price Marker Styles
+   ========================================================================== */
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.room-price-marker-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.room-price-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #4F46E5 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 3px 12px rgba(79, 70, 229, 0.45) !important;
+  border: 2px solid #ffffff !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease !important;
+  user-select: none !important;
+  line-height: 1.2 !important;
+}
+
+.room-price-pill:hover {
+  background: #4338CA !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.6) !important;
+  z-index: 1000 !important;
+}
+
+.dark .room-price-pill {
+  background: #6366F1 !important;
+  color: #ffffff !important;
+  border-color: #1E293B !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .room-price-pill:hover {
+  background: #818CF8 !important;
+}
+
+/* Tooltip cho vòng tròn vẽ bán kính */
+.stay-circle-drawing-tooltip {
+  background: rgba(15, 23, 42, 0.88) !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.5) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.stay-circle-drawing-tooltip::before {
+  display: none !important;
+}
+
+/* Custom scrollbar cho Sidebar & Panels */
+.custom-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--stay-border, #E2E8F0) transparent;
+}
+.custom-sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--stay-border, #E2E8F0);
+  border-radius: 9999px;
+}
+.custom-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--stay-text-muted, #94A3B8);
+}

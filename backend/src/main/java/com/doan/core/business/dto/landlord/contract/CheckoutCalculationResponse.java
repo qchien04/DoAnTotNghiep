@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,20 +18,11 @@ public class CheckoutCalculationResponse {
     @Schema(description = "Tiền cọc giữ ban đầu", example = "3500000")
     private Long initialDeposit;
 
-    @Schema(description = "Số điện tiêu thụ ngày cuối", example = "25")
-    private Integer electricConsumed;
-
-    @Schema(description = "Tiền điện ngày cuối", example = "95000")
-    private Long electricAmount;
-
-    @Schema(description = "Số khối nước tiêu thụ ngày cuối", example = "2")
-    private Integer waterConsumed;
-
-    @Schema(description = "Tiền nước ngày cuối", example = "60000")
-    private Long waterAmount;
-
-    @Schema(description = "Tổng chi phí điện nước cuối kỳ", example = "155000")
+    @Schema(description = "Tổng chi phí dịch vụ công tơ cuối kỳ", example = "155000")
     private Long totalUtilityCost;
+
+    @Schema(description = "Chi tiết quyết toán từng dịch vụ công tơ (METER_INDEX)")
+    private List<ServiceSettlementItem> settlements;
 
     @Schema(description = "Tiền đền bù hư hại tài sản", example = "300000")
     private Long damageCost;
@@ -39,4 +32,19 @@ public class CheckoutCalculationResponse {
 
     @Schema(description = "Số tiền thực tế hoàn trả khách (nếu âm nghĩa là khách phải nộp thêm)", example = "3045000")
     private Long netRefundAmount;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ServiceSettlementItem {
+        private Long contractServiceId;
+        private String serviceName;
+        private String unit;
+        private Integer startIndex;
+        private Integer endIndex;
+        private Integer consumed;
+        private Long unitPrice;
+        private Long amount;
+    }
 }

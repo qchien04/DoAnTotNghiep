@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,9 +38,10 @@ public class TenantLinkInvitation {
     @JoinColumn(name = "invited_by", nullable = false)
     private User invitedBy;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "PENDING"; // PENDING, ACCEPTED, REJECTED, EXPIRED
+    private InvitationStatus status = InvitationStatus.PENDING; // PENDING, ACCEPTED, REJECTED, EXPIRED
 
     @Column(name = "reject_reason")
     private String rejectReason;

@@ -5,13 +5,18 @@ import {
   Modal,
   Form,
   Input,
-  Button,
   message,
 } from '@/shared/components';
-import { Tooltip, Spin } from 'antd';
-import { HelpCircle, MapPin, Navigation } from 'lucide-react';
+import { Tooltip, Spin, Select, InputNumber } from 'antd';
+import { HelpCircle, LocateFixed, Loader2 } from 'lucide-react';
 import { Building, CreateBuildingDto } from '@/shared/types/landlord';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import {
+  getProvinces,
+  getWardsByProvinceId,
+  getProvinceName,
+  getWardName,
+} from '@/shared/constants/vietnamLocations';
 
 // Fix default leaflet marker icon issue in Webpack/Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -73,6 +78,10 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
   });
   const [isGeolocating, setIsGeolocating] = useState(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+  const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(1);
+
+  const provinces = getProvinces();
+  const availableWards = selectedProvinceId ? getWardsByProvinceId(selectedProvinceId) : [];
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -94,15 +103,41 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         const data = await res.json();
         if (data && data.address) {
           const addr = data.address;
-          const foundProvince = addr.city || addr.state || addr.province || 'Thành phố Hà Nội';
-          const foundWard = addr.quarter || addr.suburb || addr.neighbourhood || addr.city_district || '';
           const fullDisplayName = data.display_name || '';
 
-          form.setFieldsValue({
-            province: foundProvince,
-            ward: foundWard,
-            addressDetail: fullDisplayName,
-          });
+          const allProvs = getProvinces();
+          const matchedProvince = allProvs.find(
+            (p) =>
+              (addr.city && addr.city.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.state && addr.state.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.province && addr.province.toLowerCase().includes(p.name.toLowerCase())) ||
+              p.name.toLowerCase().includes((addr.city || addr.state || addr.province || '').toLowerCase())
+          );
+
+          if (matchedProvince) {
+            setSelectedProvinceId(matchedProvince.id);
+            const wards = getWardsByProvinceId(matchedProvince.id);
+            const matchedWard = wards.find(
+              (w) =>
+                (addr.quarter && addr.quarter.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.suburb && addr.suburb.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.neighbourhood && addr.neighbourhood.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.city_district && addr.city_district.toLowerCase().includes(w.name.toLowerCase())) ||
+                w.name.toLowerCase().includes((addr.quarter || addr.suburb || addr.neighbourhood || '').toLowerCase())
+            );
+
+            form.setFieldsValue({
+              provinceId: matchedProvince.id,
+              province: matchedProvince.name,
+              wardId: matchedWard ? matchedWard.id : undefined,
+              ward: matchedWard ? matchedWard.name : '',
+              addressDetail: fullDisplayName,
+            });
+          } else {
+            form.setFieldsValue({
+              addressDetail: fullDisplayName,
+            });
+          }
         }
       }
     } catch {
@@ -122,10 +157,17 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
 
         setCurrentCoords(coords);
 
+        const pId = editingBuilding.provinceId ?? 1;
+        const wId = editingBuilding.wardId;
+
+        setSelectedProvinceId(pId || 1);
+
         form.setFieldsValue({
           name: editingBuilding.name,
-          province: editingBuilding.province || 'Thành phố Hà Nội',
-          ward: editingBuilding.ward || '',
+          provinceId: pId || 1,
+          wardId: wId,
+          province: getProvinceName(pId || 1),
+          ward: wId ? getWardName(wId) : '',
           addressDetail: editingBuilding.addressDetail || 'Hà Nội, Việt Nam',
           numFloors: editingBuilding.numFloors || 5,
           generalRules: editingBuilding.generalRules || '',
@@ -144,9 +186,12 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         const coords = { lat: defaultLat, lng: defaultLng };
 
         setCurrentCoords(coords);
+        setSelectedProvinceId(1);
 
         form.setFieldsValue({
-          province: 'Thành phố Hà Nội',
+          provinceId: 1,
+          wardId: undefined,
+          province: getProvinceName(1),
           ward: '',
           addressDetail: 'Hà Nội, Việt Nam',
           numFloors: 5,
@@ -194,11 +239,13 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         zoomControl: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; OpenStreetMap contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b'],
+        }
+      ).addTo(map);
 
       const marker = L.marker(initialPos, {
         icon: pinIcon,
@@ -314,12 +361,12 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
             initialValue={5}
             className="mb-0"
           >
-            <Input type="number" min={1} className="h-10" />
+            <InputNumber min={1} className="w-full h-10" />
           </Form.Item>
         </div>
 
         {/* BẢN ĐỒ VỊ TRÍ & ĐỊA CHỈ (2 CỘT TỶ LỆ 6:4) */}
-        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-stay-text">
@@ -329,15 +376,6 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                 <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
               </Tooltip>
             </div>
-            <Button
-              size="small"
-              icon={<Navigation className="w-3.5 h-3.5 text-emerald-600" />}
-              onClick={handleGetQuickLocation}
-              loading={isGeolocating}
-              className="font-semibold text-xs border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-            >
-              Vị trí hiện tại
-            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -350,41 +388,81 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                   className="z-0"
                 />
 
+                {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+                <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+                  <button
+                    type="button"
+                    onClick={handleGetQuickLocation}
+                    disabled={isGeolocating}
+                    className="absolute bottom-3 right-3 z-[500] w-9 h-9 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+                    aria-label="Vị trí hiện tại"
+                  >
+                    {isGeolocating ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-stay-primary" />
+                    ) : (
+                      <LocateFixed className="w-4 h-4 text-stay-primary" />
+                    )}
+                  </button>
+                </Tooltip>
+
                 {isGeolocating && (
                   <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50">
                     <Spin tip="Đang lấy tọa độ GPS..." />
                   </div>
                 )}
               </div>
-              <p className="text-[11px] text-stay-text-muted mt-1.5 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-stay-primary shrink-0" />
-                <span>Nhấp chuột hoặc kéo thả ghim trên bản đồ để tự động điền địa chỉ</span>
-              </p>
             </div>
 
             {/* CỘT 2 (TỶ LỆ ~40%): CÁC Ô INPUT ĐỊA CHỈ */}
             <div className="lg:col-span-5 space-y-2.5">
               <Form.Item
-                label={<span className="font-semibold text-stay-text text-xs">Tỉnh / Thành phố</span>}
-                name="province"
-                rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / TP' }]}
+                label={<span className="font-semibold text-stay-text ">Tỉnh / Thành phố</span>}
+                name="provinceId"
+                rules={[{ required: true, message: 'Vui lòng chọn Tỉnh / Thành phố' }]}
                 className="mb-2"
               >
-                <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 text-xs" />
+                <Select
+                  showSearch
+                  placeholder="Chọn Tỉnh / Thành phố"
+                  optionFilterProp="label"
+                  className="w-full h-9"
+                  options={provinces.map((p) => ({ value: p.id, label: p.name }))}
+                  onChange={(val) => {
+                    setSelectedProvinceId(val);
+                    form.setFieldsValue({
+                      wardId: undefined,
+                      province: getProvinceName(val),
+                      ward: '',
+                    });
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
-                label={<span className="font-semibold text-stay-text text-xs">Phường / Xã</span>}
-                name="ward"
+                label={<span className="font-semibold text-stay-text ">Phường / Xã</span>}
+                name="wardId"
                 className="mb-2"
               >
-                <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 text-xs" />
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder={selectedProvinceId ? 'Chọn Phường / Xã' : 'Vui lòng chọn Tỉnh / TP trước'}
+                  disabled={!selectedProvinceId}
+                  optionFilterProp="label"
+                  className="w-full h-9"
+                  options={availableWards.map((w) => ({ value: w.id, label: w.name }))}
+                  onChange={(val) => {
+                    form.setFieldsValue({
+                      ward: val ? getWardName(val) : '',
+                    });
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
                 label={
                   <div className="flex items-center justify-between w-full">
-                    <span className="font-semibold text-stay-text text-xs">Địa chỉ chi tiết</span>
+                    <span className="font-semibold text-stay-text ">Địa chỉ chi tiết</span>
                     {isReverseGeocoding && (
                       <span className="text-[11px] text-stay-primary flex items-center gap-1 font-normal">
                         <Spin size="small" /> Đang nhận diện...
@@ -399,7 +477,7 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
                 <Input.TextArea
                   rows={3}
                   placeholder="Số 12 Ngõ 80 Cầu Giấy, Dịch Vọng Hậu..."
-                  className="w-full p-2 text-xs rounded-lg"
+                  className="w-full p-2  rounded-lg"
                 />
               </Form.Item>
 
@@ -415,17 +493,19 @@ export const BuildingFormModal: React.FC<BuildingFormModalProps> = ({
         </div>
 
         {/* QUY ĐỊNH CHUNG */}
-        <Form.Item
-          label={<span className="font-semibold text-stay-text text-sm">Quy định chung của tòa nhà</span>}
-          name="generalRules"
-          className="mb-0"
-        >
-          <Input.TextArea
-            rows={2}
-            placeholder="Quy định giờ giấc, bảo đảm an ninh trật tự, khóa cổng ban đêm, giữ gìn vệ sinh chung..."
-            className="p-2.5 text-xs"
-          />
-        </Form.Item>
+        <div className="pt-4 border-t border-stay-border-subtle">
+          <Form.Item
+            label={<span className="font-semibold text-stay-text text-sm">Quy định chung của tòa nhà</span>}
+            name="generalRules"
+            className="mb-0"
+          >
+            <Input.TextArea
+              rows={2}
+              placeholder="Quy định giờ giấc, bảo đảm an ninh trật tự, khóa cổng ban đêm, giữ gìn vệ sinh chung..."
+              className="p-2.5"
+            />
+          </Form.Item>
+        </div>
       </Form>
     </Modal>
   );

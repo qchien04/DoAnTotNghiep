@@ -1,7 +1,7 @@
 import { message as antMessage, notification as antNotification } from 'antd';
 import type { MessageArgsProps } from 'antd';
 
-// Global configuration for StayConnect Toast Messages
+// Global configuration for Roomi Toast Messages
 antMessage.config({
   duration: 3,
   maxCount: 3,

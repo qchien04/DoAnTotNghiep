@@ -15,6 +15,7 @@ import { AuthResponse } from '@/shared/types/auth';
 export const apiClient = axios.create({
   baseURL: env.API_BASE_URL,
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -105,7 +106,10 @@ apiClient.interceptors.response.use(
         const refreshResponse = await axios.post<ResponseData<AuthResponse>>(
           `${env.API_BASE_URL}/api/v1/auth/refresh-token`,
           { refreshToken },
-          { headers: { 'Content-Type': 'application/json' } }
+          {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' },
+          }
         );
 
         const resData = refreshResponse.data;

@@ -1,8 +1,11 @@
 package com.doan.core.business.dto.tenant;
 
+import com.doan.core.business.enums.Gender;
+import com.doan.core.business.enums.RoommateApplicationStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -21,18 +24,15 @@ public class RoommateApplicationResponse {
 
     private String introMessage;
 
-    private String gender;
-    private String sleepTime;
+    private Gender gender;
     private Boolean isSmoking;
     private Boolean isPet;
-    private String cookingHabit;
-    private String guestHabit;
 
     private Integer compatibilityScore; // Điểm tương thích %
     private String lifestyleVector;
     private Boolean isCustomized;
-    private java.util.List<UserLifestyleAnswerDto> lifestyleAnswers;
-    private String status; // PENDING, APPROVED, REJECTED
+    private List<UserLifestyleAnswerDto> lifestyleAnswers;
+    private RoommateApplicationStatus status; // PENDING, APPROVED, REJECTED
     private String rejectReason;
     private LocalDateTime createdAt;
 }

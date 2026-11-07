@@ -1,12 +1,12 @@
 import React from 'react';
 import { Modal, Input } from '@/shared/components';
-import { Bill } from '@/shared/types/landlord';
+import { InvoiceResponse } from '@/shared/types/landlord';
 
 interface CancelBillModalProps {
   open: boolean;
-  bill: Bill | null;
-  reason: string;
-  onReasonChange: (val: string) => void;
+  bill: InvoiceResponse | null;
+  cancelReason: string;
+  onCancelReasonChange: (val: string) => void;
   onCancel: () => void;
   onSubmit: () => Promise<void>;
 }
@@ -14,8 +14,8 @@ interface CancelBillModalProps {
 export const CancelBillModal: React.FC<CancelBillModalProps> = ({
   open,
   bill,
-  reason,
-  onReasonChange,
+  cancelReason,
+  onCancelReasonChange,
   onCancel,
   onSubmit,
 }) => {
@@ -31,14 +31,14 @@ export const CancelBillModal: React.FC<CancelBillModalProps> = ({
       width={580}
     >
       <div className="py-2 space-y-4">
-        <p className="text-xs text-stay-text-secondary leading-relaxed">
+        <p className=" text-stay-text-secondary leading-relaxed">
           Nhập lý do hủy hóa đơn{' '}
           <strong className="text-stay-text">Kỳ {bill?.billingPeriod} (#{bill?.id})</strong>:
         </p>
         <Input.TextArea
           rows={3}
-          value={reason}
-          onChange={(e) => onReasonChange(e.target.value)}
+          value={cancelReason}
+          onChange={(e) => onCancelReasonChange(e.target.value)}
           placeholder="Lập nhầm cho phòng khác, tính sai số công tơ..."
           className="rounded-xl p-3"
         />

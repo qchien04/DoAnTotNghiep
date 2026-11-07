@@ -28,13 +28,13 @@ export const Collapse: React.FC<CollapseProps> = ({
   const antdItems = items.map((item) => ({
     key: String(item.key),
     label: (
-      <div className="flex items-center gap-2.5 font-semibold text-stay-text text-xs sm:text-sm">
+      <div className="flex items-center gap-2.5 font-semibold text-stay-text  sm:text-sm">
         {item.icon && <span className="text-stay-primary shrink-0">{item.icon}</span>}
         <span>{item.label}</span>
       </div>
     ),
     children: (
-      <div className="text-xs sm:text-sm text-stay-text-secondary leading-relaxed pt-1">
+      <div className=" sm:text-sm text-stay-text-secondary leading-relaxed pt-1">
         {item.children}
       </div>
     ),
@@ -56,9 +56,8 @@ export const Collapse: React.FC<CollapseProps> = ({
       bordered={variant === 'bordered'}
       expandIcon={({ isActive }) => (
         <ChevronRight
-          className={`w-4 h-4 text-stay-primary transition-transform duration-200 ${
-            isActive ? 'rotate-90' : ''
-          }`}
+          className={`w-4 h-4 text-stay-primary transition-transform duration-200 ${isActive ? 'rotate-90' : ''
+            }`}
         />
       )}
       className={`custom-stay-collapse ${variantClasses[variant]} ${className}`}

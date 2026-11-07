@@ -2,21 +2,33 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button } from '@/shared/components';
 import { RoommatePost } from '@/shared/types/tenant';
+import { PageResponse } from '@/shared/types/api';
 
 interface PostTableProps {
-  posts: RoommatePost[];
+  pageInfo?: PageResponse<RoommatePost>;
+  posts?: RoommatePost[];
+  isLoading?: boolean;
+  onPageChange?: (page: number, size: number) => void;
 }
 
-export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
+export const PostTable: React.FC<PostTableProps> = ({
+  pageInfo,
+  posts,
+  isLoading,
+  onPageChange,
+}) => {
   const navigate = useNavigate();
 
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: RoommatePost) => <span className="font-semibold text-stay-text">#{r.id}</span>,
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
+      ),
     },
     {
       title: 'Tiêu đề bài đăng',
@@ -30,7 +42,7 @@ export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
           >
             {title}
           </Link>
-          <div className="text-xs text-stay-text-secondary line-clamp-1">{r.description}</div>
+          <div className=" text-stay-text-secondary line-clamp-1">{r.description}</div>
         </div>
       ),
     },
@@ -40,7 +52,7 @@ export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
       key: 'areaName',
       width: 220,
       render: (area: string, r: RoommatePost) => (
-        <span className="text-xs text-stay-text">{area || r.district || 'Hà Nội'}</span>
+        <span className=" text-stay-text">{area || r.district || 'Hà Nội'}</span>
       ),
     },
     {
@@ -57,13 +69,13 @@ export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
       key: 'members',
       width: 170,
       render: (_: any, r: RoommatePost) => (
-        <span className="text-xs text-stay-text">
+        <span className=" text-stay-text">
           Cần tìm {r.neededRoommates} (Đã có {r.currentRoommates})
         </span>
       ),
     },
     {
-      title: 'Độ khớp lối sống',
+      title: 'Độ khớp sinh hoạt',
       dataIndex: 'matchPercentage',
       key: 'matchPercentage',
       width: 160,
@@ -78,7 +90,7 @@ export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
           colorClass = 'text-blue-700 font-semibold';
         }
         return (
-          <span className={`text-xs ${colorClass}`}>
+          <span className={` ${colorClass}`}>
             {pct}% ({label})
           </span>
         );
@@ -90,7 +102,7 @@ export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
       key: 'postType',
       width: 140,
       render: (type: string) => (
-        <span className="text-xs text-stay-text">
+        <span className=" text-stay-text">
           {type === 'HAS_ROOM' ? 'Có sẵn phòng' : 'Chưa có phòng'}
         </span>
       ),
@@ -111,10 +123,23 @@ export const PostTable: React.FC<PostTableProps> = ({ posts }) => {
     <div className="bg-stay-card-bg border border-stay-border rounded-xl overflow-hidden shadow-2xs">
       <Table
         columns={columns}
-        dataSource={posts}
+        dataSource={pageInfo?.items ?? posts ?? []}
         rowKey="id"
-        pagination={{ pageSize: 8 }}
-        className="overflow-x-auto text-xs"
+        loading={isLoading}
+        pagination={
+          pageInfo
+            ? {
+              current: (pageInfo.page ?? 0) + 1,
+              pageSize: pageInfo.size ?? 10,
+              total: pageInfo.totalElements ?? 0,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total) => `Tổng ${total} bài đăng`,
+              onChange: (p, s) => onPageChange?.(p - 1, s),
+            }
+            : { pageSize: 8 }
+        }
+        className="overflow-x-auto "
       />
     </div>
   );

@@ -2,8 +2,23 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout, AuthLayout, LandlordLayout, AdminLayout, TenantLayout } from '@/shared/layouts';
 import { ProtectedRoute } from './ProtectedRoute';
+import { useAuthStore } from '@/stores/useAuthStore';
 
-// Home & Showcase & Auth
+// Component điều hướng Profile thông minh vào Dashboard tương ứng theo quyền
+const ProfileRedirect: React.FC = () => {
+  const { user } = useAuthStore();
+  if (user?.role === 'ROLE_LANDLORD') {
+    return <Navigate to="/landlord/profile" replace />;
+  }
+  if (user?.role === 'ROLE_ADMIN') {
+    return <Navigate to="/admin/profile" replace />;
+  }
+  return <Navigate to="/tenant/profile" replace />;
+};
+
+// Home & Room & Showcase & Auth
+import { RoomSearchPage } from '@/features/room/pages/RoomSearchPage';
+import { RoomDetailPage } from '@/features/room/pages/RoomDetailPage';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
@@ -50,7 +65,10 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       {/* 1. Public / Main Website Layout */}
       <Route element={<MainLayout />}>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<RoomSearchPage />} />
+        <Route path="/rooms" element={<RoomSearchPage />} />
+        <Route path="/rooms/:id" element={<RoomDetailPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/components" element={<ComponentShowcase />} />
 
         {/* Roommate Search & Discovery (Public) */}
@@ -65,7 +83,7 @@ export const AppRoutes: React.FC = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:conversationId" element={<ChatPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfileRedirect />} />
           <Route path="/verify" element={<KycVerificationPage />} />
           <Route path="/kyc" element={<KycVerificationPage />} />
           <Route path="/profile/kyc" element={<KycVerificationPage />} />
@@ -85,6 +103,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="complaints" element={<MyComplaintsPage />} />
           <Route path="posts" element={<MyRoommatePostsPage />} />
           <Route path="create-post" element={<CreateRoommatePostPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
@@ -100,6 +119,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="contracts" element={<ContractListPage />} />
           <Route path="bills" element={<BillListPage />} />
           <Route path="complaints" element={<ComplaintListPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
@@ -112,6 +132,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="master-data" element={<AdminMasterDataPage />} />
           <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

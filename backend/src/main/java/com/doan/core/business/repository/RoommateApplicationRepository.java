@@ -1,6 +1,7 @@
 package com.doan.core.business.repository;
 
 import com.doan.core.business.entity.RoommateApplication;
+import com.doan.core.business.enums.RoommateApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,5 +17,5 @@ public interface RoommateApplicationRepository extends JpaRepository<RoommateApp
 
     Optional<RoommateApplication> findByPostIdAndApplicantId(Long postId, Long applicantId);
 
-    boolean existsByPostIdAndApplicantIdAndStatus(Long postId, Long applicantId, String status);
+    boolean existsByPostIdAndApplicantIdAndStatus(Long postId, Long applicantId, RoommateApplicationStatus status);
 }

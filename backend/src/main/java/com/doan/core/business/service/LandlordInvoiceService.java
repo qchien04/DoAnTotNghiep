@@ -1,16 +1,17 @@
 package com.doan.core.business.service;
 
 import com.doan.core.business.dto.landlord.invoice.*;
-
-import java.util.List;
+import com.doan.core.business.enums.InvoiceStatus;
+import com.doan.core.common.data.PageResponse;
 
 public interface LandlordInvoiceService {
 
-    List<InvoiceResponse> getInvoices(Long landlordId, Long buildingId, String billingPeriod, String status);
+    PageResponse<InvoiceResponse> getInvoices(Long landlordId, Long buildingId, String billingPeriod,
+            InvoiceStatus status, String keyword, int page, int size, String sortBy, String sortDirection);
 
     InvoiceResponse getInvoiceById(Long landlordId, Long invoiceId);
 
-    InvoiceResponse createInvoice(Long landlordId, MeterReadingInvoiceRequest request);
+    InvoiceResponse createInvoice(Long landlordId, CreateInvoiceRequest request);
 
     InvoiceResponse updateInvoice(Long landlordId, Long invoiceId, InvoiceUpdateRequest request);
 

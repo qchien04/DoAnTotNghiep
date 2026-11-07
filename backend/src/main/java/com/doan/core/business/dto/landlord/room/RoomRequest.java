@@ -12,6 +12,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.doan.core.business.enums.RoomStatus;
+
 @Data
 @Schema(description = "Yêu cầu tạo mới hoặc cập nhật phòng trọ")
 public class RoomRequest {
@@ -19,11 +21,14 @@ public class RoomRequest {
     @Schema(description = "ID tòa nhà chứa phòng (nếu có, để trống nếu là nhà/phòng trọ độc lập)", example = "1")
     private Long buildingId;
 
-    @Schema(description = "Tỉnh / Thành phố", example = "Thành phố Hà Nội")
-    private String province;
+    @Schema(description = "Mã Tỉnh / Thành phố", example = "1")
+    private Integer provinceId;
 
-    @Schema(description = "Phường / Xã", example = "Phường Bách Khoa")
-    private String ward;
+    @Schema(description = "Mã Phường / Xã", example = "101")
+    private Integer wardId;
+
+    @Schema(description = "Bitmask 16-bit mã hóa tiện ích phòng trọ", example = "19")
+    private Integer amenitiesMask;
 
     @Schema(description = "Địa chỉ chi tiết (số nhà, ngõ/đường)", example = "Số 15 ngõ 20 Đại Cồ Việt")
     private String addressDetail;
@@ -71,7 +76,10 @@ public class RoomRequest {
     private String description;
 
     @Schema(description = "Trạng thái phòng (AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED)", example = "AVAILABLE")
-    private String status;
+    private RoomStatus status;
+
+    @Schema(description = "URL ảnh đại diện chính của phòng trọ", example = "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800")
+    private String coverImageUrl;
 
     @NotNull(message = "Giá điện không được để trống")
     @Min(value = 1000, message = "Giá điện tối thiểu 1.000 VNĐ/kWh")

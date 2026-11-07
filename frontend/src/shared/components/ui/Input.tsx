@@ -63,7 +63,7 @@ const InputBase = forwardRef<InputRef, InputProps>(
         className={`${label || error || helperText ? 'space-y-1.5' : ''} ${effectiveWrapperWidth}`.trim()}
       >
         {label && (
-          <label htmlFor={inputId} className="block text-xs font-semibold text-stay-text">
+          <label htmlFor={inputId} className="block text-[13.5px] font-semibold text-stay-text">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -75,7 +75,7 @@ const InputBase = forwardRef<InputRef, InputProps>(
           prefix={prefix || leftIcon}
           suffix={suffix || rightIcon}
           status={error ? 'error' : status}
-          className={`w-full py-2 px-3.5 rounded-xl border-stay-border text-xs sm:text-sm text-stay-text hover:border-stay-primary focus:border-stay-primary transition-all ${otherClasses}`}
+          className={`w-full py-2 px-3.5 rounded-[8px] border-[#D7D7DB] dark:border-stay-border text-[14.5px] text-stay-text hover:border-stay-primary focus:border-stay-primary transition-all ${otherClasses}`}
           {...props}
         />
 

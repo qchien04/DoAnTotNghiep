@@ -24,7 +24,7 @@ export const RejectApplicantModal: React.FC<RejectApplicantModalProps> = ({
       width={560}
       title={<span className="text-base font-bold text-stay-text">Từ chối ứng viên</span>}
     >
-      <div className="space-y-4 pt-2 text-xs">
+      <div className="space-y-4 pt-2 ">
         <div>
           <label className="text-stay-text-secondary block mb-1">
             Lý do từ chối (tùy chọn):

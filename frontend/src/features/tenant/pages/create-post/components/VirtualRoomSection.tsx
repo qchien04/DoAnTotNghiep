@@ -30,13 +30,13 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
     <div className="space-y-6">
       {/* Section 1: Thiết lập vị trí mong muốn trên bản đồ số */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
           2. Thiết lập vị trí mong muốn trên bản đồ số
         </label>
         <div className="bg-stay-card-bg border border-stay-border rounded-xl p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
             <div>
-              <label className="text-xs font-semibold text-stay-text block mb-1.5">
+              <label className=" font-semibold text-stay-text block mb-1.5">
                 Địa chỉ cơ quan / Trường học làm mốc
               </label>
               <Input
@@ -47,7 +47,7 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
             </div>
 
             <div>
-              <div className="flex justify-between text-xs text-stay-text font-semibold mb-1">
+              <div className="flex justify-between  text-stay-text font-semibold mb-1">
                 <span>Bán kính tìm kiếm quanh vị trí:</span>
                 <span className="text-stay-primary font-bold">{mapRadius.toFixed(1)} km</span>
               </div>
@@ -62,7 +62,7 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
           </div>
 
           <div className="space-y-1">
-            <span className="text-xs text-stay-text-secondary block">
+            <span className=" text-stay-text-secondary block">
               Bản đồ tương tác hiển thị vùng bán kính {mapRadius}km quanh {landmarkAddress}:
             </span>
             <LeafletMap markers={markers} height="320px" />
@@ -72,7 +72,7 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
 
       {/* Section 2: Ngân sách & Số lượng bạn cần tìm */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
           3. Thông tin ngân sách & Số lượng
         </label>
         <div className="bg-stay-card-bg border border-stay-border rounded-xl p-5 space-y-4">
@@ -131,11 +131,11 @@ export const VirtualRoomSection: React.FC<VirtualRoomSectionProps> = ({
 
       {/* Section 3: Bảng tiêu chuẩn mong muốn cá nhân (UC13) */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
-          4. Bảng tiêu chuẩn lối sống cá nhân
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
+          4. Bảng tiêu chuẩn sinh hoạt cá nhân
         </label>
         <div className="bg-stay-card-bg border border-stay-border rounded-xl overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left  border-collapse">
             <thead>
               <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
                 <th className="p-3 w-1/3">Tiêu chuẩn mong muốn</th>

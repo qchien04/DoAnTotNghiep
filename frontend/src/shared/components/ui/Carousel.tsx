@@ -48,37 +48,37 @@ export const Carousel: React.FC<CarouselProps> = ({
       >
         {slides
           ? slides.map((slide, index) => (
-              <div key={slide.id || index} className="relative outline-none">
-                <div className={`w-full relative overflow-hidden bg-slate-900 ${aspectClasses[aspectRatio]}`}>
-                  {slide.image && (
-                    <img
-                      src={slide.image}
-                      alt={slide.title || `Slide ${index + 1}`}
-                      className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
-                    />
-                  )}
+            <div key={slide.id || index} className="relative outline-none">
+              <div className={`w-full relative overflow-hidden bg-slate-900 ${aspectClasses[aspectRatio]}`}>
+                {slide.image && (
+                  <img
+                    src={slide.image}
+                    alt={slide.title || `Slide ${index + 1}`}
+                    className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                  />
+                )}
 
-                  {/* Gradient Overlay & Text Captions */}
-                  {(slide.title || slide.description || slide.tag) && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-6 text-white space-y-1.5">
-                      {slide.tag && (
-                        <span className="self-start text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-stay-primary text-white shadow-xs">
-                          {slide.tag}
-                        </span>
-                      )}
-                      {slide.title && <h3 className="text-base sm:text-lg font-bold text-white drop-shadow-sm">{slide.title}</h3>}
-                      {slide.description && (
-                        <p className="text-xs text-slate-200 line-clamp-2 max-w-xl font-normal drop-shadow-xs">
-                          {slide.description}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                {/* Gradient Overlay & Text Captions */}
+                {(slide.title || slide.description || slide.tag) && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-6 text-white space-y-1.5">
+                    {slide.tag && (
+                      <span className="self-start text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-stay-primary text-white shadow-xs">
+                        {slide.tag}
+                      </span>
+                    )}
+                    {slide.title && <h3 className="text-base sm:text-lg font-bold text-white drop-shadow-sm">{slide.title}</h3>}
+                    {slide.description && (
+                      <p className=" text-slate-200 line-clamp-2 max-w-xl font-normal drop-shadow-xs">
+                        {slide.description}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-                  {slide.content}
-                </div>
+                {slide.content}
               </div>
-            ))
+            </div>
+          ))
           : children}
       </AntCarousel>
 

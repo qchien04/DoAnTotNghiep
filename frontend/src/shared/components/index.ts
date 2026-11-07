@@ -1,6 +1,8 @@
 // UI Core Components (Tailwind & Ant Design Integrations)
 export * from './ui/Button';
 export * from './ui/Badge';
+export * from './ui/StatusBadge';
+export * from './ui/UserAvatar';
 export * from './ui/HabitChip';
 export * from './ui/Tabs';
 export * from './ui/Modal';
@@ -13,6 +15,7 @@ export * from './ui/Drawer';
 export * from './ui/Card';
 export * from './ui/Input';
 export * from './ui/Select';
+export * from './ui/InfiniteSelect';
 export * from './ui/MultiSelect';
 export * from './ui/DatePicker';
 export * from './ui/Tooltip';
@@ -35,13 +38,14 @@ export * from './ui/NotificationDropdown';
 export * from './ui/Message';
 export * from './ui/Popconfirm';
 export * from './ui/LeafletMap';
-export * from './ui/LocationPickerModal';
+// Survey & Lifestyle Matching
+export * from './survey/LifestyleQuestionnaire';
 
-// StayConnect Domain Components (Figma UI Design)
-export * from './StayConnectLogo';
-export * from './StayConnectHeader';
-export * from './StayConnectHero';
-export * from './StayConnectSearchBar';
+// Roomi Domain Components
+export * from './RoomiLogo';
+export * from './RoomiHeader';
+export * from './RoomiHero';
+export * from './RoomiSearchBar';
 export * from './LifestyleMatchCard';
 export * from './VerifiedRoomCard';
 export * from './LandlordDashboardPromoCard';

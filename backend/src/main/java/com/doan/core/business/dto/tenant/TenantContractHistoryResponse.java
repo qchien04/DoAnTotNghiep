@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.tenant;
 
+import com.doan.core.business.enums.ContractStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import java.util.List;
 public class TenantContractHistoryResponse {
 
     private Long id;
-    private String status; // ACTIVE, EXPIRING_SOON, TERMINATED, EXPIRED, CANCELLED
+    private ContractStatus status; // ACTIVE, TERMINATED
     private Boolean isCurrent;
     private Boolean isRepresentative;
     private LocalDate startDate;

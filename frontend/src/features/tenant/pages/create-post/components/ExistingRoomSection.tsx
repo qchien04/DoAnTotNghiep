@@ -39,9 +39,8 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
         neededRoommates: 1,
         serviceFeeNote: 'Điện nước, wifi và phí vệ sinh chia đều theo đầu người',
         moveInDate: 'Dọn vào ở ngay đầu tháng tới',
-        description: `Phòng ${currentRoom.name} khép kín sạch sẽ, diện tích ${currentRoom.area || 28}m2 đầy đủ ${
-          currentRoom.amenities?.join(', ') || 'tiện nghi cơ bản'
-        }. Tìm bạn ở ghép văn minh, giữ gìn vệ sinh chung.`,
+        description: `Phòng ${currentRoom.name} khép kín sạch sẽ, diện tích ${currentRoom.area || 28}m2 đầy đủ ${currentRoom.amenities?.join(', ') || 'tiện nghi cơ bản'
+          }. Tìm bạn ở ghép văn minh, giữ gìn vệ sinh chung.`,
       });
     } else if (roomOption === 'NEW_ROOM') {
       form.setFieldsValue({
@@ -63,7 +62,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
     <div className="space-y-6">
       {/* 2 Lựa chọn theo yêu cầu: 1. Phòng đang ở, 2. Phòng mới */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
           2. Chọn nguồn phòng để đăng tin tìm bạn ở cùng
         </label>
 
@@ -71,11 +70,10 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
           {/* OPTION 1: Phòng đang ở */}
           <div
             onClick={() => onRoomOptionChange('CURRENT_ROOM')}
-            className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 ${
-              roomOption === 'CURRENT_ROOM'
-                ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
-                : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
-            }`}
+            className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 ${roomOption === 'CURRENT_ROOM'
+              ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
+              : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-stay-text flex items-center gap-1.5">
@@ -86,7 +84,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
                 <CheckCircle2 className="w-4 h-4 text-stay-primary" />
               )}
             </div>
-            <p className="text-xs text-stay-text-secondary mt-1">
+            <p className=" text-stay-text-secondary mt-1">
               Tự động lấy thông tin phòng hiện tại trên StayHub (Tên phòng, địa chỉ, giá gốc, diện tích, tiện nghi) để hiện lên bài đăng.
             </p>
           </div>
@@ -94,11 +92,10 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
           {/* OPTION 2: Phòng mới */}
           <div
             onClick={() => onRoomOptionChange('NEW_ROOM')}
-            className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 ${
-              roomOption === 'NEW_ROOM'
-                ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
-                : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
-            }`}
+            className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 ${roomOption === 'NEW_ROOM'
+              ? 'border-stay-primary bg-stay-primary/5 ring-1 ring-stay-primary/30'
+              : 'border-stay-border hover:border-slate-300 bg-stay-card-bg'
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-stay-text flex items-center gap-1.5">
@@ -109,7 +106,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
                 <CheckCircle2 className="w-4 h-4 text-stay-primary" />
               )}
             </div>
-            <p className="text-xs text-stay-text-secondary mt-1">
+            <p className=" text-stay-text-secondary mt-1">
               Tự nhập toàn bộ thông tin phòng trọ mới (Địa chỉ, giá, diện tích, ảnh...). Không lấy thông tin từ phòng hiện tại.
             </p>
           </div>
@@ -121,11 +118,11 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
         <>
           {hasLinkedRoom && currentRoom ? (
             <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
-              <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+              <div className="flex items-center gap-2 text-emerald-800 font-bold ">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>Đã nạp tự động thông tin từ phòng bạn đang thuê:</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-emerald-950 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2  text-emerald-950 pt-1">
                 <div>
                   <span className="text-emerald-700/80 block text-[11px]">Tên phòng & Tòa nhà:</span>
                   <strong className="text-emerald-900">{currentRoom.name} - {currentRoom.buildingName}</strong>
@@ -147,10 +144,10 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-xs font-bold text-amber-900">
+                <p className=" font-bold text-amber-900">
                   Tài khoản của bạn hiện chưa liên kết phòng đang ở trên hệ thống!
                 </p>
-                <p className="text-xs text-amber-800 leading-relaxed">
+                <p className=" text-amber-800 leading-relaxed">
                   Để lấy thông tin tự động, bạn cần được chủ trọ liên kết vào hợp đồng phòng. Nếu bạn muốn đăng tin ngay, vui lòng bấm chọn <strong>"Option 2: Phòng mới"</strong> để tự nhập thông tin phòng.
                 </p>
               </div>
@@ -161,7 +158,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
 
       {/* Form Fields Section */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
           3. Thông tin chi tiết bài đăng & Tiền phòng
         </label>
 
@@ -280,7 +277,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
 
       {/* Album ảnh */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block">
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block">
           4. Album hình ảnh thực tế của phòng
         </label>
         <div className="bg-stay-card-bg border border-stay-border rounded-xl p-5">
@@ -295,7 +292,7 @@ export const ExistingRoomSection: React.FC<ExistingRoomSectionProps> = ({
         </div>
       </div>
 
-      {/* Bảng khảo sát lối sống */}
+      {/* Bảng khảo sát sinh hoạt */}
       <LifestyleSurveyTable values={lifestyleValues} onChange={onLifestyleChange} />
     </div>
   );

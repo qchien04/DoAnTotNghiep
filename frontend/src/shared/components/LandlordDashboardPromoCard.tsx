@@ -25,7 +25,7 @@ export const LandlordDashboardPromoCard: React.FC<LandlordDashboardPromoCardProp
         <Tag
           color="blue"
           icon={<ShopOutlined />}
-          className="rounded-full px-3 py-1 text-xs font-semibold text-stay-primary bg-stay-primary-subtle border-none m-0"
+          className="rounded-full px-3 py-1  font-semibold text-stay-primary bg-stay-primary-subtle border-none m-0"
         >
           Dành Riêng Cho Chủ Nhà
         </Tag>
@@ -35,13 +35,13 @@ export const LandlordDashboardPromoCard: React.FC<LandlordDashboardPromoCardProp
           <h3 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight">
             Dành riêng cho Chủ trọ
           </h3>
-          <p className="text-xs text-stay-text-secondary leading-relaxed mt-1">
+          <p className=" text-stay-text-secondary leading-relaxed mt-1">
             Quản lý phòng cho thuê và kênh riêng Landlord dashboard. Tự động hóa hợp đồng và quản lý khách thuê hiệu quả.
           </p>
         </div>
 
         {/* Feature Checkmarks */}
-        <div className="space-y-2 text-xs text-stay-text">
+        <div className="space-y-2  text-stay-text">
           <div className="flex items-center gap-2">
             <CheckCircleFilled className="text-stay-secondary" />
             <span>Xác thực tin đăng chính chủ miễn phí</span>
@@ -59,7 +59,7 @@ export const LandlordDashboardPromoCard: React.FC<LandlordDashboardPromoCardProp
         {/* Mini Landlord OS Dashboard Preview using Antd Components */}
         <div className="rounded-2xl bg-stay-card-bg border border-stay-border shadow-xs p-4 space-y-3 mt-2">
           <div className="flex items-center justify-between border-b border-stay-border-subtle pb-2">
-            <span className="text-xs font-bold text-stay-text">StayConnect Landlord OS</span>
+            <span className=" font-bold text-stay-text">Roomi Landlord OS</span>
             <Tag color="green" className="m-0 text-[10px] border-none font-semibold">
               Live Demo
             </Tag>

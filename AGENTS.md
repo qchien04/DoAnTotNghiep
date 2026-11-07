@@ -1,22 +1,31 @@
-# 🤖 AGENT GUIDELINES & PROJECT CONTEXT: STAYCONNECT
-> **Dự án**: Hệ Thống Quản Lý Nhà Trọ Hỗ Trợ Ghép Người Ở Chung (StayConnect)  
+# 🤖 AGENT GUIDELINES & PROJECT CONTEXT: ROOMI
+> **Dự án**: Hệ Thống Quản Lý Nhà Trọ & Hỗ Trợ Ghép Người Ở Chung Thông Minh (Roomi)  
 > **Phạm vi**: Đồ Án Tốt Nghiệp Đại Học / Cao Đẳng  
-> **Mục tiêu tài liệu**: Cung cấp toàn bộ ngữ cảnh hệ thống, kiến trúc, quy chuẩn code và các nguyên tắc cốt lõi để AI Coding Agents hỗ trợ phát triển chính xác, đồng bộ và tuân thủ tuyệt đối các chuẩn mực kỹ thuật của dự án.
+> **Mục tiêu tài liệu**: Cung cấp toàn bộ ngữ cảnh hệ thống, kiến trúc micro-service/AI engine, quy chuẩn code và các nguyên tắc cốt lõi để AI Coding Agents hỗ trợ phát triển chính xác, đồng bộ và tuân thủ tuyệt đối các chuẩn mực kỹ thuật của dự án Roomi.
 
 ---
 
 ## 📌 1. TỔNG QUAN DỰ ÁN & BÀI TOÁN NGHIỆP VỤ
 
-StayConnect giải quyết 2 bài toán lớn trong cùng một nền tảng thống nhất:
-1. **Quản lý vận hành nhà trọ toàn diện (Dành cho Chủ trọ - Landlord)**: Quản lý tòa nhà, phòng trọ, tiện ích dịch vụ, khách thuê, hợp đồng thuê phòng, chốt chỉ số điện/nước hàng tháng, tạo hóa đơn tự động kèm mã VietQR, thanh lý hợp đồng và tiếp nhận xử lý khiếu nại báo hỏng thiết bị.
-2. **Tìm kiếm & Ghép phòng trọ thông minh bằng AI Vector (Dành cho Người thuê - Tenant)**: Tìm kiếm phòng theo bản đồ/khu vực/giá, đăng bài tìm bạn ở ghép, nộp đơn ứng tuyển ghép phòng, và đối chiếu mức độ hòa hợp giữa các cá nhân thông qua **Thuật toán Khảo sát Lối sống 8 chiều (Lifestyle Vector Matching)**.
+**Roomi** giải quyết 2 bài toán lớn trong cùng một nền tảng thống nhất:
+1. **Quản lý vận hành nhà trọ toàn diện (Dành cho Chủ trọ - Landlord)**: Quản lý tòa nhà, phòng trọ, tiện ích dịch vụ, khách thuê, hợp đồng thuê phòng, chốt chỉ số điện/nước hàng tháng theo hình thức tính phí động, tạo hóa đơn tự động kèm mã VietQR, thanh lý hợp đồng và tiếp nhận xử lý khiếu nại báo hỏng thiết bị.
+2. **Tìm kiếm & Ghép phòng trọ thông minh bằng AI Vector (Dành cho Người thuê - Tenant)**: Tìm kiếm phòng theo bản đồ/khu vực/giá, đăng bài tìm bạn ở ghép (có phòng sẵn hoặc chưa có phòng), nộp đơn ứng tuyển ghép phòng, và đối chiếu mức độ hòa hợp giữa các cá nhân thông qua **Thuật toán Khảo sát Lối sống 15 chiều (15-Dimensional Lifestyle Vector) kết hợp 3 tiêu chí lọc cứng (Dealbreakers)** được xử lý bởi AI Service (`stayconnect_ai_engine.py`).
 
 ### Các Đối Tượng Người Dùng (Actors)
 - **`Guest` (Khách vãng lai)**: Tìm kiếm bài đăng, xem thông tin phòng/bán kính bản đồ, đăng ký tài khoản.
-- **`User` (Người dùng cơ bản)**: Đăng nhập, đăng xuất, đổi mật khẩu, quản lý hồ sơ cá nhân và khảo sát lối sống gốc.
+- **`User` (Người dùng cơ bản)**: Đăng nhập, đăng xuất, đổi mật khẩu, quản lý hồ sơ cá nhân và khảo sát sinh hoạt gốc 15 chiều.
 - **`Tenant` (Người thuê trọ - Kế thừa User)**: Tìm kiếm ở ghép, đăng tin tìm bạn ghép phòng, ứng tuyển vào phòng, liên kết phòng với chủ trọ, xem hợp đồng/hóa đơn, quét VietQR thanh toán, gửi khiếu nại báo hỏng.
 - **`Landlord` (Chủ trọ - Kế thừa User)**: Quản lý tòa nhà, phòng, dịch vụ, hợp đồng, lập hóa đơn, xử lý sự cố, theo dõi doanh thu và công nợ.
-- **`Admin` (Quản trị viên hệ thống)**: Quản lý tài khoản toàn sàn, quản lý Master Data (danh mục tiện ích & bộ câu hỏi tiêu chí lối sống), kiểm duyệt vi phạm và xem thống kê tổng thể.
+- **`Admin` (Quản trị viên hệ thống)**: Quản lý tài khoản toàn sàn, quản lý Master Data, kiểm duyệt vi phạm và xem thống kê tổng thể.
+
+### Bộ Nhận Diện Thương Hiệu (Brand Identity)
+- **Tên thương hiệu**: **Roomi**
+- **Logo Icon**: `frontend/public/logo-icon.png` (Biểu tượng ngôi nhà bo tròn đa sắc)
+- **Logo Ngang (Brand Text)**: `frontend/public/logo-roomi.png` và component `<RoomiLogo />`
+- **Màu sắc chủ đạo**:
+  - Primary: `#4F46E5` (Indigo)
+  - Secondary: `#059669` (Emerald)
+  - AI Match Accent: `#8B5CF6` (Purple)
 
 ---
 
@@ -34,7 +43,7 @@ StayConnect giải quyết 2 bài toán lớn trong cùng một nền tảng th�
     "code": "00",
     "message": "Thao tác thành công",
     "data": { ... },
-    "serverTime": "2026-09-29T10:00:00Z"
+    "serverTime": "2026-10-30T00:00:00Z"
   }
   ```
 - **Xử lý Exception tập trung**: `GlobalExceptionHandler` bắt lỗi `BaseException(ErrorCode)` thống nhất mã lỗi và thông điệp tiếng Việt.
@@ -49,130 +58,198 @@ StayConnect giải quyết 2 bài toán lớn trong cùng một nền tảng th�
 - **Routing**: React Router DOM v7 (Public Routes & `ProtectedRoute`).
 - **Bản đồ**: Leaflet / React-Leaflet + Tile Server tích hợp.
 
----
-
-## 📐 3. BẢNG MÃ CƠ SỞ DỮ LIỆU & QUAN HỆ CỐT LÕI
-
-Hệ thống gồm 18 bảng chuẩn hóa trong [schema.sql](file:///e:/%C4%90%E1%BB%93%20%C3%A1n%20t%E1%BB%91t%20nghi%E1%BB%87p/backend/src/main/resources/schema.sql):
-
-1. **`users`**: Tài khoản hệ thống, trường `lifestyle_vector VARCHAR(255)`, `role`, `status`.
-2. **`buildings`**: Tòa nhà / Dãy trọ thuộc sở hữu của chủ trọ (`landlord_id`).
-3. **`rooms`**: Phòng trọ thuộc tòa nhà, giá thuê, diện tích, trạng thái (`AVAILABLE`, `RENTED`, `MAINTENANCE`).
-4. **`room_images`**: Hình ảnh phòng trọ thực tế.
-5. **`services`**: Dịch vụ tiện ích (Điện, nước, internet, rác...) do chủ trọ cấu hình đơn giá và cách tính.
-6. **`room_services`**: Dịch vụ áp dụng riêng cho từng phòng.
-7. **`tenants`**: Khách thuê đang ở phòng (`is_representative`, `user_id` liên kết).
-8. **`contracts`**: Hợp đồng thuê phòng (`ACTIVE`, `EXPIRING_SOON`, `TERMINATED`), tiền cọc, ngày bắt đầu/kết thúc.
-9. **`contract_services`**: Danh sách dịch vụ chốt trong hợp đồng.
-10. **`invoices`**: Hóa đơn tiền trọ tháng (`DRAFT`, `PENDING_PAYMENT`, `PAID`, `OVERDUE`).
-11. **`invoice_items`**: Chi tiết tiền phòng, điện nước (chỉ số cũ/mới), dịch vụ cố định trong hóa đơn.
-12. **`complaints`**: Khiếu nại báo hỏng thiết bị (`PENDING`, `PROCESSING`, `RESOLVED`, `REJECTED`).
-13. **`lifestyle_questions`**: Danh mục câu hỏi khảo sát lối sống do Admin tạo (`q_type`: `SINGLE` hoặc `MULTI`, trọng số `weight`, `is_hard`).
-14. **`lifestyle_options`**: Các lựa chọn đáp án tương ứng với từng câu hỏi, kèm giá trị số học chuẩn hóa `value` $[0.000, 1.000]$.
-15. **`user_lifestyle_answers`**: Câu trả lời khảo sát lối sống gốc của người dùng (Khóa chính: `user_id, question_id, option_id`).
-16. **`roommate_posts`**: Bài đăng tìm người ở ghép (`HAS_ROOM` hoặc `SEARCHING_ROOM`), kèm `lifestyle_vector`.
-17. **`roommate_post_lifestyle_answers`**: Khảo sát lối sống riêng cho bài đăng (tách biệt khỏi hồ sơ gốc).
-18. **`roommate_applications`**: Đơn xin gia nhập nhóm ở ghép, điểm tương thích `compatibility_score`, cờ `is_customized`.
-19. **`roommate_application_lifestyle_answers`**: Câu trả lời khảo sát tinh chỉnh riêng của ứng viên khi gửi đơn.
+### AI Engine (Python Fast & Two-Sided Compatibility Engine)
+- **Engine File**: `AI_Service/stayconnect_ai_engine.py`
+- **Thuật toán**: Mô hình Hai Chiều Từng Câu (**Two-Sided Pairwise Acceptance Matching**) + Trung bình điều hòa (**Harmonic Mean**) + Hệ số phủ quyết (**Veto System**) + Lọc cứng tiên quyết (**Zero-Tolerance Dealbreakers**).
 
 ---
 
-## 🧠 4. THUẬT TOÁN VECTOR LỐI SỐNG AI & MATCHING MATCHPERCENTAGE
+## 🧠 3. THUẬT TOÁN GHÉP ĐÔI AI VECTOR 15 CHIỀU & MULTI-SELECT BITMASK
 
-### A. Cấu trúc Vector Lối Sống
-- Vector được biểu diễn dưới dạng chuỗi số phân tách bằng dấu phẩy, ví dụ:
-  `"0.000,0.500,0.000,0.000,1.000,1.000,0.500,0.500"`
-- Mỗi phần tử đại diện cho 1 tiêu chí sinh hoạt chuẩn hóa từ $0.000$ đến $1.000$:
-  1. `GENDER`: Giới tính ($0.0$ Nam, $1.0$ Nữ, $0.5$ Linh hoạt).
-  2. `SLEEP_TIME`: Giờ ngủ ($0.0$ Trước 23h, $0.5$ 23h-24h, $1.0$ Sau 24h).
-  3. `SMOKING`: Hút thuốc ($0.0$ Không thuốc, $0.5$ Thỉnh thoảng, $1.0$ Thường xuyên) - *Tiêu chí cứng*.
-  4. `PET`: Nuôi thú cưng ($0.0$ Không, $0.5$ Yêu thích, $1.0$ Đang nuôi).
-  5. `COOKING`: Tần suất nấu ăn ($0.0$ Hiếm khi, $0.5$ Thỉnh thoảng, $1.0$ Hàng ngày).
-  6. `CLEANLINESS`: Ngăn nắp sạch sẽ ($0.0$ Thoải mái, $0.5$ Định kỳ, $1.0$ Rất sạch).
-  7. `GUEST`: Dẫn bạn về phòng ($0.0$ Không, $0.5$ Cuối tuần/Báo trước, $1.0$ Thoải mái).
-  8. `PERSONALITY`: Tính cách ($0.0$ Hướng nội, $0.5$ Cân bằng, $1.0$ Hướng ngoại).
+Hệ thống mã hóa và tính điểm tương thích sinh hoạt theo chuẩn mực tuyệt đối giữa Python AI Service (`stayconnect_ai_engine.py`), Java Spring Boot (`LifestyleVectorHelper.java`) và React Frontend (`LifestyleQuestionnaire.tsx`):
 
-### B. Quy tắc Tính Toán
-- **Câu hỏi `SINGLE`**: Lấy trực tiếp `option.value`.
-- **Câu hỏi `MULTI`**: Nếu người dùng chọn $N$ đáp án, giá trị đại diện là trung bình cộng:
-  $$\text{Value} = \frac{\sum \text{option.value}}{N}$$
-- **Độ tương thích (Compatibility Score $0\% - 100\%$)**:
-  $$\text{Score} = \left( 1 - \frac{\sum (|A_i - B_i| \times \text{weight}_i)}{\sum \text{weight}_i} \right) \times 100$$
-- **Ràng buộc tiêu chí cứng (`isHard`)**: Nếu vi phạm tiêu chí cứng (ví dụ: người hút thuốc ghép với người không khói thuốc có chênh lệch $\ge 0.8$), điểm tương thích bị chặn trần tối đa $50\%$.
+### A. Phân Loại 15 Câu Hỏi Lối Sống
+1. **10 Câu hỏi chọn 1 (Single-select - `SINGLE`)**:
+   - `clean`: Mức độ sạch sẽ, dọn dẹp
+   - `guests`: Quy định dẫn bạn về phòng
+   - `sleep`: Giờ giấc đi ngủ ban đêm
+   - `chores`: Phân chia việc nhà & cọ rửa toilet
+   - `wake`: Giờ thức dậy buổi sáng
+   - `social`: Mức độ giao tiếp xã hội trong phòng
+   - `space`: Ranh giới không gian riêng tư & đồ cá nhân
+   - `money`: Cách chia sẻ chi phí sinh hoạt & điện nước
+   - `cook`: Thói quen nấu ăn tại phòng
+   - `aircon`: Thói quen sử dụng điều hòa & chịu lạnh
+2. **5 Câu hỏi chọn nhiều (Multi-select - `MULTI`, Sets & Noise)**:
+   - `noise_make`: Thói quen phát tiếng ồn (`["music", "game", "calls", "tv", "quiet"]`)
+   - `noise_sense`: Độ nhạy cảm với tiếng ồn & giấc ngủ (`["light", "sound", "smell", "none"]`)
+   - `work`: Hình thức làm việc & học tập (`["office", "remote", "night_shift", "student"]`)
+   - `weekend`: Thói quen ngày cuối tuần (`["home", "outdoor", "party", "travel", "study"]`)
+   - `interest`: Sở thích & đam mê (`["music", "movie", "gym", "reading", "gaming", "cooking", "travel", "tech"]`)
+3. **3 Tiêu chuẩn lọc cứng tiên quyết (Dealbreakers Zero-Tolerance)**:
+   - `GENDER`: Giới tính bản thân & yêu cầu giới tính bạn cùng phòng (`MALE_ONLY`, `FEMALE_ONLY`, `ANY`).
+   - `SMOKING`: Phân tách rành mạch giữa **Đặc điểm** (`smokes`) và **Mức chấp nhận** (`rejects_smokers`).
+   - `PET`: Phân tách rành mạch giữa **Đặc điểm** (`has_pet`) và **Mức chấp nhận** (`rejects_pets`).
 
-### C. Luồng Nghiệp Vụ Clone & Tinh Chỉnh (Customization)
-- Hồ sơ gốc tại `/profile` lưu câu trả lời vào `user_lifestyle_answers`.
-- Khi người dùng đăng tin hoặc nộp đơn ứng tuyển:
-  - Hệ thống tự động **sao chép (clone)** toàn bộ câu trả lời từ hồ sơ gốc.
-  - Người dùng có quyền **tinh chỉnh (customize)** đáp án cho từng bài đăng/đơn ứng tuyển mà **không ảnh hưởng** đến hồ sơ gốc.
-  - Cờ `is_customized` đánh dấu đơn đăng ký đã được điều chỉnh phù hợp với chủ phòng.
+### B. Quy Chuẩn Mã Hóa Vector Không Thất Thoát (Lossless Bitmask Encoding)
+> [!IMPORTANT]
+> - Chuỗi `lifestyle_vector` gồm 15 số thực phân tách bằng dấu phẩy, tương ứng 15 tiêu chí theo đúng thứ tự cố định `LifestyleConstants.java`.
+> - **Đối với 10 câu `SINGLE`**: Giá trị float trong vector là số thứ tự `sortOrder` (1.0, 2.0, 3.0...).
+> - **Đối với 5 câu `MULTI`**: Toàn bộ các lựa chọn đã chọn được nén thành số nguyên **Bitmask** dưới dạng float:
+>   $$\text{bitmask} = \sum_{id \in \text{selected}} (1 \ll (\text{sortOrder}_i - 1))$$
+>   *Ví dụ*: Chọn option 1 và 3 $\to 1 \ll 0 + 1 \ll 2 = 1 + 4 = 5.0$.  
+> - Khi giải mã lại vector (trên BE `decodeVectorToAnswers` hoặc AI Service `_vector_to_answers`), dùng phép kiểm tra bit `(bitmask & (1 << (sortOrder - 1))) != 0` để phục hồi đầy đủ 100% các lựa chọn.
+> - Điểm tương thích giữa 2 tập bitmask được tính theo chỉ số **Jaccard similarity** giữa 2 tập bit:
+>   $$J(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
+
+### C. Giao Diện Khảo Sát Hiện Đại (`LifestyleQuestionnaire.tsx`)
+- Không sử dụng bảng table thô sơ.
+- Hiển thị thanh tiến độ hoàn thành khảo sát trực quan kèm tỉ lệ phần trăm (`%`).
+- Phân nhóm 4 tab danh mục: `Tất cả`, `Sinh hoạt chung`, `Giờ giấc & Giấc ngủ`, `Công việc & Sở thích`.
+- Hỗ trợ rõ ràng giữa Radio tile (chọn 1) và Multi-select chip tags kèm bộ đếm số mục đã chọn (`đã chọn N`).
+- Được tích hợp đồng bộ tại:
+  - Hồ sơ cá nhân (`ProfilePage.tsx` tab Khảo sát)
+  - Đăng bài tìm bạn ở ghép (`CreatePostModal.tsx` chế độ Tùy chỉnh khảo sát)
+  - Đơn ứng tuyển ở ghép (`ApplyRoommateModal.tsx`)
 
 ---
 
-## 🚨 5. QUY TẮC PHÁT TRIỂN BẮT BUỘC DÀNH CHO AGENT
+## 🚨 4. QUY TẮC PHÁT TRIỂN BẮT BUỘC DÀNH CHO AGENT
 
-### 1. Thích Ứng Giao Diện Sáng / Tối & Bảng Màu Động (CRITICAL STRICT RULE)
+### 1. Quy Tắc Tạo Hợp Đồng & Quản Lý Dịch Vụ (CRITICAL CONTRACT RULE)
 > [!CAUTION]
-> **TUYỆT ĐỐI KHÔNG DÙNG TAILWIND MÀU LINH TINH & KHÔNG FIX CỨNG MÃ MÀU!**  
-> Việc dùng các class tĩnh như `bg-white`, `bg-slate-50`, `text-slate-800`, `border-slate-200`, `bg-blue-600`, `bg-indigo-50`... sẽ làm hỏng hoàn toàn khả năng chuyển đổi giữa **6 Theme Bảng Màu** và **Chế Độ Tối (Midnight Dark)**!
+> **TUYỆT ĐỐI KHÔNG TỰ Ý LẤY DỊCH VỤ TỪ PHÒNG ĐƯA VÀO HỢP ĐỒNG!**  
+> Khi tạo hợp đồng (`LandlordContractServiceImpl.createContract`):
+> - **Chỉ thêm** các dịch vụ được chủ trọ chỉ định rõ ràng trong `request.getServices()` (kèm đơn giá áp dụng, chỉ số ban đầu `initialIndex`, phương thức `billingMethod`).
+> - **CẤM** fallback tự lấy danh sách dịch vụ từ phòng (`room.getServices()`) hoặc tự động add toàn bộ dịch vụ phòng vào hợp đồng khi request không có dịch vụ. Nếu chủ trọ không chọn dịch vụ nào, hợp đồng được tạo với danh sách dịch vụ rỗng.
 
-#### 🚫 Bảng Class Cấm Tuyệt Đối (Forbidden Classes)
-- **CẤM fix cứng nền**: `bg-white`, `bg-slate-50`, `bg-gray-50`, `bg-gray-100` ➡️ Phá vỡ Dark mode làm card bị trắng toát.
-- **CẤM fix cứng chữ**: `text-slate-800`, `text-slate-900`, `text-gray-900`, `text-black` ➡️ Chữ bị tàng hình/chìm trên nền tối.
-- **CẤM fix cứng viền**: `border-slate-200`, `border-gray-200` ➡️ Đường viền phát sáng chói lóa trên nền tối.
-- **CẤM fix cứng màu Brand**: `bg-blue-600`, `bg-indigo-600`, `text-blue-600`, `bg-indigo-50` ➡️ Phá vỡ tính năng đổi combo màu khi chọn Sunset Warm (Cam), Royal Purple (Tím), Ocean Breeze (Xanh ngọc).
+### 2. Quy Tắc Tính Tiền & Quyết Toán Hợp Đồng Theo `billingMethod` (STRICT BILLING RULE)
+> [!IMPORTANT]
+> Mọi dịch vụ tiện ích trong hợp đồng (`ContractService`) đều có trường `billingMethod` quy định hình thức tính phí:
+> - **`METER_INDEX`**: Tính theo chỉ số công tơ (`(chỉ số mới - chỉ số cũ) * đơn giá`). Chỉ dịch vụ này mới có chỉ số `lastIndex`, `currentIndex`, `previousIndex` và cần nhập chỉ số chốt ngày trả phòng.
+> - **`FIXED_PER_ROOM`**: Phí cố định theo phòng (số lượng = 1, thành tiền = đơn giá).
+> - **`FIXED_PER_PERSON`**: Phí cố định theo đầu người (số lượng = số khách đang ở trong phòng `currentOccupancy`, thành tiền = `occupancy * đơn giá`).
+> - **`FIXED_PER_UNIT`**: Phí tính theo số lượng đơn vị sử dụng đăng ký (số lượng * đơn giá).
+>
+> 🚫 **CẤM TUYỆT ĐỐI**:
+> - CẤM dùng chuỗi ký tự thô (như `.contains("điện")`, `.contains("nước")`, `.includes('điện')`, `.includes('nước')`) để quyết định cách tính tiền hoặc để lọc lấy dịch vụ công tơ.
+> - CẤM tạo các trường thừa hardcode riêng cho điện/nước (như `electricityUsage`, `waterUsage`, `electricityAmount`, `waterAmount`, `finalElectricIndex`, `finalWaterIndex`...). Toàn bộ hóa đơn và quyết toán thanh lý phải truyền và trả về danh sách động theo từng dịch vụ (`meterReadings`, `settlements`, `items`).
+> - Khi thanh lý hợp đồng (`terminateContract`), danh sách chỉ số chốt phải nhận động qua mảng `meterReadings` tương ứng với các dịch vụ có `billingMethod === 'METER_INDEX'`, không bao giờ giả định phòng chỉ có điện và nước.
 
-#### ✅ Bảng Quy Đổi Sang Semantic Tokens Bắt Buộc (Mandatory Semantic Mapping)
+### 3. Thích Ứng Giao Diện Sáng / Tối & Bảng Màu Động (CRITICAL THEME RULE)
+> [!CAUTION]
+> **TUYỆT ĐỐI KHÔNG DÙNG TAILWIND MÀU FIX CỨNG (bg-white, text-slate-800...)!**  
+> Việc dùng các class tĩnh như `bg-white`, `bg-slate-50`, `text-slate-800`, `border-slate-200`, `bg-blue-600`... sẽ làm hỏng hoàn toàn khả năng chuyển đổi giữa **6 Theme Bảng Màu** và **Chế Độ Tối (Midnight Dark)**!
+
+#### ✅ Bảng Quy Đổi Sang Semantic Tokens Bắt Buộc:
 - **Nền toàn trang web**: Dùng **`bg-stay-bg`** (hoặc `bg-stay-bg-app`).
 - **Nền Card / Modal / Container / Dropdown**: Dùng **`bg-stay-card-bg`**.
 - **Nền phụ thẻ con bên trong Card**: Dùng **`bg-stay-bg-app`** (kết hợp `dark:bg-slate-800/60`).
-- **Màu chữ chính / Họ tên / Tiêu đề**: Dùng **`text-stay-text`**.
+- **Màu chữ chính / Tiêu đề**: Dùng **`text-stay-text`**.
 - **Màu chữ phụ / Mô tả / Subtitle**: Dùng **`text-stay-text-secondary`**.
 - **Mã định danh / Placeholder / Chú thích nhỏ**: Dùng **`text-stay-text-muted`**.
 - **Đường viền chính (Card, Input, Table)**: Dùng **`border-stay-border`** (kết hợp `dark:border-slate-700`).
 - **Đường kẻ phân cách / Viền nhẹ**: Dùng **`border-stay-border-subtle`**.
-- **Nút bấm chính / Điểm nhấn Active (CTA)**: Dùng **`bg-stay-primary hover:bg-stay-primary-hover text-white`**.
+- **Nút bấm chính / Active (CTA)**: Dùng **`bg-stay-primary hover:bg-stay-primary-hover text-white`**.
 - **Nền dịu của Brand (Tag, Pill khi chọn)**: Dùng **`bg-stay-primary-subtle text-stay-primary border border-stay-primary/20`**.
 - **Chữ điểm nhấn / Icon nổi bật**: Dùng **`text-stay-primary`**.
 - **Trạng thái Xác thực & Ghép đôi**: Dùng **`bg-stay-match`**, **`bg-stay-secondary`**, **`bg-stay-match-subtle`**.
 
-*Chi tiết quy chuẩn và ví dụ code mẫu xem tại: [frontend-theme-rules.md](file:///.agents/rules/frontend-theme-rules.md).*
+### 4. Quy Tắc Sắp Xếp & Lọc Dữ Liệu Tại Database (STRICT DATABASE SORTING & FILTERING RULE)
+> [!CAUTION]
+> **TUYỆT ĐỐI KHÔNG SORT VÀ FILTER TRÊN BỘ NHỚ ỨNG DỤNG (APP MEMORY)!**  
+> Mọi thao tác sắp xếp (sort by, sort direction) và lọc danh sách (keyword, status, period...):
+> - **BẮT BUỘC** phải được thực hiện trực tiếp dưới Database thông qua Spring Data JPA `org.springframework.data.domain.Sort` và các mệnh đề `WHERE` trong query JPQL/SQL của Repository.
+> - **CẤM TUYỆT ĐỐI**: Cấm lấy danh sách thô từ DB lên rồi dùng Java Stream `.filter()` hay `.sort(comparator)` trong Application Service. Việc này làm tê liệt index của DB, lãng phí RAM máy chủ và gây xung đột nghiêm trọng khi phân trang dữ liệu!
 
-### 2. Chuẩn Hóa Cấu Trúc Backend
-- **Endpoint naming**: Tuân thủ chuẩn RESTful `/api/v1/{module}/{resource}`.
-  - Public URLs phải khai báo trong `SecurityConstants.PUBLIC_URLS`.
-  - Endpoint yêu cầu đăng nhập phải có `@PreAuthorize("isAuthenticated()")` hoặc kiểm tra Role.
-- **DTOs**: Luôn tách biệt Request DTO và Response DTO, sử dụng Lombok `@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`.
-- **Database migration**: Mọi thay đổi bảng hoặc cột phải được cập nhật đồng bộ trong cả 2 file:
-  - [schema.sql](file:///e:/%C4%90%E1%BB%93%20%C3%A1n%20t%E1%BB%91t%20nghi%E1%BB%87p/backend/src/main/resources/schema.sql) (Định nghĩa cấu trúc DDL).
-  - [data.sql](file:///e:/%C4%90%E1%BB%93%20%C3%A1n%20t%E1%BB%91t%20nghi%E1%BB%87p/backend/src/main/resources/data.sql) (Dữ liệu mẫu seed data ban đầu).
+### 5. Quy Tắc Phân Trang Server-Side & PageResponse<T> (STRICT SERVER-SIDE PAGINATION RULE)
+> [!CAUTION]
+> **TOÀN BỘ API DANH SÁCH/TÌM KIẾM PHẢI TRẢ VỀ `ResponseData<PageResponse<T>>`, TUYỆT ĐỐI KHÔNG DÙNG `any` HOẶC TRẢ VỀ MẢNG THÔ KHÔNG PHÂN TRANG!**
+>
+> 1. **Backend (Spring Boot 3)**:
+>    - Endpoint nhận tham số phân trang & sắp xếp: `int page` (default 0), `int size` (default 10), `String sortBy`, `String sortDirection` qua `Pageable pageable = PageRequest.of(page, size, sort)`.
+>    - Controller trả về: `ResponseData<PageResponse<T>>` với `PageResponse.from(pageResult)`.
+>    - Repository: Thực thi `Page<T>` với truy vấn JPQL/SQL trực tiếp dưới database. Khi có `JOIN FETCH`, **bắt buộc** phải khai báo `countQuery` riêng biệt (dùng `JOIN` và `COUNT(DISTINCT ...)`) để Hibernate 6 tính tổng số bản ghi chính xác.
+> 2. **Frontend (React + TypeScript)**:
+>    - Định dạng chuẩn trong `src/shared/types/api.ts`: `interface PageResponse<T>` gồm `items: T[]`, `page: number`, `size: number`, `totalElements: number`, `totalPages: number`, `last: boolean`.
+>    - Service method: **CẤM TUYỆT ĐỐI** viết `apiClient.get<ResponseData<any>>` hoặc `Promise<ResponseData<any>>`. Phải khai báo tường minh `Promise<ResponseData<PageResponse<T>>>`.
+>    - Hook TanStack Query: Trích xuất duy nhất `pageInfo: query.data` để UI component tự chủ động lấy danh sách item (`pageInfo?.items ?? []`), số trang (`pageInfo?.totalPages`), trang hiện tại (`pageInfo?.page`), và tổng số bản ghi (`pageInfo?.totalElements`).
+>    - Table Components: Ant Design `<Table>` phải nhận cấu hình phân trang động từ `pageInfo`:
+>      ```tsx
+>      pagination={{
+>        current: (pageInfo?.page ?? 0) + 1,
+>        pageSize: pageInfo?.size ?? 10,
+>        total: pageInfo?.totalElements ?? 0,
+>        showSizeChanger: true,
+>        pageSizeOptions: ['10', '20', '50'],
+>        showTotal: (total) => `Tổng ${total} bản ghi`,
+>        onChange: (page, pageSize) => onPageChange?.(page - 1, pageSize),
+>      }}
+>      ```
 
-### 3. Chuẩn Hóa Frontend
-- **Quản lý State**:
-  - Dữ liệu người dùng & token: Lưu trong `useAuthStore` (LocalStorage sync).
-  - Bảng màu: Lưu trong `useThemeStore`.
-  - Dữ liệu server: Sử dụng React Query (`useQuery`, `useMutation`), tái sử dụng queryKeys có sẵn.
-- **Xử lý biểu mẫu & câu hỏi**:
-  - Đối với câu hỏi lối sống, luôn hỗ trợ cả 2 dạng `qType === 'SINGLE'` (chọn 1, radio) và `qType === 'MULTI'` (chọn nhiều, checkbox).
+### 6. Quy Tắc Đồng Bộ Enum Chuẩn & Cấm Chắp Vá Alias (STRICT NO-PATCHWORK ENUM RULE)
+> [!CAUTION]
+> **ĐỒNG BỘ 100% ENUM GIỮA BE, FE VÀ DB. CẤM TUYỆT ĐỐI CÁC ĐOẠN CODE CHẮP VÁ ALIAS!**
+>
+> 1. **Cấm chắp vá alias**:
+>    - Tuyệt đối KHÔNG viết các đoạn mã chắp vá như:
+>      `if (st === 'RENTED') st = 'OCCUPIED';`
+>      `if (st === 'PENDING') st = 'UNPAID';`
+>      `if ("InvoiceStatus".equals(typeName)) if ("PENDING".equals(value)) value = "UNPAID";`
+>    - Tuyệt đối KHÔNG tạo các hàm normalize chắp vá thừa thãi (`normalizeRoom`, `normalizeBuilding`, `normalizeGenderPref`, `normalizeRoommatePost`...). DTO từ Backend trả về phải khớp trực tiếp với Interface Frontend.
+> 2. **Bảng Enum chuẩn duy nhất (Single Source of Truth từ `schema.sql`)**:
+>    - **`RoomStatus`**: `AVAILABLE`, `OCCUPIED`, `UNDER_MAINTENANCE`, `STOPPED` (CẤM dùng `RENTED`, `MAINTENANCE`, `DISABLED`).
+>    - **`InvoiceStatus` / `BillStatus`**: `DRAFT`, `UNPAID`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`, `CANCELLED` (CẤM dùng `PENDING` hay `PARTIAL` cho hóa đơn).
+>    - **`ContractStatus`**: `ACTIVE`, `TERMINATED`.
+>    - **`ComplaintStatus`**: `PENDING`, `PROCESSING`, `RESOLVED`, `REJECTED` (CẤM dùng `NEW`).
+>    - **`ComplaintSeverity`**: `LOW`, `MEDIUM`, `HIGH`, `URGENT`.
+>    - **`RoommatePostStatus`**: `OPEN`, `COMPLETED`, `CLOSED`.
+>    - **`RoommatePostType`**: `HAS_ROOM`, `SEARCHING_ROOM`.
+>    - **`GenderPreference`**: `ANY`, `MALE_ONLY`, `FEMALE_ONLY`.
+
+### 7. Quy Tắc Tách Rời Custom Hooks & Xử Lý Lỗi Mutation (STRICT HOOKS RULE)
+> [!CAUTION]
+> **TUYỆT ĐỐI KHÔNG GỘP NHIỀU QUERY VÀ MUTATION VÀO CHUNG MỘT HOOK!**
+>
+> 1. **Tách biệt rõ ràng Query và Mutation**:
+>    - Mỗi hook query chỉ gọi 1 API tương ứng. Luôn trả về cấu trúc chuẩn: `{ pageInfo, isLoading, isError, error, refetch }` (hoặc `{ data, ... }`).
+> 2. **Cấu trúc chuẩn của Mutation Hook**:
+>    - Mỗi thao tác tạo/sửa/xóa tách thành 1 mutation hook độc lập.
+>    - Trả về cấu trúc rõ ràng: `{ mutateAsyncFn, isPending }`.
+>    - **BẮT BUỘC** đính kèm callback `onError` hiển thị thông điệp lỗi tiếng Việt qua `message.error(...)` từ backend:
+>      ```ts
+>      const createMutation = useMutation({
+>        mutationFn: (dto) => service.createItem(dto),
+>        onSuccess: () => {
+>          queryClient.invalidateQueries({ queryKey: keys.items() });
+>        },
+>        onError: (err: any) => {
+>          message.error(err?.response?.data?.message || err?.message || 'Không thể thực hiện thao tác');
+>        },
+>      });
+>      ```
 
 ---
 
-## ⚡ 6. LỆNH KIỂM TRA & XÁC MINH NHANH
+## ⚡ 5. LỆNH KIỂM TRA & XÁC MINH BẮT BUỘC
 
-Trước khi bàn giao bất kỳ tính năng hoặc sửa lỗi nào, Agent **BẮT BUỘC** phải chạy kiểm tra biên dịch cả 2 phía:
+Trước khi kết thúc bất kỳ lượt làm việc nào hoặc tuyên bố tính năng hoàn tất, Agent **BẮT BUỘC** phải chạy xác minh và đạt kết quả không lỗi:
 
 ```powershell
 # 1. Kiểm tra Backend (phải báo BUILD SUCCESS 0 lỗi)
-cd "e:\Đồ án tốt nghiệp\backend"
+cd "E:\DoAnTotNgiep\backend"
 mvn test-compile
 
 # 2. Kiểm tra Frontend (phải hoàn thành build không lỗi TypeScript)
-cd "e:\Đồ án tốt nghiệp\frontend"
+cd "E:\DoAnTotNgiep\frontend"
 npm run build
+
+# 3. Kiểm tra Python AI Service Engine
+cd "E:\DoAnTotNgiep\AI_Service"
+python -c "import stayconnect_ai_engine; print('Engine syntax OK')"
 ```
 
 ---
-
 ## 🧭 7. QUY TRÌNH PHÁT TRIỂN CÓ KIỂM SOÁT (HITL) & SỔ THEO DÕI TASK
 
 Toàn bộ quá trình phát triển tính năng và sửa lỗi tuân thủ nghiêm ngặt theo **5 Giai đoạn khép kín**:
@@ -199,4 +276,4 @@ Toàn bộ quá trình phát triển tính năng và sửa lỗi tuân thủ ngh
 > - **Thời điểm kích hoạt**: Agent giữ trạng thái sẵn sàng, **chỉ bắt đầu tiến hành triển khai khi người dùng chính thức giao task/yêu cầu cụ thể**.
 
 ---
-*Tài liệu này được tạo tự động để định hướng và duy trì tính nhất quán cho toàn bộ quá trình phát triển dự án StayConnect.*
+*Tài liệu này được cập nhật chính thức cho toàn bộ dự án Roomi.*

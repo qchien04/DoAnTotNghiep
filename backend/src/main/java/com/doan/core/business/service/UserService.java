@@ -1,5 +1,6 @@
 package com.doan.core.business.service;
 
+import com.doan.core.business.dto.request.UpdateProfileRequest;
 import com.doan.core.business.dto.response.UserDto;
 import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.PagingRequest;
@@ -10,7 +11,7 @@ public interface UserService {
 
     UserDto getUserById(Long id);
 
-    UserDto updateProfile(Long userId, com.doan.core.business.dto.request.UpdateProfileRequest request);
+    UserDto updateProfile(Long userId, UpdateProfileRequest request);
 
     long countUsers();
 }

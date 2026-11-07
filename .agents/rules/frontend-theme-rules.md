@@ -80,7 +80,7 @@ Mọi form nhập liệu (Input, Select, Textarea) phải tuân thủ cấu trú
 
 ```tsx
 {/* Label */}
-<label className="block text-xs font-semibold text-stay-text uppercase tracking-wider mb-2">
+<label className="block  font-semibold text-stay-text uppercase tracking-wider mb-2">
   Họ và tên <span className="text-rose-500">*</span>
 </label>
 

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { useAdminUsers } from '@/shared/hooks';
 import {
-  Card,
+  useAdminUsers,
+  useCreateAdminUser,
+  useUpdateAdminUser,
+  useToggleLockUser,
+} from '@/shared/hooks';
+import {
   Button,
   Table,
   Input,
@@ -11,6 +15,7 @@ import {
   Tag,
   Badge,
   Alert,
+  StatusBadge,
 } from '@/shared/components';
 import {
   Plus,
@@ -18,33 +23,40 @@ import {
   Lock,
   Unlock,
   Edit2,
-  Shield,
-  Building,
+  RotateCcw,
+  Eye,
   User,
 } from 'lucide-react';
-import { message } from 'antd';
+import { Tooltip } from 'antd';
 import { AdminUserItem, CreateAdminUserDto, UpdateAdminUserDto, ToggleLockUserDto, UserAccountStatus } from '@/shared/types/admin';
 import { Role } from '@/shared/types/auth';
 
 export const AdminUsersPage: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [keyword, setKeyword] = useState('');
   const [roleFilter, setRoleFilter] = useState<Role | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<UserAccountStatus | 'ALL'>('ALL');
 
-  const {
-    users,
-    isLoading,
-    createUser,
-    isCreating,
-    updateUser,
-    isUpdating,
-    toggleLockUser,
-    isTogglingLock,
-  } = useAdminUsers({
+  const { pageInfo, isLoading } = useAdminUsers({
+    page,
+    size,
     keyword,
     role: roleFilter,
     status: statusFilter,
   });
+  const { createUser, isCreating } = useCreateAdminUser();
+  const { updateUser, isUpdating } = useUpdateAdminUser();
+  const { toggleLockUser, isTogglingLock } = useToggleLockUser();
+
+  // Detail Modal State
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState<AdminUserItem | null>(null);
+
+  const handleOpenDetail = (user: AdminUserItem) => {
+    setViewingUser(user);
+    setDetailModalOpen(true);
+  };
 
   // Create Modal State (UC 48)
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -61,6 +73,7 @@ export const AdminUsersPage: React.FC = () => {
   const [lockForm] = Form.useForm();
 
   const handleOpenCreate = () => {
+
     createForm.resetFields();
     createForm.setFieldsValue({
       role: 'ROLE_USER',
@@ -73,10 +86,9 @@ export const AdminUsersPage: React.FC = () => {
     try {
       const values = await createForm.validateFields();
       await createUser(values as CreateAdminUserDto);
-      message.success('Thêm mới người dùng vào hệ thống thành công!');
       setCreateModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -96,10 +108,9 @@ export const AdminUsersPage: React.FC = () => {
     try {
       const values = await editForm.validateFields();
       await updateUser({ id: editingUser.id, dto: values as UpdateAdminUserDto });
-      message.success('Cập nhật phân quyền & thông tin tài khoản thành công!');
       setEditModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -125,27 +136,42 @@ export const AdminUsersPage: React.FC = () => {
           duration: values.duration,
         } as ToggleLockUserDto,
       });
-      message.success(
-        willLock ? 'Đã khóa tài khoản người dùng thành công!' : 'Đã mở khóa tài khoản thành công!'
-      );
       setLockModalOpen(false);
-    } catch (err: any) {
-      if (err?.message) message.error(err.message);
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
+  };
+
+  const handleReset = () => {
+    setKeyword('');
+    setRoleFilter('ALL');
+    setStatusFilter('ALL');
+    setPage(0);
   };
 
   const columns = [
     {
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
+      ),
+    },
+    {
       title: 'Tài khoản',
       key: 'user',
+      ellipsis: { showTitle: true },
       render: (_: any, r: AdminUserItem) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-stay-bg-app border border-stay-border flex items-center justify-center font-bold text-xs text-stay-primary">
+          <div className="w-8 h-8 rounded-full bg-stay-bg-app border border-stay-border flex items-center justify-center font-bold  text-stay-primary flex-shrink-0">
             {r.fullName.charAt(0)}
           </div>
-          <div>
-            <p className="font-bold text-stay-text text-xs sm:text-sm">{r.fullName}</p>
-            <p className="text-[11px] text-slate-400">@{r.username}</p>
+          <div className="min-w-0">
+            <p className="font-semibold text-stay-text text-[14px] truncate">{r.fullName}</p>
+            <p className="text-[12px] text-slate-400 truncate">@{r.username}</p>
           </div>
         </div>
       ),
@@ -153,10 +179,12 @@ export const AdminUsersPage: React.FC = () => {
     {
       title: 'Email & SĐT',
       key: 'contact',
+      width: 200,
+      ellipsis: { showTitle: true },
       render: (_: any, r: AdminUserItem) => (
-        <div className="text-xs space-y-0.5">
-          <p className="text-stay-text font-medium">{r.email}</p>
-          <p className="text-slate-400">{r.phone || 'Chưa cập nhật'}</p>
+        <div className=" space-y-0.5 min-w-0">
+          <p className="text-stay-text font-medium truncate">{r.email}</p>
+          <p className="text-slate-400 truncate">{r.phone || 'Chưa cập nhật'}</p>
         </div>
       ),
     },
@@ -164,23 +192,25 @@ export const AdminUsersPage: React.FC = () => {
       title: 'Vai trò',
       dataIndex: 'role',
       key: 'role',
+      width: 150,
+      ellipsis: { showTitle: true },
       render: (role: Role) => {
         if (role === 'ROLE_ADMIN') {
           return (
-            <Badge variant="primary" icon={<Shield className="w-3.5 h-3.5" />}>
+            <Badge variant="primary">
               Quản trị viên
             </Badge>
           );
         }
         if (role === 'ROLE_USER') {
           return (
-            <Badge variant="secondary" icon={<Building className="w-3.5 h-3.5" />}>
+            <Badge variant="secondary">
               Người dùng sàn
             </Badge>
           );
         }
         return (
-          <Badge variant="outline" icon={<User className="w-3.5 h-3.5" />}>
+          <Badge variant="outline">
             {role}
           </Badge>
         );
@@ -190,81 +220,82 @@ export const AdminUsersPage: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (st: UserAccountStatus) => {
-        if (st === 'ACTIVE') {
-          return <Tag status="available">Đang hoạt động</Tag>;
-        }
-        return <Tag status="rented">Đã bị khóa</Tag>;
-      },
+      width: 140,
+      ellipsis: { showTitle: true },
+      render: (st: UserAccountStatus) => (
+        <StatusBadge
+          status={st === 'ACTIVE' ? 'ACTIVE' : 'LOCKED'}
+          label={st === 'ACTIVE' ? 'Đang hoạt động' : 'Đã bị khóa'}
+        />
+      ),
     },
     {
       title: 'Thao tác',
       key: 'action',
+      width: 120,
+      fixed: 'right' as const,
       render: (_: any, r: AdminUserItem) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Edit2 className="w-3 h-3" />}
-            onClick={() => handleOpenEdit(r)}
-          >
-            Sửa quyền
-          </Button>
-          <Button
-            variant={r.status === 'ACTIVE' ? 'ghost' : 'outline'}
-            size="sm"
-            icon={r.status === 'ACTIVE' ? <Lock className="w-3 h-3 text-red-500" /> : <Unlock className="w-3 h-3 text-emerald-500" />}
-            onClick={() => handleOpenToggleLock(r)}
-            className={r.status === 'ACTIVE' ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600'}
-          >
-            {r.status === 'ACTIVE' ? 'Khóa' : 'Mở khóa'}
-          </Button>
+        <div className="flex items-center justify-start gap-1.5">
+          <Tooltip title="Xem chi tiết người dùng">
+            <button
+              type="button"
+              className="stay-action-btn"
+              onClick={() => handleOpenDetail(r)}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa phân quyền">
+            <button
+              type="button"
+              className="stay-action-btn"
+              onClick={() => handleOpenEdit(r)}
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          </Tooltip>
+          <Tooltip title={r.status === 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}>
+            <button
+              type="button"
+              className="stay-action-btn"
+              onClick={() => handleOpenToggleLock(r)}
+            >
+              {r.status === 'ACTIVE' ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Unlock className="w-4 h-4" />
+              )}
+            </button>
+          </Tooltip>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="primary">Quản Trị Hệ Thống</Badge>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stay-text tracking-tight">
-            Quản Lý Người Dùng & Phân Quyền
-          </h1>
-          <p className="text-sm text-stay-text-secondary mt-0.5">
-            Quản trị danh sách tài khoản toàn sàn, cấp quyền Chủ trọ/Admin và xử lý kỷ luật khóa tài khoản.
-          </p>
-        </div>
-
-        <Button
-          variant="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreate}
-          className="shadow-md shadow-stay-primary/20 font-semibold"
-        >
-          Thêm Người Dùng
-        </Button>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
       {/* Filter Bar */}
-      <div className="p-4 rounded-2xl bg-stay-card-bg border border-stay-border shadow-xs flex flex-col sm:flex-row items-center gap-4">
+
+      <div className="p-4 rounded-xl bg-stay-card-bg border border-[#D7D7DB] dark:border-slate-700 shadow-none flex flex-wrap items-center gap-3">
         <Input
           placeholder="Tìm theo tên, email, username hoặc số điện thoại..."
-          prefix={<Search className="w-4 h-4 text-slate-400" />}
+          prefix={<Search className="w-4 h-4 text-[#8C8C8C]" />}
           value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            setPage(0);
+          }}
           allowClear
-          className="w-full sm:max-w-md h-10"
+          className="w-full sm:w-[340px] h-[40px] rounded-[8px]"
         />
 
         <Select
           value={roleFilter}
-          onChange={(val) => setRoleFilter(val)}
-          className="w-full sm:w-48 h-10"
+          onChange={(val) => {
+            setRoleFilter(val);
+            setPage(0);
+          }}
+          className="w-full sm:w-[200px] h-[40px] rounded-[8px]"
           options={[
             { label: 'Tất cả vai trò', value: 'ALL' },
             { label: 'Quản trị viên (Admin)', value: 'ROLE_ADMIN' },
@@ -276,31 +307,119 @@ export const AdminUsersPage: React.FC = () => {
 
         <Select
           value={statusFilter}
-          onChange={(val) => setStatusFilter(val)}
-          className="w-full sm:w-48 h-10"
+          onChange={(val) => {
+            setStatusFilter(val);
+            setPage(0);
+          }}
+          className="w-full sm:w-[190px] h-[40px] rounded-[8px]"
           options={[
             { label: 'Tất cả trạng thái', value: 'ALL' },
             { label: 'Đang hoạt động', value: 'ACTIVE' },
             { label: 'Đã bị khóa', value: 'LOCKED' },
           ]}
         />
+
+        <Button
+          icon={<RotateCcw className="w-4 h-4 text-stay-text-secondary" />}
+          onClick={handleReset}
+          className="h-[40px] rounded-[8px] border-[#D7D7DB] dark:border-stay-border text-stay-text hover:text-stay-primary font-medium"
+        >
+          Đặt lại
+        </Button>
+
+        <Button
+          variant="primary"
+          icon={<Plus className="w-4 h-4" />}
+          onClick={handleOpenCreate}
+          className="ml-auto bg-stay-primary hover:bg-stay-primary-hover h-[40px] px-4 font-medium"
+        >
+          Thêm Người Dùng
+        </Button>
       </div>
 
       {/* User Table */}
-      <Card>
-        <div className="p-6">
-          <Table
-            dataSource={users}
-            columns={columns}
-            rowKey="id"
-            loading={isLoading}
-            pagination={{ pageSize: 10 }}
-            className="overflow-x-auto"
-          />
-        </div>
-      </Card>
+      <Table
+        dataSource={pageInfo?.items ?? []}
+        columns={columns}
+        rowKey="id"
+        loading={isLoading}
+        pagination={{
+          current: (pageInfo?.page ?? 0) + 1,
+          pageSize: pageInfo?.size ?? 10,
+          total: pageInfo?.totalElements ?? 0,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          showTotal: (total) => `Tổng ${total} người dùng`,
+          onChange: (p, s) => {
+            setPage(p - 1);
+            setSize(s);
+          },
+        }}
+        scroll={{ x: 'max-content' }}
+        className="overflow-x-auto"
+      />
+
+      {/* Detail User Modal */}
+      <Modal
+        open={detailModalOpen}
+        onCancel={() => setDetailModalOpen(false)}
+        footer={null}
+        width={560}
+        title={
+          <div className="flex items-center gap-2">
+            <User className="w-5 h-5 text-stay-primary" />
+            <span className="text-base font-semibold text-stay-text">Thông tin chi tiết người dùng</span>
+            <span className="ml-2  font-mono font-normal text-stay-text-muted px-2 py-0.5 rounded bg-stay-bg-app border border-stay-border">
+              #{viewingUser?.id}
+            </span>
+          </div>
+        }
+        centered
+        destroyOnClose
+      >
+        {viewingUser && (
+          <div className="py-3 space-y-4">
+            <div className="flex items-start justify-between pb-1">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-stay-primary-subtle text-stay-primary flex items-center justify-center font-bold text-lg">
+                  {viewingUser.fullName?.charAt(0) || 'U'}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-stay-text">{viewingUser.fullName}</h3>
+                  <p className="text-stay-text-muted text-sm">@{viewingUser.username}</p>
+                </div>
+              </div>
+              <div>
+                {viewingUser.status === 'ACTIVE' ? (
+                  <Tag status="available">Đang hoạt động</Tag>
+                ) : (
+                  <Tag status="rented">Đã bị khóa</Tag>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-stay-border-subtle grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs text-stay-text-muted block mb-1">Email liên hệ</span>
+                <span className="text-sm font-semibold text-stay-text truncate block">{viewingUser.email || '—'}</span>
+              </div>
+              <div>
+                <span className="text-xs text-stay-text-muted block mb-1">Số điện thoại</span>
+                <span className="text-sm font-semibold text-stay-text truncate block">{viewingUser.phone || '—'}</span>
+              </div>
+              <div className="col-span-2 pt-2 border-t border-stay-border-subtle">
+                <span className="text-xs text-stay-text-muted block mb-1">Vai trò hệ thống</span>
+                <span className="text-sm font-semibold text-stay-text">
+                  {viewingUser.role === 'ROLE_ADMIN' ? 'Quản trị viên hệ thống' : 'Người dùng sàn (Chủ trọ / Khách thuê)'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Create User Modal (UC 48) */}
+
       <Modal
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
@@ -453,7 +572,7 @@ export const AdminUsersPage: React.FC = () => {
               </Form>
             </>
           ) : (
-            <p className="text-xs text-stay-text-secondary">
+            <p className=" text-stay-text-secondary">
               Bạn có chắc chắn muốn mở khóa cho tài khoản <strong>{lockingUser?.fullName}</strong>? Người dùng sẽ có thể đăng nhập lại bình thường.
             </p>
           )}

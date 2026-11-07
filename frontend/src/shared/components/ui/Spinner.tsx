@@ -53,7 +53,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
   const content = (
     <div className={`inline-flex items-center justify-center gap-2 ${className}`}>
       <AntSpin indicator={spinIndicator} tip={label} {...props} />
-      {/* {label && !tip && <span className="text-xs text-stay-text-secondary font-medium">{label}</span>} */}
+      {/* {label && !tip && <span className=" text-stay-text-secondary font-medium">{label}</span>} */}
     </div>
   );
 

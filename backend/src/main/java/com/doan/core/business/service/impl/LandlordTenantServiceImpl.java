@@ -4,17 +4,23 @@ import com.doan.core.business.dto.landlord.tenant.TenantLinkInviteRequest;
 import com.doan.core.business.dto.landlord.tenant.TenantRequest;
 import com.doan.core.business.dto.landlord.tenant.TenantResponse;
 import com.doan.core.business.entity.*;
+import com.doan.core.business.enums.*;
 import com.doan.core.business.repository.*;
 import com.doan.core.business.service.LandlordTenantService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.exception.BaseException;
 import com.doan.core.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,22 +32,35 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
     private final UserRepository userRepository;
     private final TenantLinkInvitationRepository invitationRepository;
     private final NotificationRepository notificationRepository;
+    private final ContractTenantRepository contractTenantRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<TenantResponse> searchTenants(Long landlordId, Long buildingId, Long roomId, String keyword) {
-        log.info("Tìm kiếm khách thuê của chủ trọ id: {}, tòa: {}, phòng: {}, keyword: {}", landlordId, buildingId, roomId, keyword);
-        List<Tenant> tenants;
-        if (keyword != null && !keyword.isBlank()) {
-            String pattern = "%" + keyword.trim().toLowerCase() + "%";
-            tenants = tenantRepository.searchTenantsWithPattern(landlordId, buildingId, roomId, pattern);
-        } else {
-            tenants = tenantRepository.filterTenants(landlordId, buildingId, roomId);
-        }
+    public PageResponse<TenantResponse> searchTenants(Long landlordId, Long buildingId, Long roomId, String keyword,
+            int page, int size, String sortBy, String sortDirection) {
+        log.info("Tìm kiếm khách thuê của chủ trọ id: {}, tòa: {}, phòng: {}, keyword: {}", landlordId, buildingId,
+                roomId, keyword);
+        String kw = (keyword != null && !keyword.trim().isBlank()) ? keyword.trim() : null;
 
-        return tenants.stream()
-                .map(TenantResponse::fromEntity)
-                .collect(Collectors.toList());
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        String sortProperty = switch (sortBy != null ? sortBy.toLowerCase() : "id") {
+            case "fullname" -> "fullName";
+            case "phone" -> "phone";
+            case "startdate" -> "startDate";
+            case "status" -> "status";
+            default -> "id";
+        };
+        Sort sort = Sort.by(direction, sortProperty);
+
+        int pageNumber = Math.max(0, page);
+        int pageSize = size > 0 ? size : 10;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        Page<Tenant> tenantsPage = tenantRepository.filterTenants(landlordId, buildingId, roomId, kw, pageable);
+        Page<TenantResponse> dtoPage = tenantsPage.map(TenantResponse::fromEntity);
+        return PageResponse.from(dtoPage);
     }
 
     @Override
@@ -50,28 +69,23 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
 
-        validateTenantBelongsToLandlord(tenant, landlordId);
-
         return TenantResponse.fromEntity(tenant);
     }
 
     @Override
     @Transactional
     public TenantResponse addTenant(Long landlordId, TenantRequest request) {
-        log.info("Thêm khách thuê: {} vào phòng: {} của chủ trọ: {}", request.getFullName(), request.getRoomId(), landlordId);
+        log.info("Thêm khách thuê: {} cho chủ trọ: {}", request.getFullName(), landlordId);
 
-        Room room = roomRepository.findByIdAndBuildingLandlordId(request.getRoomId(), landlordId)
-                .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
+        User landlord = userRepository.findById(landlordId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        if (tenantRepository.existsByIdCardNumberAndStatus(request.getIdCardNumber().trim(), "STAYING")) {
+        if (tenantRepository.existsActiveByLandlordIdAndIdCardNumber(landlordId, request.getIdCardNumber().trim())) {
             throw new BaseException(ErrorCode.TENANT_ID_CARD_EXISTS);
         }
 
-        boolean isRep = Boolean.TRUE.equals(request.getIsRepresentative())
-                || "REPRESENTATIVE".equalsIgnoreCase(request.getRoleInRoom());
-
         Tenant tenant = Tenant.builder()
-                .room(room)
+                .landlord(landlord)
                 .fullName(request.getFullName().trim())
                 .phone(request.getPhone().trim())
                 .idCardNumber(request.getIdCardNumber().trim())
@@ -80,17 +94,10 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
                 .hometown(request.getHometown())
                 .idCardPhotoFront(request.getIdCardPhotoFront())
                 .idCardPhotoBack(request.getIdCardPhotoBack())
-                .isRepresentative(isRep)
-                .linkStatus("NOT_LINKED")
-                .status("STAYING")
+                .linkStatus(TenantLinkStatus.NOT_LINKED)
                 .build();
 
         Tenant saved = tenantRepository.save(tenant);
-
-        // Cập nhật số người ở hiện tại của phòng
-        room.setCurrentOccupancy(room.getCurrentOccupancy() + 1);
-        roomRepository.save(room);
-
         return TenantResponse.fromEntity(saved);
     }
 
@@ -99,13 +106,13 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
     public TenantResponse updateTenant(Long landlordId, Long tenantId, TenantRequest request) {
         log.info("Cập nhật thông tin khách thuê id: {} của chủ trọ: {}", tenantId, landlordId);
 
-        Tenant tenant = tenantRepository.findById(tenantId)
+        Tenant tenant = tenantRepository.findByIdAndLandlordId(tenantId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
 
-        validateTenantBelongsToLandlord(tenant, landlordId);
-
-        if (request.getIdCardNumber() != null && !request.getIdCardNumber().trim().equalsIgnoreCase(tenant.getIdCardNumber())) {
-            if (tenantRepository.existsByIdCardNumberAndStatusAndIdNot(request.getIdCardNumber().trim(), "STAYING", tenantId)) {
+        if (request.getIdCardNumber() != null
+                && !request.getIdCardNumber().trim().equalsIgnoreCase(tenant.getIdCardNumber())) {
+            if (tenantRepository.existsActiveByLandlordIdAndIdCardNumberAndIdNot(landlordId,
+                    request.getIdCardNumber().trim(), tenantId)) {
                 throw new BaseException(ErrorCode.TENANT_ID_CARD_EXISTS);
             }
         }
@@ -113,15 +120,24 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
         tenant.setFullName(request.getFullName().trim());
         tenant.setPhone(request.getPhone().trim());
         tenant.setIdCardNumber(request.getIdCardNumber().trim());
-        tenant.setGender(request.getGender());
+        if (request.getGender() != null) {
+            tenant.setGender(request.getGender());
+        }
         tenant.setDateOfBirth(request.getDateOfBirth());
         tenant.setHometown(request.getHometown());
         tenant.setIdCardPhotoFront(request.getIdCardPhotoFront());
         tenant.setIdCardPhotoBack(request.getIdCardPhotoBack());
-        if (request.getIsRepresentative() != null) {
-            tenant.setIsRepresentative(request.getIsRepresentative());
-        } else if (request.getRoleInRoom() != null) {
-            tenant.setIsRepresentative("REPRESENTATIVE".equalsIgnoreCase(request.getRoleInRoom()));
+
+        Optional<ContractTenant> activeCtOpt = contractTenantRepository.findActiveByTenantId(tenantId);
+        if (activeCtOpt.isPresent()) {
+            ContractTenant ct = activeCtOpt.get();
+            if (request.getIsRepresentative() != null) {
+                ct.setIsRepresentative(request.getIsRepresentative());
+                contractTenantRepository.save(ct);
+            } else if (request.getRoleInRoom() != null) {
+                ct.setIsRepresentative(request.getRoleInRoom() == TenantRoleInRoom.REPRESENTATIVE);
+                contractTenantRepository.save(ct);
+            }
         }
 
         Tenant updated = tenantRepository.save(tenant);
@@ -133,25 +149,25 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
     public void removeTenant(Long landlordId, Long tenantId) {
         log.info("Chuyển khách thuê id: {} ra khỏi phòng của chủ trọ: {}", tenantId, landlordId);
 
-        Tenant tenant = tenantRepository.findById(tenantId)
+        tenantRepository.findByIdAndLandlordId(tenantId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
 
-        validateTenantBelongsToLandlord(tenant, landlordId);
+        Optional<ContractTenant> activeCtOpt = contractTenantRepository.findActiveByTenantId(tenantId);
+        if (activeCtOpt.isPresent()) {
+            ContractTenant ct = activeCtOpt.get();
+            if (Boolean.TRUE.equals(ct.getIsRepresentative())) {
+                throw new BaseException(ErrorCode.TENANT_IS_REPRESENTATIVE);
+            }
+            Contract contract = ct.getContract();
+            contractTenantRepository.delete(ct);
 
-        // Ngoại lệ: Nếu khách là đại diện hợp đồng chính thì không được xóa trực tiếp
-        if (Boolean.TRUE.equals(tenant.getIsRepresentative())) {
-            throw new BaseException(ErrorCode.TENANT_IS_REPRESENTATIVE);
+            if (contract != null && contract.getRoom() != null) {
+                Room room = contract.getRoom();
+                long remaining = contractTenantRepository.countByContractId(contract.getId());
+                room.setCurrentOccupancy((int) remaining);
+                roomRepository.save(room);
+            }
         }
-
-        Room room = tenant.getRoom();
-        if (room != null) {
-            room.setCurrentOccupancy(Math.max(0, room.getCurrentOccupancy() - 1));
-            roomRepository.save(room);
-        }
-
-        tenant.setStatus("LEFT");
-        tenant.setRoom(null);
-        tenantRepository.save(tenant);
     }
 
     @Override
@@ -159,12 +175,10 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
     public void inviteUserLink(Long landlordId, Long tenantId, TenantLinkInviteRequest request) {
         log.info("Mời liên kết tài khoản cho khách thuê id: {} với từ khóa: {}", tenantId, request.getSearchKeyword());
 
-        Tenant tenant = tenantRepository.findById(tenantId)
+        Tenant tenant = tenantRepository.findByIdAndLandlordId(tenantId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
 
-        validateTenantBelongsToLandlord(tenant, landlordId);
-
-        if ("LINKED".equalsIgnoreCase(tenant.getLinkStatus())) {
+        if (tenant.getLinkStatus() == TenantLinkStatus.LINKED) {
             throw new BaseException(ErrorCode.TENANT_ALREADY_LINKED);
         }
 
@@ -177,16 +191,20 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
         User landlord = userRepository.findById(landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
+        java.util.Optional<ContractTenant> activeCtOpt = contractTenantRepository.findActiveByTenantId(tenantId);
+        Contract activeContract = activeCtOpt.map(ContractTenant::getContract).orElse(null);
+        Room activeRoom = activeContract != null ? activeContract.getRoom() : null;
+
         TenantLinkInvitation invitation = TenantLinkInvitation.builder()
                 .tenant(tenant)
                 .user(targetUser)
-                .contract(tenant.getContract())
+                .contract(activeContract)
                 .invitedBy(landlord)
-                .status("PENDING")
+                .status(InvitationStatus.PENDING)
                 .build();
         invitationRepository.save(invitation);
 
-        tenant.setLinkStatus("PENDING");
+        tenant.setLinkStatus(TenantLinkStatus.PENDING);
         tenantRepository.save(tenant);
 
         // Bắn thông báo đẩy cho user
@@ -194,9 +212,9 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
                 .user(targetUser)
                 .title("Lời mời liên kết phòng trọ từ chủ nhà " + landlord.getFullName())
                 .content("Chủ trọ đã gửi lời mời xác nhận bạn đang thuê phòng " +
-                        (tenant.getRoom() != null ? tenant.getRoom().getName() : "") +
+                        (activeRoom != null ? activeRoom.getName() : "") +
                         ". Vui lòng xác nhận để xem hợp đồng và hóa đơn.")
-                .notificationType("ROOM_LINK")
+                .notificationType(NotificationType.ROOM_LINK)
                 .relatedEntityType("TENANT_INVITATION")
                 .relatedEntityId(invitation.getId())
                 .isRead(false)
@@ -209,45 +227,27 @@ public class LandlordTenantServiceImpl implements LandlordTenantService {
     public void cancelInvitation(Long landlordId, Long tenantId) {
         log.info("Hủy lời mời liên kết tài khoản cho khách thuê id: {}", tenantId);
 
-        Tenant tenant = tenantRepository.findById(tenantId)
+        Tenant tenant = tenantRepository.findByIdAndLandlordId(tenantId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.TENANT_NOT_FOUND));
 
-        validateTenantBelongsToLandlord(tenant, landlordId);
-
-        if (!"PENDING".equalsIgnoreCase(tenant.getLinkStatus())) {
+        if (tenant.getLinkStatus() != TenantLinkStatus.PENDING) {
             throw new BaseException(ErrorCode.BAD_REQUEST, "Khách thuê này không có lời mời đang chờ xử lý");
         }
 
         // Xóa tất cả lời mời PENDING của tenant này
         List<TenantLinkInvitation> pendingInvitations = invitationRepository.findByTenantId(tenantId);
         pendingInvitations.stream()
-                .filter(inv -> "PENDING".equalsIgnoreCase(inv.getStatus()))
+                .filter(inv -> inv.getStatus() == InvitationStatus.PENDING)
                 .forEach(inv -> {
-                    inv.setStatus("CANCELLED");
+                    inv.setStatus(InvitationStatus.CANCELLED);
                     inv.setRespondedAt(java.time.Instant.now());
                     invitationRepository.save(inv);
                 });
 
-        tenant.setLinkStatus("NOT_LINKED");
+        tenant.setLinkStatus(TenantLinkStatus.NOT_LINKED);
         tenant.setUser(null);
         tenantRepository.save(tenant);
 
         log.info("Đã hủy lời mời liên kết tài khoản cho khách thuê id={}", tenantId);
-    }
-
-    private void validateTenantBelongsToLandlord(Tenant tenant, Long landlordId) {
-        boolean belongs = false;
-        if (tenant.getRoom() != null && tenant.getRoom().getBuilding() != null &&
-                tenant.getRoom().getBuilding().getLandlord() != null &&
-                tenant.getRoom().getBuilding().getLandlord().getId().equals(landlordId)) {
-            belongs = true;
-        } else if (tenant.getContract() != null && tenant.getContract().getLandlord() != null &&
-                tenant.getContract().getLandlord().getId().equals(landlordId)) {
-            belongs = true;
-        }
-
-        if (!belongs) {
-            throw new BaseException(ErrorCode.FORBIDDEN);
-        }
     }
 }

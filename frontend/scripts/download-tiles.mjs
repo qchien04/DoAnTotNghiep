@@ -1,5 +1,5 @@
 /**
- * StayConnect Brute-Force Tile Downloader
+ * Roomi Brute-Force Tile Downloader
  * Tải toàn bộ các mảnh bản đồ (tiles) của Việt Nam về thư mục public/tiles/
  * để tự host hoàn toàn offline, 100% không phụ thuộc internet hay server bên ngoài.
  */
@@ -61,7 +61,7 @@ const allTilesMap = new Map();
 });
 
 const allTiles = Array.from(allTilesMap.values());
-console.log(`[StayConnect Tile Downloader] Tổng số tiles cần tải: ${allTiles.length}`);
+console.log(`[Roomi Tile Downloader] Tổng số tiles cần tải: ${allTiles.length}`);
 console.log(`- Lưu vào: ${OUTPUT_DIR}`);
 
 // Tải một tile
@@ -81,7 +81,7 @@ function downloadTile(tile) {
     const url = `https://nuoclen.com/tiles/hot/${z}/${x}/${y}.png`;
 
     https
-      .get(url, { headers: { 'User-Agent': 'StayConnectTileDownloader/1.0' } }, (res) => {
+      .get(url, { headers: { 'User-Agent': 'RoomiTileDownloader/1.0' } }, (res) => {
         if (res.statusCode === 200) {
           const fileStream = fs.createWriteStream(filePath);
           res.pipe(fileStream);

@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Tooltip, message } from 'antd';
+import { LocateFixed, Loader2 } from 'lucide-react';
 import {
   VIETNAM_ISLANDS_DATA,
   HOANG_SA_CENTER,
@@ -19,13 +21,24 @@ export interface MapMarker {
   link?: string;
 }
 
+export interface MapCircle {
+  center: [number, number];
+  radiusKm: number;
+  label?: string;
+  color?: string;
+}
+
 export interface LeafletMapProps {
   center?: [number, number];
   zoom?: number;
   markers?: MapMarker[];
+  circles?: MapCircle[];
   onMarkerClick?: (marker: MapMarker) => void;
+  onMapClick?: (lat: number, lng: number) => void;
   height?: string | number;
   className?: string;
+  showCurrentLocation?: boolean;
+  onCurrentLocationFound?: (lat: number, lng: number) => void;
 }
 
 // Fix default leaflet marker icon issue in Webpack/Vite
@@ -47,13 +60,75 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   center = [21.0285, 105.8048], // Hà Nội center
   zoom = 13,
   markers = [],
+  circles = [],
   onMarkerClick,
+  onMapClick,
   height = '480px',
   className = '',
+  showCurrentLocation = true,
+  onCurrentLocationFound,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const circlesLayerRef = useRef<L.LayerGroup | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const [isGeolocating, setIsGeolocating] = useState(false);
+
+  const handleFlyToCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      message.warning('Trình duyệt không hỗ trợ định vị vị trí GPS.');
+      return;
+    }
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    setIsGeolocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsGeolocating(false);
+        const { latitude, longitude } = pos.coords;
+
+        // Bay mượt mà đến tọa độ hiện tại
+        map.flyTo([latitude, longitude], 16, { duration: 1.5 });
+
+        // Tạo hoặc cập nhật chấm định vị phong cách Google Maps
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLatLng([latitude, longitude]);
+        } else {
+          const userDotIcon = L.divIcon({
+            className: 'user-gps-dot',
+            html: `
+              <div style="position: relative; width: 22px; height: 22px;">
+                <div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(79, 70, 229, 0.25); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                <div style="width: 22px; height: 22px; border-radius: 50%; background: #4F46E5; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
+              </div>
+            `,
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+          });
+          userMarkerRef.current = L.marker([latitude, longitude], { icon: userDotIcon })
+            .bindPopup('<strong>Vị trí hiện tại của bạn</strong>')
+            .addTo(map);
+        }
+
+        onCurrentLocationFound?.(latitude, longitude);
+        message.success('Đã xác định vị trí hiện tại thành công!');
+      },
+      (err) => {
+        setIsGeolocating(false);
+        let msg = 'Không thể lấy vị trí hiện tại.';
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = 'Vui lòng cấp quyền truy cập vị trí trên trình duyệt.';
+        }
+        message.warning(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const onMapClickRef = useRef(onMapClick);
+  onMapClickRef.current = onMapClick;
 
   // Initialize Map
   useEffect(() => {
@@ -77,15 +152,21 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
         scrollWheelZoom: true,
       });
 
-      // Sử dụng tile layer CartoDB Voyager (dữ liệu OpenStreetMap chuẩn):
-      // - Giao diện hiện đại, đường nét sắc nét, màu sắc hài hòa
+      map.on('click', (e: L.LeafletMouseEvent) => {
+        onMapClickRef.current?.(e.latlng.lat, e.latlng.lng);
+      });
+
+      // Sử dụng tile layer OpenStreetMap Humanitarian (HOT) qua CDN ổn định:
+      // - Giao diện chi tiết, sắc nét, màu sắc hài hòa, không watermark
       // - Tuyệt đối không có đường lưỡi bò phi pháp
-      // - Tốc độ tải cực nhanh qua CDN toàn cầu của Carto
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      // - Tốc độ tải nhanh, không bị chặn 403 trên localhost
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b'],
+        }
+      ).addTo(map);
 
       // Layer khẳng định chủ quyền Quần đảo Hoàng Sa & Quần đảo Trường Sa (Việt Nam)
       const islandsGroup = L.layerGroup().addTo(map);
@@ -315,6 +396,36 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     }
   }, [markers, onMarkerClick]);
 
+  // Update Circles
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!circlesLayerRef.current) {
+      circlesLayerRef.current = L.layerGroup().addTo(map);
+    }
+    const layerGroup = circlesLayerRef.current;
+    layerGroup.clearLayers();
+
+    circles.forEach((circle) => {
+      const leafletCircle = L.circle(circle.center, {
+        radius: circle.radiusKm * 1000,
+        color: circle.color || '#4F46E5',
+        fillColor: circle.color || '#4F46E5',
+        fillOpacity: 0.15,
+        weight: 2,
+        dashArray: '5, 5',
+      });
+      if (circle.label) {
+        leafletCircle.bindTooltip(circle.label, {
+          permanent: true,
+          direction: 'center',
+          className: 'stay-circle-label',
+        });
+      }
+      layerGroup.addLayer(leafletCircle);
+    });
+  }, [circles]);
+
   return (
     <div
       className={`relative rounded-2xl overflow-hidden border border-stay-border shadow-card bg-stay-card-bg ${className}`}
@@ -322,10 +433,24 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     >
       <div ref={mapContainerRef} className="w-full h-full z-10" />
 
-      {/* Attribution & Legal Notice */}
-      <div className="absolute bottom-1 left-2 z-20 bg-stay-card-bg/85 backdrop-blur-xs px-2 py-0.5 rounded text-[10px] text-stay-text-secondary border border-stay-border">
-        Bản đồ OpenStreetMap (OSM) • Chủ quyền Việt Nam
-      </div>
+      {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+      {showCurrentLocation && (
+        <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+          <button
+            type="button"
+            onClick={handleFlyToCurrentLocation}
+            disabled={isGeolocating}
+            className="absolute bottom-5 right-5 z-[500] w-10 h-10 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+            aria-label="Vị trí hiện tại"
+          >
+            {isGeolocating ? (
+              <Loader2 className="w-5 h-5 animate-spin text-stay-primary" />
+            ) : (
+              <LocateFixed className="w-5 h-5 text-stay-primary" />
+            )}
+          </button>
+        </Tooltip>
+      )}
     </div>
   );
 };

@@ -6,6 +6,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
+import com.doan.core.business.enums.GenderPreference;
+import com.doan.core.business.enums.RoommatePostType;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,8 +20,7 @@ public class RoommatePostRequest {
 
     private String description;
 
-    @NotBlank(message = "Loại hình đăng bài không được để trống!")
-    private String postType; // HAS_ROOM, SEARCHING_ROOM
+    private RoommatePostType postType; // HAS_ROOM, SEARCHING_ROOM (tự động suy ra từ endpoint nếu null)
 
     private Long roomId; // ID phòng liên kết nếu chọn Lựa chọn A
 
@@ -38,14 +40,10 @@ public class RoommatePostRequest {
     private Double longitude;
     private Double radiusKm;
 
-    // Tiêu chí lối sống
-    private String genderPreference;
-    private String sleepTime;
+    // Tiêu chí lọc cứng (Dealbreakers)
+    private GenderPreference genderPreference;
     private Boolean isNoSmoking;
     private Boolean isPetFriendly;
-    private String cookingFrequency;
-    private String cleanlinessLevel;
-    private String guestAllowed;
 
     private java.util.List<SaveLifestyleAnswersRequest.AnswerItem> lifestyleAnswers;
 }

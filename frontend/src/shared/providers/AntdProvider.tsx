@@ -17,7 +17,7 @@ export const AntdProvider: React.FC<AntdProviderProps> = ({ children }) => {
       theme={{
         algorithm: colors.isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
-          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          fontFamily: "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
           // Dynamic Theme Colors
           colorPrimary: colors.primary,
           colorSuccess: colors.secondary,
@@ -25,16 +25,17 @@ export const AntdProvider: React.FC<AntdProviderProps> = ({ children }) => {
           colorError: '#EF4444',
           colorInfo: colors.primary,
 
-          // Typography & Layout
-          fontSize: 14,
-          borderRadius: 10,
-          borderRadiusLG: 14,
+          // Typography & Layout (Slightly larger, crisp enterprise feel)
+          fontSize: 14.5,
+          controlHeight: 40,
+          borderRadius: 8,
+          borderRadiusLG: 12,
           borderRadiusSM: 6,
 
           // Text, Surfaces & Border Colors
-          colorText: colors.text,
+          colorText: colors.isDark ? '#F8FAFC' : '#242428',
           colorTextSecondary: colors.textSecondary,
-          colorBorder: colors.border,
+          colorBorder: colors.isDark ? '#334155' : '#DADADA',
           colorBgBase: colors.bgApp,
           colorBgLayout: colors.bgApp,
           colorBgContainer: colors.cardBg,
@@ -44,34 +45,51 @@ export const AntdProvider: React.FC<AntdProviderProps> = ({ children }) => {
           Button: {
             colorPrimary: colors.primary,
             colorPrimaryHover: colors.primaryHover,
-            controlHeight: 38,
-            borderRadius: 10,
+            controlHeight: 40,
+            borderRadius: 8,
             fontWeight: 500,
+            fontSize: 14.5,
+          },
+          Input: {
+            controlHeight: 40,
+            borderRadius: 8,
+            colorBorder: colors.isDark ? '#334155' : '#D7D7DB',
+            fontSize: 14.5,
+          },
+          Select: {
+            controlHeight: 40,
+            borderRadius: 8,
+            colorBorder: colors.isDark ? '#334155' : '#D7D7DB',
+            fontSize: 14.5,
           },
           Tabs: {
             colorPrimary: colors.primary,
-            titleFontSize: 14,
+            titleFontSize: 14.5,
             horizontalItemPadding: '10px 16px',
           },
           Modal: {
-            borderRadiusLG: 16,
+            borderRadiusLG: 14,
             titleFontSize: 16,
             contentBg: colors.cardBg,
             headerBg: colors.cardBg,
           },
           Table: {
-            headerBg: colors.bgApp,
-            headerColor: colors.textSecondary,
-            borderColor: colors.border,
-            rowHoverBg: colors.borderSubtle,
+            headerBg: colors.isDark ? '#1E293B' : '#F7F7F8',
+            headerColor: colors.isDark ? '#F8FAFC' : '#242428',
+            borderColor: colors.isDark ? '#334155' : '#DADADA',
+            rowHoverBg: colors.isDark ? 'rgba(51, 65, 85, 0.4)' : '#F8FAFC',
+            headerSplitColor: 'transparent',
+            cellPaddingBlock: 12,
+            cellPaddingInline: 16,
+            fontSize: 14,
           },
           Card: {
-            borderRadiusLG: 16,
+            borderRadiusLG: 12,
             colorBgContainer: colors.cardBg,
             colorBorderSecondary: colors.border,
           },
           Alert: {
-            borderRadiusLG: 12,
+            borderRadiusLG: 8,
           },
           Layout: {
             bodyBg: colors.bgApp,

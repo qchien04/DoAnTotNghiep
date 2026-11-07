@@ -3,7 +3,10 @@ package com.doan.core.business.controller.tenant;
 import com.doan.core.business.dto.tenant.RateComplaintRequest;
 import com.doan.core.business.dto.tenant.TenantComplaintRequest;
 import com.doan.core.business.dto.tenant.TenantComplaintResponse;
+import com.doan.core.business.enums.ComplaintSeverity;
+import com.doan.core.business.enums.ComplaintStatus;
 import com.doan.core.business.service.TenantComplaintService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,8 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/tenant/complaints")
 @RequiredArgsConstructor
@@ -29,10 +30,18 @@ public class TenantComplaintController {
     private final TenantComplaintService complaintService;
 
     @GetMapping
-    @Operation(summary = "UC 18: Xem danh sách khiếu nại của tôi", description = "Lịch sử các phản ánh sự cố và tiến độ xử lý từ chủ trọ")
-    public ResponseEntity<ResponseData<List<TenantComplaintResponse>>> getMyComplaints(
-            @AuthenticationPrincipal UserPrincipal principal) {
-        List<TenantComplaintResponse> list = complaintService.getMyComplaints(principal.getId());
+    @Operation(summary = "UC 18: Xem danh sách khiếu nại của tôi", description = "Lịch sử các phản ánh sự cố và tiến độ xử lý từ chủ trọ kèm tìm kiếm và sắp xếp")
+    public ResponseEntity<ResponseData<PageResponse<TenantComplaintResponse>>> getMyComplaints(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) ComplaintStatus status,
+            @RequestParam(required = false) ComplaintSeverity severity,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
+        PageResponse<TenantComplaintResponse> list = complaintService.getMyComplaints(principal.getId(), keyword,
+                status, severity, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(list));
     }
 

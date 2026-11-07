@@ -2,6 +2,7 @@ import React from 'react';
 import { Select as AntSelect } from 'antd';
 import type { SelectProps as AntSelectProps } from 'antd';
 import { MultiSelect, type MultiSelectOption, type MultiSelectProps } from './MultiSelect';
+import { InfiniteSelect } from './InfiniteSelect';
 
 export type SelectOption = {
   value: string | number;
@@ -59,7 +60,7 @@ export function Select<ValueType = any, OptionType extends Record<string, any> =
       className={`${label || error || helperText ? 'space-y-1.5' : ''} ${effectiveWrapperWidth}`.trim()}
     >
       {label && (
-        <label htmlFor={selectId} className="block text-xs font-semibold text-stay-text">
+        <label htmlFor={selectId} className="block text-[13.5px] font-semibold text-stay-text">
           {label}
           {props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -84,6 +85,9 @@ export function Select<ValueType = any, OptionType extends Record<string, any> =
 Select.Option = AntSelect.Option;
 Select.OptGroup = AntSelect.OptGroup;
 Select.Multi = MultiSelect;
+Select.Infinite = InfiniteSelect;
 
 export { MultiSelect, type MultiSelectOption, type MultiSelectProps };
+export { InfiniteSelect, type InfiniteSelectProps } from './InfiniteSelect';
 export default Select;
+

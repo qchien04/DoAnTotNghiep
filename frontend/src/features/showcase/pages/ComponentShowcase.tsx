@@ -36,7 +36,7 @@ import {
   FormActions,
   SearchBar,
   type SearchSuggestionItem,
-  StayConnectSearchBar,
+  RoomiSearchBar,
   type SearchFilters,
 } from '@/shared/components';
 import {
@@ -71,6 +71,7 @@ import {
 import { message } from 'antd';
 import { useThemeStore } from '@/stores/useThemeStore';
 import type { ThemePresetId } from '@/shared/constants/themes';
+import { useRooms, useTenants } from '@/shared/hooks';
 
 export const ComponentShowcase: React.FC = () => {
   const { currentThemeId, currentTheme, availableThemes, setTheme } = useThemeStore();
@@ -80,6 +81,9 @@ export const ComponentShowcase: React.FC = () => {
   // States for new interactive components
   const [selectedHabits, setSelectedHabits] = useState<(string | number)[]>(['gym', 'non_smoker']);
   const [selectedAmenities, setSelectedAmenities] = useState<(string | number)[]>(['wifi', 'ac', 'fridge']);
+  const [selectedDemoRoom, setSelectedDemoRoom] = useState<number | string | null>(null);
+  const [selectedDemoTenants, setSelectedDemoTenants] = useState<(string | number)[]>([]);
+
   const [priceRange, setPriceRange] = useState<[number, number]>([2000000, 6000000]);
   const [matchTolerance, setMatchTolerance] = useState<number>(85);
   const [menuSelectedKey, setMenuSelectedKey] = useState<string>('dashboard');
@@ -185,10 +189,10 @@ export const ComponentShowcase: React.FC = () => {
     {
       key: '2',
       icon: <ShieldCheck className="w-4 h-4" />,
-      label: '2. Làm thế nào để StayConnect xác thực phòng trọ chính chủ và an toàn?',
+      label: '2. Làm thế nào để Roomi xác thực phòng trọ chính chủ và an toàn?',
       children: (
         <p>
-          Mọi tin đăng có huy hiệu <strong className="text-stay-secondary">Xác Thực (Verified)</strong> đều đã được đội ngũ StayConnect kiểm duyệt hồ sơ pháp lý căn hộ, CCCD chủ nhà và hình ảnh chụp thực tế tại chỗ. Người thuê được cam kết hoàn 100% cọc nếu phòng thực tế sai lệch.
+          Mọi tin đăng có huy hiệu <strong className="text-stay-secondary">Xác Thực (Verified)</strong> đều đã được đội ngũ Roomi kiểm duyệt hồ sơ pháp lý căn hộ, CCCD chủ nhà và hình ảnh chụp thực tế tại chỗ. Người thuê được cam kết hoàn 100% cọc nếu phòng thực tế sai lệch.
         </p>
       ),
       extra: <Tag status="verified">Bảo chứng 100%</Tag>,
@@ -199,7 +203,7 @@ export const ComponentShowcase: React.FC = () => {
       label: '3. Hợp đồng thuê phòng điện tử và quản lý chỉ số điện nước trên ứng dụng?',
       children: (
         <p>
-          StayConnect tích hợp tính năng ký số hợp đồng thuê nhà trực tuyến chuẩn pháp lý, kèm hệ thống theo dõi hóa đơn điện nước, thanh toán trực tiếp qua cổng thanh toán liên kết ngân hàng mà không cần tiền mặt.
+          Roomi tích hợp tính năng ký số hợp đồng thuê nhà trực tuyến chuẩn pháp lý, kèm hệ thống theo dõi hóa đơn điện nước, thanh toán trực tiếp qua cổng thanh toán liên kết ngân hàng mà không cần tiền mặt.
         </p>
       ),
     },
@@ -248,7 +252,7 @@ export const ComponentShowcase: React.FC = () => {
       render: (status: string) => {
         const isVerified = status === 'Đã duyệt';
         return (
-          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${isVerified ? 'text-stay-secondary' : 'text-amber-600'}`}>
+          <span className={`inline-flex items-center gap-1.5  font-semibold ${isVerified ? 'text-stay-secondary' : 'text-amber-600'}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${isVerified ? 'bg-stay-secondary' : 'bg-amber-500'}`} />
             {status}
           </span>
@@ -281,7 +285,7 @@ export const ComponentShowcase: React.FC = () => {
         items={[
           { title: <span className="flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Trang chủ</span> },
           { title: 'Quản trị hệ thống' },
-          { title: 'Thư viện UI Components (Ant Design & StayConnect)' },
+          { title: 'Thư viện UI Components (Ant Design & Roomi)' },
         ]}
       />
 
@@ -289,8 +293,8 @@ export const ComponentShowcase: React.FC = () => {
       <div className="bg-stay-card-bg rounded-3xl p-8 border border-stay-border shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stay-primary-subtle text-stay-primary text-xs font-bold mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> Bộ Shared UI Components StayConnect
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stay-primary-subtle text-stay-primary  font-bold mb-3">
+              <Sparkles className="w-3.5 h-3.5" /> Bộ Shared UI Components Roomi
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-stay-text tracking-tight">
               Hệ Thống Thành Phần Giao Diện Chung
@@ -314,13 +318,13 @@ export const ComponentShowcase: React.FC = () => {
               <Palette className="w-5 h-5 text-stay-primary" />
               <span>0. Đổi Combo Màu Giao Diện (1-Click Theme Switcher)</span>
             </CardTitle>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-stay-primary-subtle text-stay-primary">
+            <span className=" font-semibold px-2.5 py-1 rounded-full bg-stay-primary-subtle text-stay-primary">
               Đang dùng: {currentTheme.name}
             </span>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-stay-text-secondary mb-4">
+          <p className=" text-stay-text-secondary mb-4">
             Nhấp chuột vào bất kỳ combo màu nào dưới đây để đổi toàn bộ giao diện (Nút bấm, Tabs, Bảng, Thanh tìm kiếm, Thẻ card, Ant Design tokens) ngay lập tức:
           </p>
 
@@ -370,7 +374,7 @@ export const ComponentShowcase: React.FC = () => {
                     )}
                   </div>
 
-                  <h4 className="text-xs font-bold text-stay-text leading-tight mt-1 flex items-center gap-1.5">
+                  <h4 className=" font-bold text-stay-text leading-tight mt-1 flex items-center gap-1.5">
                     <span>{theme.name}</span>
                     {theme.colors.isDark && (
                       <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-100 font-semibold">
@@ -400,7 +404,7 @@ export const ComponentShowcase: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <p className="text-xs text-stay-text-secondary mb-3">Các biến thể Button chuẩn (Primary, Secondary, Outline, Ghost, Danger):</p>
+            <p className=" text-stay-text-secondary mb-3">Các biến thể Button chuẩn (Primary, Secondary, Outline, Ghost, Danger):</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button variant="primary" icon={<Plus className="w-4 h-4" />}>
                 Primary Button
@@ -422,7 +426,7 @@ export const ComponentShowcase: React.FC = () => {
           </div>
 
           <div className="pt-4 border-t border-stay-border-subtle">
-            <p className="text-xs text-stay-text-secondary mb-3">Huy hiệu trạng thái (Badges) chuẩn StayConnect Poster:</p>
+            <p className=" text-stay-text-secondary mb-3">Huy hiệu trạng thái (Badges) chuẩn Roomi Poster:</p>
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="verified">Đã Xác Minh Chủ Nhà</Badge>
               <Badge variant="match">94% Tương Thích Gu Sống</Badge>
@@ -435,7 +439,7 @@ export const ComponentShowcase: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 2. Thanh Tìm Kiếm Đa Năng & Thanh Tìm Kiếm Hero (SearchBar & StayConnectSearchBar) */}
+      {/* 2. Thanh Tìm Kiếm Đa Năng & Thanh Tìm Kiếm Hero (SearchBar & RoomiSearchBar) */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -450,10 +454,10 @@ export const ComponentShowcase: React.FC = () => {
           {/* A. Universal SearchBar Component */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stay-text uppercase tracking-wider">
+              <span className=" font-bold text-stay-text uppercase tracking-wider">
                 A. Thanh tìm kiếm thông minh (SearchBar - Autocomplete, Shortcut Ctrl+K, Gợi ý & Lịch sử):
               </span>
-              <span className="text-xs text-stay-text-secondary hidden sm:inline">
+              <span className=" text-stay-text-secondary hidden sm:inline">
                 Nhấn phím <kbd className="px-1.5 py-0.5 rounded bg-stay-bg-app border border-stay-border text-[10px] font-mono">Ctrl + K</kbd> để tìm kiếm nhanh
               </span>
             </div>
@@ -487,7 +491,7 @@ export const ComponentShowcase: React.FC = () => {
             {/* Size & Variant Styles Comparison */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
               <div className="space-y-1.5">
-                <span className="text-xs font-semibold text-stay-text">Variant: Pill (Bo tròn mềm mại)</span>
+                <span className=" font-semibold text-stay-text">Variant: Pill (Bo tròn mềm mại)</span>
                 <SearchBar
                   size="md"
                   variant="pill"
@@ -500,7 +504,7 @@ export const ComponentShowcase: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <span className="text-xs font-semibold text-stay-text">Variant: Filled (Nền xám nhạt)</span>
+                <span className=" font-semibold text-stay-text">Variant: Filled (Nền xám nhạt)</span>
                 <SearchBar
                   size="md"
                   variant="filled"
@@ -510,7 +514,7 @@ export const ComponentShowcase: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <span className="text-xs font-semibold text-stay-text">Size: Small (Nhỏ gọn cho Header/Sidebar)</span>
+                <span className=" font-semibold text-stay-text">Size: Small (Nhỏ gọn cho Header/Sidebar)</span>
                 <SearchBar
                   size="sm"
                   placeholder="Tìm nhanh trong bảng..."
@@ -524,16 +528,16 @@ export const ComponentShowcase: React.FC = () => {
           {/* B. Domain Hero SearchBar */}
           <div className="pt-6 border-t border-stay-border-subtle space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stay-text uppercase tracking-wider">
-                B. Thanh tìm kiếm trung tâm Hero StayConnect (StayConnectSearchBar):
+              <span className=" font-bold text-stay-text uppercase tracking-wider">
+                B. Thanh tìm kiếm trung tâm Hero Roomi (RoomiSearchBar):
               </span>
               <Badge variant="verified">Chuẩn Figma Design</Badge>
             </div>
-            <p className="text-xs text-stay-text-secondary">
+            <p className=" text-stay-text-secondary">
               Tích hợp Tabs chuyển đổi loại tìm kiếm (Phòng trọ / Ở ghép), chọn khu vực, ngân sách, giới tính và bộ lọc thói quen sinh hoạt (Habits):
             </p>
 
-            <StayConnectSearchBar
+            <RoomiSearchBar
               onSearch={(filters: SearchFilters) => {
                 message.success(
                   `Đang lọc [${filters.tab === 'rooms' ? 'Phòng trọ' : 'Ở ghép'}] tại: ${filters.location || 'Tất cả'} • Ngân sách: ${filters.budget || 'Tự do'}`
@@ -556,7 +560,7 @@ export const ComponentShowcase: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-xs text-stay-text-secondary">
+          <p className=" text-stay-text-secondary">
             Component <code>MultiSelect</code> cho phép chọn nhiều giá trị với chip tag động, tìm kiếm trực quan, nút xóa nhanh (Clearable) và đồng bộ màu theme 100%:
           </p>
 
@@ -570,7 +574,7 @@ export const ComponentShowcase: React.FC = () => {
                 onChange={setSelectedHabits}
                 helperText="Chọn các thói quen bạn muốn bạn cùng phòng có để tối ưu tỷ lệ tương thích"
               />
-              <div className="text-xs text-stay-text-secondary pt-1">
+              <div className=" text-stay-text-secondary pt-1">
                 Đã chọn: <span className="font-semibold text-stay-primary">{selectedHabits.length} thói quen</span>
               </div>
             </div>
@@ -584,8 +588,70 @@ export const ComponentShowcase: React.FC = () => {
                 onChange={setSelectedAmenities}
                 helperText="Chỉ hiển thị các phòng có đủ tất cả các tiện ích đã chọn"
               />
-              <div className="text-xs text-stay-text-secondary pt-1">
+              <div className=" text-stay-text-secondary pt-1">
                 Đã chọn: <span className="font-semibold text-stay-primary">{selectedAmenities.length} tiện ích</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-stay-border-subtle space-y-3">
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-stay-text">
+                Select.Infinite (Phân trang 10 bản ghi + Cuộn tải thêm động)
+              </h4>
+              <Badge variant="verified">Phân Trang Động Mới</Badge>
+            </div>
+            <p className="text-xs text-stay-text-secondary">
+              Thay vì tải 100 bản ghi gây chậm ứng dụng, component <code>Select.Infinite</code> mặc định chỉ query 10 bản ghi/trang, tự động phát hiện cuộn đến đáy dropdown để nạp tiếp 10 bản ghi nữa và tích hợp tìm kiếm server-side có debounce:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Single Select Demo */}
+              <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border-subtle space-y-2">
+                <span className="text-xs font-semibold text-stay-text block">1. Chọn 1 bản ghi (Single-Select)</span>
+                <Select.Infinite
+                  useQueryHook={useRooms}
+                  label="Chọn phòng trọ (10 phòng/trang)"
+                  placeholder="Cuộn xuống để xem thêm hoặc nhập tìm kiếm..."
+                  pageSize={10}
+                  mapOption={(r) => ({
+                    label: `${r.name} • ${(r.listedPrice || 0).toLocaleString()} đ/tháng`,
+                    value: r.id,
+                  })}
+                  value={selectedDemoRoom}
+                  onChange={setSelectedDemoRoom}
+                  allowClear
+                  showEndMessage
+                />
+                {selectedDemoRoom && (
+                  <div className="text-xs text-stay-primary mt-1 font-medium">
+                    Đã chọn ID: {selectedDemoRoom}
+                  </div>
+                )}
+              </div>
+
+              {/* Multi Select Demo */}
+              <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border-subtle space-y-2">
+                <span className="text-xs font-semibold text-stay-text block">2. Chọn nhiều bản ghi (Multi-Select với tags)</span>
+                <Select.Infinite
+                  mode="multiple"
+                  useQueryHook={useTenants}
+                  label="Chọn nhiều khách thuê (10 khách/trang)"
+                  placeholder="Chọn một hoặc nhiều khách thuê..."
+                  pageSize={10}
+                  mapOption={(t) => ({
+                    label: `👤 ${t.fullName} (${t.phone || '—'})`,
+                    value: t.id,
+                  })}
+                  value={selectedDemoTenants}
+                  onChange={setSelectedDemoTenants}
+                  allowClear
+                  showEndMessage
+                />
+                {selectedDemoTenants.length > 0 && (
+                  <div className="text-xs text-stay-primary mt-1 font-medium">
+                    Đã chọn {selectedDemoTenants.length} khách thuê (IDs: {selectedDemoTenants.join(', ')})
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -641,10 +707,10 @@ export const ComponentShowcase: React.FC = () => {
           {/* Carousel Slide Showcase */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stay-text uppercase tracking-wider">
+              <span className=" font-bold text-stay-text uppercase tracking-wider">
                 Trình chiếu ảnh phòng thực tế (Carousel Slide):
               </span>
-              <span className="text-xs text-stay-text-secondary">Tự động chuyển slide • Có nút điều hướng</span>
+              <span className=" text-stay-text-secondary">Tự động chuyển slide • Có nút điều hướng</span>
             </div>
             <Carousel slides={carouselSlides} aspectRatio="banner" className="max-w-4xl mx-auto" />
           </div>
@@ -663,7 +729,7 @@ export const ComponentShowcase: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-stay-text-secondary mb-5">
+          <p className=" text-stay-text-secondary mb-5">
             Component <code>Form</code> chuẩn tích hợp layout responsive, xác thực dữ liệu (Validation Rules), thông báo lỗi và gắn kết trực tiếp với Ant Design tokens:
           </p>
 
@@ -740,7 +806,7 @@ export const ComponentShowcase: React.FC = () => {
               <FormRow cols={2}>
                 <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border-subtle flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-semibold text-stay-text block">Cho phép nuôi thú cưng</span>
+                    <span className=" font-semibold text-stay-text block">Cho phép nuôi thú cưng</span>
                     <span className="text-[11px] text-stay-text-secondary">Chó/mèo/thú cảnh trong phòng</span>
                   </div>
                   <Switch defaultChecked={false} />
@@ -748,7 +814,7 @@ export const ComponentShowcase: React.FC = () => {
 
                 <div className="p-3.5 rounded-xl bg-stay-bg-app border border-stay-border-subtle flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-semibold text-stay-text block">Yêu cầu tuyệt đối không hút thuốc</span>
+                    <span className=" font-semibold text-stay-text block">Yêu cầu tuyệt đối không hút thuốc</span>
                     <span className="text-[11px] text-stay-text-secondary">Bảo đảm không gian trong lành</span>
                   </div>
                   <Checkbox defaultChecked={true} label="Bắt buộc" />
@@ -780,7 +846,7 @@ export const ComponentShowcase: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-xs text-stay-text-secondary mb-2">
+          <p className=" text-stay-text-secondary mb-2">
             Component <code>Collapse</code> / <code>Accordion</code> mở rộng nội dung mượt mà, hỗ trợ icon tùy biến, thẻ huy hiệu đính kèm và chế độ card riêng biệt:
           </p>
 
@@ -800,7 +866,7 @@ export const ComponentShowcase: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-xs text-stay-text-secondary">
+          <p className=" text-stay-text-secondary">
             Thanh bên (Sidebar) thu gọn / mở rộng mượt mà, hỗ trợ menu lồng nhau, trạng thái Active highlight và slot Header/Footer linh hoạt:
           </p>
 
@@ -817,7 +883,7 @@ export const ComponentShowcase: React.FC = () => {
                     </span>
                     {!sidebarCollapsed && (
                       <div>
-                        <span className="font-bold text-xs text-stay-text block">StayConnect OS</span>
+                        <span className="font-bold  text-stay-text block">Roomi OS</span>
                         <span className="text-[10px] text-stay-secondary font-medium">Phiên bản 2.0</span>
                       </div>
                     )}
@@ -839,11 +905,11 @@ export const ComponentShowcase: React.FC = () => {
                 footer={
                   !sidebarCollapsed && (
                     <div className="p-2 bg-stay-bg-app rounded-xl border border-stay-border-subtle flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-stay-primary-subtle text-stay-primary font-bold flex items-center justify-center text-xs">
+                      <span className="w-7 h-7 rounded-full bg-stay-primary-subtle text-stay-primary font-bold flex items-center justify-center ">
                         QC
                       </span>
                       <div className="text-left overflow-hidden">
-                        <span className="text-xs font-semibold text-stay-text block truncate">Trần Quang Chiến</span>
+                        <span className=" font-semibold text-stay-text block truncate">Trần Quang Chiến</span>
                         <span className="text-[10px] text-stay-secondary font-medium">Administrator</span>
                       </div>
                     </div>
@@ -855,7 +921,7 @@ export const ComponentShowcase: React.FC = () => {
             {/* Menu Variants Demo */}
             <div className="lg:col-span-2 space-y-4">
               <div className="p-5 rounded-2xl bg-stay-bg-app border border-stay-border-subtle space-y-3">
-                <span className="text-xs font-bold text-stay-text block uppercase tracking-wider">
+                <span className=" font-bold text-stay-text block uppercase tracking-wider">
                   Menu ngang (Horizontal Mode) & Menu dạng thẻ (Card/Pills Variant):
                 </span>
                 <Menu
@@ -873,10 +939,10 @@ export const ComponentShowcase: React.FC = () => {
               </div>
 
               <div className="p-4 rounded-2xl bg-stay-card-bg border border-stay-border space-y-2">
-                <span className="text-xs font-semibold text-stay-text block">
+                <span className=" font-semibold text-stay-text block">
                   Trạng thái mục đang chọn:
                 </span>
-                <p className="text-xs text-stay-text-secondary">
+                <p className=" text-stay-text-secondary">
                   Key đang chọn: <span className="font-mono font-bold text-stay-primary px-2 py-0.5 rounded bg-stay-primary-subtle border border-stay-border-subtle">{menuSelectedKey}</span>
                 </p>
               </div>
@@ -920,7 +986,7 @@ export const ComponentShowcase: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <p className="text-xs text-stay-text-secondary mb-2">Variant: Pills (Viên thuốc hiện đại):</p>
+            <p className=" text-stay-text-secondary mb-2">Variant: Pills (Viên thuốc hiện đại):</p>
             <Tabs
               variant="pills"
               items={[
@@ -933,7 +999,7 @@ export const ComponentShowcase: React.FC = () => {
           </div>
 
           <div className="pt-4 border-t border-stay-border-subtle">
-            <p className="text-xs text-stay-text-secondary mb-2">Variant: Line / Bordered chuẩn:</p>
+            <p className=" text-stay-text-secondary mb-2">Variant: Line / Bordered chuẩn:</p>
             <Tabs
               variant="line"
               items={[
@@ -951,7 +1017,7 @@ export const ComponentShowcase: React.FC = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>10. Bảng Dữ Liệu (Data Table) & Phân Trang (Pagination)</CardTitle>
-            <span className="text-xs text-stay-text-secondary font-semibold">5 bản ghi hiển thị</span>
+            <span className=" text-stay-text-secondary font-semibold">5 bản ghi hiển thị</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -962,7 +1028,7 @@ export const ComponentShowcase: React.FC = () => {
             pagination={false}
           />
           <div className="pt-2 border-t border-stay-border-subtle flex items-center justify-between">
-            <span className="text-xs text-stay-text-secondary">Demo component Pagination độc lập cho Grid thẻ:</span>
+            <span className=" text-stay-text-secondary">Demo component Pagination độc lập cho Grid thẻ:</span>
             <Pagination current={currentPage} total={50} pageSize={10} onChange={setCurrentPage} />
           </div>
         </CardContent>
@@ -976,7 +1042,7 @@ export const ComponentShowcase: React.FC = () => {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider mb-2">
+              <p className=" font-semibold text-stay-text-secondary uppercase tracking-wider mb-2">
                 Tải lên ảnh phòng trọ hoặc CCCD (Upload.Dragger):
               </p>
               <Upload.Dragger
@@ -990,7 +1056,7 @@ export const ComponentShowcase: React.FC = () => {
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider mb-2">
+              <p className=" font-semibold text-stay-text-secondary uppercase tracking-wider mb-2">
                 Minh họa trạng thái rỗng (Empty):
               </p>
               <div className="bg-stay-bg-app rounded-2xl border border-dashed border-stay-border p-4">
@@ -1012,7 +1078,7 @@ export const ComponentShowcase: React.FC = () => {
         <CardContent className="space-y-6">
           <div className="flex flex-wrap items-center gap-8">
             <div>
-              <p className="text-xs text-stay-text-secondary mb-2">StayConnect Spinners:</p>
+              <p className=" text-stay-text-secondary mb-2">Roomi Spinners:</p>
               <div className="flex items-center gap-4">
                 <Spinner size="sm" label="Đang tải dữ liệu..." />
                 <Spinner size="md" label="Đang tải dữ liệu..." />
@@ -1034,15 +1100,15 @@ export const ComponentShowcase: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pt-4 border-t border-stay-border-subtle">
             <div>
-              <p className="text-xs font-semibold text-stay-text-secondary mb-2">Skeleton Text:</p>
+              <p className=" font-semibold text-stay-text-secondary mb-2">Skeleton Text:</p>
               <SkeletonText lines={4} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-stay-text-secondary mb-2">Skeleton Avatar:</p>
+              <p className=" font-semibold text-stay-text-secondary mb-2">Skeleton Avatar:</p>
               <Skeleton type="avatar" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-stay-text-secondary mb-2">Skeleton Card:</p>
+              <p className=" font-semibold text-stay-text-secondary mb-2">Skeleton Card:</p>
               <SkeletonCard />
             </div>
           </div>

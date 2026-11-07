@@ -19,8 +19,8 @@ public class BuildingResponse {
 
     private Long id;
     private String name;
-    private String province;
-    private String ward;
+    private Integer provinceId;
+    private Integer wardId;
     private String addressDetail;
     private Integer numFloors;
     private String generalRules;
@@ -44,8 +44,8 @@ public class BuildingResponse {
         return BuildingResponse.builder()
                 .id(building.getId())
                 .name(building.getName())
-                .province(building.getProvince())
-                .ward(building.getWard())
+                .provinceId(building.getProvinceId())
+                .wardId(building.getWardId())
                 .addressDetail(building.getAddressDetail())
                 .numFloors(building.getNumFloors())
                 .generalRules(building.getGeneralRules())

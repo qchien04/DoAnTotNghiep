@@ -62,22 +62,20 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         <button
           type="button"
           onClick={() => onSearchModeChange('ROOMMATE')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-            searchMode === 'ROOMMATE'
-              ? 'bg-stay-primary text-white'
-              : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
-          }`}
+          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${searchMode === 'ROOMMATE'
+            ? 'bg-stay-primary text-white'
+            : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
+            }`}
         >
           Tìm người ở ghép
         </button>
         <button
           type="button"
           onClick={() => onSearchModeChange('WHOLE_ROOM')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-            searchMode === 'WHOLE_ROOM'
-              ? 'bg-stay-primary text-white'
-              : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
-          }`}
+          className={`px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer transition-colors ${searchMode === 'WHOLE_ROOM'
+            ? 'bg-stay-primary text-white'
+            : 'text-stay-text-secondary hover:text-stay-text hover:bg-stay-bg-app'
+            }`}
         >
           Tìm phòng trọ nguyên căn
         </button>
@@ -86,7 +84,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       {/* Row 1: Keyword, District, Post Type, Price Range */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div>
-          <label className="text-xs font-semibold text-stay-text block mb-1.5">
+          <label className="text-[13.5px] font-semibold text-stay-text block mb-1.5">
             Khu vực / Tuyến đường / Trường ĐH
           </label>
           <Input
@@ -95,11 +93,12 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             value={keyword}
             onChange={(e) => onKeywordChange(e.target.value)}
             allowClear
+            className="h-[40px] rounded-[8px]"
           />
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-stay-text block mb-1.5">
+          <label className=" font-semibold text-stay-text block mb-1.5">
             Quận / Huyện
           </label>
           <Select
@@ -123,7 +122,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-stay-text block mb-1.5">
+          <label className=" font-semibold text-stay-text block mb-1.5">
             Loại tin đăng
           </label>
           <Select
@@ -139,7 +138,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         </div>
 
         <div>
-          <div className="flex justify-between text-xs text-stay-text font-semibold mb-1">
+          <div className="flex justify-between  text-stay-text font-semibold mb-1">
             <span>Khoảng giá share:</span>
             <span className="text-stay-primary">
               {(priceRange[0] / 1000000).toFixed(1)} - {(priceRange[1] / 1000000).toFixed(1)} tr
@@ -158,8 +157,8 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
 
       {/* Row 2: Lifestyle Filters (UC11) */}
       <div className="pt-3 border-t border-stay-border">
-        <label className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2.5">
-          Tiêu chí lối sống & sinh hoạt:
+        <label className=" font-semibold text-stay-text-secondary uppercase tracking-wider block mb-2.5">
+          Tiêu chí sinh hoạt & sinh hoạt:
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -168,7 +167,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             <Select
               value={genderFilter}
               onChange={onGenderFilterChange}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Tất cả giới tính', value: 'ALL' },
                 { label: 'Chỉ tìm Nam', value: 'MALE' },
@@ -186,7 +185,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 else if (val === 'NO_SMOKE') onNoSmokingFilterChange(true);
                 else onNoSmokingFilterChange(false);
               }}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Không yêu cầu', value: 'ALL' },
                 { label: 'Không hút thuốc', value: 'NO_SMOKE' },
@@ -200,7 +199,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             <Select
               value={sleepTimeFilter}
               onChange={onSleepTimeFilterChange}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Tất cả thói quen', value: 'ALL' },
                 { label: 'Đi ngủ trước 24h', value: 'BEFORE_24H' },
@@ -218,7 +217,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 else if (val === 'NO_PET') onNoPetFilterChange(true);
                 else onNoPetFilterChange(false);
               }}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Không yêu cầu', value: 'ALL' },
                 { label: 'Không nuôi thú cưng', value: 'NO_PET' },
@@ -236,7 +235,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 else if (val === 'COOK') onCookingFilterChange(true);
                 else onCookingFilterChange(false);
               }}
-              className="w-full text-xs"
+              className="w-full "
               options={[
                 { label: 'Không yêu cầu', value: 'ALL' },
                 { label: 'Thường xuyên nấu ăn', value: 'COOK' },
@@ -248,30 +247,30 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       </div>
 
       {priceError && (
-        <div className="p-3 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-xs">
+        <div className="p-3 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 ">
           {priceError}
         </div>
       )}
 
       {/* Action Footer */}
       <div className="flex items-center justify-between pt-2">
-        <span className="text-xs text-stay-text-secondary">
-          Tìm thấy <strong>{totalResults}</strong> bài đăng phù hợp
+        <span className="text-[14px] text-stay-text-secondary">
+          Tìm thấy <strong className="text-stay-text">{totalResults}</strong> bài đăng phù hợp
         </span>
 
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            size="sm"
-            icon={<RotateCcw className="w-3.5 h-3.5" />}
+            className="h-[40px] rounded-[8px] border-[#D7D7DB] dark:border-stay-border text-stay-text hover:text-stay-primary font-medium"
+            icon={<RotateCcw className="w-4 h-4 text-stay-text-secondary" />}
             onClick={onReset}
           >
             Đặt lại bộ lọc
           </Button>
           <Button
             variant="primary"
-            size="sm"
-            icon={<Check className="w-3.5 h-3.5" />}
+            className="h-[40px] rounded-[8px] font-medium"
+            icon={<Check className="w-4 h-4" />}
             onClick={onApply}
           >
             Áp dụng bộ lọc

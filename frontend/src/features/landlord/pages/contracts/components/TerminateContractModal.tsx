@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form } from '@/shared/components';
-import { InputNumber, message, Tooltip } from 'antd';
-import { HelpCircle } from 'lucide-react';
+import { InputNumber, Tooltip } from 'antd';
+import { HelpCircle, FileText } from 'lucide-react';
 import { RentalContract, TerminateContractDto } from '@/shared/types/landlord';
 
 interface TerminateContractModalProps {
@@ -22,51 +22,57 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
   const [form] = Form.useForm();
   const [calculatedRefund, setCalculatedRefund] = useState<number | null>(null);
 
+  // Chỉ lấy các dịch vụ áp dụng công tơ (METER_INDEX) trong hợp đồng
+  const meterServices = (contract?.services || []).filter(
+    (s) => s.billingMethod === 'METER_INDEX'
+  );
+
   const calculateRefund = (
     ctr: RentalContract,
-    finalElec: number,
-    finalWater: number,
+    readings: Record<string, number>,
     damages: number
   ) => {
-    const elecService = ctr.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'));
-    const waterService = ctr.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'));
-    const initElec = elecService?.lastIndex ?? 0;
-    const initWater = waterService?.lastIndex ?? 0;
-    const elecPrice = Number(elecService?.appliedUnitPrice || 3800);
-    const waterPrice = Number(waterService?.appliedUnitPrice || 30000);
-    const elecDiff = Math.max(0, finalElec - initElec);
-    const waterDiff = Math.max(0, finalWater - initWater);
-    const utilityCost = elecDiff * elecPrice + waterDiff * waterPrice;
-    const refund = ctr.depositAmount - utilityCost - damages;
+    let totalUtilityCost = 0;
+    (ctr.services || []).forEach((s) => {
+      if (s.billingMethod === 'METER_INDEX') {
+        const sKey = String(s.id);
+        const finalVal = Number(readings?.[sKey] ?? s.lastIndex ?? 0);
+        const initVal = Number(s.lastIndex ?? 0);
+        const consumed = Math.max(0, finalVal - initVal);
+        const price = Number(s.appliedUnitPrice || 0);
+        totalUtilityCost += consumed * price;
+      }
+    });
+
+    const refund = (ctr.depositAmount || 0) - totalUtilityCost - damages;
     setCalculatedRefund(refund);
   };
 
   useEffect(() => {
     if (open && contract) {
       form.resetFields();
-      const elecService = contract.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'));
-      const waterService = contract.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'));
-      const initElec = elecService?.lastIndex ?? 0;
-      const initWater = waterService?.lastIndex ?? 0;
+      const initialMeterReadings: Record<string, number> = {};
+      (contract.services || []).forEach((s) => {
+        if (s.billingMethod === 'METER_INDEX') {
+          initialMeterReadings[String(s.id)] = s.lastIndex ?? 0;
+        }
+      });
 
       form.setFieldsValue({
-        finalElectricIndex: initElec,
-        finalWaterIndex: initWater,
+        meterReadings: initialMeterReadings,
         repairDoorFee: 0,
         cardFee: 0,
       });
 
-      calculateRefund(contract, initElec, initWater, 0);
+      calculateRefund(contract, initialMeterReadings, 0);
     }
   }, [open, contract]);
 
   const handleValuesChange = (_: any, allValues: any) => {
     if (!contract) return;
-    const elec = Number(allValues.finalElectricIndex || 0);
-    const water = Number(allValues.finalWaterIndex || 0);
     const damage =
       Number(allValues.repairDoorFee || 0) + Number(allValues.cardFee || 0);
-    calculateRefund(contract, elec, water, damage);
+    calculateRefund(contract, allValues.meterReadings || {}, damage);
   };
 
   const handleFinish = async () => {
@@ -74,22 +80,34 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
     try {
       const values = await form.validateFields();
       const damageTotal = (values.repairDoorFee || 0) + (values.cardFee || 0);
+
+      const readingsPayload = meterServices.map((s) => {
+        const sKey = String(s.id);
+        const finalVal = Number(values.meterReadings?.[sKey] ?? s.lastIndex ?? 0);
+        return {
+          contractServiceId: Number(s.id),
+          finalIndex: finalVal,
+        };
+      });
+
       await onSubmit(contract.id, {
-        finalElectricIndex: values.finalElectricIndex,
-        finalWaterIndex: values.finalWaterIndex,
+        meterReadings: readingsPayload,
         damageCost: damageTotal,
         damageNote: 'Sửa chữa hỏng hóc & Mất thẻ từ/chìa khóa',
       });
-    } catch (err: any) {
-      if (err?.message) {
-        message.error(err.message);
-      }
+    } catch {
+      // Handled in mutation hook
     }
   };
 
   return (
     <Modal
-      title="Thanh lý hợp đồng"
+      title={
+        <div className="flex items-center gap-2">
+          <FileText className="w-5 h-5 text-rose-500" />
+          <span>Thanh lý hợp đồng #{contract?.id}</span>
+        </div>
+      }
       open={open}
       onOk={handleFinish}
       onCancel={onCancel}
@@ -104,117 +122,120 @@ export const TerminateContractModal: React.FC<TerminateContractModalProps> = ({
         className="mt-4 space-y-4"
         onValuesChange={handleValuesChange}
       >
-        {/* Banner tóm tắt hợp đồng */}
-        <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border flex items-center justify-between">
-          <div>
-            <span className="text-xs text-stay-text-secondary uppercase font-semibold">Hợp đồng:</span>
-            <p className="font-bold text-stay-text text-base">
-              {`HĐ #${contract?.id}`}
-            </p>
-            <span className="text-xs text-stay-text-secondary">
-              Phòng: <strong className="text-stay-text">{contract?.roomName}</strong> | Khách: <strong className="text-stay-text">{contract?.representativeTenantName}</strong>
-            </span>
-          </div>
-          <div className="text-right">
-            <span className="text-xs text-stay-text-secondary uppercase font-semibold">Tiền cọc ban đầu:</span>
-            <p className="font-bold text-stay-primary text-base">
-              {(contract?.depositAmount ?? 0).toLocaleString()} VNĐ
-            </p>
+        {/* Tóm tắt hợp đồng */}
+        <div className="bg-stay-bg-app/40 border border-stay-border rounded-xl p-4 text-[14px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-8">
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Hợp đồng:</span>
+              <span className="text-stay-text font-semibold text-[14px]">{`HĐ #${contract?.id}`}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Tiền cọc ban đầu:</span>
+              <span className="text-stay-text font-semibold text-[14px]">{(contract?.depositAmount ?? 0).toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Phòng thuê:</span>
+              <span className="text-stay-text font-medium text-[14px]">{contract?.roomName || '—'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-stay-text-secondary text-[13px] w-32 shrink-0">Khách đại diện:</span>
+              <span className="text-stay-text font-medium text-[14px]">{contract?.representativeTenantName || '—'}</span>
+            </div>
           </div>
         </div>
 
         {/* Khối chỉ số công tơ chốt */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Chỉ số tiêu thụ điện nước chốt ngày bàn giao
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        <div className="space-y-3 pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block">
+            1. Chỉ số tiêu thụ các dịch vụ tính theo công tơ (METER_INDEX)
+          </span>
+          {meterServices.length === 0 ? (
+            <p className="text-stay-text-secondary italic text-sm">
+              Hợp đồng này không có dịch vụ nào tính theo công tơ (chỉ có dịch vụ cố định / theo đầu người).
+            </p>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Form.Item
-                label={
-                  <span className="text-stay-text font-medium text-xs">
-                    Chỉ số điện chốt cuối (kWh) (Đầu kỳ:{' '}
-                    {contract?.services?.find((s) => (s.serviceName || '').toLowerCase().includes('điện'))?.lastIndex ?? 0})
-                  </span>
-                }
-                name="finalElectricIndex"
-                className="mb-0"
-                rules={[{ required: true, message: 'Nhập chỉ số điện chốt cuối' }]}
-              >
-                <InputNumber min={0} className="w-full h-10 font-mono font-medium" />
-              </Form.Item>
-
-              <Form.Item
-                label={
-                  <span className="text-stay-text font-medium text-xs">
-                    Chỉ số nước chốt cuối (m³) (Đầu kỳ:{' '}
-                    {contract?.services?.find((s) => (s.serviceName || '').toLowerCase().includes('nước'))?.lastIndex ?? 0})
-                  </span>
-                }
-                name="finalWaterIndex"
-                className="mb-0"
-                rules={[{ required: true, message: 'Nhập chỉ số nước chốt cuối' }]}
-              >
-                <InputNumber min={0} className="w-full h-10 font-mono font-medium" />
-              </Form.Item>
+              {meterServices.map((service) => {
+                const sKey = String(service.id);
+                const title = service.serviceName || 'Dịch vụ';
+                return (
+                  <Form.Item
+                    key={sKey}
+                    label={
+                      <span className="text-stay-text font-medium">
+                        {title} (Đầu kỳ: {service.lastIndex ?? 0} {service.unit || ''})
+                      </span>
+                    }
+                    name={['meterReadings', sKey]}
+                    className="mb-0"
+                    rules={[
+                      {
+                        required: true,
+                        message: `Nhập chỉ số chốt cho ${title}`,
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      min={service.lastIndex ?? 0}
+                      className="w-full h-10 font-mono font-medium"
+                    />
+                  </Form.Item>
+                );
+              })}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Khối khấu trừ hư hại */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
+        <div className="space-y-3 pt-3.5 border-t border-stay-border-subtle">
+          <span className="text-[13px] font-semibold text-stay-text-secondary block">
             2. Khấu trừ hư hại / bồi hoàn tài sản
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Chi phí sửa chữa hỏng hóc (VNĐ)</span>}
-                name="repairDoorFee"
-                className="mb-0"
-              >
-                <InputNumber
-                  min={0}
-                  step={50000}
-                  formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
-                  className="w-full h-10 font-medium"
-                />
-              </Form.Item>
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Form.Item
+              label={<span className="text-stay-text font-medium text-[14px]">Chi phí sửa chữa hỏng hóc (VNĐ)</span>}
+              name="repairDoorFee"
+              className="mb-0"
+            >
+              <InputNumber
+                min={0}
+                step={50000}
+                formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
+                className="w-full h-10 font-medium"
+              />
+            </Form.Item>
 
-              <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Phí mất thẻ từ / chìa khóa (VNĐ)</span>}
-                name="cardFee"
-                className="mb-0"
-              >
-                <InputNumber
-                  min={0}
-                  step={50000}
-                  formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
-                  className="w-full h-10 font-medium"
-                />
-              </Form.Item>
-            </div>
+            <Form.Item
+              label={<span className="text-stay-text font-medium text-[14px]">Phí mất thẻ từ / chìa khóa (VNĐ)</span>}
+              name="cardFee"
+              className="mb-0"
+            >
+              <InputNumber
+                min={0}
+                step={50000}
+                formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(val) => (val ? Number(val.replace(/,/g, '')) : 0) as any}
+                className="w-full h-10 font-medium"
+              />
+            </Form.Item>
           </div>
         </div>
 
         {/* Card kết quả hoàn trả cọc */}
         {calculatedRefund !== null && (
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">
-                  Số tiền hoàn trả khách thuê:
-                </span>
-                <Tooltip title="Số tiền hoàn trả = Tiền cọc gốc - Chi phí điện nước ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản">
-                  <HelpCircle className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 hover:opacity-80 cursor-pointer inline" />
-                </Tooltip>
-              </div>
-              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                {calculatedRefund.toLocaleString()} VNĐ
+          <div className="pt-3.5 border-t border-stay-border-subtle flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-stay-text text-[14px]">
+                Số tiền hoàn trả khách thuê:
               </span>
+              <Tooltip title="Số tiền hoàn trả = Tiền cọc gốc - Chi phí dịch vụ công tơ ngày bàn giao cuối - Tổng khấu trừ hư hại tài sản">
+                <HelpCircle className="w-3.5 h-3.5 text-stay-text-muted hover:text-stay-primary cursor-pointer inline" />
+              </Tooltip>
             </div>
+            <span className="text-[16px] font-bold text-stay-text">
+              {calculatedRefund.toLocaleString()} VNĐ
+            </span>
           </div>
         )}
       </Form>

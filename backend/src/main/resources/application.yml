@@ -22,7 +22,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -32,7 +32,7 @@ spring:
 
   # Cấu hình Flyway Database Migration
   flyway:
-    enabled: true
+    enabled: false
     baseline-on-migrate: true
     locations: classpath:db/migration
     validate-on-migrate: true
@@ -54,6 +54,12 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
+logging:
+  level:
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+
 # Cấu hình JWT (Access Token + Refresh Token)
 
 jwt:
@@ -74,6 +80,8 @@ springdoc:
 
 # Cấu hình thông tin Đồ Án Tốt Nghiệp
 app:
+  upload:
+    dir: "./uploads"
   info:
     title: "Hệ Thống Quản Lý Nhà Trọ - Đồ Án Tốt Nghiệp"
     version: "1.0.0"

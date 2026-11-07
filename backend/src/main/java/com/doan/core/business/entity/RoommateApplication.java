@@ -1,5 +1,7 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.Gender;
+import com.doan.core.business.enums.RoommateApplicationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +17,6 @@ import lombok.*;
 @Table(name = "roommate_applications")
 public class RoommateApplication extends BaseEntity {
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private RoommatePost post;
@@ -27,12 +28,9 @@ public class RoommateApplication extends BaseEntity {
     @Column(name = "intro_message", columnDefinition = "TEXT")
     private String introMessage;
 
-    // Câu trả lời khảo sát lối sống của ứng viên (UC14)
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 20)
-    private String gender; // MALE, FEMALE
-
-    @Column(name = "sleep_time", length = 50)
-    private String sleepTime; // Khoảng 23h30 - 6h30
+    private Gender gender;
 
     @Column(name = "is_smoking")
     @Builder.Default
@@ -42,16 +40,10 @@ public class RoommateApplication extends BaseEntity {
     @Builder.Default
     private Boolean isPet = false;
 
-    @Column(name = "cooking_habit", length = 50)
-    private String cookingHabit;
-
-    @Column(name = "guest_habit", length = 50)
-    private String guestHabit;
-
-    // Điểm tương thích lối sống tính tự động (UC14: 94%, 72%...)
+    // Điểm tương thích sinh hoạt tính tự động (UC14: 94%, 72%...)
     @Column(name = "compatibility_score")
     @Builder.Default
-    private Integer compatibilityScore = 85;
+    private Integer compatibilityScore = 0;
 
     @Column(name = "lifestyle_vector", length = 255)
     private String lifestyleVector;
@@ -60,9 +52,10 @@ public class RoommateApplication extends BaseEntity {
     @Builder.Default
     private Boolean isCustomized = false;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "PENDING"; // PENDING, APPROVED, REJECTED
+    private RoommateApplicationStatus status = RoommateApplicationStatus.PENDING; // PENDING, APPROVED, REJECTED
 
     @Column(name = "reject_reason", columnDefinition = "TEXT")
     private String rejectReason;

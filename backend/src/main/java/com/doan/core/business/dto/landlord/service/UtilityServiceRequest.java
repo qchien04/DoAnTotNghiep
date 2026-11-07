@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.landlord.service;
 
+import com.doan.core.business.enums.BillingMethod;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -27,9 +28,9 @@ public class UtilityServiceRequest {
     @Schema(description = "Đơn giá (VNĐ)", example = "3800")
     private Long unitPrice;
 
-    @NotBlank(message = "Hình thức thu phí không được để trống")
+    @NotNull(message = "Hình thức thu phí không được để trống")
     @Schema(description = "Hình thức thu phí (METER_INDEX, FIXED_PER_ROOM, FIXED_PER_PERSON, FIXED_PER_UNIT)", example = "METER_INDEX")
-    private String billingMethod;
+    private BillingMethod billingMethod;
 
     @Schema(description = "Phạm vi áp dụng (Tất cả, Tòa nhà cụ thể)", example = "ALL")
     private String scope;

@@ -1,101 +1,56 @@
 import React from 'react';
-import { Eye } from 'lucide-react';
-import { Table, Button } from '@/shared/components';
+import { Eye, Send, DollarSign, XCircle } from 'lucide-react';
+import { Table, StatusBadge } from '@/shared/components';
 import { Tooltip } from 'antd';
-import { Bill, BillStatus } from '@/shared/types/landlord';
+import { InvoiceResponse, InvoiceStatus } from '@/shared/types/landlord';
+import { PageResponse } from '@/shared/types/api';
 
 interface BillTableProps {
-  bills: Bill[];
+  pageInfo?: PageResponse<InvoiceResponse>;
   isLoading: boolean;
-  onOpenDetail: (bill: Bill) => void;
-  onOpenPayment: (bill: Bill) => void;
-  onOpenCancel: (bill: Bill) => void;
-  onPublish?: (bill: Bill) => void;
+  onPageChange?: (page: number, size: number) => void;
+  onOpenDetail: (bill: InvoiceResponse) => void;
+  onOpenPayment: (bill: InvoiceResponse) => void;
+  onOpenCancel: (bill: InvoiceResponse) => void;
+  onPublish?: (bill: InvoiceResponse) => void;
 }
 
 export const BillTable: React.FC<BillTableProps> = ({
-  bills,
+  pageInfo,
   isLoading,
+  onPageChange,
   onOpenDetail,
   onOpenPayment,
   onOpenCancel,
   onPublish,
 }) => {
-  const renderStatus = (st: BillStatus) => {
-    switch (st) {
-      case 'DRAFT':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            Bản nháp
-          </span>
-        );
-      case 'PAID':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Đã thanh toán
-          </span>
-        );
-      case 'PENDING':
-      case 'UNPAID':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Chờ thanh toán
-          </span>
-        );
-      case 'PARTIALLY_PAID':
-      case 'PARTIAL':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Trả một phần
-          </span>
-        );
-      case 'OVERDUE':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            Quá hạn
-          </span>
-        );
-      case 'CANCELLED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Đã hủy
-          </span>
-        );
-      default:
-        return <span className="text-xs text-stay-text-muted">{st}</span>;
-    }
-  };
+  const renderStatus = (st: InvoiceStatus) => <StatusBadge status={st} />;
 
   const columns = [
     {
-      title: 'ID',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: Bill) => (
-        <span
-          onClick={() => onOpenDetail(r)}
-          className="font-mono text-xs font-semibold text-stay-text cursor-pointer hover:text-stay-primary hover:underline"
-        >
-          #{r.id}
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
         </span>
       ),
     },
     {
       title: 'Phòng',
       key: 'roomName',
-      render: (_: any, r: Bill) => (
+      ellipsis: { showTitle: true },
+      render: (_: any, r: InvoiceResponse) => (
         <div>
-          <span className="font-medium text-xs text-stay-text block">
-            {r.roomName || '---'}
+          <span
+            onClick={() => onOpenDetail(r)}
+            className="font-medium text-[14px] text-stay-text block cursor-pointer hover:text-stay-primary hover:underline"
+          >
+            {r.roomName || '—'}
           </span>
           {r.buildingName && (
-            <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
+            <span className="text-[12px] text-stay-text-muted block truncate">{r.buildingName}</span>
           )}
         </div>
       ),
@@ -103,13 +58,15 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Khách đại diện',
       key: 'representativeTenantName',
-      render: (_: any, r: Bill) => (
+      width: 180,
+      ellipsis: { showTitle: true },
+      render: (_: any, r: InvoiceResponse) => (
         <div>
-          <span className="text-sm font-medium text-stay-text">
-            {r.representativeTenantName || '---'}
+          <span className="text-[14px] font-medium text-stay-text block truncate">
+            {r.representativeTenantName || '—'}
           </span>
           {r.representativeTenantPhone && (
-            <span className="text-xs text-stay-text-secondary block">
+            <span className="text-[12px] text-stay-text-secondary block truncate">
               {r.representativeTenantPhone}
             </span>
           )}
@@ -119,8 +76,10 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Kỳ cước',
       key: 'billingPeriod',
-      render: (_: any, r: Bill) => (
-        <span className="font-mono text-xs text-stay-text-secondary">
+      width: 120,
+      ellipsis: { showTitle: true },
+      render: (_: any, r: InvoiceResponse) => (
+        <span className="text-[14px] text-stay-text-secondary">
           {r.billingPeriod}
         </span>
       ),
@@ -128,13 +87,14 @@ export const BillTable: React.FC<BillTableProps> = ({
     {
       title: 'Tổng tiền',
       key: 'totalAmount',
-      render: (_: any, r: Bill) => (
+      width: 150,
+      render: (_: any, r: InvoiceResponse) => (
         <div>
-          <span className="font-medium text-stay-text text-sm">
+          <span className="font-semibold text-stay-text text-[14px]">
             {(r.totalAmount ?? 0).toLocaleString()} đ
           </span>
           {r.remainingAmount !== undefined && r.remainingAmount > 0 && r.status !== 'PAID' && (
-            <span className="text-[11px] text-amber-600 dark:text-amber-400 block">
+            <span className="text-[12px] text-stay-text block">
               Còn nợ: {r.remainingAmount.toLocaleString()} đ
             </span>
           )}
@@ -145,75 +105,82 @@ export const BillTable: React.FC<BillTableProps> = ({
       title: 'Hạn nộp',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      render: (val: string) => <span className="font-mono text-xs text-stay-text-secondary">{val || '---'}</span>,
+      width: 120,
+      ellipsis: { showTitle: true },
+      render: (val: string) => <span className="text-[14px] text-stay-text-secondary">{val || '—'}</span>,
     },
     {
       title: 'Trạng thái',
       key: 'status',
-      render: (_: any, r: Bill) => renderStatus(r.status),
+      width: 140,
+      ellipsis: { showTitle: true },
+      render: (_: any, r: InvoiceResponse) => renderStatus(r.status),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 170,
-      align: 'right' as const,
-      render: (_: any, r: Bill) => (
-        <div className="flex items-center justify-end gap-1">
+      width: 120,
+      fixed: 'right' as const,
+      render: (_: any, r: InvoiceResponse) => (
+        <div className="flex items-center justify-start gap-1.5">
           <Tooltip title="Xem chi tiết">
-            <Button
-              size="small"
-              type="text"
-              icon={<Eye className="w-3.5 h-3.5 text-stay-text-secondary hover:text-stay-text" />}
+            <button
+              type="button"
+              className="stay-action-btn"
               onClick={() => onOpenDetail(r)}
-            />
+            >
+              <Eye className="w-4 h-4" />
+            </button>
           </Tooltip>
 
           {r.status === 'DRAFT' && (
             <>
-              <Button
-                size="small"
-                type="primary"
-                onClick={() => onPublish && onPublish(r)}
-                className="text-xs bg-amber-600 hover:bg-amber-700 px-2 h-7 font-medium"
-              >
-                Ban hành
-              </Button>
-              <Button
-                size="small"
-                type="text"
-                danger
-                onClick={() => onOpenCancel(r)}
-                className="text-xs px-1.5"
-              >
-                Hủy
-              </Button>
+              <Tooltip title="Ban hành hóa đơn">
+                <button
+                  type="button"
+                  className="stay-action-btn"
+                  onClick={() => onPublish && onPublish(r)}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </Tooltip>
+              <Tooltip title="Hủy hóa đơn">
+                <button
+                  type="button"
+                  className="stay-action-btn"
+                  onClick={() => onOpenCancel(r)}
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </Tooltip>
             </>
           )}
 
-          {(r.status === 'PENDING' || r.status === 'UNPAID' || r.status === 'OVERDUE') && (
+          {(r.status === 'UNPAID' || r.status === 'PARTIALLY_PAID' || r.status === 'OVERDUE') && (
             <>
-              <Button
-                size="small"
-                type="text"
-                onClick={() => onOpenPayment(r)}
-                className="text-xs text-emerald-600 hover:text-emerald-700 font-medium px-1.5"
-              >
-                Thu tiền
-              </Button>
-              <Button
-                size="small"
-                type="text"
-                danger
-                onClick={() => onOpenCancel(r)}
-                className="text-xs px-1.5"
-              >
-                Hủy
-              </Button>
+              <Tooltip title="Xác nhận thu tiền">
+                <button
+                  type="button"
+                  className="stay-action-btn"
+                  onClick={() => onOpenPayment(r)}
+                >
+                  <DollarSign className="w-4 h-4" />
+                </button>
+              </Tooltip>
+              <Tooltip title="Hủy hóa đơn">
+                <button
+                  type="button"
+                  className="stay-action-btn"
+                  onClick={() => onOpenCancel(r)}
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </Tooltip>
             </>
           )}
 
           {r.status === 'PAID' && (
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Đã thu đủ</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold px-1">Đã thu đủ</span>
           )}
         </div>
       ),
@@ -221,15 +188,22 @@ export const BillTable: React.FC<BillTableProps> = ({
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
-      <Table
-        dataSource={bills}
-        columns={columns}
-        rowKey="id"
-        loading={isLoading}
-        pagination={{ pageSize: 10 }}
-        className="overflow-x-auto"
-      />
-    </div>
+    <Table
+      dataSource={pageInfo?.items ?? []}
+      columns={columns}
+      rowKey="id"
+      loading={isLoading}
+      pagination={{
+        current: (pageInfo?.page ?? 0) + 1,
+        pageSize: pageInfo?.size ?? 10,
+        total: pageInfo?.totalElements ?? 0,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50'],
+        showTotal: (total) => `Tổng ${total} hóa đơn`,
+        onChange: (page, pageSize) => onPageChange?.(page - 1, pageSize),
+      }}
+      scroll={{ x: 'max-content' }}
+      className="overflow-x-auto"
+    />
   );
 };

@@ -7,13 +7,13 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+import com.doan.core.business.enums.Gender;
+import com.doan.core.business.enums.TenantRoleInRoom;
+
 @Data
 @Schema(description = "Yêu cầu thêm mới hoặc cập nhật hồ sơ khách thuê")
 public class TenantRequest {
 
-    @NotNull(message = "Phòng ở không được để trống")
-    @Schema(description = "ID phòng thuê", example = "1")
-    private Long roomId;
 
     @NotBlank(message = "Họ và tên khách thuê không được để trống")
     @Schema(description = "Họ và tên", example = "Lê Văn Cường")
@@ -27,8 +27,8 @@ public class TenantRequest {
     @Schema(description = "Số CMND/CCCD", example = "001200009999")
     private String idCardNumber;
 
-    @Schema(description = "Giới tính (Nam, Nữ, Khác)", example = "Nam")
-    private String gender;
+    @Schema(description = "Giới tính (MALE, FEMALE, OTHER)", example = "MALE")
+    private Gender gender;
 
     @Schema(description = "Ngày sinh")
     private LocalDate dateOfBirth;
@@ -46,5 +46,5 @@ public class TenantRequest {
     private Boolean isRepresentative;
 
     @Schema(description = "Vai trò trong phòng (REPRESENTATIVE, MEMBER)", example = "MEMBER")
-    private String roleInRoom;
+    private TenantRoleInRoom roleInRoom;
 }

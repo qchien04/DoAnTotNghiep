@@ -21,20 +21,20 @@ export const GroupCompletedModal: React.FC<GroupCompletedModalProps> = ({
       width={580}
       title={<span className="text-base font-bold text-stay-text">Nhóm đã đủ thành viên (2/2)</span>}
     >
-      <div className="space-y-4 pt-2 text-xs">
+      <div className="space-y-4 pt-2 ">
         <p className="text-stay-text leading-relaxed">
           Nhóm phòng <strong>P102 - Tòa nhà Ánh Dương</strong> đã đủ 2/2 thành viên.
         </p>
 
-        <div className="p-3.5 bg-stay-bg-app border border-stay-border rounded-xl space-y-2">
-          <span className="font-bold text-stay-text block">Thông tin liên lạc thành viên:</span>
-          <div className="flex items-center justify-between text-stay-text">
+        <div className="space-y-2 pt-3 border-t border-stay-border-subtle">
+          <span className="font-bold text-stay-text text-sm block">Thông tin liên lạc thành viên:</span>
+          <div className="flex items-center justify-between text-stay-text text-sm">
             <span>1. Phạm Minh Đức (Chủ phòng)</span>
             <span className="font-semibold flex items-center gap-1">
               <Phone className="w-3.5 h-3.5 text-stay-primary" /> 0977888999
             </span>
           </div>
-          <div className="flex items-center justify-between text-stay-text">
+          <div className="flex items-center justify-between text-stay-text text-sm">
             <span>2. Nguyễn Văn Hùng (Thành viên mới)</span>
             <span className="font-semibold flex items-center gap-1">
               <Phone className="w-3.5 h-3.5 text-stay-primary" /> 0966555444

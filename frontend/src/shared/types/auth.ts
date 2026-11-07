@@ -1,5 +1,9 @@
 export type Role = 'ROLE_ADMIN' | 'ROLE_LANDLORD' | 'ROLE_TENANT' | 'ROLE_USER' | 'ROLE_STUDENT' | 'ROLE_TEACHER';
 
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+export type GenderPreference = 'MALE_ONLY' | 'FEMALE_ONLY' | 'ANY';
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED';
+
 export interface User {
   id: number;
   userCode?: string;
@@ -10,12 +14,16 @@ export interface User {
   avatarUrl?: string;
   idCardNumber?: string;
   dateOfBirth?: string;
-
-  gender?: string;
+  gender?: Gender | string;
+  genderPreference?: GenderPreference | string;
+  smokes?: boolean;
+  rejectsSmokers?: boolean;
+  hasPet?: boolean;
+  rejectsPets?: boolean;
   bio?: string;
   lifestyleVector?: string;
   role: Role;
-  status?: string;
+  status?: UserStatus | string;
   enabled: boolean;
   landlordVerified?: boolean;
   landlordVerificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED';

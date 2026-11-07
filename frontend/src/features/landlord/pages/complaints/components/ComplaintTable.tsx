@@ -1,75 +1,51 @@
 import React from 'react';
-import { Table, Button } from '@/shared/components';
+import { Eye } from 'lucide-react';
+import { Tooltip } from 'antd';
+import { Table, StatusBadge } from '@/shared/components';
 import { Complaint, ComplaintStatus } from '@/shared/types/landlord';
+import { PageResponse } from '@/shared/types/api';
+import { getComplaintIncidentTypeLabel } from '@/shared/utils';
 
 interface ComplaintTableProps {
-  complaints: Complaint[];
+  pageInfo?: PageResponse<Complaint>;
   isLoading: boolean;
+  onPageChange?: (page: number, size: number) => void;
   onOpenDetail: (complaint: Complaint) => void;
 }
 
 export const ComplaintTable: React.FC<ComplaintTableProps> = ({
-  complaints,
+  pageInfo,
   isLoading,
+  onPageChange,
   onOpenDetail,
 }) => {
-  const renderStatus = (st: ComplaintStatus) => {
-    switch (st) {
-      case 'NEW':
-      case 'PENDING':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Chờ tiếp nhận
-          </span>
-        );
-      case 'PROCESSING':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Đang xử lý
-          </span>
-        );
-      case 'RESOLVED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Đã xử lý
-          </span>
-        );
-      case 'REJECTED':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-stay-text-muted">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Từ chối
-          </span>
-        );
-      default:
-        return <span className="text-xs text-stay-text-muted">{st}</span>;
-    }
-  };
+  const renderStatus = (st: ComplaintStatus) => (
+    <StatusBadge status={st} label={st === 'PENDING' ? 'Chờ tiếp nhận' : undefined} />
+  );
 
   const columns = [
     {
-      title: 'ID',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: Complaint) => (
-        <span className="font-mono text-xs font-semibold text-stay-text">
-          #{r.id}
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
         </span>
       ),
     },
     {
       title: 'Phòng',
       key: 'roomName',
+      width: 140,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Complaint) => (
         <div>
-          <span className="font-medium text-xs text-stay-text block">
-            {r.roomName || '---'}
+          <span className="font-medium text-[14px] text-stay-text block truncate">
+            {r.roomName || '—'}
           </span>
           {r.buildingName && (
-            <span className="text-[11px] text-stay-text-muted block">{r.buildingName}</span>
+            <span className="text-[12px] text-stay-text-muted block truncate">{r.buildingName}</span>
           )}
         </div>
       ),
@@ -77,34 +53,30 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
     {
       title: 'Người gửi',
       key: 'tenantName',
+      width: 150,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Complaint) => (
-        <span className="font-medium text-sm text-stay-text">{r.tenantName || '---'}</span>
+        <span className="font-medium text-[14px] text-stay-text truncate block">{r.tenantName || '—'}</span>
       ),
     },
     {
       title: 'Loại sự cố',
       key: 'incidentType',
+      width: 140,
+      ellipsis: { showTitle: true },
       render: (_: any, r: Complaint) => {
-        const val = r.incidentType || '';
-        const label =
-          val === 'EQUIPMENT'
-            ? 'Thiết bị điện nước'
-            : val === 'SECURITY'
-            ? 'An ninh trật tự'
-            : val === 'NOISE'
-            ? 'Tiếng ồn'
-            : 'Khác';
-        return <span className="text-xs text-stay-text-secondary">{label}</span>;
+        return <span className="text-[14px] text-stay-text-secondary">{getComplaintIncidentTypeLabel(r.incidentType)}</span>;
       },
     },
     {
       title: 'Nội dung',
       dataIndex: 'title',
       key: 'title',
+      ellipsis: { showTitle: true },
       render: (val: string, r: Complaint) => (
         <div>
-          <p className="font-medium text-stay-text text-sm">{val}</p>
-          <p className="text-xs text-stay-text-secondary line-clamp-1">{r.content || ''}</p>
+          <p className="font-medium text-stay-text text-[14px] truncate">{val}</p>
+          <p className="text-[12px] text-stay-text-secondary truncate">{r.content || ''}</p>
         </div>
       ),
     },
@@ -113,45 +85,56 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 130,
-      render: (val: string) => <span className="font-mono text-xs text-stay-text-secondary">{val}</span>,
+      ellipsis: { showTitle: true },
+      render: (val: string) => <span className="text-[14px] text-stay-text-secondary">{val || '—'}</span>,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       width: 130,
+      ellipsis: { showTitle: true },
       render: (val: ComplaintStatus) => renderStatus(val),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 80,
-      align: 'right' as const,
+      width: 90,
+      fixed: 'right' as const,
       render: (_: any, r: Complaint) => (
-        <div className="flex items-center justify-end">
-          <Button
-            size="small"
-            type="text"
-            onClick={() => onOpenDetail(r)}
-            className="text-xs text-stay-primary hover:text-stay-primary-hover font-medium px-2"
-          >
-            Xử lý
-          </Button>
+        <div className="flex items-center justify-start">
+          <Tooltip title="Xem & Xử lý khiếu nại">
+            <button
+              type="button"
+              className="stay-action-btn"
+              onClick={() => onOpenDetail(r)}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </Tooltip>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="bg-stay-card-bg rounded-lg border border-stay-border overflow-hidden">
-      <Table
-        dataSource={complaints}
-        columns={columns}
-        rowKey="id"
-        loading={isLoading}
-        pagination={{ pageSize: 10 }}
-        className="overflow-x-auto"
-      />
-    </div>
+    <Table
+      dataSource={pageInfo?.items ?? []}
+      columns={columns}
+      rowKey="id"
+      loading={isLoading}
+      pagination={{
+        current: (pageInfo?.page ?? 0) + 1,
+        pageSize: pageInfo?.size ?? 10,
+        total: pageInfo?.totalElements ?? 0,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50'],
+        showTotal: (total) => `Tổng ${total} phản ánh`,
+        onChange: (page, pageSize) => onPageChange?.(page - 1, pageSize),
+      }}
+      scroll={{ x: 'max-content' }}
+      className="overflow-x-auto"
+    />
   );
 };
+

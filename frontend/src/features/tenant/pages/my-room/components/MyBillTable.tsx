@@ -1,63 +1,74 @@
 import React from 'react';
-import { Table, Button } from '@/shared/components';
-import { QrCode, Zap, Droplets } from 'lucide-react';
-import { Bill } from '@/shared/types/landlord';
+import { Table, StatusBadge } from '@/shared/components';
+import { Tooltip, message } from 'antd';
+import { QrCode, Eye, CheckCircle2 } from 'lucide-react';
+import { InvoiceResponse } from '@/shared/types/landlord';
+import { PageResponse } from '@/shared/types/api';
 
 interface MyBillTableProps {
-  bills: Bill[];
-  onOpenVietQR: (bill: Bill) => void;
+  pageInfo?: PageResponse<InvoiceResponse>;
+  bills?: InvoiceResponse[];
+  isLoading?: boolean;
+  onPageChange?: (page: number, size: number) => void;
+  onOpenVietQR: (bill: InvoiceResponse) => void;
 }
 
 export const MyBillTable: React.FC<MyBillTableProps> = ({
+  pageInfo,
   bills,
+  isLoading,
+  onPageChange,
   onOpenVietQR,
 }) => {
   const billColumns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: Bill) => (
-        <span className="font-semibold text-stay-text">#{r.id}</span>
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
       ),
     },
     {
       title: 'Kỳ cước tháng',
       dataIndex: 'billingMonth',
       key: 'billingMonth',
-      width: 130,
-      render: (val: string) => <span className="font-semibold text-stay-text">{val}</span>,
+      render: (val: string) => <span className="font-medium text-[14px] text-stay-text">{val}</span>,
     },
     {
-      title: 'Số điện tiêu thụ',
-      dataIndex: 'electricityUsage',
-      key: 'electricityUsage',
+      title: 'Tiền phòng',
+      dataIndex: 'roomRent',
+      key: 'roomRent',
       width: 130,
-      render: (val: number = 115) => (
-        <span className="text-xs text-stay-text flex items-center gap-1">
-          <Zap className="w-3.5 h-3.5 text-amber-600" /> {val} kWh
+      align: 'right' as const,
+      render: (val: number) => (
+        <span className="text-[14px] text-stay-text font-medium">
+          {(val ?? 0).toLocaleString()} đ
         </span>
       ),
     },
     {
-      title: 'Số nước tiêu thụ',
-      dataIndex: 'waterUsage',
-      key: 'waterUsage',
+      title: 'Tiền dịch vụ',
+      dataIndex: 'serviceAmount',
+      key: 'serviceAmount',
       width: 130,
-      render: (val: number = 9) => (
-        <span className="text-xs text-stay-text flex items-center gap-1">
-          <Droplets className="w-3.5 h-3.5 text-blue-600" /> {val} m³
+      align: 'right' as const,
+      render: (val: number) => (
+        <span className="text-[14px] text-stay-text font-medium">
+          {(val ?? 0).toLocaleString()} đ
         </span>
       ),
     },
     {
-      title: 'Tổng tiền (VNĐ)',
+      title: 'Tổng tiền',
       dataIndex: 'totalAmount',
       key: 'totalAmount',
       width: 150,
+      align: 'right' as const,
       render: (val: number) => (
-        <span className="font-bold text-stay-primary">
+        <span className="font-semibold text-[14px] text-stay-primary">
           {val?.toLocaleString()} đ
         </span>
       ),
@@ -67,70 +78,94 @@ export const MyBillTable: React.FC<MyBillTableProps> = ({
       dataIndex: 'dueDate',
       key: 'dueDate',
       width: 120,
-      render: (d: string) => <span className="text-xs text-stay-text-secondary">{d || '05/11/2026'}</span>,
+      render: (d: string) => <span className="text-stay-text-secondary">{d || '05/11/2026'}</span>,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 130,
-      render: (st: string) => {
-        if (st === 'PAID') {
-          return <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Đã thanh toán</span>;
-        }
-        if (st === 'OVERDUE') {
-          return <span className="text-xs font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded">Quá hạn</span>;
-        }
-        return <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Chờ thanh toán</span>;
-      },
+      width: 140,
+      render: (st: string) => <StatusBadge status={st} />,
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 140,
-      render: (_: any, r: Bill) => (
-        r.status !== 'PAID' ? (
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<QrCode className="w-3.5 h-3.5" />}
-            onClick={() => onOpenVietQR(r)}
-          >
-            Thanh toán ngay
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenVietQR(r)}
-          >
-            Xem biên lai
-          </Button>
-        )
-      ),
+      width: 120,
+      fixed: 'right' as const,
+      render: (_: any, r: InvoiceResponse) => {
+        const canPay = r.status !== 'PAID';
+        return (
+          <div className="flex items-center justify-start gap-1.5">
+            <Tooltip title="Xem chi tiết hóa đơn & biên lai">
+              <button
+                type="button"
+                className="stay-action-btn"
+                onClick={() => onOpenVietQR(r)}
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </Tooltip>
+
+            <Tooltip title={canPay ? 'Quét mã VietQR chuyển khoản' : 'Hóa đơn đã thanh toán'}>
+              <button
+                type="button"
+                className={`stay-action-btn ${!canPay ? 'opacity-40 cursor-not-allowed' : ''}`}
+                onClick={() => canPay && onOpenVietQR(r)}
+                disabled={!canPay}
+              >
+                <QrCode className="w-4 h-4" />
+              </button>
+            </Tooltip>
+
+            <Tooltip title={canPay ? 'Xác nhận đã thanh toán' : 'Đã thanh toán đủ'}>
+              <button
+                type="button"
+                className={`stay-action-btn ${!canPay ? 'opacity-40 cursor-not-allowed' : ''}`}
+                onClick={() =>
+                  message.success(
+                    'Đã ghi nhận! Chủ trọ sẽ đối soát và cập nhật trạng thái hóa đơn sớm nhất.'
+                  )
+                }
+                disabled={!canPay}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+              </button>
+            </Tooltip>
+          </div>
+        );
+      },
     },
   ];
 
   return (
-    <div className="bg-stay-card-bg border border-stay-border rounded-xl p-5 space-y-4 shadow-2xs">
+    <div>
       <div>
-        <h3 className="text-sm font-bold text-stay-text">
-          Lịch Sử Hóa Đơn & Tiền Phòng Hàng Tháng
+        <h3 className="text-sm font-bold text-stay-text pb-3">
+          Lịch Sử Hóa Đơn
         </h3>
-        <p className="text-xs text-stay-text-secondary mt-0.5">
-          Xem chỉ số điện nước, chi tiết các khoản phí dịch vụ và thanh toán qua mã VietQR ngân hàng.
-        </p>
       </div>
 
-      <div className="border border-stay-border rounded-xl overflow-hidden">
-        <Table
-          dataSource={bills}
-          columns={billColumns}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          className="text-xs"
-        />
-      </div>
+      <Table
+        dataSource={pageInfo?.items ?? bills ?? []}
+        columns={billColumns}
+        rowKey="id"
+        loading={isLoading}
+        scroll={{ x: 'max-content' }}
+        className="overflow-x-auto"
+        pagination={
+          pageInfo
+            ? {
+              current: (pageInfo.page ?? 0) + 1,
+              pageSize: pageInfo.size ?? 10,
+              total: pageInfo.totalElements ?? 0,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total) => `Tổng ${total} hóa đơn`,
+              onChange: (p, s) => onPageChange?.(p - 1, s),
+            }
+            : { pageSize: 5 }
+        }
+      />
     </div>
   );
 };

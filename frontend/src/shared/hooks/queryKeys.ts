@@ -19,6 +19,7 @@ export const landlordKeys = {
 
   contracts: () => [...landlordKeys.all, 'contracts'] as const,
   contractList: (params?: any) => [...landlordKeys.contracts(), 'list', params] as const,
+  contractDetail: (id: string | number) => [...landlordKeys.contracts(), 'detail', String(id)] as const,
 
   bills: () => [...landlordKeys.all, 'bills'] as const,
   billList: (params?: any) => [...landlordKeys.bills(), 'list', params] as const,
@@ -59,4 +60,11 @@ export const adminKeys = {
   reports: () => [...adminKeys.all, 'reports'] as const,
   reportDetail: (id: string) => [...adminKeys.reports(), 'detail', id] as const,
   analytics: () => [...adminKeys.all, 'analytics'] as const,
+};
+
+export const amenityKeys = {
+  all: ['amenities'] as const,
+  publicList: () => [...amenityKeys.all, 'public'] as const,
+  adminList: (params?: any) => [...amenityKeys.all, 'admin', params] as const,
+  detail: (id: number | string) => [...amenityKeys.all, 'detail', String(id)] as const,
 };

@@ -1,12 +1,13 @@
 package com.doan.core.business.service;
 
 import com.doan.core.business.dto.landlord.contract.*;
-
-import java.util.List;
+import com.doan.core.business.enums.ContractStatus;
+import com.doan.core.common.data.PageResponse;
 
 public interface LandlordContractService {
 
-    List<ContractResponse> getContracts(Long landlordId, Long buildingId, String status);
+    PageResponse<ContractResponse> getContracts(Long landlordId, Long buildingId, ContractStatus status, String keyword,
+            int page, int size, String sortBy, String sortDirection);
 
     ContractResponse getContractById(Long landlordId, Long contractId);
 

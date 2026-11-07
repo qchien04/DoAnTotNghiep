@@ -1,7 +1,12 @@
 package com.doan.core.business.dto.landlord.room;
 
+import com.doan.core.business.dto.amenity.AmenityResponse;
+import com.doan.core.business.dto.landlord.service.UtilityServiceResponse;
+import com.doan.core.business.entity.Amenity;
 import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.RoomImage;
+import com.doan.core.business.enums.RoomStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,10 +37,14 @@ public class RoomResponse {
     private Integer currentOccupancy;
     private String furnishingLevel;
     private List<String> amenities;
+    private List<AmenityResponse> amenityDetails;
     private List<Long> serviceIds;
-    private List<com.doan.core.business.dto.landlord.service.UtilityServiceResponse> services;
+    private List<UtilityServiceResponse> services;
     private String description;
-    private String status;
+    private RoomStatus status;
+    private Integer provinceId;
+    private Integer wardId;
+    private Integer amenitiesMask;
     private String province;
     private String ward;
     private String addressDetail;
@@ -48,6 +57,7 @@ public class RoomResponse {
     private String moderationReason;
     private LocalDateTime moderatedAt;
     private String moderatedByName;
+    private String coverImageUrl;
     private List<String> imageUrls;
     private List<String> watermarkedImageUrls;
     private BigDecimal latitude;
@@ -61,7 +71,8 @@ public class RoomResponse {
     private LocalDateTime createdAt;
 
     public static RoomResponse fromEntity(Room room) {
-        if (room == null) return null;
+        if (room == null)
+            return null;
 
         List<String> images = room.getImages() != null
                 ? room.getImages().stream().map(RoomImage::getImageUrl).collect(Collectors.toList())
@@ -79,24 +90,54 @@ public class RoomResponse {
                 }).collect(Collectors.toList())
                 : List.of();
 
-        List<String> amenityList = (room.getAmenities() != null && !room.getAmenities().isBlank())
-                ? java.util.Arrays.stream(room.getAmenities().split(","))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
+        String cover = room.getCoverImageUrl();
+        if ((cover == null || cover.isBlank()) && !images.isEmpty()) {
+            cover = images.get(0);
+        }
+        if (images.isEmpty() && cover != null && !cover.isBlank()) {
+            images = List.of(cover);
+        }
+
+        final Integer mask = room.getAmenitiesMask() != null ? room.getAmenitiesMask() : 0;
+        List<String> amenityList = com.doan.core.common.constant.RoomAmenityConstants.decode(mask);
+        if (amenityList.isEmpty() && room.getAmenities() != null && !room.getAmenities().isBlank()) {
+            amenityList = java.util.Arrays.stream(room.getAmenities().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+        }
+
+        List<AmenityResponse> amenityDetails = com.doan.core.common.constant.RoomAmenityConstants.ALL_AMENITIES.stream()
+                .filter(a -> (mask & a.bitValue()) != 0)
+                .map(a -> AmenityResponse.builder()
+                        .id((long) (a.bitIndex() + 1))
+                        .name(a.name())
+                        .description(a.key())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<Long> sIds = room.getServices() != null
+                ? room.getServices().stream().map(com.doan.core.business.entity.UtilityService::getId)
                         .collect(Collectors.toList())
                 : List.of();
 
-        List<Long> sIds = room.getServices() != null
-                ? room.getServices().stream().map(com.doan.core.business.entity.UtilityService::getId).collect(Collectors.toList())
+        List<UtilityServiceResponse> serviceResponses = room.getServices() != null
+                ? room.getServices().stream()
+                        .map(UtilityServiceResponse::fromEntity)
+                        .collect(Collectors.toList())
                 : List.of();
 
-        List<com.doan.core.business.dto.landlord.service.UtilityServiceResponse> serviceResponses = room.getServices() != null
-                ? room.getServices().stream().map(com.doan.core.business.dto.landlord.service.UtilityServiceResponse::fromEntity).collect(Collectors.toList())
-                : List.of();
+        Integer provId = room.getProvinceId() != null ? room.getProvinceId()
+                : (room.getBuilding() != null ? room.getBuilding().getProvinceId() : null);
+        Integer wrdId = room.getWardId() != null ? room.getWardId()
+                : (room.getBuilding() != null ? room.getBuilding().getWardId() : null);
 
-        String prov = room.getProvince() != null ? room.getProvince() : (room.getBuilding() != null ? room.getBuilding().getProvince() : null);
-        String wrd = room.getWard() != null ? room.getWard() : (room.getBuilding() != null ? room.getBuilding().getWard() : null);
-        String addr = room.getAddressDetail() != null ? room.getAddressDetail() : (room.getBuilding() != null ? room.getBuilding().getAddressDetail() : null);
+        String prov = room.getProvince() != null ? room.getProvince()
+                : (room.getBuilding() != null ? room.getBuilding().getProvince() : null);
+        String wrd = room.getWard() != null ? room.getWard()
+                : (room.getBuilding() != null ? room.getBuilding().getWard() : null);
+        String addr = room.getAddressDetail() != null ? room.getAddressDetail()
+                : (room.getBuilding() != null ? room.getBuilding().getAddressDetail() : null);
 
         StringBuilder sb = new StringBuilder();
         if (addr != null && !addr.isBlank()) sb.append(addr);
@@ -109,17 +150,26 @@ public class RoomResponse {
             sb.append(prov);
         }
 
-        java.math.BigDecimal lat = room.getLatitude() != null ? room.getLatitude() : (room.getBuilding() != null ? room.getBuilding().getLatitude() : null);
-        java.math.BigDecimal lng = room.getLongitude() != null ? room.getLongitude() : (room.getBuilding() != null ? room.getBuilding().getLongitude() : null);
+        BigDecimal lat = room.getLatitude() != null ? room.getLatitude()
+                : (room.getBuilding() != null ? room.getBuilding().getLatitude() : null);
+        BigDecimal lng = room.getLongitude() != null ? room.getLongitude()
+                : (room.getBuilding() != null ? room.getBuilding().getLongitude() : null);
 
         com.doan.core.business.entity.User landlord = room.getBuilding() != null ? room.getBuilding().getLandlord() : room.getLandlord();
+        String landlordName = landlord != null ? landlord.getFullName() : null;
+        String landlordPhone = landlord != null ? landlord.getPhone() : null;
+        String landlordAvatarUrl = landlord != null ? landlord.getAvatarUrl() : null;
+        Boolean landlordVerified = landlord != null ? Boolean.TRUE.equals(landlord.getLandlordVerified()) : false;
 
         return RoomResponse.builder()
                 .id(room.getId())
                 .buildingId(room.getBuilding() != null ? room.getBuilding().getId() : null)
                 .buildingName(room.getBuilding() != null ? room.getBuilding().getName() : null)
+                .provinceId(provId)
+                .wardId(wrdId)
                 .province(prov)
                 .ward(wrd)
+                .amenitiesMask(mask)
                 .addressDetail(addr)
                 .fullAddress(sb.toString())
                 .name(room.getName())
@@ -139,20 +189,22 @@ public class RoomResponse {
                 .currentOccupancy(room.getCurrentOccupancy())
                 .furnishingLevel(room.getFurnishingLevel())
                 .amenities(amenityList)
+                .amenityDetails(amenityDetails)
                 .serviceIds(sIds)
                 .services(serviceResponses)
                 .description(room.getDescription())
                 .status(room.getStatus())
+                .coverImageUrl(cover)
                 .imageUrls(images)
                 .watermarkedImageUrls(watermarkedImages)
                 .latitude(lat)
                 .longitude(lng)
                 .isPublic(room.getIsPublic() != null ? room.getIsPublic() : true)
                 .landlordId(landlord != null ? landlord.getId() : null)
-                .landlordName(landlord != null ? landlord.getFullName() : null)
-                .landlordPhone(landlord != null ? landlord.getPhone() : null)
-                .landlordAvatarUrl(landlord != null ? landlord.getAvatarUrl() : null)
-                .landlordVerified(landlord != null ? Boolean.TRUE.equals(landlord.getLandlordVerified()) : false)
+                .landlordName(landlordName)
+                .landlordPhone(landlordPhone)
+                .landlordAvatarUrl(landlordAvatarUrl)
+                .landlordVerified(landlordVerified)
                 .createdAt(room.getCreatedAt())
                 .build();
     }

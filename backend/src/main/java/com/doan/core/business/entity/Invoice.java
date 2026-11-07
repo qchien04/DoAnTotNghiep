@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.InvoiceStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,10 +39,6 @@ public class Invoice extends BaseEntity {
     @Builder.Default
     private Long servicesAmount = 0L;
 
-    @Column(name = "other_amount", nullable = false)
-    @Builder.Default
-    private Long otherAmount = 0L;
-
     @Column(name = "total_amount", nullable = false)
     private Long totalAmount;
 
@@ -49,9 +46,10 @@ public class Invoice extends BaseEntity {
     @Builder.Default
     private Long paidAmount = 0L;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "UNPAID"; // UNPAID, PARTIALLY_PAID, PAID, OVERDUE, CANCELLED
+    private InvoiceStatus status = InvoiceStatus.UNPAID; // UNPAID, PARTIALLY_PAID, PAID, OVERDUE, CANCELLED
 
     @Column(name = "payment_method", length = 30)
     private String paymentMethod; // CASH, BANK_TRANSFER, VIETQR

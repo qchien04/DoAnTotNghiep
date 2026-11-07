@@ -3,7 +3,7 @@
  */
 
 export interface LifestyleSurvey {
-  genderPreference: 'MALE' | 'FEMALE' | 'ANY';
+  genderPreference: 'MALE_ONLY' | 'FEMALE_ONLY' | 'ANY';
   sleepTime: 'BEFORE_23H' | 'AROUND_23H_24H' | 'AFTER_24H';
   smoking: boolean;
   petFriendly: boolean;
@@ -99,7 +99,7 @@ export interface PostSearchParams {
   postType?: RoommatePostType | 'ALL';
   minPrice?: number;
   maxPrice?: number;
-  gender?: 'MALE' | 'FEMALE' | 'ANY';
+  gender?: 'MALE_ONLY' | 'FEMALE_ONLY' | 'ANY';
   sleepTime?: string;
   noSmoking?: boolean;
   petFriendly?: boolean;
@@ -158,7 +158,8 @@ export interface UserLifestyleAnswerDto {
   questionId: number;
   questionCode?: string;
   questionLabel?: string;
-  optionId: number;
+  optionId?: number;
+  optionIds?: number[];
   optionLabel?: string;
   optionValue?: number;
   fromProfile?: boolean;
@@ -172,7 +173,7 @@ export interface UserLifestyleProfileResponse {
 }
 
 export interface SaveLifestyleAnswersRequest {
-  answers: { questionId: number; optionId: number }[];
+  answers: { questionId: number; optionId?: number; optionIds?: number[] }[];
 }
 
 export interface ApplyRoommateDto {
@@ -238,16 +239,23 @@ export interface MyRoomDetails {
     endDate: string;
     monthlyRent: number;
     depositAmount: number;
-    initialElectricity: number;
-    initialWater: number;
-    services: { name: string; price: number; unit: string }[];
+    services: {
+      id?: number | string;
+      name: string;
+      serviceName?: string;
+      price: number;
+      appliedUnitPrice?: number;
+      unit: string;
+      billingMethod?: string;
+      lastIndex?: number;
+    }[];
   };
 }
 
 export interface TenantContractHistory {
   id: number;
   contractCode: string;
-  status: string; // ACTIVE, EXPIRING_SOON, TERMINATED, EXPIRED, CANCELLED
+  status: string; // ACTIVE, TERMINATED
   isCurrent: boolean;
   isRepresentative: boolean;
   startDate: string;
@@ -287,7 +295,7 @@ export interface VietQRPaymentData {
 
 // 5. Báo hỏng sự cố của Người thuê (UC 45 - 46)
 export interface CreateTenantComplaintDto {
-  type: 'COOLING' | 'PLUMBING' | 'ELECTRICITY' | 'SECURITY' | 'OTHER';
+  type: 'AIR_CONDITIONER' | 'ELECTRICITY' | 'WATER' | 'SECURITY' | 'OTHER' | string;
   title: string;
   content: string;
   urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';

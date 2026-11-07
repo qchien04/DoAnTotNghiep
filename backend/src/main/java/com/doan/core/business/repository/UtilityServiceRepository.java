@@ -4,6 +4,7 @@ import com.doan.core.business.entity.UtilityService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ public interface UtilityServiceRepository extends JpaRepository<UtilityService, 
 
     Optional<UtilityService> findByIdAndLandlordId(Long id, Long landlordId);
 
-    List<UtilityService> findAllByIdInAndLandlordId(List<Long> ids, Long landlordId);
+    List<UtilityService> findAllByIdInAndLandlordId(Collection<Long> ids, Long landlordId);
 
     boolean existsByLandlordIdAndName(Long landlordId, String name);
 

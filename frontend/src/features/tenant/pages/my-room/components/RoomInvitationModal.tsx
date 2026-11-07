@@ -3,6 +3,7 @@ import { Modal, Button, Input } from '@/shared/components';
 import { Check } from 'lucide-react';
 
 import { RoomLinkInvitation } from '@/shared/types/tenant';
+import { getTenantRoleInRoomLabel } from '@/shared/utils';
 
 interface RoomInvitationModalProps {
   open: boolean;
@@ -31,7 +32,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
   const addressText = invitation?.address || `Phòng ${invitation?.roomName || '102'} - ${buildingName}`;
   const landlordInfo = `${invitation?.landlordName || 'Chủ trọ'}${invitation?.landlordPhone ? ` - SĐT: ${invitation.landlordPhone}` : ''}`;
   const priceText = invitation?.monthlyRent ? `${invitation.monthlyRent.toLocaleString()} VNĐ/tháng` : '3.800.000 VNĐ/tháng';
-  const roleText = invitation?.roleInRoom === 'REPRESENTATIVE' ? 'Khách đại diện' : 'Thành viên thuê cùng';
+  const roleText = getTenantRoleInRoomLabel(invitation?.roleInRoom);
 
   return (
     <Modal
@@ -44,7 +45,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
       width={740}
       title={<span className="text-base font-bold text-stay-text">Lời mời liên kết phòng trọ</span>}
     >
-      <div className="space-y-4 pt-2 text-xs">
+      <div className="space-y-4 pt-2 ">
         {!rejectMode ? (
           <>
             <p className="text-stay-text-secondary">
@@ -53,7 +54,7 @@ export const RoomInvitationModal: React.FC<RoomInvitationModalProps> = ({
 
             {/* Bảng thông tin đối soát chuẩn UC16 */}
             <div className="border border-stay-border rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left  border-collapse">
                 <thead>
                   <tr className="bg-stay-bg-app border-b border-stay-border text-stay-text font-bold">
                     <th className="p-3 w-1/3">Mục thông tin</th>

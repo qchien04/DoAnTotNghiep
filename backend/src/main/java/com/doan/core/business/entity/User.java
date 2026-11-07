@@ -1,5 +1,8 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.Gender;
+import com.doan.core.business.enums.GenderPreference;
+import com.doan.core.business.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,8 +46,30 @@ public class User extends BaseEntity {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "gender", length = 10)
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 20)
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender_preference", length = 20)
+    @Builder.Default
+    private GenderPreference genderPreference = GenderPreference.ANY;
+
+    @Column(name = "smokes")
+    @Builder.Default
+    private Boolean smokes = false;
+
+    @Column(name = "rejects_smokers")
+    @Builder.Default
+    private Boolean rejectsSmokers = false;
+
+    @Column(name = "has_pet")
+    @Builder.Default
+    private Boolean hasPet = false;
+
+    @Column(name = "rejects_pets")
+    @Builder.Default
+    private Boolean rejectsPets = false;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
@@ -57,15 +82,24 @@ public class User extends BaseEntity {
     @Builder.Default
     private Role role = Role.ROLE_TENANT;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     @Builder.Default
-    private String status = "ACTIVE";
+    private UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "locked_reason")
     private String lockedReason;
 
     @Column(name = "locked_until")
     private Instant lockedUntil;
+
+    @Column(name = "failed_login_attempts", columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    public Integer getFailedLoginAttempts() {
+        return failedLoginAttempts != null ? failedLoginAttempts : 0;
+    }
 
     @Column(name = "enabled", nullable = false)
     @Builder.Default

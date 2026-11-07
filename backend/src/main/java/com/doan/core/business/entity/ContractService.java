@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.BillingMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,8 +39,9 @@ public class ContractService {
     @Column(name = "applied_unit_price", nullable = false)
     private Long appliedUnitPrice;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "billing_method", nullable = false, length = 50)
-    private String billingMethod;
+    private BillingMethod billingMethod;
 
     @Column(name = "last_index", nullable = false)
     @Builder.Default

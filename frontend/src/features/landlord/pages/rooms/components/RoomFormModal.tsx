@@ -11,13 +11,38 @@ import {
   message,
 } from '@/shared/components';
 import { Tooltip, Spin } from 'antd';
-import { HelpCircle, MapPin, Navigation } from 'lucide-react';
-import { Building, CreateRoomDto, Room, UtilityService } from '@/shared/types/landlord';
+import {
+  HelpCircle,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Star,
+  LocateFixed,
+  Loader2,
+} from 'lucide-react';
+import { CreateRoomDto, Room } from '@/shared/types/landlord';
+import {
+  useBuildings,
+  useBuildingDetail,
+  useServices,
+  useUploadMultipleImages,
+} from '@/shared/hooks';
 import {
   formatServicePriceWithUnit,
   getBillingMethodInfo,
 } from '@/shared/utils/serviceUtils';
 import { VIETNAM_BOUNDS } from '@/shared/components/ui/LeafletMap';
+import {
+  getProvinces,
+  getWardsByProvinceId,
+  getProvinceName,
+  getWardName,
+} from '@/shared/constants/vietnamLocations';
+import {
+  encodeAmenitiesMask,
+  decodeAmenitiesMask,
+} from '@/shared/constants/roomAmenities';
+import { AmenitySelectorGrid } from '@/shared/components/ui/AmenityBadge';
 
 // Fix default leaflet marker icon issue in Webpack/Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -60,8 +85,6 @@ const pinIcon = L.divIcon({
 interface RoomFormModalProps {
   open: boolean;
   editingRoom: Room | null;
-  buildings: Building[];
-  services: UtilityService[];
   confirmLoading: boolean;
   onCancel: () => void;
   onSubmit: (values: CreateRoomDto) => Promise<void>;
@@ -70,13 +93,21 @@ interface RoomFormModalProps {
 export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   open,
   editingRoom,
-  buildings,
-  services,
   confirmLoading,
   onCancel,
   onSubmit,
 }) => {
   const [form] = Form.useForm();
+  const { services } = useServices();
+  const { uploadMultipleImages } = useUploadMultipleImages();
+
+  const watchedBuildingId = Form.useWatch('buildingId', form);
+  const { building: selectedBuilding } = useBuildingDetail(watchedBuildingId);
+
+  // Room Images State
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isProcessingFiles, setIsProcessingFiles] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Location & Map State
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number }>({
@@ -85,6 +116,10 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   });
   const [isGeolocating, setIsGeolocating] = useState(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+  const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(1);
+
+  const provinces = getProvinces();
+  const availableWards = selectedProvinceId ? getWardsByProvinceId(selectedProvinceId) : [];
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -106,15 +141,41 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         const data = await res.json();
         if (data && data.address) {
           const addr = data.address;
-          const foundProvince = addr.city || addr.state || addr.province || 'Thành phố Hà Nội';
-          const foundWard = addr.quarter || addr.suburb || addr.neighbourhood || addr.city_district || '';
           const fullDisplayName = data.display_name || '';
 
-          form.setFieldsValue({
-            province: foundProvince,
-            ward: foundWard,
-            addressDetail: fullDisplayName,
-          });
+          const allProvs = getProvinces();
+          const matchedProvince = allProvs.find(
+            (p) =>
+              (addr.city && addr.city.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.state && addr.state.toLowerCase().includes(p.name.toLowerCase())) ||
+              (addr.province && addr.province.toLowerCase().includes(p.name.toLowerCase())) ||
+              p.name.toLowerCase().includes((addr.city || addr.state || addr.province || '').toLowerCase())
+          );
+
+          if (matchedProvince) {
+            setSelectedProvinceId(matchedProvince.id);
+            const wards = getWardsByProvinceId(matchedProvince.id);
+            const matchedWard = wards.find(
+              (w) =>
+                (addr.quarter && addr.quarter.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.suburb && addr.suburb.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.neighbourhood && addr.neighbourhood.toLowerCase().includes(w.name.toLowerCase())) ||
+                (addr.city_district && addr.city_district.toLowerCase().includes(w.name.toLowerCase())) ||
+                w.name.toLowerCase().includes((addr.quarter || addr.suburb || addr.neighbourhood || '').toLowerCase())
+            );
+
+            form.setFieldsValue({
+              provinceId: matchedProvince.id,
+              province: matchedProvince.name,
+              wardId: matchedWard ? matchedWard.id : undefined,
+              ward: matchedWard ? matchedWard.name : '',
+              addressDetail: fullDisplayName,
+            });
+          } else {
+            form.setFieldsValue({
+              addressDetail: fullDisplayName,
+            });
+          }
         }
       }
     } catch {
@@ -128,28 +189,48 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
   useEffect(() => {
     if (open) {
       if (editingRoom) {
-        const matchedBld = buildings.find((b: any) => String(b.id) === String(editingRoom.buildingId));
-        const effectiveLat = editingRoom.latitude ? Number(editingRoom.latitude) : (matchedBld?.latitude ? Number(matchedBld.latitude) : 21.0285);
-        const effectiveLng = editingRoom.longitude ? Number(editingRoom.longitude) : (matchedBld?.longitude ? Number(matchedBld.longitude) : 105.8048);
+        const effectiveLat = editingRoom.latitude ? Number(editingRoom.latitude) : 21.0285;
+        const effectiveLng = editingRoom.longitude ? Number(editingRoom.longitude) : 105.8048;
         const effectiveCoords = { lat: effectiveLat, lng: effectiveLng };
 
         setCurrentCoords(effectiveCoords);
-
-        const parsedAmenities = Array.isArray(editingRoom.amenities)
-          ? editingRoom.amenities
-          : typeof editingRoom.amenities === 'string' && editingRoom.amenities.trim()
-            ? editingRoom.amenities.split(',').map((s) => s.trim())
+        const initialImages =
+          editingRoom.imageUrls && editingRoom.imageUrls.length > 0
+            ? editingRoom.imageUrls
+            : editingRoom.coverImageUrl
+            ? [editingRoom.coverImageUrl]
             : [];
+        setImageUrls(initialImages);
+
+        const mask =
+          editingRoom.amenitiesMask ||
+          (editingRoom.amenities
+            ? encodeAmenitiesMask(
+                Array.isArray(editingRoom.amenities)
+                  ? editingRoom.amenities
+                  : [String(editingRoom.amenities)]
+              )
+            : 0);
+        const parsedAmenities = decodeAmenitiesMask(mask);
 
         const roomServiceIds =
           editingRoom.serviceIds ||
-          (editingRoom.services ? (editingRoom.services as any[]).map((s: any) => s.id) : []);
+          (editingRoom.services
+            ? (editingRoom.services as any[]).map((s: any) => s.id)
+            : []);
+
+        const pId = editingRoom.provinceId ?? 1;
+        const wId = editingRoom.wardId;
+
+        setSelectedProvinceId(pId || 1);
 
         form.setFieldsValue({
           buildingId: editingRoom.buildingId || null,
-          province: editingRoom.province || matchedBld?.province || 'Thành phố Hà Nội',
-          ward: editingRoom.ward || matchedBld?.ward || '',
-          addressDetail: editingRoom.addressDetail || matchedBld?.addressDetail || 'Hà Nội, Việt Nam',
+          provinceId: pId || 1,
+          wardId: wId,
+          province: getProvinceName(pId || 1),
+          ward: wId ? getWardName(wId) : '',
+          addressDetail: editingRoom.addressDetail || 'Hà Nội, Việt Nam',
           name: editingRoom.name,
           floor: editingRoom.floor ?? 1,
           area: editingRoom.area,
@@ -171,36 +252,37 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         }
       } else {
         form.resetFields();
-        const initialBld = buildings.length > 0 ? buildings[0] : null;
-        const initialLat = initialBld?.latitude ? Number(initialBld.latitude) : 21.0285;
-        const initialLng = initialBld?.longitude ? Number(initialBld.longitude) : 105.8048;
-        const initialCoords = { lat: initialLat, lng: initialLng };
-
+        setImageUrls([]);
+        const initialCoords = { lat: 21.0285, lng: 105.8048 };
         setCurrentCoords(initialCoords);
+        setSelectedProvinceId(1);
 
         form.setFieldsValue({
-          buildingId: initialBld ? initialBld.id : null,
-          province: initialBld?.province || 'Thành phố Hà Nội',
-          ward: initialBld?.ward || '',
-          addressDetail: initialBld?.addressDetail || 'Hà Nội, Việt Nam',
-          latitude: initialLat,
-          longitude: initialLng,
+          buildingId: null,
+          provinceId: 1,
+          wardId: undefined,
+          province: getProvinceName(1),
+          ward: '',
+          addressDetail: 'Hà Nội, Việt Nam',
+          latitude: 21.0285,
+          longitude: 105.8048,
           floor: 1,
           area: 25,
           maxCapacity: 2,
           listedPrice: 3500000,
           standardDeposit: 3500000,
           isPublic: true,
+          amenities: ['Điều hòa', 'Nóng lạnh', 'Wi-Fi tốc độ cao'],
           serviceIds: services.map((s: any) => s.id),
         });
 
         if (mapInstanceRef.current && markerRef.current) {
-          mapInstanceRef.current.setView([initialLat, initialLng], 15);
-          markerRef.current.setLatLng([initialLat, initialLng]);
+          mapInstanceRef.current.setView([21.0285, 105.8048], 15);
+          markerRef.current.setLatLng([21.0285, 105.8048]);
         }
       }
     }
-  }, [open, editingRoom, buildings, services, form]);
+  }, [open, editingRoom, services, form]);
 
   // Leaflet Map Initialization directly in modal
   useEffect(() => {
@@ -234,11 +316,13 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         zoomControl: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; OpenStreetMap contributors &bull; Chủ quyền Việt Nam',
-      }).addTo(map);
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b'],
+        }
+      ).addTo(map);
 
       const marker = L.marker(initialPos, {
         icon: pinIcon,
@@ -283,31 +367,40 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     };
   }, [open, reverseGeocode]);
 
-  const handleBuildingChange = (val: number | string | null) => {
-    if (val) {
-      const bld = buildings.find((b: any) => String(b.id) === String(val));
-      if (bld) {
-        const lat = bld.latitude ? Number(bld.latitude) : currentCoords.lat;
-        const lng = bld.longitude ? Number(bld.longitude) : currentCoords.lng;
-        const addr = bld.addressDetail || `${bld.ward ? bld.ward + ', ' : ''}${bld.province || ''}`;
+  useEffect(() => {
+    if (selectedBuilding) {
+      const lat = selectedBuilding.latitude ? Number(selectedBuilding.latitude) : currentCoords.lat;
+      const lng = selectedBuilding.longitude ? Number(selectedBuilding.longitude) : currentCoords.lng;
 
-        setCurrentCoords({ lat, lng });
+      setCurrentCoords({ lat, lng });
 
-        form.setFieldsValue({
-          province: bld.province || 'Thành phố Hà Nội',
-          ward: bld.ward || '',
-          addressDetail: bld.addressDetail || addr || 'Hà Nội, Việt Nam',
-          latitude: lat,
-          longitude: lng,
-        });
+      const pId = selectedBuilding.provinceId ?? 1;
+      const wId = selectedBuilding.wardId;
 
-        if (mapInstanceRef.current && markerRef.current) {
-          mapInstanceRef.current.flyTo([lat, lng], 16, { duration: 1.0 });
-          markerRef.current.setLatLng([lat, lng]);
-        }
-        message.info(`Đã nạp vị trí từ tòa nhà: ${bld.name}`);
+      if (pId) {
+        setSelectedProvinceId(pId);
       }
-    } else {
+
+      form.setFieldsValue({
+        provinceId: pId,
+        wardId: wId,
+        province: getProvinceName(pId),
+        ward: wId ? getWardName(wId) : '',
+        addressDetail: selectedBuilding.addressDetail || 'Hà Nội, Việt Nam',
+        latitude: lat,
+        longitude: lng,
+      });
+
+      if (mapInstanceRef.current && markerRef.current) {
+        mapInstanceRef.current.flyTo([lat, lng], 16, { duration: 1.0 });
+        markerRef.current.setLatLng([lat, lng]);
+      }
+      message.info(`Đã nạp vị trí và địa chỉ từ tòa nhà: ${selectedBuilding.name}`);
+    }
+  }, [selectedBuilding]);
+
+  const handleBuildingChange = (val: number | string | null) => {
+    if (!val) {
       message.info('Đã chọn phòng độc lập. Hãy nhấp trực tiếp trên bản đồ để chọn vị trí phòng.');
     }
   };
@@ -347,9 +440,80 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     );
   };
 
+  // Handlers for room images
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileList = Array.from(files);
+    const validFiles: File[] = [];
+
+    for (const file of fileList) {
+      if (!file.type.startsWith('image/')) {
+        message.warning(`Tệp ${file.name} không phải là hình ảnh.`);
+        continue;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        message.warning(`Tệp ${file.name} vượt quá 15MB.`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    setIsProcessingFiles(true);
+    try {
+      const uploadedUrls = await uploadMultipleImages(validFiles, 'rooms');
+      if (uploadedUrls && uploadedUrls.length > 0) {
+        setImageUrls((prev) => [...prev, ...uploadedUrls]);
+        message.success(`Đã tải lên ${uploadedUrls.length} ảnh phòng thành công.`);
+      }
+    } catch {
+      // Handled in mutation hook
+    } finally {
+      setIsProcessingFiles(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImageUrls((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    message.info('Đã xóa ảnh.');
+  };
+
+  const handleSetCoverImage = (indexToCover: number) => {
+    if (indexToCover === 0) return;
+    setImageUrls((prev) => {
+      const copy = [...prev];
+      const [item] = copy.splice(indexToCover, 1);
+      return [item, ...copy];
+    });
+    message.success('Đã chọn làm ảnh đại diện chính.');
+  };
+
   const handleOk = async () => {
     const values = await form.validateFields();
-    await onSubmit(values as CreateRoomDto);
+    const coverImageUrl = imageUrls.length > 0 ? imageUrls[0] : undefined;
+    const selectedAmenityNames: string[] = values.amenities || [];
+    const amenitiesMask = encodeAmenitiesMask(selectedAmenityNames);
+
+    const isInheritingBuilding = Boolean(watchedBuildingId && selectedBuilding);
+    const provinceId =
+      isInheritingBuilding && selectedBuilding?.provinceId ? selectedBuilding.provinceId : values.provinceId;
+    const wardId =
+      isInheritingBuilding && selectedBuilding?.wardId ? selectedBuilding.wardId : values.wardId;
+    await onSubmit({
+      ...values,
+      provinceId,
+      wardId,
+      amenities: selectedAmenityNames,
+      amenitiesMask,
+      coverImageUrl,
+      imageUrls,
+    } as CreateRoomDto);
   };
 
   return (
@@ -366,12 +530,9 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         {/* SECTION 1: TÒA NHÀ & VỊ TRÍ - ĐỊA CHỈ (2 CỘT TỶ LỆ 6:4) */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Tòa nhà & vị trí phòng trọ
-          </h3>
+        <div className="space-y-3">
 
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+          <div className="space-y-3">
             <Form.Item
               label={
                 <div className="flex items-center gap-1.5">
@@ -386,39 +547,25 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
               name="buildingId"
               className="mb-2"
             >
-              <Select
+              <Select.Infinite
+                useQueryHook={useBuildings}
                 allowClear
                 placeholder="Chọn tòa nhà hoặc để trống nếu là phòng trọ độc lập"
                 onChange={handleBuildingChange}
                 className="w-full h-10"
-                options={[
-                  {
-                    label: '🏠 Phòng trọ độc lập (không thuộc tòa nhà nào)',
-                    value: null as any,
-                  },
-                  ...buildings.map((b: any) => ({
-                    label: `🏢 ${b.name}`,
-                    value: b.id,
-                  })),
-                ]}
+                mapOption={(b: any) => ({
+                  label: `🏢 ${b.name}${b.address ? ` (${b.address})` : ''}`,
+                  value: b.id,
+                })}
               />
             </Form.Item>
 
             {/* 2 CỘT TỶ LỆ KHOẢNG 6:4: 1 BÊN BẢN ĐỒ - 1 BÊN INPUT ĐỊA CHỈ */}
             <div className="pt-1">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-stay-text text-xs">
+                <span className="font-semibold text-stay-text">
                   Vị trí trên bản đồ & địa chỉ phòng
                 </span>
-                <Button
-                  size="small"
-                  icon={<Navigation className="w-3.5 h-3.5 text-emerald-600" />}
-                  onClick={handleGetQuickLocation}
-                  loading={isGeolocating}
-                  className="font-semibold text-xs border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-                >
-                  Vị trí hiện tại
-                </Button>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -431,41 +578,88 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                       className="z-0"
                     />
 
+                    {/* Nút vị trí hiện tại nổi trên bản đồ kiểu Google Maps */}
+                    <Tooltip title="Vị trí hiện tại của bạn" placement="left">
+                      <button
+                        type="button"
+                        onClick={handleGetQuickLocation}
+                        disabled={isGeolocating}
+                        className="absolute bottom-3 right-3 z-[500] w-9 h-9 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-stay-primary rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+                        aria-label="Vị trí hiện tại"
+                      >
+                        {isGeolocating ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-stay-primary" />
+                        ) : (
+                          <LocateFixed className="w-4 h-4 text-stay-primary" />
+                        )}
+                      </button>
+                    </Tooltip>
+
                     {isGeolocating && (
                       <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50">
                         <Spin tip="Đang lấy tọa độ GPS..." />
                       </div>
                     )}
                   </div>
-                  <p className="text-[11px] text-stay-text-muted mt-1.5 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-stay-primary shrink-0" />
-                    <span>Nhấp chuột hoặc kéo thả ghim trên bản đồ để tự động điền địa chỉ</span>
-                  </p>
                 </div>
 
                 {/* CỘT 2 (TỶ LỆ ~40%): CÁC Ô INPUT ĐỊA CHỈ */}
                 <div className="lg:col-span-5 space-y-2.5">
+                  {Boolean(watchedBuildingId) && (
+                    <div className="p-2 rounded-lg bg-stay-primary-subtle border border-stay-primary/20 text-stay-primary text-xs flex items-center gap-1.5 font-medium">
+                      <span>🏢 Địa chỉ được kế thừa từ tòa nhà</span>
+                    </div>
+                  )}
+
                   <Form.Item
-                    label={<span className="font-semibold text-stay-text text-xs">Tỉnh / Thành phố</span>}
-                    name="province"
-                    rules={[{ required: true, message: 'Vui lòng nhập Tỉnh / TP' }]}
+                    label={<span className="font-semibold text-stay-text ">Tỉnh / Thành phố</span>}
+                    name="provinceId"
+                    rules={[{ required: true, message: 'Vui lòng chọn Tỉnh / TP' }]}
                     className="mb-2"
                   >
-                    <Input placeholder="Ví dụ: Thành phố Hà Nội" className="w-full h-9 text-xs" />
+                    <Select
+                      showSearch
+                      disabled={Boolean(watchedBuildingId)}
+                      placeholder="Chọn Tỉnh / Thành phố"
+                      optionFilterProp="label"
+                      className="w-full h-9"
+                      options={provinces.map((p) => ({ value: p.id, label: p.name }))}
+                      onChange={(val) => {
+                        setSelectedProvinceId(val);
+                        form.setFieldsValue({
+                          wardId: undefined,
+                          province: getProvinceName(val),
+                          ward: '',
+                        });
+                      }}
+                    />
                   </Form.Item>
 
                   <Form.Item
-                    label={<span className="font-semibold text-stay-text text-xs">Phường / Xã</span>}
-                    name="ward"
+                    label={<span className="font-semibold text-stay-text ">Phường / Xã</span>}
+                    name="wardId"
                     className="mb-2"
                   >
-                    <Input placeholder="Ví dụ: Phường Bách Khoa" className="w-full h-9 text-xs" />
+                    <Select
+                      showSearch
+                      allowClear
+                      disabled={Boolean(watchedBuildingId) || !selectedProvinceId}
+                      placeholder={selectedProvinceId ? 'Chọn Phường / Xã' : 'Vui lòng chọn Tỉnh / TP trước'}
+                      optionFilterProp="label"
+                      className="w-full h-9"
+                      options={availableWards.map((w) => ({ value: w.id, label: w.name }))}
+                      onChange={(val) => {
+                        form.setFieldsValue({
+                          ward: val ? getWardName(val) : '',
+                        });
+                      }}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     label={
                       <div className="flex items-center justify-between w-full">
-                        <span className="font-semibold text-stay-text text-xs">Địa chỉ chi tiết</span>
+                        <span className="font-semibold text-stay-text ">Địa chỉ chi tiết</span>
                         {isReverseGeocoding && (
                           <span className="text-[11px] text-stay-primary flex items-center gap-1 font-normal">
                             <Spin size="small" /> Đang nhận diện...
@@ -479,8 +673,9 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   >
                     <Input.TextArea
                       rows={3}
+                      disabled={Boolean(watchedBuildingId)}
                       placeholder="Số nhà, ngõ/ngách, tên đường..."
-                      className="w-full p-2 text-xs rounded-lg"
+                      className="w-full p-2  rounded-lg"
                     />
                   </Form.Item>
 
@@ -498,11 +693,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         </div>
 
         {/* SECTION 2: QUY MÔ & TÀI CHÍNH */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Thông tin phòng & giá cước niêm yết
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-3">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-3">
             <Form.Item
               label={<span className="font-semibold text-stay-text text-sm">Tên phòng </span>}
               name="name"
@@ -521,7 +713,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   min={1}
-                  suffix={<span className="text-xs text-stay-text-muted font-medium">Tầng</span>}
+                  suffix={<span className=" text-stay-text-muted font-medium">Tầng</span>}
                   className="w-full h-10"
                 />
               </Form.Item>
@@ -534,7 +726,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   min={5}
-                  suffix={<span className="text-xs text-stay-text-muted font-medium">m²</span>}
+                  suffix={<span className=" text-stay-text-muted font-medium">m²</span>}
                   className="w-full h-10"
                 />
               </Form.Item>
@@ -547,7 +739,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   min={1}
-                  suffix={<span className="text-xs text-stay-text-muted font-medium">Người</span>}
+                  suffix={<span className=" text-stay-text-muted font-medium">Người</span>}
                   className="w-full h-10"
                 />
               </Form.Item>
@@ -563,7 +755,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   step={100000}
-                  suffix={<span className="text-xs font-semibold text-emerald-600">VNĐ/tháng</span>}
+                  suffix={<span className=" font-semibold text-600">VNĐ/tháng</span>}
                   className="w-full h-10 font-medium"
                 />
               </Form.Item>
@@ -576,7 +768,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input
                   type="number"
                   step={100000}
-                  suffix={<span className="text-xs font-semibold text-stay-text">VNĐ</span>}
+                  suffix={<span className=" font-semibold text-stay-text">VNĐ</span>}
                   className="w-full h-10 font-medium"
                 />
               </Form.Item>
@@ -588,9 +780,9 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   className="w-full h-10"
                   options={[
                     { label: 'Còn trống (AVAILABLE)', value: 'AVAILABLE' },
-                    { label: 'Đang thuê (RENTED)', value: 'RENTED' },
-                    { label: 'Đang sửa chữa (MAINTENANCE)', value: 'MAINTENANCE' },
-                    { label: 'Ngừng sử dụng (DISABLED)', value: 'DISABLED' },
+                    { label: 'Đang thuê (OCCUPIED)', value: 'OCCUPIED' },
+                    { label: 'Đang bảo trì (UNDER_MAINTENANCE)', value: 'UNDER_MAINTENANCE' },
+                    { label: 'Ngừng sử dụng (STOPPED)', value: 'STOPPED' },
                   ]}
                 />
               </Form.Item>
@@ -599,28 +791,20 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
         </div>
 
         {/* SECTION 3: TIỆN NGHI & DỊCH VỤ */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            3. Tiện nghi & dịch vụ áp dụng
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-4">
             <Form.Item
-              label={<span className="font-semibold text-stay-text text-sm">Tiện nghi có sẵn trong phòng</span>}
+              label={
+                <span className="font-semibold text-stay-text text-sm">
+                  Tiện nghi có sẵn trong phòng (16 tiện ích chuẩn)
+                </span>
+              }
               name="amenities"
+              className="mb-3"
             >
-              <Select
-                mode="tags"
-                className="w-full min-h-[40px]"
-                placeholder="Chọn hoặc nhập tiện nghi (Điều hòa, Nóng lạnh, Giường, Tủ...)"
-                options={[
-                  { value: 'Điều hòa', label: 'Điều hòa' },
-                  { value: 'Nóng lạnh', label: 'Nóng lạnh' },
-                  { value: 'Giường', label: 'Giường' },
-                  { value: 'Tủ quần áo', label: 'Tủ quần áo' },
-                  { value: 'Tủ lạnh', label: 'Tủ lạnh' },
-                  { value: 'Kệ bếp', label: 'Kệ bếp' },
-                  { value: 'Ban công', label: 'Ban công' },
-                ]}
+              <AmenitySelectorGrid
+                selectedNames={form.getFieldValue('amenities') || []}
+                onChange={(names) => form.setFieldsValue({ amenities: names })}
               />
             </Form.Item>
 
@@ -637,8 +821,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <div className="flex items-center gap-2">
                   <Button
                     size="small"
-                    type="link"
-                    className="p-0 text-xs text-stay-primary font-medium"
+                    type="outline"
+                    className="p-0  text-stay-primary font-medium"
                     onClick={() => form.setFieldsValue({ serviceIds: services.map((s) => s.id) })}
                   >
                     Chọn tất cả
@@ -646,8 +830,8 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                   <span className="text-stay-border">|</span>
                   <Button
                     size="small"
-                    type="link"
-                    className="p-0 text-xs text-rose-500 font-medium"
+                    type="outline"
+                    className="p-0  text-rose-500 font-medium"
                     onClick={() => form.setFieldsValue({ serviceIds: [] })}
                   >
                     Bỏ chọn hết
@@ -682,7 +866,7 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 <Input.TextArea
                   rows={2}
                   placeholder="Mô tả đặc điểm phòng, hướng cửa sổ, ánh sáng, ban công, không gian xung quanh..."
-                  className="w-full p-2.5 rounded-xl text-xs"
+                  className="w-full p-2.5 rounded-xl "
                 />
               </Form.Item>
             </div>
@@ -710,6 +894,119 @@ export const RoomFormModal: React.FC<RoomFormModalProps> = ({
                 </div>
               </Form.Item>
             </div>
+          </div>
+        </div>
+
+        {/* SECTION 4: HÌNH ẢNH PHÒNG TRỌ THỰC TẾ */}
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-stay-text flex items-center gap-2">
+
+            </h3>
+            {imageUrls.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setImageUrls([])}
+                className="text-xs text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                Xóa tất cả ảnh
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {/* Thanh công cụ: Tải file từ máy tính & Nhập URL ảnh */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
+              <Button
+                type="outline"
+                icon={<Upload className="w-4 h-4" />}
+                onClick={() => fileInputRef.current?.click()}
+                loading={isProcessingFiles}
+                className="h-10 px-4 font-medium flex items-center gap-2 shrink-0 "
+              >
+                Tải ảnh từ máy tính
+              </Button>
+            </div>
+
+            {/* Danh sách ảnh hoặc Trạng thái trống */}
+            {imageUrls.length === 0 ? (
+              <div
+                className="border-2 border-dashed border-stay-border rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-stay-primary/50 transition-colors cursor-pointer bg-stay-card-bg/40"
+              >
+                <div className="w-12 h-12 rounded-full bg-stay-bg-app flex items-center justify-center text-stay-text-muted mb-2 border border-stay-border">
+                  <ImageIcon className="w-6 h-6" />
+                </div>
+                <p className=" font-medium text-stay-text mb-1">
+                  Chưa có hình ảnh nào cho phòng trọ này
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-1">
+                {imageUrls.map((url, idx) => {
+                  const isCover = idx === 0;
+                  return (
+                    <div
+                      key={idx}
+                      className="group relative aspect-4/3 rounded-xl overflow-hidden border border-stay-border bg-stay-card-bg shadow-xs"
+                    >
+                      <img
+                        src={url}
+                        alt={`Ảnh phòng ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&auto=format&fit=crop&q=80';
+                        }}
+                      />
+
+                      {/* Huy hiệu ảnh bìa */}
+                      {isCover && (
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs backdrop-blur-xs">
+                          <Star className="w-3 h-3 fill-current" />
+                          <span>Ảnh đại diện</span>
+                        </div>
+                      )}
+
+                      {/* Các nút thao tác khi hover */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 backdrop-blur-2xs">
+                        {!isCover && (
+                          <button
+                            type="button"
+                            title="Đặt làm ảnh đại diện"
+                            onClick={() => handleSetCoverImage(idx)}
+                            className="p-1.5 rounded-lg bg-stay-card-bg text-stay-text hover:scale-110 transition-all shadow-sm cursor-pointer"
+                          >
+                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          title="Xóa ảnh"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="p-1.5 rounded-lg bg-rose-500/90 hover:bg-rose-600 text-white hover:scale-110 transition-all shadow-sm cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Đánh số thứ tự ảnh */}
+                      <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono">
+                        #{idx + 1}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </Form>

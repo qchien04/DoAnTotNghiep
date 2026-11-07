@@ -1,5 +1,6 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.BillingMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,8 +33,9 @@ public class UtilityService extends BaseEntity {
     @Column(name = "unit_price", nullable = false)
     private Long unitPrice;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "billing_method", nullable = false, length = 50)
-    private String billingMethod; // METER_INDEX, FIXED_PER_ROOM, FIXED_PER_PERSON, FIXED_PER_UNIT
+    private BillingMethod billingMethod; // METER_INDEX, FIXED_PER_ROOM, FIXED_PER_PERSON, FIXED_PER_UNIT
 
     @Column(name = "scope", length = 50)
     @Builder.Default

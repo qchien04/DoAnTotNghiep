@@ -27,7 +27,7 @@ export const RoomInviteBanner: React.FC<RoomInviteBannerProps> = ({
           <p className="font-bold text-sm text-stay-text">
             Chủ nhà {landlord} vừa gửi lời mời bạn liên kết với {roomName}{buildingName}!
           </p>
-          <p className="text-xs text-stay-text-secondary mt-0.5">
+          <p className=" text-stay-text-secondary mt-0.5">
             Xác nhận liên kết để kích hoạt hợp đồng điện tử, nhận thông báo đóng tiền và thanh toán hóa đơn VietQR.
           </p>
         </div>

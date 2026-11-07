@@ -8,17 +8,17 @@ PHẦN 2: CÁC USE CASE DÀNH CHO ROLE: NGƯỜI THUÊ (TENANT)
 
 Header 2: 30. Chức năng tìm kiếm phòng trọ và bài đăng ở ghép
 ------------------------------------------------------------
-Use case: Search Room & Roommate Posts (Tìm phòng và tìm nhóm ghép theo vị trí, ngân sách, lối sống)
+Use case: Search Room & Roommate Posts (Tìm phòng và tìm nhóm ghép theo vị trí, ngân sách, sinh hoạt)
 Actor: Người thuê, Khách vãng lai
 Tiền điều kiện: Người dùng truy cập vào trang chủ hoặc trang tìm kiếm của hệ thống.
 Hậu điều kiện: Danh sách các phòng trọ hoặc bài đăng tìm bạn ở ghép phù hợp được hiển thị trực quan.
 Kịch bản chính:
   1. Người dùng bấm chọn mục 'Tìm kiếm phòng & Ở ghép' trên thanh điều hướng.
-  2. Hệ thống hiển thị thanh tìm kiếm địa điểm, bộ lọc giá, bộ lọc tiêu chí lối sống và bản đồ số.
+  2. Hệ thống hiển thị thanh tìm kiếm địa điểm, bộ lọc giá, bộ lọc tiêu chí sinh hoạt và bản đồ số.
   3. Người dùng chọn tab 'Tìm người ở ghép', nhập khu vực 'Cầu Giấy', giá từ 1.500.000 - 2.500.000 VNĐ, chọn tiêu chí: Nam, Không hút thuốc, Ngủ trước 24h.
   4. Người dùng bấm nút 'Áp dụng bộ lọc và Tìm kiếm'.
-  5. Hệ thống hiển thị danh sách bài đăng phù hợp kèm độ khớp lối sống:
-  Mã bài | Tiêu đề bài đăng | Khu vực | Giá share (VNĐ) | Độ khớp lối sống | Loại phòng | Thao tác
+  5. Hệ thống hiển thị danh sách bài đăng phù hợp kèm độ khớp sinh hoạt:
+  Mã bài | Tiêu đề bài đăng | Khu vực | Giá share (VNĐ) | Độ khớp sinh hoạt | Loại phòng | Thao tác
   --- | --- | --- | --- | --- | --- | ---
   BG01 | Tìm 1 bạn nam ở ghép phòng khép kín đủ đồ | Ngõ 80 Cầu Giấy, HN | 1.900.000 | 95% (Rất hợp) | Có sẵn phòng | Xem chi tiết
   BG02 | Tìm bạn sinh viên cùng thuê nhà nguyên căn | Ngõ 165 Cầu Giấy, HN | 2.200.000 | 88% (Khá hợp) | Chưa có phòng | Xem chi tiết
@@ -52,19 +52,19 @@ Header 2: 32. Chức năng đăng bài tìm người ở ghép - Trường hợp
 Use case: Create Roommate Post - Existing Room (Đăng tin tìm bạn khi đã thuê được phòng)
 Actor: Người thuê (Đã có phòng)
 Tiền điều kiện: Người thuê đã đăng nhập, đang ở một phòng trọ thực tế (có liên kết trên hệ thống hoặc tạo phòng ảo).
-Hậu điều kiện: Bài đăng tìm người ở ghép được xuất bản công khai kèm thông tin phòng và khảo sát lối sống.
+Hậu điều kiện: Bài đăng tìm người ở ghép được xuất bản công khai kèm thông tin phòng và khảo sát sinh hoạt.
 Kịch bản chính:
   1. Người thuê bấm nút 'Đăng bài tìm người ở ghép' tại góc trên màn hình.
   2. Người thuê chọn phương án 'Tôi đã có phòng trọ, cần tìm người vào ở cùng'.
   3. Người thuê chọn nguồn phòng: 'Chọn phòng tôi đang liên kết trên hệ thống' (Phòng P102 - Ánh Dương).
   4. Hệ thống tự động nạp thông tin phòng (Địa chỉ, diện tích, giá phòng 3.800.000đ, tiện nghi có sẵn).
   5. Người thuê nhập tiêu đề, số người cần tìm (1 người), giá share (1.900.000 VNĐ/tháng).
-  6. Người thuê hoàn thành bảng khảo sát lối sống sinh hoạt (Giới tính: Nam; Giờ ngủ: Sau 23h; Không hút thuốc; Không nuôi thú cưng; Thường xuyên nấu ăn tối).
+  6. Người thuê hoàn thành bảng khảo sát sinh hoạt sinh hoạt (Giới tính: Nam; Giờ ngủ: Sau 23h; Không hút thuốc; Không nuôi thú cưng; Thường xuyên nấu ăn tối).
   7. Người thuê bấm 'Xuất bản bài đăng'.
   8. Hệ thống cấp mã bài BG01, chuyển trạng thái 'Đang mở (Cần tìm 1 người)' và hiển thị trên bảng tin công khai.
 Ngoại lệ:
   3. Người thuê ở trọ ngoài hệ thống chọn 'Tạo phòng ảo': Hệ thống hiển thị form nhập địa chỉ thực tế và yêu cầu tải ít nhất 3 ảnh phòng trọ.
-  6. Chưa hoàn thành bảng khảo sát lối sống, hệ thống báo lỗi: 'Vui lòng hoàn thành bảng tiêu chí lối sống'.
+  6. Chưa hoàn thành bảng khảo sát sinh hoạt, hệ thống báo lỗi: 'Vui lòng hoàn thành bảng tiêu chí sinh hoạt'.
 
 ============================================================
 
@@ -78,7 +78,7 @@ Kịch bản chính:
   1. Người thuê chọn 'Đăng bài tìm người ở ghép' -> chọn 'Tôi chưa có phòng, cần tìm bạn cùng tìm phòng'.
   2. Trên bản đồ số, người thuê nhập vị trí tâm: 'Đại học Bách Khoa Hà Nội' và kéo thanh trượt bán kính: 3.0 km.
   3. Người thuê nhập ngân sách tối đa: 2.000.000 VNĐ/tháng, số người cần tìm lập nhóm: 2 người.
-  4. Người thuê hoàn thành bảng thông tin lối sống cá nhân và yêu cầu với bạn cùng phòng.
+  4. Người thuê hoàn thành bảng thông tin sinh hoạt cá nhân và yêu cầu với bạn cùng phòng.
   5. Người thuê nhập tiêu đề bài viết và bấm 'Đăng bài tìm nhóm'.
   6. Hệ thống lưu bài đăng mã BG02 (Loại tin: Chưa có phòng - Vị trí bản đồ ĐHBK bán kính 3km) và hiển thị trên bản đồ.
 Ngoại lệ:
@@ -121,17 +121,17 @@ Ngoại lệ:
 
 Header 2: 36. Chức năng xin gia nhập nhóm ở ghép
 ------------------------------------------------------------
-Use case: Apply to Roommate Group (Nộp hồ sơ ứng tuyển và khảo sát lối sống)
+Use case: Apply to Roommate Group (Nộp hồ sơ ứng tuyển và khảo sát sinh hoạt)
 Actor: Người thuê (Ứng viên)
 Tiền điều kiện: Người thuê đã đăng nhập tài khoản; bài đăng ở ghép đang ở trạng thái 'Đang mở'.
-Hậu điều kiện: Đơn ứng tuyển kèm kết quả khảo sát lối sống được chuyển đến danh sách chờ duyệt của chủ bài đăng.
+Hậu điều kiện: Đơn ứng tuyển kèm kết quả khảo sát sinh hoạt được chuyển đến danh sách chờ duyệt của chủ bài đăng.
 Kịch bản chính:
   1. Ứng viên đang xem bài đăng BG01 ('Tìm 1 bạn nam ở ghép phòng P102 Ánh Dương...').
   2. Ứng viên bấm nút 'Tham gia nhóm ở ghép'.
-  3. Hệ thống hiển thị Form hồ sơ ứng tuyển gồm: Giới thiệu bản thân, lời nhắn gửi và Bảng trả lời khảo sát lối sống sinh hoạt.
-  4. Ứng viên nhập lời nhắn: 'Mình là sinh viên năm 3 ĐH Giao thông Vận tải, gọn gàng, ít ở phòng ban ngày' và hoàn thành các câu hỏi khảo sát lối sống.
+  3. Hệ thống hiển thị Form hồ sơ ứng tuyển gồm: Giới thiệu bản thân, lời nhắn gửi và Bảng trả lời khảo sát sinh hoạt sinh hoạt.
+  4. Ứng viên nhập lời nhắn: 'Mình là sinh viên năm 3 ĐH Giao thông Vận tải, gọn gàng, ít ở phòng ban ngày' và hoàn thành các câu hỏi khảo sát sinh hoạt.
   5. Ứng viên bấm 'Xác nhận gửi hồ sơ tham gia'.
-  6. Hệ thống lưu đơn YCGN-105 trạng thái 'Chờ duyệt', tính độ tương thích lối sống (94%), và gửi thông báo tới chủ bài đăng.
+  6. Hệ thống lưu đơn YCGN-105 trạng thái 'Chờ duyệt', tính độ tương thích sinh hoạt (94%), và gửi thông báo tới chủ bài đăng.
   7. Nút bấm trên giao diện chuyển thành 'Đã gửi yêu cầu (Đang chờ duyệt)'.
 Ngoại lệ:
   2. Ứng viên chính là chủ bài đăng, hệ thống ẩn nút tham gia.
@@ -144,7 +144,7 @@ Header 2: 37. Chức năng xem danh sách đơn ứng tuyển nhóm
 Use case: View Group Applicants (Xem danh sách ứng viên xin gia nhập nhóm)
 Actor: Người thuê (Chủ bài đăng)
 Tiền điều kiện: Chủ bài đăng nhận được đơn ứng tuyển từ người dùng khác.
-Hậu điều kiện: Danh sách các ứng viên đang chờ duyệt kèm điểm tương thích lối sống được hiển thị.
+Hậu điều kiện: Danh sách các ứng viên đang chờ duyệt kèm điểm tương thích sinh hoạt được hiển thị.
 Kịch bản chính:
   1. Chủ bài đăng bấm vào thông báo hoặc chọn 'Quản lý nhóm ghép' của bài đăng BG01.
   2. Hệ thống hiển thị bảng danh sách các ứng viên đang nộp đơn:
@@ -157,18 +157,18 @@ Ngoại lệ:
 
 ============================================================
 
-Header 2: 38. Chức năng phê duyệt thành viên vào nhóm và cập nhật lối sống chung
+Header 2: 38. Chức năng phê duyệt thành viên vào nhóm và cập nhật sinh hoạt chung
 ------------------------------------------------------------
-Use case: Approve Roommate & Update Lifestyle (Duyệt ứng viên và tổng hòa lối sống nhóm)
+Use case: Approve Roommate & Update Lifestyle (Duyệt ứng viên và tổng hòa sinh hoạt nhóm)
 Actor: Người thuê (Chủ bài đăng)
 Tiền điều kiện: Có đơn ứng tuyển đang ở trạng thái 'Chờ duyệt'.
-Hậu điều kiện: Ứng viên được chấp thuận vào nhóm; thông tin lối sống sinh hoạt của bài đăng được cập nhật theo cả hai người.
+Hậu điều kiện: Ứng viên được chấp thuận vào nhóm; thông tin sinh hoạt sinh hoạt của bài đăng được cập nhật theo cả hai người.
 Kịch bản chính:
   1. Tại danh sách ứng viên, chủ bài đăng bấm 'Xem so sánh & Duyệt' tại đơn của Nguyễn Văn Hùng (YCGN-105).
   2. Hệ thống hiển thị bảng đối chiếu trực quan từng tiêu chí sinh hoạt giữa Chủ phòng và Ứng viên (Giờ ngủ, hút thuốc, thú cưng, nấu ăn).
   3. Thấy độ hòa hợp cao, chủ bài đăng bấm nút 'Đồng ý cho vào nhóm'.
   4. Hệ thống cập nhật đơn YCGN-105 thành 'Đã chấp thuận', thêm Nguyễn Văn Hùng vào nhóm (Tiến độ: 2/2 người).
-  5. Hệ thống tự động cập nhật lại bảng thông tin lối sống sinh hoạt của bài đăng theo sự tổng hòa của cả 2 người (Đức & Hùng).
+  5. Hệ thống tự động cập nhật lại bảng thông tin sinh hoạt sinh hoạt của bài đăng theo sự tổng hòa của cả 2 người (Đức & Hùng).
   6. Hệ thống gửi thông báo chúc mừng tới ứng viên và cung cấp số điện thoại/Zalo để hai bên liên hệ dọn phòng.
 Ngoại lệ:
   3. Nhóm đã đủ người trước đó, hệ thống cảnh báo: 'Nhóm đã đủ số lượng thành viên tối đa'.

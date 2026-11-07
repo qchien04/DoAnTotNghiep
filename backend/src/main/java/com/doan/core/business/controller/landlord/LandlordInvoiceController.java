@@ -1,7 +1,9 @@
 package com.doan.core.business.controller.landlord;
 
 import com.doan.core.business.dto.landlord.invoice.*;
+import com.doan.core.business.enums.InvoiceStatus;
 import com.doan.core.business.service.LandlordInvoiceService;
+import com.doan.core.common.data.PageResponse;
 import com.doan.core.common.data.ResponseData;
 import com.doan.core.common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,8 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/landlord/invoices")
 @RequiredArgsConstructor
@@ -27,13 +27,19 @@ public class LandlordInvoiceController {
     private final LandlordInvoiceService invoiceService;
 
     @GetMapping
-    @Operation(summary = "UC 22: Xem danh sách hóa đơn tháng", description = "Lấy danh sách hóa đơn theo kỳ cước, tòa nhà hoặc trạng thái (UNPAID, PAID, PARTIALLY_PAID, OVERDUE, CANCELLED)")
-    public ResponseEntity<ResponseData<List<InvoiceResponse>>> getInvoices(
+    @Operation(summary = "UC 22: Xem danh sách hóa đơn tháng", description = "Lấy danh sách hóa đơn theo kỳ cước, tòa nhà, trạng thái, từ khóa và sắp xếp")
+    public ResponseEntity<ResponseData<PageResponse<InvoiceResponse>>> getInvoices(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long buildingId,
             @RequestParam(required = false) String billingPeriod,
-            @RequestParam(required = false) String status) {
-        List<InvoiceResponse> invoices = invoiceService.getInvoices(principal.getId(), buildingId, billingPeriod, status);
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
+        PageResponse<InvoiceResponse> invoices = invoiceService.getInvoices(principal.getId(), buildingId,
+                billingPeriod, status, keyword, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ResponseData.success(invoices));
     }
 
@@ -46,11 +52,11 @@ public class LandlordInvoiceController {
         return ResponseEntity.ok(ResponseData.success(invoice));
     }
 
-    @PostMapping({"", "/meter-reading"})
+    @PostMapping({ "", "/meter-reading" })
     @Operation(summary = "UC 23: Ghi chỉ số công tơ và phát hành hóa đơn mới", description = "Nhập chỉ số điện nước mới, tự động tính tiền phòng + điện + nước + dịch vụ và xuất hóa đơn")
     public ResponseEntity<ResponseData<InvoiceResponse>> createInvoice(
             @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody MeterReadingInvoiceRequest request) {
+            @Valid @RequestBody CreateInvoiceRequest request) {
         InvoiceResponse created = invoiceService.createInvoice(principal.getId(), request);
         return ResponseEntity.ok(ResponseData.success("Phát hành hóa đơn thành công!", created));
     }
@@ -84,7 +90,7 @@ public class LandlordInvoiceController {
         return ResponseEntity.ok(ResponseData.success("Hủy hóa đơn thành công!", cancelled));
     }
 
-    @PostMapping({"/{id}/payment", "/{id}/confirm-payment"})
+    @PostMapping({ "/{id}/payment", "/{id}/confirm-payment" })
     @Operation(summary = "UC 26: Xác nhận thanh toán hóa đơn", description = "Ghi nhận thu tiền mặt / chuyển khoản / VietQR và gạch nợ hóa đơn")
     public ResponseEntity<ResponseData<InvoiceResponse>> confirmPayment(
             @AuthenticationPrincipal UserPrincipal principal,

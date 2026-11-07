@@ -67,7 +67,7 @@ export const AdminDashboardPage: React.FC = () => {
               className="h-full bg-stay-primary rounded-full"
             />
           </div>
-          <span className="text-xs font-bold text-stay-text">{val}%</span>
+          <span className=" font-bold text-stay-text">{val}%</span>
         </div>
       ),
     },
@@ -79,7 +79,7 @@ export const AdminDashboardPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="primary">StayConnect Admin Center</Badge>
+            <Badge variant="primary">Roomi Admin Center</Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-stay-text tracking-tight">
             Thống Kê & Phân Tích Toàn Sàn
@@ -109,7 +109,7 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Total Users */}
         <div className="p-5 rounded-2xl bg-stay-card-bg border border-stay-border shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
+            <span className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
               Tổng người dùng
             </span>
             <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600">
@@ -119,7 +119,7 @@ export const AdminDashboardPage: React.FC = () => {
           <p className="text-2xl font-extrabold text-stay-text">
             {analytics.totalUsers.toLocaleString()}
           </p>
-          <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1 font-medium">
+          <p className=" text-emerald-600 mt-2 flex items-center gap-1 font-medium">
             <TrendingUp className="w-3.5 h-3.5" /> +{analytics.newUsersThisMonth} đăng ký tháng này
           </p>
         </div>
@@ -127,7 +127,7 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Total Buildings */}
         <div className="p-5 rounded-2xl bg-stay-card-bg border border-stay-border shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
+            <span className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
               Tòa nhà / Khu trọ
             </span>
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600">
@@ -137,7 +137,7 @@ export const AdminDashboardPage: React.FC = () => {
           <p className="text-2xl font-extrabold text-stay-text">
             {analytics.totalBuildings}
           </p>
-          <p className="text-xs text-stay-text-secondary mt-2">
+          <p className=" text-stay-text-secondary mt-2">
             Từ {analytics.totalLandlords} chủ nhà đã xác thực
           </p>
         </div>
@@ -145,7 +145,7 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Roommate Posts */}
         <div className="p-5 rounded-2xl bg-stay-card-bg border border-stay-border shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
+            <span className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
               Bài đăng ở ghép
             </span>
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600">
@@ -155,7 +155,7 @@ export const AdminDashboardPage: React.FC = () => {
           <p className="text-2xl font-extrabold text-stay-text">
             {analytics.totalRoommatePosts}
           </p>
-          <p className="text-xs text-amber-600 mt-2 font-medium">
+          <p className=" text-amber-600 mt-2 font-medium">
             +{analytics.newPostsThisMonth} bài đăng mới tháng này
           </p>
         </div>
@@ -163,7 +163,7 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Matching Rate */}
         <div className="p-5 rounded-2xl bg-stay-card-bg border border-stay-border shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-stay-text-secondary uppercase tracking-wider">
+            <span className=" font-semibold text-stay-text-secondary uppercase tracking-wider">
               Tỷ lệ ghép thành công
             </span>
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600">
@@ -173,7 +173,7 @@ export const AdminDashboardPage: React.FC = () => {
           <p className="text-2xl font-extrabold text-stay-secondary">
             {analytics.successfulMatchRate}%
           </p>
-          <p className="text-xs text-stay-text-secondary mt-2 flex items-center gap-1">
+          <p className=" text-stay-text-secondary mt-2 flex items-center gap-1">
             <CheckCircle className="w-3.5 h-3.5 text-stay-secondary" /> {analytics.successfulGroupsCount} nhóm đã chốt thành công
           </p>
         </div>
@@ -207,13 +207,13 @@ export const AdminDashboardPage: React.FC = () => {
                     title={`Ghép thành công: ${item.successfulMatches}`}
                   />
                 </div>
-                <span className="text-xs font-semibold text-stay-text mt-2">{item.month}</span>
+                <span className=" font-semibold text-stay-text mt-2">{item.month}</span>
               </div>
             );
           })}
         </div>
 
-        <div className="flex items-center justify-center gap-6 text-xs text-stay-text-secondary pt-2">
+        <div className="flex items-center justify-center gap-6  text-stay-text-secondary pt-2">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-sm bg-stay-primary" />
             <span>Người dùng mới</span>
@@ -233,7 +233,7 @@ export const AdminDashboardPage: React.FC = () => {
               <MapPin className="w-5 h-5 text-stay-primary" />
               Khu Vực Có Nhu Cầu Tìm Phòng & Ở Ghép Cao Nhất
             </h3>
-            <p className="text-xs text-stay-text-secondary mt-0.5">
+            <p className=" text-stay-text-secondary mt-0.5">
               Dữ liệu phân tích dựa trên lượng tìm kiếm và bài đăng của sinh viên và người đi làm.
             </p>
           </div>

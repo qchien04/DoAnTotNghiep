@@ -1,34 +1,41 @@
 import React, { useState } from 'react';
-import { useContracts, useRooms, useTenants, useServices } from '@/shared/hooks';
-import { Plus } from 'lucide-react';
-import { Button, message } from '@/shared/components';
+import {
+  useContracts,
+  useCreateContract,
+  useTerminateContract,
+} from '@/shared/hooks';
 import { RentalContract, CreateContractDto, TerminateContractDto, ContractStatus } from '@/shared/types/landlord';
 import { ContractFilter } from './components/ContractFilter';
 import { ContractTable } from './components/ContractTable';
 import { CreateContractModal } from './components/CreateContractModal';
 import { TerminateContractModal } from './components/TerminateContractModal';
+import { ContractDetailModal } from './components/ContractDetailModal';
 
 export const ContractListPage: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState<ContractStatus | 'ALL'>('ALL');
   const [keyword, setKeyword] = useState('');
 
-  const {
-    contracts,
-    isLoading,
-    createContract,
-    isCreating,
-    terminateContract,
-    isTerminating,
-  } = useContracts({ status: statusFilter, keyword });
-
-  const { rooms } = useRooms({ status: 'AVAILABLE' });
-  const { tenants } = useTenants();
-  const { services } = useServices();
+  const { pageInfo: contractsPageInfo, isLoading } = useContracts({
+    page,
+    size,
+    status: statusFilter,
+    keyword,
+  });
+  const { createContract, isCreating } = useCreateContract();
+  const { terminateContract, isTerminating } = useTerminateContract();
 
   // Modals state
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [terminateModalOpen, setTerminateModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<RentalContract | null>(null);
+
+  const handleOpenDetail = (contract: RentalContract) => {
+    setSelectedContract(contract);
+    setDetailModalOpen(true);
+  };
 
   const handleOpenTerminate = (contract: RentalContract) => {
     setSelectedContract(contract);
@@ -36,55 +43,56 @@ export const ContractListPage: React.FC = () => {
   };
 
   const handleCreateSubmit = async (values: CreateContractDto) => {
-    await createContract(values);
-    message.success('Tạo và kích hoạt hợp đồng thuê phòng thành công!');
-    setCreateModalOpen(false);
+    try {
+      await createContract(values);
+      setCreateModalOpen(false);
+    } catch {
+      // Handled in mutation hook
+    }
   };
 
   const handleTerminateSubmit = async (contractId: string | number, dto: TerminateContractDto) => {
-    await terminateContract({ id: contractId, dto });
-    message.success('Xác nhận hoàn tất thanh lý hợp đồng và trả cọc!');
-    setTerminateModalOpen(false);
+    try {
+      await terminateContract({ id: contractId, dto });
+      setTerminateModalOpen(false);
+    } catch {
+      // Handled in mutation hook
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-stay-text tracking-tight">Hợp đồng</h1>
-        </div>
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={() => setCreateModalOpen(true)}
-          className="bg-stay-primary hover:bg-stay-primary-hover"
-        >
-          Tạo hợp đồng
-        </Button>
-      </div>
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
+      {/* Filter with integrated CTA */}
 
-      {/* Filter */}
       <ContractFilter
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(k) => {
+          setKeyword(k);
+          setPage(0);
+        }}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={(s) => {
+          setStatusFilter(s);
+          setPage(0);
+        }}
+        onOpenCreate={() => setCreateModalOpen(true)}
       />
 
       {/* Table */}
       <ContractTable
-        contracts={contracts}
+        pageInfo={contractsPageInfo}
         isLoading={isLoading}
+        onPageChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
+        onOpenDetail={handleOpenDetail}
         onOpenTerminate={handleOpenTerminate}
       />
 
       {/* Create Modal */}
       <CreateContractModal
         open={createModalOpen}
-        rooms={rooms}
-        tenants={tenants}
-        services={services}
         confirmLoading={isCreating}
         onCancel={() => setCreateModalOpen(false)}
         onSubmit={handleCreateSubmit}
@@ -97,6 +105,14 @@ export const ContractListPage: React.FC = () => {
         confirmLoading={isTerminating}
         onCancel={() => setTerminateModalOpen(false)}
         onSubmit={handleTerminateSubmit}
+      />
+
+      {/* Detail Modal */}
+      <ContractDetailModal
+        open={detailModalOpen}
+        contract={selectedContract}
+        onCancel={() => setDetailModalOpen(false)}
+        onOpenTerminate={handleOpenTerminate}
       />
     </div>
   );

@@ -3,13 +3,16 @@ package com.doan.core.business.service;
 import com.doan.core.business.dto.landlord.room.RoomImageUploadResponse;
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.landlord.room.RoomResponse;
+import com.doan.core.business.enums.RoomStatus;
+import com.doan.core.common.data.PageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface LandlordRoomService {
 
-    List<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, String status);
+    PageResponse<RoomResponse> getRooms(Long landlordId, Long buildingId, Integer floor, RoomStatus status, String keyword,
+            int page, int size, String sortBy, String sortDirection);
 
     RoomResponse getRoomById(Long landlordId, Long roomId);
 

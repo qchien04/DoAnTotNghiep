@@ -14,14 +14,14 @@ export const Breadcrumb: React.FC<BreadcrumbProps> & {
   items,
   ...props
 }) => {
-  return (
-    <AntBreadcrumb
-      className={`text-xs sm:text-sm font-medium py-2 text-slate-600 ${className}`}
-      items={items}
-      {...props}
-    />
-  );
-};
+    return (
+      <AntBreadcrumb
+        className={` sm:text-sm font-medium py-2 text-slate-600 ${className}`}
+        items={items}
+        {...props}
+      />
+    );
+  };
 
 Breadcrumb.Item = AntBreadcrumb.Item;
 

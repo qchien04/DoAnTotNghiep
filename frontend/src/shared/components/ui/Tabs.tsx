@@ -40,64 +40,64 @@ export const Tabs: React.FC<TabsProps> & {
   children,
   ...props
 }) => {
-  const initialKey = activeKey || value || defaultActiveKey || defaultValue || '1';
-  const [internalActiveKey, setInternalActiveKey] = useState<string>(String(initialKey));
+    const initialKey = activeKey || value || defaultActiveKey || defaultValue || '1';
+    const [internalActiveKey, setInternalActiveKey] = useState<string>(String(initialKey));
 
-  const currentActiveKey = activeKey !== undefined ? String(activeKey) : value !== undefined ? String(value) : internalActiveKey;
+    const currentActiveKey = activeKey !== undefined ? String(activeKey) : value !== undefined ? String(value) : internalActiveKey;
 
-  const handleKeyChange = (key: string) => {
-    setInternalActiveKey(key);
-    onChange?.(key);
-    onValueChange?.(key);
-  };
+    const handleKeyChange = (key: string) => {
+      setInternalActiveKey(key);
+      onChange?.(key);
+      onValueChange?.(key);
+    };
 
-  const getAntdType = (): AntTabsProps['type'] => {
-    switch (variant) {
-      case 'card':
-        return 'card';
-      case 'bordered':
-        return 'editable-card';
-      case 'pills':
-      case 'line':
-      default:
-        return 'line';
+    const getAntdType = (): AntTabsProps['type'] => {
+      switch (variant) {
+        case 'card':
+          return 'card';
+        case 'bordered':
+          return 'editable-card';
+        case 'pills':
+        case 'line':
+        default:
+          return 'line';
+      }
+    };
+
+    const getVariantClasses = () => {
+      switch (variant) {
+        case 'pills':
+          return 'custom-antd-tabs-pills [&_.ant-tabs-nav]:bg-stay-bg-app [&_.ant-tabs-nav]:p-1.5 [&_.ant-tabs-nav]:rounded-xl [&_.ant-tabs-nav]:border [&_.ant-tabs-nav]:border-stay-border [&_.ant-tabs-tab-active]:bg-stay-card-bg [&_.ant-tabs-tab-active]:shadow-xs [&_.ant-tabs-tab]:rounded-lg [&_.ant-tabs-tab]:px-4 [&_.ant-tabs-tab]:py-1.5 [&_.ant-tabs-ink-bar]:hidden';
+        case 'bordered':
+          return 'border border-stay-border p-3 rounded-2xl bg-stay-card-bg shadow-2xs';
+        default:
+          return '';
+      }
+    };
+
+    // If items are provided or no compound children, render standard Ant Design Tabs
+    if (items && items.length > 0) {
+      return (
+        <AntTabs
+          activeKey={currentActiveKey}
+          onChange={handleKeyChange}
+          items={items}
+          type={getAntdType()}
+          className={`${getVariantClasses()} ${className}`}
+          {...props}
+        />
+      );
     }
-  };
 
-  const getVariantClasses = () => {
-    switch (variant) {
-      case 'pills':
-        return 'custom-antd-tabs-pills [&_.ant-tabs-nav]:bg-stay-bg-app [&_.ant-tabs-nav]:p-1.5 [&_.ant-tabs-nav]:rounded-xl [&_.ant-tabs-nav]:border [&_.ant-tabs-nav]:border-stay-border [&_.ant-tabs-tab-active]:bg-stay-card-bg [&_.ant-tabs-tab-active]:shadow-xs [&_.ant-tabs-tab]:rounded-lg [&_.ant-tabs-tab]:px-4 [&_.ant-tabs-tab]:py-1.5 [&_.ant-tabs-ink-bar]:hidden';
-      case 'bordered':
-        return 'border border-stay-border p-3 rounded-2xl bg-stay-card-bg shadow-2xs';
-      default:
-        return '';
-    }
-  };
-
-  // If items are provided or no compound children, render standard Ant Design Tabs
-  if (items && items.length > 0) {
+    // Compound Components mode
     return (
-      <AntTabs
-        activeKey={currentActiveKey}
-        onChange={handleKeyChange}
-        items={items}
-        type={getAntdType()}
-        className={`${getVariantClasses()} ${className}`}
-        {...props}
-      />
+      <TabContext.Provider value={{ activeKey: currentActiveKey, setActiveKey: handleKeyChange, variant }}>
+        <div className={`space-y-4 ${getVariantClasses()} ${className}`}>
+          {children}
+        </div>
+      </TabContext.Provider>
     );
-  }
-
-  // Compound Components mode
-  return (
-    <TabContext.Provider value={{ activeKey: currentActiveKey, setActiveKey: handleKeyChange, variant }}>
-      <div className={`space-y-4 ${getVariantClasses()} ${className}`}>
-        {children}
-      </div>
-    </TabContext.Provider>
-  );
-};
+  };
 
 // --- Compound Subcomponents ---
 export const TabList: React.FC<{ children: React.ReactNode; className?: string }> = ({
@@ -110,11 +110,10 @@ export const TabList: React.FC<{ children: React.ReactNode; className?: string }
   return (
     <div
       role="tablist"
-      className={`flex items-center gap-1 ${
-        isPills
+      className={`flex items-center gap-1 ${isPills
           ? 'bg-stay-bg-app p-1.5 rounded-xl border border-stay-border'
           : 'border-b border-stay-border'
-      } ${className}`}
+        } ${className}`}
     >
       {children}
     </div>
@@ -137,8 +136,8 @@ export const TabTrigger: React.FC<{
       ? 'bg-stay-card-bg text-stay-primary font-semibold shadow-xs'
       : 'text-stay-text-secondary hover:text-stay-text font-medium hover:bg-stay-card-bg/60'
     : isActive
-    ? 'border-b-2 border-stay-primary text-stay-primary font-semibold -mb-[1px]'
-    : 'text-stay-text-secondary hover:text-stay-text font-medium';
+      ? 'border-b-2 border-stay-primary text-stay-primary font-semibold -mb-[1px]'
+      : 'text-stay-text-secondary hover:text-stay-text font-medium';
 
   return (
     <button
@@ -146,7 +145,7 @@ export const TabTrigger: React.FC<{
       role="tab"
       aria-selected={isActive}
       onClick={() => ctx.setActiveKey(value)}
-      className={`px-4 py-2 text-xs sm:text-sm rounded-lg transition-all cursor-pointer select-none ${triggerClasses} ${className}`}
+      className={`px-4 py-2  sm:text-sm rounded-lg transition-all cursor-pointer select-none ${triggerClasses} ${className}`}
     >
       {children}
     </button>

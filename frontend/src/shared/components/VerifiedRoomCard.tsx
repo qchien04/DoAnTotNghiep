@@ -117,14 +117,14 @@ export const VerifiedRoomCard: React.FC<VerifiedRoomCardProps> = ({
         </h4>
 
         {/* Location */}
-        <div className="flex items-center gap-1.5 text-xs text-stay-text-secondary">
+        <div className="flex items-center gap-1.5  text-stay-text-secondary">
           <EnvironmentOutlined className="text-stay-text-muted" />
           <span className="truncate">{room.location}</span>
         </div>
       </div>
 
       {/* Footer Amenities */}
-      <div className="px-4 py-2.5 bg-stay-bg-app border-t border-stay-border-subtle flex items-center justify-between text-xs">
+      <div className="px-4 py-2.5 bg-stay-bg-app border-t border-stay-border-subtle flex items-center justify-between ">
         <Space size={12}>
           {room.amenities.map(renderAmenityTag)}
         </Space>

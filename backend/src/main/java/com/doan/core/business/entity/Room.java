@@ -1,11 +1,14 @@
 package com.doan.core.business.entity;
 
+import com.doan.core.business.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
 
 /**
  * Entity Phòng trọ
@@ -27,11 +30,15 @@ public class Room extends BaseEntity {
     @JoinColumn(name = "landlord_id", nullable = true)
     private User landlord;
 
-    @Column(name = "province", length = 100)
-    private String province;
+    @Column(name = "province_id")
+    private Integer provinceId;
 
-    @Column(name = "ward", length = 100)
-    private String ward;
+    @Column(name = "ward_id")
+    private Integer wardId;
+
+    @Column(name = "amenities_mask", nullable = false)
+    @Builder.Default
+    private Integer amenitiesMask = 0;
 
     @Column(name = "address_detail", columnDefinition = "TEXT")
     private String addressDetail;
@@ -64,15 +71,16 @@ public class Room extends BaseEntity {
     @Builder.Default
     private String furnishingLevel = "BASIC";
 
-    @Column(name = "amenities", columnDefinition = "TEXT")
-    private String amenities;
-
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "AVAILABLE"; // AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED
+    private RoomStatus status = RoomStatus.AVAILABLE; // AVAILABLE, OCCUPIED, UNDER_MAINTENANCE, STOPPED
+
+    @Column(name = "cover_image_url", length = 500)
+    private String coverImageUrl;
 
     @Column(name = "latitude", precision = 10, scale = 8)
     private BigDecimal latitude;
@@ -112,22 +120,13 @@ public class Room extends BaseEntity {
     private User moderatedBy;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    @org.hibernate.annotations.BatchSize(size = 30)
+    @BatchSize(size = 30)
     @Builder.Default
     private List<RoomImage> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room")
-    @org.hibernate.annotations.BatchSize(size = 30)
-    @Builder.Default
-    private List<Tenant> tenants = new ArrayList<>();
-
     @ManyToMany(fetch = FetchType.LAZY)
-    @org.hibernate.annotations.BatchSize(size = 30)
-    @JoinTable(
-        name = "room_services",
-        joinColumns = @JoinColumn(name = "room_id"),
-        inverseJoinColumns = @JoinColumn(name = "service_id")
-    )
+    @BatchSize(size = 30)
+    @JoinTable(name = "room_services", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
     @Builder.Default
     private List<UtilityService> services = new ArrayList<>();
 }

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select, Switch } from '@/shared/components';
-import { InputNumber, message } from 'antd';
+import { InputNumber } from 'antd';
 import { CreateServiceDto, UtilityService } from '@/shared/types/landlord';
 
 interface ServiceFormModalProps {
@@ -117,10 +117,8 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
       };
 
       await onSubmit(payload as CreateServiceDto);
-    } catch (err: any) {
-      if (err?.message) {
-        message.error(err.message);
-      }
+    } catch {
+      // Form validation error is shown inline, mutation error is handled in mutation hook
     }
   };
 
@@ -137,14 +135,11 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     >
       <Form form={form} layout="vertical" className="mt-4 space-y-4">
         {/* SECTION 1: ĐỊNH DANH */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            1. Định danh & phân loại dịch vụ
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+        <div className="space-y-3">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Tên dịch vụ </span>}
+                label={<span className="text-stay-text font-medium ">Tên dịch vụ </span>}
                 name="name"
                 rules={[{ required: true, message: 'Vui lòng nhập tên dịch vụ ' }]}
                 className="mb-0"
@@ -153,7 +148,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Phân loại dịch vụ </span>}
+                label={<span className="text-stay-text font-medium ">Phân loại dịch vụ </span>}
                 name="category"
                 rules={[{ required: true, message: 'Chọn phân loại ' }]}
                 className="mb-0"
@@ -177,14 +172,11 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
         </div>
 
         {/* SECTION 2: ĐƠN GIÁ & CÁCH THU */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            2. Định mức chi phí & hình thức tính thu
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Đơn vị tính </span>}
+                label={<span className="text-stay-text font-medium ">Đơn vị tính </span>}
                 name="unit"
                 rules={[{ required: true, message: 'Nhập đơn vị tính ' }]}
                 className="mb-0"
@@ -193,7 +185,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Đơn giá (VNĐ) </span>}
+                label={<span className="text-stay-text font-medium ">Đơn giá (VNĐ) </span>}
                 name="unitPrice"
                 rules={[{ required: true, message: 'Nhập đơn giá ' }]}
                 className="mb-0"
@@ -208,7 +200,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
               </Form.Item>
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Hình thức thu phí </span>}
+                label={<span className="text-stay-text font-medium ">Hình thức thu phí </span>}
                 name="billingMethod"
                 rules={[{ required: true, message: 'Chọn hình thức thu ' }]}
                 className="mb-0"
@@ -228,22 +220,19 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
         </div>
 
         {/* SECTION 3: PHẠM VI & TRẠNG THÁI */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-stay-text">
-            3. Trạng thái hoạt động
-          </h3>
-          <div className="p-4 rounded-xl bg-stay-bg-app border border-stay-border space-y-4">
+        <div className="space-y-3 pt-4 border-t border-stay-border-subtle">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
 
               <Form.Item
-                label={<span className="text-stay-text font-medium text-xs">Trạng thái áp dụng</span>}
+                label={<span className="text-stay-text font-medium ">Trạng thái áp dụng</span>}
                 name="isActive"
                 valuePropName="checked"
                 className="mb-0"
               >
                 <div className="h-10 flex items-center gap-3">
                   <Switch defaultChecked />
-                  <span className="text-xs text-stay-text-secondary font-medium">
+                  <span className=" text-stay-text-secondary font-medium">
                     Đang kích hoạt và áp dụng cho các phòng
                   </span>
                 </div>

@@ -2,8 +2,6 @@ import apiClient from './api';
 import { ResponseData, PageResponse } from '@/shared/types/api';
 import {
   RoommatePost,
-  CreatePostWithRoomDto,
-  CreatePostWithoutRoomDto,
   UpdateRoommatePostDto,
   PostSearchParams,
   RoommateApplication,
@@ -17,10 +15,10 @@ import {
   CreateTenantComplaintDto,
   RateComplaintDto,
 } from '@/shared/types/tenant';
-import { Bill, Complaint } from '@/shared/types/landlord';
+import { InvoiceResponse, Complaint } from '@/shared/types/landlord';
 
 export const tenantService = {
-  // 0. Khảo sát lối sống & Vector Profile
+  // 0. Khảo sát sinh hoạt & Vector Profile
   getLifestyleQuestions: async (): Promise<ResponseData<LifestyleQuestionResponse[]>> => {
     const res = await apiClient.get<ResponseData<LifestyleQuestionResponse[]>>('/api/v1/tenant/lifestyle/questions');
     return res.data;
@@ -42,8 +40,8 @@ export const tenantService = {
     return res.data;
   },
 
-  getMyPosts: async (): Promise<ResponseData<RoommatePost[]>> => {
-    const res = await apiClient.get<ResponseData<RoommatePost[]>>('/api/v1/tenant/posts/my-posts');
+  getMyPosts: async (params?: { keyword?: string; status?: string; postType?: string; sortBy?: string; sortDirection?: string; page?: number; size?: number }): Promise<ResponseData<PageResponse<RoommatePost>>> => {
+    const res = await apiClient.get<ResponseData<PageResponse<RoommatePost>>>('/api/v1/tenant/posts/my-posts', { params });
     return res.data;
   },
 
@@ -52,12 +50,12 @@ export const tenantService = {
     return res.data;
   },
 
-  createPostWithRoom: async (dto: CreatePostWithRoomDto): Promise<ResponseData<RoommatePost>> => {
+  createPostWithRoom: async (dto: any): Promise<ResponseData<RoommatePost>> => {
     const res = await apiClient.post<ResponseData<RoommatePost>>('/api/v1/tenant/posts/existing-room', dto);
     return res.data;
   },
 
-  createPostWithoutRoom: async (dto: CreatePostWithoutRoomDto): Promise<ResponseData<RoommatePost>> => {
+  createPostWithoutRoom: async (dto: any): Promise<ResponseData<RoommatePost>> => {
     const res = await apiClient.post<ResponseData<RoommatePost>>('/api/v1/tenant/posts/virtual-room', dto);
     return res.data;
   },
@@ -121,14 +119,14 @@ export const tenantService = {
     return res.data;
   },
 
-  getMyContracts: async (): Promise<ResponseData<TenantContractHistory[]>> => {
-    const res = await apiClient.get<ResponseData<TenantContractHistory[]>>('/api/v1/tenant/contracts');
+  getMyContracts: async (params?: { keyword?: string; status?: string; sortBy?: string; sortDirection?: string; page?: number; size?: number }): Promise<ResponseData<PageResponse<TenantContractHistory>>> => {
+    const res = await apiClient.get<ResponseData<PageResponse<TenantContractHistory>>>('/api/v1/tenant/contracts', { params });
     return res.data;
   },
 
   // 4. Hóa đơn & VietQR (UC 43 - 44)
-  getMyBills: async (): Promise<ResponseData<Bill[]>> => {
-    const res = await apiClient.get<ResponseData<Bill[]>>('/api/v1/tenant/my-bills');
+  getMyBills: async (params?: { keyword?: string; status?: string; billingPeriod?: string; sortBy?: string; sortDirection?: string; page?: number; size?: number }): Promise<ResponseData<PageResponse<InvoiceResponse>>> => {
+    const res = await apiClient.get<ResponseData<PageResponse<InvoiceResponse>>>('/api/v1/tenant/my-bills', { params });
     return res.data;
   },
 
@@ -137,14 +135,14 @@ export const tenantService = {
     return res.data;
   },
 
-  confirmPaymentTransferred: async (billId: string): Promise<ResponseData<Bill>> => {
-    const res = await apiClient.post<ResponseData<Bill>>(`/api/v1/tenant/my-bills/${billId}/pay-completed`);
+  confirmPaymentTransferred: async (billId: string): Promise<ResponseData<InvoiceResponse>> => {
+    const res = await apiClient.post<ResponseData<InvoiceResponse>>(`/api/v1/tenant/my-bills/${billId}/pay-completed`);
     return res.data;
   },
 
   // 5. Báo hỏng sự cố (UC 45 - 46)
-  getMyComplaints: async (): Promise<ResponseData<Complaint[]>> => {
-    const res = await apiClient.get<ResponseData<Complaint[]>>('/api/v1/tenant/complaints');
+  getMyComplaints: async (params?: { keyword?: string; status?: string; severity?: string; sortBy?: string; sortDirection?: string; page?: number; size?: number }): Promise<ResponseData<PageResponse<Complaint>>> => {
+    const res = await apiClient.get<ResponseData<PageResponse<Complaint>>>('/api/v1/tenant/complaints', { params });
     return res.data;
   },
 

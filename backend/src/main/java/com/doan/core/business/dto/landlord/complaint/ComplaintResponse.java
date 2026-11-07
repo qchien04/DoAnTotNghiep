@@ -1,6 +1,13 @@
 package com.doan.core.business.dto.landlord.complaint;
 
+import com.doan.core.business.entity.Building;
 import com.doan.core.business.entity.Complaint;
+import com.doan.core.business.entity.Room;
+import com.doan.core.business.entity.Tenant;
+import com.doan.core.business.enums.ComplaintIncidentType;
+import com.doan.core.business.enums.ComplaintSeverity;
+import com.doan.core.business.enums.ComplaintStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,10 +33,10 @@ public class ComplaintResponse {
     private String tenantPhone;
     private String title;
     private String content;
-    private String incidentType;
-    private String severity;
+    private ComplaintIncidentType incidentType;
+    private ComplaintSeverity severity;
     private String images;
-    private String status;
+    private ComplaintStatus status;
     private String resolutionNote;
     private Instant resolvedAt;
     private Integer rating;
@@ -37,23 +44,24 @@ public class ComplaintResponse {
     private LocalDateTime createdAt;
 
     public static ComplaintResponse fromEntity(Complaint complaint) {
-        if (complaint == null) return null;
+        if (complaint == null)
+            return null;
 
-        String rName = complaint.getRoom() != null ? complaint.getRoom().getName() : null;
-        String bName = (complaint.getRoom() != null && complaint.getRoom().getBuilding() != null)
-                ? complaint.getRoom().getBuilding().getName() : null;
+        Room room = complaint.getRoom();
+        Building building = room.getBuilding();
+        Tenant tenant = complaint.getTenant();
 
-        String tName = complaint.getTenant() != null ? complaint.getTenant().getFullName() : null;
-        String tPhone = complaint.getTenant() != null ? complaint.getTenant().getPhone() : null;
+        String rName = room.getName();
+        String bName = building != null ? building.getName() : null;
 
         return ComplaintResponse.builder()
                 .id(complaint.getId())
-                .roomId(complaint.getRoom() != null ? complaint.getRoom().getId() : null)
+                .roomId(room.getId())
                 .roomName(rName)
                 .buildingName(bName)
-                .tenantId(complaint.getTenant() != null ? complaint.getTenant().getId() : null)
-                .tenantName(tName)
-                .tenantPhone(tPhone)
+                .tenantId(tenant.getId())
+                .tenantName(tenant.getFullName())
+                .tenantPhone(tenant.getPhone())
                 .title(complaint.getTitle())
                 .content(complaint.getContent())
                 .incidentType(complaint.getIncidentType())

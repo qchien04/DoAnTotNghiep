@@ -1,40 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRooms, useBuildings, useServices } from '@/shared/hooks';
-import { Plus, AlertTriangle, ShieldAlert } from 'lucide-react';
-import { Button, message } from '@/shared/components';
+import {
+  useRooms,
+  useCreateRoom,
+  useUpdateRoom,
+  useDeleteRoom,
+  useBuildings,
+} from '@/shared/hooks';
+import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Modal } from 'antd';
 import { Room, CreateRoomDto, RoomStatus } from '@/shared/types/landlord';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { RoomFilter } from './components/RoomFilter';
 import { RoomTable } from './components/RoomTable';
 import { RoomFormModal } from './components/RoomFormModal';
+import { RoomDetailModal } from './components/RoomDetailModal';
 
 export const RoomListPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const isVerified = Boolean(user?.landlordVerified || user?.role === 'ROLE_ADMIN');
 
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [keyword, setKeyword] = useState('');
   const [buildingId, setBuildingId] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<RoomStatus | 'ALL'>('ALL');
 
-  const { buildings } = useBuildings();
-  const { services } = useServices();
-  const {
-    rooms,
-    isLoading,
-    createRoom,
-    isCreating,
-    updateRoom,
-    isUpdating,
-    deleteRoom,
-    isDeleting,
-  } = useRooms({ keyword, buildingId, status });
+  const { pageInfo: buildingsPageInfo } = useBuildings();
+  const buildings = buildingsPageInfo?.items ?? [];
+  const { pageInfo: roomsPageInfo, isLoading } = useRooms({
+    page,
+    size,
+    keyword,
+    buildingId,
+    status,
+  });
+  const { createRoom, isCreating } = useCreateRoom();
+  const { updateRoom, isUpdating } = useUpdateRoom();
+  const { deleteRoom, isDeleting } = useDeleteRoom();
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+
+  // Detail Modal State
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingRoom, setViewingRoom] = useState<Room | null>(null);
 
   const handleOpenCreate = () => {
     if (!isVerified) {
@@ -58,29 +70,34 @@ export const RoomListPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleOpenView = (room: Room) => {
+    setViewingRoom(room);
+    setDetailModalOpen(true);
+  };
+
   const handleSubmit = async (values: CreateRoomDto) => {
-    const roomName = values.name || (editingRoom ? editingRoom.name : 'mới');
-    if (editingRoom) {
-      await updateRoom({ id: editingRoom.id, dto: values });
-      message.success(`Cập nhật phòng "${roomName}" thành công!`);
-    } else {
-      await createRoom(values);
-      message.success(`Tạo phòng "${roomName}" thành công!`);
+    try {
+      if (editingRoom) {
+        await updateRoom({ id: editingRoom.id, dto: values });
+      } else {
+        await createRoom(values);
+      }
+      setIsModalOpen(false);
+    } catch {
+      // Handled in mutation hooks
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string | number) => {
     try {
       await deleteRoom(id);
-      message.success('Xóa phòng trọ thành công!');
-    } catch (err: any) {
-      message.error(err.message || 'Không thể xóa phòng');
+    } catch {
+      // Handled in mutation hook
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
       {/* Cảnh báo chưa xác minh chủ trọ */}
       {!isVerified && (
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
@@ -104,33 +121,37 @@ export const RoomListPage: React.FC = () => {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-stay-text tracking-tight">Phòng trọ</h1>
-        <Button
-          type="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreate}
-        >
-          Thêm phòng
-        </Button>
-      </div>
-
-      {/* Filter */}
+      {/* Filter with integrated CTA */}
       <RoomFilter
         keyword={keyword}
         buildingId={buildingId}
         status={status}
         buildings={buildings}
-        onKeywordChange={setKeyword}
-        onBuildingIdChange={setBuildingId}
-        onStatusChange={setStatus}
+        onKeywordChange={(k) => {
+          setKeyword(k);
+          setPage(0);
+        }}
+        onBuildingIdChange={(b) => {
+          setBuildingId(b);
+          setPage(0);
+        }}
+        onStatusChange={(s) => {
+          setStatus(s);
+          setPage(0);
+        }}
+        onOpenCreate={handleOpenCreate}
       />
 
       {/* Table */}
       <RoomTable
-        rooms={rooms}
+        pageInfo={roomsPageInfo}
         isLoading={isLoading}
         isDeleting={isDeleting}
+        onPageChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
+        onView={handleOpenView}
         onEdit={handleOpenEdit}
         onDelete={handleDelete}
       />
@@ -139,11 +160,17 @@ export const RoomListPage: React.FC = () => {
       <RoomFormModal
         open={isModalOpen}
         editingRoom={editingRoom}
-        buildings={buildings}
-        services={services}
         confirmLoading={isCreating || isUpdating}
         onCancel={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
+      />
+
+      {/* Detail Modal */}
+      <RoomDetailModal
+        open={detailModalOpen}
+        room={viewingRoom}
+        onCancel={() => setDetailModalOpen(false)}
+        onEdit={handleOpenEdit}
       />
     </div>
   );

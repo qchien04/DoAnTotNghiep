@@ -1,6 +1,7 @@
 import React from 'react';
-import { Table, Button } from '@/shared/components';
+import { Table, Button, StatusBadge } from '@/shared/components';
 import { RoommateApplication } from '@/shared/types/tenant';
+import { getRoommateApplicationStatusLabel } from '@/shared/utils';
 
 interface ApplicantTableProps {
   applications: RoommateApplication[];
@@ -13,11 +14,14 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
 }) => {
   const applicantColumns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 70,
-      render: (_: any, r: RoommateApplication) => <span className="font-semibold text-stay-text">#{r.id}</span>,
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-[14px] text-stay-text-secondary font-medium">
+          {index + 1}
+        </span>
+      ),
     },
     {
       title: 'Họ và tên ứng viên',
@@ -25,9 +29,9 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       key: 'applicantName',
       render: (name: string, r: RoommateApplication) => (
         <div>
-          <span className="font-bold text-stay-text">{name}</span>
+          <span className="font-semibold text-stay-text text-[14px] block">{name}</span>
           {r.introMessage && (
-            <p className="text-xs text-stay-text-secondary line-clamp-1 italic">
+            <p className="text-[12px] text-stay-text-secondary line-clamp-1 italic">
               "{r.introMessage}"
             </p>
           )}
@@ -39,7 +43,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       key: 'origin',
       width: 170,
       render: (_: any, r: RoommateApplication) => (
-        <span className="text-xs text-stay-text">
+        <span className="text-[14px] text-stay-text">
           {r.birthYear || 2004} - {r.hometown || 'Hải Dương'}
         </span>
       ),
@@ -49,7 +53,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       dataIndex: 'occupationOrSchool',
       key: 'occupationOrSchool',
       width: 200,
-      render: (val: string) => <span className="text-xs text-stay-text">{val || 'Sinh viên'}</span>,
+      render: (val: string) => <span className="text-[14px] text-stay-text">{val || 'Sinh viên'}</span>,
     },
     {
       title: 'Điểm tương thích',
@@ -64,7 +68,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
           color = 'text-amber-700 font-semibold';
         }
         return (
-          <span className={`text-xs ${color}`}>
+          <span className={` ${color}`}>
             {score}% ({label})
           </span>
         );
@@ -76,9 +80,21 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
       key: 'createdAt',
       width: 120,
       render: (d: string) => (
-        <span className="text-xs text-stay-text-secondary">
+        <span className=" text-stay-text-secondary">
           {d ? new Date(d).toLocaleDateString('vi-VN') : '02/10/2026'}
         </span>
+      ),
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 130,
+      render: (st: string) => (
+        <StatusBadge
+          status={st}
+          label={getRoommateApplicationStatusLabel(st)}
+        />
       ),
     },
     {
@@ -91,7 +107,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
           size="sm"
           onClick={() => onOpenReview(r)}
         >
-          Xem so sánh & Duyệt
+          {r.status === 'APPROVED' ? 'Xem chi tiết' : 'Xem so sánh & Duyệt'}
         </Button>
       ),
     },
@@ -100,7 +116,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
   return (
     <div className="bg-stay-card-bg border border-stay-border rounded-xl overflow-hidden shadow-2xs">
       {applications.length === 0 ? (
-        <div className="py-12 text-center text-xs text-stay-text-secondary">
+        <div className="py-12 text-center  text-stay-text-secondary">
           Hiện chưa có đơn xin gia nhập nào đang chờ duyệt.
         </div>
       ) : (
@@ -109,7 +125,7 @@ export const ApplicantTable: React.FC<ApplicantTableProps> = ({
           dataSource={applications}
           rowKey="id"
           pagination={false}
-          className="text-xs"
+          className=""
         />
       )}
     </div>
