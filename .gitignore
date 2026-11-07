@@ -69,3 +69,16 @@ frontend/.env.*.local
 # Temporary / resource monitoring logs
 frontend/ket_qua_cpu_ram.txt
 frontend/system_resource_samples.csv
+AGENTS.md
+.agents/WORKFLOW_GUIDELINES.md
+.agents/rules/development-workflow-rules.md
+ai_service/AnhMatTruoc_2.jpg
+backend/uploads/secure/kyc/0df72fb7-3112-4d17-890d-9b89cf50e513.jpg
+backend/uploads/secure/kyc/9e4b61a0-91aa-41bd-9db1-d8c58738649b.jpg
+backend/uploads/secure/kyc/47f1586b-2ee4-44c8-9ee0-3440bd647633.jpg
+backend/uploads/secure/kyc/56e37960-23e8-44d8-93bb-11e399360ef5.jpg
+backend/uploads/secure/kyc/61a05a3b-932c-4061-b1dd-b6a38e0d22c8.jpg
+backend/uploads/secure/kyc/70e409d2-a602-4a70-80fa-2fd52c5a2f38.jpg
+backend/uploads/secure/kyc/165bcb2c-215a-4f14-9c2a-dce64bfbdb2a.jpg
+backend/uploads/secure/kyc/b8bd4070-6d20-42b1-b8aa-673fbeedf30b.jpg
+backend/uploads/secure/kyc/bbf8a7f5-3ae1-4fe3-afd6-acf82a426bcb.jpg

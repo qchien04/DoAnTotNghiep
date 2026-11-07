@@ -172,4 +172,31 @@ npm run build
 ```
 
 ---
+
+## 🧭 7. QUY TRÌNH PHÁT TRIỂN CÓ KIỂM SOÁT (HITL) & SỔ THEO DÕI TASK
+
+Toàn bộ quá trình phát triển tính năng và sửa lỗi tuân thủ nghiêm ngặt theo **5 Giai đoạn khép kín**:
+1. **Phân rã Task (Atomic Decomposition)**: Chia nhỏ tính năng thành `*-SPEC`, `*-DB`, `*-BE`, `*-FE`, `*-TEST` với tiêu chí DOD đo lường được.
+2. **Điểm chặn phê duyệt (Human Gateways)**:
+   - **Gateway 1**: Human duyệt phân rã Task trước khi làm.
+   - **Gateway 2**: Human duyệt Implementation Plan trước khi sinh code.
+   - **Gateway 3**: Human nghiệm thu kết quả thực tế và cung cấp feedback.
+3. **Thực thi bằng Skill chuyên biệt**: Tận dụng triệt để các Skill trong `.agents/` (Detail Design, Migration, Backend/Frontend Plan, Implement, RBAC JWT, Test).
+4. **Lưu vết trung tâm (Task & Skill Ledger)**: Mọi task hoàn thành phải ghi nhận vào [docs/tasks/TASK_LEDGER.md](file:///c:/Project/DATN-SeekRoomWeb/DoAnTotNghiep/docs/tasks/TASK_LEDGER.md).
+5. **Vòng lặp phản hồi & Tiến hóa Skill (Skill Evolution)**:
+   - Sửa lỗi mã nguồn theo feedback của người dùng.
+   - Nếu phát hiện lỗi do quy chuẩn trong `SKILL.md` chưa hoàn thiện: Đề xuất patch và xin phép người dùng cập nhật file `SKILL.md` tương ứng.
+
+*Chi tiết cẩm nang hướng dẫn xem tại: [docs/WORKFLOW_GUIDELINES.md](file:///c:/Project/DATN-SeekRoomWeb/DoAnTotNghiep/docs/WORKFLOW_GUIDELINES.md) và rule [.agents/rules/development-workflow-rules.md](file:///c:/Project/DATN-SeekRoomWeb/DoAnTotNghiep/.agents/rules/development-workflow-rules.md).*
+
+---
+
+## ⚙️ 8. CƠ CHẾ ỦY QUYỀN VÀ THỰC THI TỰ CHỦ (AUTONOMOUS TASK EXECUTION)
+> [!IMPORTANT]
+> **Cấp toàn quyền thực thi không cần xin phép lệnh**:
+> - Người dùng đã ủy quyền toàn quyền cho AI Agent khi nhận task: Agent được phép chủ động chạy các lệnh command line, đọc/ghi/sửa file mã nguồn, build kiểm thử và cập nhật tài liệu mà **không cần xin phép hay hỏi xác nhận từng bước lệnh**.
+> - **Tự chủ và liền mạch**: Sau khi tiếp nhận task, Agent chủ động phân tích, triển khai, chạy verify và giải quyết dứt điểm task từ đầu đến cuối mà không bị ngắt quãng bởi các bước xin quyền thừa thãi.
+> - **Thời điểm kích hoạt**: Agent giữ trạng thái sẵn sàng, **chỉ bắt đầu tiến hành triển khai khi người dùng chính thức giao task/yêu cầu cụ thể**.
+
+---
 *Tài liệu này được tạo tự động để định hướng và duy trì tính nhất quán cho toàn bộ quá trình phát triển dự án StayConnect.*
