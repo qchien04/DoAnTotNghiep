@@ -271,7 +271,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                 landlord,
                 "CREATED",
                 null,
-                saved.getStatus(),
+                saved.getStatus() != null ? saved.getStatus().name() : null,
                 null,
                 saved.getModerationStatus(),
                 saved.getRiskScore(),
@@ -319,7 +319,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         Room room = roomRepository.findByIdAndBuildingLandlordId(roomId, landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ROOM_NOT_FOUND));
 
-        String oldStatus = room.getStatus();
+        String oldStatus = room.getStatus() != null ? room.getStatus().name() : null;
         String oldModStatus = room.getModerationStatus();
         Long oldPrice = room.getListedPrice();
         String oldName = room.getName();
@@ -496,7 +496,7 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
                     actor,
                     "UPDATED",
                     oldStatus,
-                    updated.getStatus(),
+                    updated.getStatus() != null ? updated.getStatus().name() : null,
                     oldModStatus,
                     updated.getModerationStatus(),
                     updated.getRiskScore(),

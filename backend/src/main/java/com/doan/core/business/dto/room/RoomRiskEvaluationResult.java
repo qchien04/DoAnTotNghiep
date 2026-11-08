@@ -1,5 +1,6 @@
 package com.doan.core.business.dto.room;
 
+import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.common.util.ContentRiskDetector;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public class RoomRiskEvaluationResult {
     private String moderationAction;
 
     @Schema(description = "Trạng thái hiển thị phòng trọ (AVAILABLE, PENDING_APPROVAL, STOPPED)", example = "AVAILABLE")
-    private String roomStatus;
+    private RoomStatus roomStatus;
 
     @Schema(description = "Cho phép phòng hiển thị công khai trên sàn hay không", example = "true")
     private boolean isPublic;

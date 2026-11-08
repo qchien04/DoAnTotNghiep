@@ -6,6 +6,7 @@ import com.doan.core.business.dto.room.RoomModerationDetailResponse;
 import com.doan.core.business.dto.room.RoomRiskEvaluationResult;
 import com.doan.core.business.entity.Room;
 import com.doan.core.business.entity.User;
+import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.repository.RoomRepository;
 import com.doan.core.business.repository.UserRepository;
 import com.doan.core.business.service.RoomAuditLogService;
@@ -110,12 +111,12 @@ public class AdminRoomModerationController {
 
         User admin = userRepository.findById(principal.getId()).orElse(null);
 
-        String oldStatus = room.getStatus();
+        String oldStatus = room.getStatus() != null ? room.getStatus().name() : null;
         String oldModStatus = room.getModerationStatus();
 
         room.setModerationStatus("APPROVED");
         room.setModerationReason("Quản trị viên đã phê duyệt tin đăng hợp lệ");
-        room.setStatus("AVAILABLE");
+        room.setStatus(RoomStatus.AVAILABLE);
         room.setIsPublic(true);
         room.setModeratedAt(LocalDateTime.now());
         room.setModeratedBy(admin);
@@ -128,7 +129,7 @@ public class AdminRoomModerationController {
                     admin,
                     "MODERATION_APPROVED",
                     oldStatus,
-                    saved.getStatus(),
+                    saved.getStatus() != null ? saved.getStatus().name() : null,
                     oldModStatus,
                     saved.getModerationStatus(),
                     saved.getRiskScore(),
@@ -159,12 +160,12 @@ public class AdminRoomModerationController {
 
         User admin = userRepository.findById(principal.getId()).orElse(null);
 
-        String oldStatus = room.getStatus();
+        String oldStatus = room.getStatus() != null ? room.getStatus().name() : null;
         String oldModStatus = room.getModerationStatus();
 
         room.setModerationStatus("REJECTED");
         room.setModerationReason(reason);
-        room.setStatus("STOPPED");
+        room.setStatus(RoomStatus.STOPPED);
         room.setIsPublic(false);
         room.setModeratedAt(LocalDateTime.now());
         room.setModeratedBy(admin);
@@ -177,7 +178,7 @@ public class AdminRoomModerationController {
                     admin,
                     "MODERATION_REJECTED",
                     oldStatus,
-                    saved.getStatus(),
+                    saved.getStatus() != null ? saved.getStatus().name() : null,
                     oldModStatus,
                     saved.getModerationStatus(),
                     saved.getRiskScore(),
@@ -203,12 +204,12 @@ public class AdminRoomModerationController {
 
         User admin = userRepository.findById(principal.getId()).orElse(null);
 
-        String oldStatus = room.getStatus();
+        String oldStatus = room.getStatus() != null ? room.getStatus().name() : null;
         String oldModStatus = room.getModerationStatus();
 
         room.setModerationStatus("APPROVED");
         room.setModerationReason("Quản trị viên đã xác minh và mở khóa hình ảnh chính chủ");
-        room.setStatus("AVAILABLE");
+        room.setStatus(RoomStatus.AVAILABLE);
         room.setIsPublic(true);
         room.setModeratedAt(LocalDateTime.now());
         room.setModeratedBy(admin);
@@ -221,7 +222,7 @@ public class AdminRoomModerationController {
                     admin,
                     "MODERATION_UNLOCKED",
                     oldStatus,
-                    saved.getStatus(),
+                    saved.getStatus() != null ? saved.getStatus().name() : null,
                     oldModStatus,
                     saved.getModerationStatus(),
                     saved.getRiskScore(),

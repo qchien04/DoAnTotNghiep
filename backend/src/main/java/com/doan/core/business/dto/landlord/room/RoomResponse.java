@@ -100,12 +100,6 @@ public class RoomResponse {
 
         final Integer mask = room.getAmenitiesMask() != null ? room.getAmenitiesMask() : 0;
         List<String> amenityList = com.doan.core.common.constant.RoomAmenityConstants.decode(mask);
-        if (amenityList.isEmpty() && room.getAmenities() != null && !room.getAmenities().isBlank()) {
-            amenityList = java.util.Arrays.stream(room.getAmenities().split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toList());
-        }
 
         List<AmenityResponse> amenityDetails = com.doan.core.common.constant.RoomAmenityConstants.ALL_AMENITIES.stream()
                 .filter(a -> (mask & a.bitValue()) != 0)
@@ -132,23 +126,12 @@ public class RoomResponse {
         Integer wrdId = room.getWardId() != null ? room.getWardId()
                 : (room.getBuilding() != null ? room.getBuilding().getWardId() : null);
 
-        String prov = room.getProvince() != null ? room.getProvince()
-                : (room.getBuilding() != null ? room.getBuilding().getProvince() : null);
-        String wrd = room.getWard() != null ? room.getWard()
-                : (room.getBuilding() != null ? room.getBuilding().getWard() : null);
         String addr = room.getAddressDetail() != null ? room.getAddressDetail()
                 : (room.getBuilding() != null ? room.getBuilding().getAddressDetail() : null);
 
-        StringBuilder sb = new StringBuilder();
-        if (addr != null && !addr.isBlank()) sb.append(addr);
-        if (wrd != null && !wrd.isBlank()) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(wrd);
-        }
-        if (prov != null && !prov.isBlank()) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(prov);
-        }
+        String prov = com.doan.core.common.constant.VietnamLocationConstants.getProvinceName(provId);
+        String wrd = com.doan.core.common.constant.VietnamLocationConstants.getWardName(wrdId);
+        String fullAddress = com.doan.core.common.constant.VietnamLocationConstants.formatAddress(addr, wrdId, provId);
 
         BigDecimal lat = room.getLatitude() != null ? room.getLatitude()
                 : (room.getBuilding() != null ? room.getBuilding().getLatitude() : null);
@@ -171,7 +154,7 @@ public class RoomResponse {
                 .ward(wrd)
                 .amenitiesMask(mask)
                 .addressDetail(addr)
-                .fullAddress(sb.toString())
+                .fullAddress(fullAddress)
                 .name(room.getName())
                 .floor(room.getFloor())
                 .area(room.getArea())

@@ -3,6 +3,7 @@ package com.doan.core.business.service.impl;
 import com.doan.core.business.dto.landlord.room.RoomRequest;
 import com.doan.core.business.dto.room.RoomRiskEvaluationResult;
 import com.doan.core.business.entity.RoomImage;
+import com.doan.core.business.enums.RoomStatus;
 import com.doan.core.business.repository.RoomImageRepository;
 import com.doan.core.business.service.RoomRiskScoringService;
 import com.doan.core.common.exception.BaseException;
@@ -233,7 +234,7 @@ public class RoomRiskScoringServiceImpl implements RoomRiskScoringService {
         // - Điểm 30 - 60: Chờ Admin duyệt (PENDING_ADMIN_REVIEW)
         // - Điểm < 30: Tự động duyệt (AUTO_APPROVED)
         String moderationAction;
-        String roomStatus;
+        RoomStatus roomStatus;
         boolean isPublic;
         String moderationReason;
 
@@ -244,22 +245,22 @@ public class RoomRiskScoringServiceImpl implements RoomRiskScoringService {
         if (hasStolenImages) {
             totalRiskScore = 100;
             moderationAction = "LOCKED_STOLEN_IMAGES";
-            roomStatus = "STOPPED";
+            roomStatus = RoomStatus.STOPPED;
             isPublic = false;
             moderationReason = "Hệ thống phát hiện sao chép trái phép hình ảnh từ " + stolenFromRoomInfo + ". Tin đăng đã bị khóa vĩnh viễn do vi phạm bản quyền.";
         } else if (totalRiskScore > 60) {
             moderationAction = "REJECTED";
-            roomStatus = "STOPPED";
+            roomStatus = RoomStatus.STOPPED;
             isPublic = false;
             moderationReason = "Hệ thống tự động từ chối tin do điểm rủi ro cao (" + totalRiskScore + "/100). Vi phạm: " + ruleSummary;
         } else if (totalRiskScore >= 30) {
             moderationAction = "PENDING_REVIEW";
-            roomStatus = "AVAILABLE"; // hoặc hiển thị trong danh sách chủ trọ nhưng chưa public
+            roomStatus = RoomStatus.AVAILABLE; // hoặc hiển thị trong danh sách chủ trọ nhưng chưa public
             isPublic = false;
             moderationReason = "Tin đăng có dấu hiệu nghi ngờ (Điểm rủi ro: " + totalRiskScore + "/100). Chờ Quản trị viên kiểm duyệt: " + ruleSummary;
         } else {
             moderationAction = "APPROVED";
-            roomStatus = "AVAILABLE";
+            roomStatus = RoomStatus.AVAILABLE;
             isPublic = request.getIsPublic() == null || Boolean.TRUE.equals(request.getIsPublic());
             moderationReason = "Hệ thống tự động phê duyệt (Điểm rủi ro an toàn: " + totalRiskScore + "/100).";
         }

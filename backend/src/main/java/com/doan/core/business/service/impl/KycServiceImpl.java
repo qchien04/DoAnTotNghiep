@@ -9,6 +9,7 @@ import com.doan.core.business.dto.kyc.QrCccdInfo;
 import com.doan.core.business.entity.KycDocument;
 import com.doan.core.business.entity.KycDocumentType;
 import com.doan.core.business.entity.KycStatus;
+import com.doan.core.business.enums.Gender;
 import com.doan.core.business.service.KycAiServiceClient;
 
 import com.doan.core.business.entity.Tenant;
@@ -277,22 +278,7 @@ public class KycServiceImpl implements KycService {
     }
 
     private boolean isLandlordManagingUser(Long landlordId, Long tenantUserId) {
-        List<Tenant> tenants = tenantRepository.findAllByUserId(tenantUserId);
-        for (Tenant tenant : tenants) {
-            if (tenant.getRoom() != null) {
-                if (tenant.getRoom().getLandlord() != null && landlordId.equals(tenant.getRoom().getLandlord().getId())) {
-                    return true;
-                }
-                if (tenant.getRoom().getBuilding() != null && landlordId.equals(tenant.getRoom().getBuilding().getLandlord().getId())) {
-                    return true;
-                }
-            }
-            if (tenant.getContract() != null && tenant.getContract().getLandlord() != null &&
-                landlordId.equals(tenant.getContract().getLandlord().getId())) {
-                return true;
-            }
-        }
-        return false;
+        return tenantRepository.existsByUserIdAndLandlordId(tenantUserId, landlordId);
     }
 
     private KycDocumentResponse mapToResponse(KycDocument doc) {
@@ -423,7 +409,17 @@ public class KycServiceImpl implements KycService {
                     }
                 }
                 if (StringUtils.hasText(aiResult.qrInfo.getGender())) {
-                    user.setGender(aiResult.qrInfo.getGender());
+                    String g = aiResult.qrInfo.getGender().trim().toLowerCase();
+                    if (g.contains("nam") || g.equals("male")) {
+                        user.setGender(Gender.MALE);
+                    } else if (g.contains("nữ") || g.contains("nu") || g.equals("female")) {
+                        user.setGender(Gender.FEMALE);
+                    } else {
+                        try {
+                            user.setGender(Gender.valueOf(aiResult.qrInfo.getGender().trim().toUpperCase()));
+                        } catch (Exception ignored) {
+                        }
+                    }
                 }
             }
             if (normalizedIdCard != null) {

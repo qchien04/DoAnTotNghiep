@@ -27,6 +27,9 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
 
        List<Tenant> findAllByUserIdAndLinkStatus(Long userId, TenantLinkStatus linkStatus);
 
+       @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Tenant t WHERE t.user.id = :userId AND t.landlord.id = :landlordId")
+       boolean existsByUserIdAndLandlordId(@Param("userId") Long userId, @Param("landlordId") Long landlordId);
+
        @Query("SELECT DISTINCT t FROM Tenant t JOIN t.contractTenants ct JOIN ct.contract c JOIN c.room r LEFT JOIN r.building b "
                      +
                      "WHERE t.user.id = :userId AND t.linkStatus = :linkStatus AND c.status = 'ACTIVE' " +
