@@ -34,6 +34,7 @@ const FALLBACK_ROOMS: Room[] = [
     longitude: 105.7875,
     landlordName: 'Nguyễn Văn Thành',
     landlordPhone: '0988.123.456',
+    landlordVerified: true,
   },
   {
     id: 2,
@@ -55,6 +56,7 @@ const FALLBACK_ROOMS: Room[] = [
     longitude: 105.7831,
     landlordName: 'Trần Thị Mai',
     landlordPhone: '0912.345.678',
+    landlordVerified: true,
   },
   {
     id: 3,

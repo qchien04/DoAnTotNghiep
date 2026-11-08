@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Maximize2, ShieldCheck, ArrowRight, User } from 'lucide-react';
+import { MapPin, Maximize2, ShieldCheck, ArrowRight, User, CheckCircle2 } from 'lucide-react';
 import { Room } from '@/shared/types/landlord';
 import { decodeAmenitiesMask } from '@/shared/constants/roomAmenities';
 import { formatFullAddress } from '@/shared/constants/vietnamLocations';
@@ -82,13 +82,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onViewDetail }) => {
           </span>
         </div>
 
-        {/* Trạng thái xác thực */}
-        <div className="absolute bottom-3 left-3">
-          <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
-            <ShieldCheck className="w-3 h-3" />
-            Phòng đã xác thực
-          </span>
-        </div>
+        {/* Huy hiệu Tick xanh: chỉ hiển thị khi Chủ trọ đã được xác minh */}
+        {room.landlordVerified && (
+          <div className="absolute bottom-3 left-3">
+            <span className="bg-blue-600/95 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md border border-white/20">
+              <ShieldCheck className="w-3.5 h-3.5 text-white" />
+              Chủ trọ đã xác minh
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Nội dung thông tin phòng */}
@@ -134,6 +136,11 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onViewDetail }) => {
             <span className="line-clamp-1 font-medium text-stay-text">
               {room.landlordName || 'Chủ trọ Roomi'}
             </span>
+            {room.landlordVerified && (
+              <span title="Chủ trọ đã xác minh danh tính & chính chủ" className="inline-flex items-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-white fill-blue-500 shrink-0" />
+              </span>
+            )}
           </div>
 
           <span className="text-stay-primary text-xs font-semibold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">

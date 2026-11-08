@@ -6,10 +6,14 @@ import { RoomiLogo } from './RoomiLogo';
 import {
   Compass,
   Users,
-  LayoutDashboard,
   Menu,
   User,
   LogOut,
+  Building2,
+  Shield,
+  PlusCircle,
+  Home,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -22,23 +26,53 @@ export const RoomiHeader: React.FC = () => {
 
   const role = user?.role;
 
-  const getAdminPath = () => {
-    if (!isAuthenticated) return '/login';
-    if (role === 'ROLE_ADMIN') return '/admin';
-    if (role === 'ROLE_LANDLORD') return '/landlord';
-    if (role === 'ROLE_TENANT') return '/tenant';
-    return '/landlord';
-  };
+  // Cấu hình thông tin portal phù hợp với vai trò
+  const adminMeta = (() => {
+    if (!isAuthenticated) {
+      return {
+        label: 'Kênh quản lý',
+        path: '/login',
+        icon: Building2,
+        active: false,
+      };
+    }
+    if (role === 'ROLE_ADMIN') {
+      return {
+        label: 'Quản trị hệ thống',
+        path: '/admin',
+        icon: Shield,
+        active: location.pathname.startsWith('/admin'),
+      };
+    }
+    if (role === 'ROLE_LANDLORD') {
+      return {
+        label: 'Kênh chủ trọ',
+        path: '/landlord',
+        icon: Building2,
+        active: location.pathname.startsWith('/landlord'),
+      };
+    }
+    if (role === 'ROLE_TENANT') {
+      return {
+        label: 'Cổng người thuê',
+        path: '/tenant',
+        icon: Home,
+        active: location.pathname.startsWith('/tenant'),
+      };
+    }
+    return {
+      label: 'Kênh quản lý',
+      path: '/login',
+      icon: Building2,
+      active: false,
+    };
+  })();
 
   const isRoomActive = location.pathname === '/rooms' || location.pathname === '/';
   const isRoommateActive = location.pathname.startsWith('/roommates');
-  const isAdminActive =
-    location.pathname.startsWith('/landlord') ||
-    location.pathname.startsWith('/admin') ||
-    location.pathname.startsWith('/tenant');
 
   const handleAdminNavigate = () => {
-    navigate(getAdminPath());
+    navigate(adminMeta.path);
   };
 
   const userMenuItems: MenuProps['items'] = [
@@ -114,23 +148,83 @@ export const RoomiHeader: React.FC = () => {
               <span>Bài đăng ở ghép</span>
             </Link>
 
-            {/* 3. Nút Trang quản trị */}
+            {/* 3. Nút Quản lý theo vai trò */}
             <button
               type="button"
               onClick={handleAdminNavigate}
-              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors cursor-pointer ${isAdminActive
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors cursor-pointer ${adminMeta.active
                 ? 'text-stay-primary bg-stay-primary-subtle font-semibold'
                 : 'text-stay-text hover:text-stay-primary hover:bg-stay-bg-app'
                 }`}
             >
-              <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>Trang quản trị</span>
+              <adminMeta.icon className="w-4 h-4 shrink-0" />
+              <span>{adminMeta.label}</span>
             </button>
           </nav>
         </div>
 
-        {/* Right: Theme Switcher & Simple Auth Info */}
+        {/* Right: Nút Đăng tin + Theme Switcher & Auth Info */}
         <div className="hidden sm:flex items-center gap-3">
+          {/* Nút Đăng tin ngữ cảnh */}
+          {role === 'ROLE_LANDLORD' && (
+            <button
+              onClick={() => navigate('/landlord/rooms?create=true')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-sm font-semibold bg-stay-primary hover:bg-stay-primary-hover text-white transition-colors shadow-xs cursor-pointer"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Đăng phòng</span>
+            </button>
+          )}
+
+          {role === 'ROLE_TENANT' && (
+            <button
+              onClick={() => navigate('/tenant/posts?create=true')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-sm font-semibold bg-stay-primary hover:bg-stay-primary-hover text-white transition-colors shadow-xs cursor-pointer"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Đăng tin ở ghép</span>
+            </button>
+          )}
+
+          {!isAuthenticated && (
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'landlord-post',
+                    icon: <Building2 className="w-4 h-4 text-stay-primary" />,
+                    label: (
+                      <div className="py-1">
+                        <p className="font-semibold text-stay-text text-sm">Chủ trọ đăng phòng cho thuê</p>
+                        <p className="text-xs text-stay-text-secondary">Đăng phòng trọ, chung cư mini tìm khách thuê</p>
+                      </div>
+                    ),
+                    onClick: () => navigate('/login', { state: { from: { pathname: '/landlord/rooms?create=true' } } }),
+                  },
+                  {
+                    key: 'tenant-post',
+                    icon: <Users className="w-4 h-4 text-emerald-500" />,
+                    label: (
+                      <div className="py-1">
+                        <p className="font-semibold text-stay-text text-sm">Người thuê đăng tin ở ghép</p>
+                        <p className="text-xs text-stay-text-secondary">Tìm bạn cùng phòng, ghép nhóm thuê trọ</p>
+                      </div>
+                    ),
+                    onClick: () => navigate('/login', { state: { from: { pathname: '/tenant/posts?create=true' } } }),
+                  },
+                ],
+              }}
+              trigger={['click']}
+              placement="bottomRight"
+            >
+              <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-sm font-semibold bg-stay-primary hover:bg-stay-primary-hover text-white transition-colors shadow-xs cursor-pointer">
+                <PlusCircle className="w-4 h-4" />
+                <span>Đăng tin</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+              </button>
+            </Dropdown>
+          )}
+
           <ThemeSwitcher />
 
           {isAuthenticated && user ? (
@@ -225,14 +319,70 @@ export const RoomiHeader: React.FC = () => {
                 setDrawerOpen(false);
                 handleAdminNavigate();
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer ${isAdminActive
+              className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer ${adminMeta.active
                 ? 'bg-stay-primary-subtle text-stay-primary font-semibold'
                 : 'text-stay-text hover:bg-stay-bg-app'
                 }`}
             >
-              <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>Trang quản trị</span>
+              <adminMeta.icon className="w-4 h-4 shrink-0" />
+              <span>{adminMeta.label}</span>
             </button>
+          </div>
+
+          {/* Quick Post CTA in Mobile Drawer */}
+          <div className="pt-2 border-t border-stay-border">
+            {role === 'ROLE_LANDLORD' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate('/landlord/rooms?create=true');
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-sm font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Đăng phòng cho thuê</span>
+              </button>
+            )}
+            {role === 'ROLE_TENANT' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate('/tenant/posts?create=true');
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-sm font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Đăng tin ở ghép</span>
+              </button>
+            )}
+            {!isAuthenticated && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate('/login', { state: { from: { pathname: '/landlord/rooms?create=true' } } });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-stay-primary text-white hover:bg-stay-primary-hover transition-colors cursor-pointer"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Đăng phòng (Chủ trọ)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate('/login', { state: { from: { pathname: '/tenant/posts?create=true' } } });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border border-stay-border text-stay-text hover:bg-stay-bg-app transition-colors cursor-pointer"
+                >
+                  <Users className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Đăng tin ở ghép (Người thuê)</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="pt-4 border-t border-stay-border">

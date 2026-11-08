@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Eye, Edit2, Trash2, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import { Table, Popconfirm, Tag, StatusBadge } from '@/shared/components';
 import { Tooltip } from 'antd';
 import { Room, RoomStatus } from '@/shared/types/landlord';
@@ -68,12 +68,19 @@ export const RoomTable: React.FC<RoomTableProps> = ({
               </div>
             )}
             <div className="min-w-0">
-              <p
-                onClick={() => onView(item)}
-                className="font-medium text-[14px] text-stay-text truncate cursor-pointer hover:text-stay-primary hover:underline"
-              >
-                {item.name || '—'}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p
+                  onClick={() => onView(item)}
+                  className="font-medium text-[14px] text-stay-text truncate cursor-pointer hover:text-stay-primary hover:underline"
+                >
+                  {item.name || '—'}
+                </p>
+                {item.landlordVerified && (
+                  <span title="Chủ trọ đã được xác minh tick xanh">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white fill-blue-500 shrink-0" />
+                  </span>
+                )}
+              </div>
               {item.buildingName ? (
                 <p className="text-[12px] text-stay-text-muted truncate">{item.buildingName}</p>
               ) : (

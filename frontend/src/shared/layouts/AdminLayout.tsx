@@ -106,8 +106,11 @@ export const AdminLayout: React.FC = () => {
         className="h-full shrink-0 z-30"
         header={
           !collapsed ? (
-            <Link to="/admin" className="w-full flex items-center justify-center py-1">
+            <Link to="/admin" className="w-full flex flex-col items-center justify-center py-2 gap-1">
               <RoomiLogo size="md" />
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                Admin Portal
+              </span>
             </Link>
           ) : (
             <div className="w-full flex items-center justify-center py-1">
@@ -119,10 +122,18 @@ export const AdminLayout: React.FC = () => {
 
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold text-stay-text tracking-tight">
-              {pageTitle}
-            </h1>
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <Shield className="w-4 h-4" />
+            </div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold text-stay-text tracking-tight">
+                {pageTitle}
+              </h1>
+              <span className="text-[11px] px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold border border-purple-500/25">
+                Quản trị hệ thống
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

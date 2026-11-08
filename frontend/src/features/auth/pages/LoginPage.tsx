@@ -18,14 +18,34 @@ export const LoginPage: React.FC = () => {
     const success = await login({ username: username.trim(), password });
     if (success) {
       const currentUser = useAuthStore.getState().user;
-      const redirectPath = (location.state as any)?.from?.pathname;
+      const fromState = (location.state as any)?.from;
+      const redirectPath = typeof fromState === 'string'
+        ? fromState
+        : fromState?.pathname
+          ? `${fromState.pathname}${fromState.search || ''}`
+          : undefined;
 
-      if (redirectPath) {
-        navigate(redirectPath, { replace: true });
-      } else if (currentUser?.role === 'ROLE_ADMIN') {
-        navigate('/admin', { replace: true });
+      if (currentUser?.role === 'ROLE_ADMIN') {
+        // Admin: chỉ giữ redirectPath nếu là trang admin chuyên biệt
+        if (redirectPath && redirectPath.startsWith('/admin')) {
+          navigate(redirectPath, { replace: true });
+        } else {
+          navigate('/admin', { replace: true });
+        }
       } else if (currentUser?.role === 'ROLE_LANDLORD') {
-        navigate('/landlord', { replace: true });
+        // Chủ trọ: chỉ giữ redirectPath nếu là trang landlord
+        if (redirectPath && redirectPath.startsWith('/landlord')) {
+          navigate(redirectPath, { replace: true });
+        } else {
+          navigate('/landlord', { replace: true });
+        }
+      } else if (currentUser?.role === 'ROLE_TENANT') {
+        // Người thuê: không để lạc vào portal admin hoặc landlord
+        if (redirectPath && !redirectPath.startsWith('/admin') && !redirectPath.startsWith('/landlord')) {
+          navigate(redirectPath, { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
       } else {
         navigate('/', { replace: true });
       }

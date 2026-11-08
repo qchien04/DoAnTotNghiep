@@ -123,11 +123,6 @@ public class LandlordRoomServiceImpl implements LandlordRoomService {
         com.doan.core.business.entity.User landlord = userRepository.findById(landlordId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        if (!Boolean.TRUE.equals(landlord.getLandlordVerified())) {
-            log.warn("Chủ trọ ID [{}] chưa được xác minh tài liệu nhà đất/ủy quyền, từ chối tạo phòng", landlordId);
-            throw new BaseException(ErrorCode.LANDLORD_NOT_VERIFIED);
-        }
-
         Building building = null;
         String addressDetail = request.getAddressDetail();
         Integer provinceId = request.getProvinceId();

@@ -87,6 +87,8 @@ export interface Room {
   isPublic?: boolean;
   landlordName?: string;
   landlordPhone?: string;
+  landlordAvatarUrl?: string;
+  landlordVerified?: boolean;
   createdAt?: string;
 }
 

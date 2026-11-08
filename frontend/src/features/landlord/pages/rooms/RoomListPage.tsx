@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   useRooms,
   useCreateRoom,
@@ -7,8 +7,7 @@ import {
   useDeleteRoom,
   useBuildings,
 } from '@/shared/hooks';
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
-import { Modal } from 'antd';
+import { ShieldCheck } from 'lucide-react';
 import { Room, CreateRoomDto, RoomStatus } from '@/shared/types/landlord';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { RoomFilter } from './components/RoomFilter';
@@ -18,6 +17,7 @@ import { RoomDetailModal } from './components/RoomDetailModal';
 
 export const RoomListPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuthStore();
   const isVerified = Boolean(user?.landlordVerified || user?.role === 'ROLE_ADMIN');
 
@@ -49,18 +49,6 @@ export const RoomListPage: React.FC = () => {
   const [viewingRoom, setViewingRoom] = useState<Room | null>(null);
 
   const handleOpenCreate = () => {
-    if (!isVerified) {
-      Modal.confirm({
-        title: 'Chủ trọ chưa được xác minh',
-        icon: <ShieldAlert className="text-amber-500" />,
-        content:
-          'Để bảo vệ an toàn cho người thuê và duy trì chất lượng hệ thống, bạn cần nộp giấy tờ nhà/đất hoặc hợp đồng ủy quyền để được Ban quản trị duyệt trước khi tạo phòng.',
-        okText: 'Đi tới trang xác minh',
-        cancelText: 'Để sau',
-        onOk: () => navigate('/landlord/verification'),
-      });
-      return;
-    }
     setEditingRoom(null);
     setIsModalOpen(true);
   };
@@ -74,6 +62,15 @@ export const RoomListPage: React.FC = () => {
     setViewingRoom(room);
     setDetailModalOpen(true);
   };
+
+  // Tự động mở modal thêm phòng mới nếu URL chứa ?create=true
+  useEffect(() => {
+    if (searchParams.get('create') === 'true') {
+      searchParams.delete('create');
+      setSearchParams(searchParams, { replace: true });
+      handleOpenCreate();
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleSubmit = async (values: CreateRoomDto) => {
     try {
@@ -98,25 +95,30 @@ export const RoomListPage: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
-      {/* Cảnh báo chưa xác minh chủ trọ */}
+      {/* Banner khuyến khích xác minh nhận Huy hiệu Tick xanh */}
       {!isVerified && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
-              <AlertTriangle size={20} />
+            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">
+              <ShieldCheck size={20} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-stay-text">Tài khoản chưa được xác minh Chủ trọ</h3>
+              <h3 className="text-sm font-bold text-stay-text flex items-center gap-1.5">
+                <span>Nhận Huy hiệu Tick Xanh cho phòng trọ của bạn</span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                  Khuyên dùng
+                </span>
+              </h3>
               <p className="text-xs text-stay-text-secondary mt-0.5">
-                Bạn cần nộp giấy tờ sở hữu nhà/đất hoặc hợp đồng ủy quyền để kích hoạt quyền đăng và tạo phòng trọ mới.
+                Xác minh giấy tờ nhà/đất hoặc hợp đồng ủy quyền để hiển thị huy hiệu <strong>Chủ trọ đã xác minh</strong> trên tin đăng, giúp tăng độ uy tín và tiếp cận khách thuê tốt hơn.
               </p>
             </div>
           </div>
           <button
             onClick={() => navigate('/landlord/verification')}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto shadow-xs"
           >
-            Xác minh ngay
+            Nhận Tick xanh ngay
           </button>
         </div>
       )}

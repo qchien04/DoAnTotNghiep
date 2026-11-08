@@ -129,12 +129,15 @@ export const LandlordLayout: React.FC = () => {
         className="h-full shrink-0 z-30"
         header={
           !collapsed ? (
-            <Link to="/landlord" className="w-full flex items-center justify-center py-1">
+            <Link to="/landlord" className="w-full flex flex-col items-center justify-center py-2 gap-1">
               <RoomiLogo size="md" />
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                Kênh Chủ Trọ
+              </span>
             </Link>
           ) : (
             <div className="w-full flex items-center justify-center py-1">
-              <Building2 className="w-7 h-7 text-stay-primary" />
+              <Building2 className="w-7 h-7 text-emerald-600" />
             </div>
           )
         }
@@ -144,10 +147,18 @@ export const LandlordLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Topbar */}
         <header className="sticky top-0 z-20 h-16 shrink-0 bg-stay-card-bg/90 backdrop-blur border-b border-stay-border px-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold text-stay-text tracking-tight">
-              {pageTitle}
-            </h1>
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold text-stay-text tracking-tight">
+                {pageTitle}
+              </h1>
+              <span className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/25">
+                Kênh Chủ Trọ
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

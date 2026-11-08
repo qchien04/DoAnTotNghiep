@@ -7,6 +7,7 @@ import {
   User,
   ShieldCheck,
   Check,
+  CheckCircle2,
   Copy,
   Zap,
   Droplets,
@@ -55,6 +56,7 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     internet: '100.000 đ/phòng/tháng',
     landlordName: 'Nguyễn Văn Thành',
     landlordPhone: '0988.123.456',
+    landlordVerified: true,
   },
   '2': {
     id: 2,
@@ -87,6 +89,7 @@ const SAMPLE_ROOMS_DETAIL: Record<string, PublicRoomItem> = {
     internet: 'Miễn phí',
     landlordName: 'Trần Thị Mai',
     landlordPhone: '0912.345.678',
+    landlordVerified: true,
   },
   '3': {
     id: 3,
@@ -276,6 +279,8 @@ export const RoomDetailPage: React.FC = () => {
         internet: '100.000 đ/phòng/tháng',
         landlordName: found.landlordName || 'Chủ trọ Roomi',
         landlordPhone: found.landlordPhone || '0988.888.999',
+        landlordAvatarUrl: found.landlordAvatarUrl,
+        landlordVerified: Boolean(found.landlordVerified),
       };
     };
 
@@ -394,10 +399,16 @@ export const RoomDetailPage: React.FC = () => {
                 <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-stay-primary-subtle text-stay-primary border border-stay-primary/20">
                   Phòng trọ cho thuê
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Chính chủ đã xác thực</span>
-                </span>
+                {room.landlordVerified ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Chủ trọ đã xác minh</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stay-text-secondary bg-stay-bg-app px-2 py-0.5 rounded-md border border-stay-border">
+                    <span>Phòng công khai</span>
+                  </span>
+                )}
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-stay-text tracking-tight m-0">
                 {room.title}
@@ -512,8 +523,23 @@ export const RoomDetailPage: React.FC = () => {
                   <User className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-sm text-stay-text truncate">{room.landlordName}</p>
-                  <span className="text-[11px] text-emerald-600 font-medium">Chủ trọ Roomi</span>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-bold text-sm text-stay-text truncate">{room.landlordName}</p>
+                    {room.landlordVerified && (
+                      <span title="Chủ trọ đã xác minh danh tính & chính chủ" className="inline-flex items-center">
+                        <CheckCircle2 className="w-4 h-4 text-white fill-blue-500 shrink-0" />
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-stay-text-secondary font-medium flex items-center gap-1 mt-0.5">
+                    {room.landlordVerified ? (
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" /> Đã xác minh tick xanh
+                      </span>
+                    ) : (
+                      'Chủ trọ Roomi'
+                    )}
+                  </span>
                 </div>
               </div>
 
