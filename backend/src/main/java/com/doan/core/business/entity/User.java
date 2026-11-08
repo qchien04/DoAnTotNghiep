@@ -105,14 +105,14 @@ public class User extends BaseEntity {
     @Builder.Default
     private Boolean enabled = true;
 
-    @Column(name = "id_card_verified", nullable = false)
+    @Column(name = "id_card_verified", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     @Builder.Default
     private Boolean idCardVerified = false;
 
     @Column(name = "face_embedding", columnDefinition = "TEXT")
     private String faceEmbedding;
 
-    @Column(name = "landlord_verified", nullable = false)
+    @Column(name = "landlord_verified", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     @Builder.Default
     private Boolean landlordVerified = false;
 

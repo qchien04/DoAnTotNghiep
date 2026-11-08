@@ -204,6 +204,7 @@ CREATE TABLE IF NOT EXISTS room_services (
 -- 8. Bảng Khách thuê phòng
 CREATE TABLE IF NOT EXISTS tenants (
     id BIGSERIAL PRIMARY KEY,
+    landlord_id BIGINT NOT NULL,
     room_id BIGINT,
     contract_id BIGINT,
     user_id BIGINT,
@@ -220,6 +221,7 @@ CREATE TABLE IF NOT EXISTS tenants (
     status VARCHAR(30) NOT NULL DEFAULT 'STAYING',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tenants_landlord FOREIGN KEY (landlord_id) REFERENCES users (id) ON DELETE RESTRICT,
     CONSTRAINT fk_tenants_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE SET NULL,
     CONSTRAINT fk_tenants_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
 );

@@ -36,7 +36,7 @@ public class Room extends BaseEntity {
     @Column(name = "ward_id")
     private Integer wardId;
 
-    @Column(name = "amenities_mask", nullable = false)
+    @Column(name = "amenities_mask", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     @Builder.Default
     private Integer amenitiesMask = 0;
 
@@ -98,14 +98,14 @@ public class Room extends BaseEntity {
     @Column(name = "water_price")
     private Long waterPrice;
 
-    @Column(name = "risk_score", nullable = false)
+    @Column(name = "risk_score", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     @Builder.Default
     private Integer riskScore = 0;
 
     @Column(name = "risk_evaluation_details", columnDefinition = "TEXT")
     private String riskEvaluationDetails;
 
-    @Column(name = "moderation_status", nullable = false, length = 50)
+    @Column(name = "moderation_status", nullable = false, length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'APPROVED'")
     @Builder.Default
     private String moderationStatus = "APPROVED"; // APPROVED, PENDING_REVIEW, REJECTED, LOCKED_STOLEN_IMAGES
 
