@@ -27,6 +27,25 @@ public class AmenityServiceImpl implements AmenityService {
 
     private final AmenityRepository amenityRepository;
 
+    @jakarta.annotation.PostConstruct
+    @Transactional
+    public void initDefaultAmenitiesIfEmpty() {
+        try {
+            if (amenityRepository.count() == 0) {
+                log.info("Khởi tạo 16 tiện ích chuẩn vào bảng amenities...");
+                for (com.doan.core.common.constant.RoomAmenityConstants.AmenityItem item : com.doan.core.common.constant.RoomAmenityConstants.ALL_AMENITIES) {
+                    amenityRepository.save(Amenity.builder()
+                            .name(item.name())
+                            .description(item.key())
+                            .build());
+                }
+                log.info("Đã khởi tạo thành công {} tiện ích chuẩn.", com.doan.core.common.constant.RoomAmenityConstants.ALL_AMENITIES.size());
+            }
+        } catch (Exception e) {
+            log.warn("Không thể tự động khởi tạo tiện ích chuẩn: {}", e.getMessage());
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
     public PageResponse<AmenityResponse> getAmenities(String keyword, int page, int size, String sortBy, String sortDirection) {

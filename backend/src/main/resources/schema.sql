@@ -78,6 +78,8 @@ CREATE TABLE IF NOT EXISTS buildings (
     id BIGSERIAL PRIMARY KEY,
     landlord_id BIGINT NOT NULL,
     name VARCHAR(150) NOT NULL,
+    province_id INT,
+    ward_id INT,
     province VARCHAR(100),
     ward VARCHAR(100),
     address_detail VARCHAR(255) NOT NULL,
@@ -97,6 +99,8 @@ CREATE TABLE IF NOT EXISTS rooms (
     building_id BIGINT,
     landlord_id BIGINT,
     name VARCHAR(100) NOT NULL,
+    province_id INT,
+    ward_id INT,
     province VARCHAR(100),
     ward VARCHAR(100),
     address_detail TEXT,
@@ -107,6 +111,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     max_capacity INT NOT NULL DEFAULT 2,
     current_occupancy INT NOT NULL DEFAULT 0,
     furnishing_level VARCHAR(50) DEFAULT 'BASIC',
+    amenities_mask INT NOT NULL DEFAULT 0,
     amenities TEXT,
     description TEXT,
     status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
@@ -160,6 +165,15 @@ CREATE TABLE IF NOT EXISTS room_audit_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_audit_room FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE,
     CONSTRAINT fk_audit_actor FOREIGN KEY (actor_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- 5c. Bảng Danh mục Tiện ích chuẩn của hệ thống
+CREATE TABLE IF NOT EXISTS amenities (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 6. Bảng Dịch vụ tiện ích (Điện, nước, internet, rác, gửi xe...)
